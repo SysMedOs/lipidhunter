@@ -4,6 +4,7 @@
 # A suitable license will be chosen before the official release.
 # For more info please contact zhixu.ni@uni-leipzig.de
 
+from __future__ import division
 from base64 import b64decode as b64dec
 try:
     import xml.etree.cElementTree as ET
@@ -11,9 +12,12 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 import zlib
+
 import pymzml
 import pymzml.spec
 import pymzml.run
+
+import pandas as pd
 
 
 class XIC(object):
@@ -23,7 +27,16 @@ class XIC(object):
         self.mzml_obj = pymzml.run.Reader(mzml, MS1_Precision=20e-6, MSn_Precision=200e-6)
 
 
-    def find_mz(self, mz):
+    def find_mz(self, mz2xic, ppm=None):
+
+        if ppm == None:
+            ppm = 20
+        else:
+            pass
+
+        mz_bot = mz2xic - (ppm / 1000000) * mz2xic
+        mz_top = mz2xic + (ppm / 1000000) * mz2xic
+        # print mz_bot, mz_top
 
         # timeDependentIntensities = []
         '''
@@ -46,36 +59,74 @@ class XIC(object):
         :param mz:
         :return:
         '''
+
+        xic_pd = pd.DataFrame()
+
         for spectrum in self.mzml_obj:
             # print spectrum.keys()
-            if spectrum['MS:1000511'] == 1:  # 'MS:1000511' == 'ms level'
+            try:
+                if 22.0 < spectrum['MS:1000016'] < 30.0 and spectrum['MS:1000511'] == 1:  # 'MS:1000511' == 'ms level'
 
-                # print spectrum['encodedData']
-                # Add 32-bit/64-bit encoding to mzML
-                try:
-                    print spectrum['BinaryArrayOrder']
-                # [('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'mz'),
-                # ('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'i')]
-                    if spectrum['BinaryArrayOrder'] == []:
+                    print spectrum['MS:1000016']
+
+                    # Add 32-bit/64-bit encoding to mzML
+                    try:
+                        # print spectrum['BinaryArrayOrder']
+                        # [('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'mz'),
+                        # ('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'i')]
+
+                        if spectrum['BinaryArrayOrder'] == []:
+                            spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
+                                                            ('compression', 'no'), ('arrayType', 'mz'),
+                                                            ('encoding', '32-bit float'), ('compression', 'no'),
+                                                            ('arrayType', 'i')]
+                            # print r"spectrum['BinaryArrayOrder'] existed"
+                            # print spectrum['BinaryArrayOrder']
+                        else:
+                            # print r"spectrum['BinaryArrayOrder'] existed"
+                            pass
+                    except KeyError:
                         spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
                                                         ('compression', 'no'), ('arrayType', 'mz'),
                                                         ('encoding', '32-bit float'), ('compression', 'no'),
                                                         ('arrayType', 'i')]
-                        print r"spectrum['BinaryArrayOrder'] existed"
-                        print spectrum['BinaryArrayOrder']
+                        print 'BinaryArrayOrder Added!'
+
+                    # print spectrum.keys()
+                    _toppeaks_lst = spectrum.highestPeaks(300)
+                    toppeaks_lst = []
+                    for _p in _toppeaks_lst:
+                        p = list(_p)
+                        p.append(spectrum['MS:1000016'])
+                        toppeaks_lst.append(p)
+
+                    # print toppeaks_lst[1]
+
+                    _toppeaks_df = pd.DataFrame(data=toppeaks_lst, columns=['mz', 'i', 'rt'])
+
+                    # print _toppeaks_df.head()
+
+                    _query_str = '( %f < mz < %f)' % (mz_bot, mz_top)
+                    # print _query_str
+
+                    _fund_df = _toppeaks_df.query(_query_str)
+                    _found_count = len(_fund_df['mz'].tolist())
+                    # rt_lst = [spectrum['MS:1000016']] * _found_count
+
+                    if _fund_df['mz'].tolist() == []:
+                        pass
                     else:
-                        print r"spectrum['BinaryArrayOrder'] existed"
-                except KeyError:
-                    spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
-                                                    ('compression', 'no'), ('arrayType', 'mz'),
-                                                    ('encoding', '32-bit float'), ('compression', 'no'),
-                                                    ('arrayType', 'i')]
-                    print 'BinaryArrayOrder Added!'
 
-                print spectrum.keys()
-                for _m, _i in spectrum.highestPeaks(300):
-                    print _m, _i
+                        # _fund_df.loc[:, 'rt'] = pd.Series(rt_lst, index=_fund_df.index)
+                        # print _fund_df.head()
+                        xic_pd = xic_pd.append(_fund_df, ignore_index=True)
+
+            except KeyError:
+                pass
+
+                # timeDependentIntensities.append([spectrum['MS:1000016'], I, mz])
 
 
-                break
+        print xic_pd
 
+        xic_pd.to_csv('xic.csv')

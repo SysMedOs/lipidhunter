@@ -24,7 +24,7 @@ if infile_type.lower() == 'mzml.gz':
     print infile_name
 
     xic_spec = XIC(infile_name)
-    xic_spec.find_mz(778.560)
+    xic_spec.find_mz(778.560, ppm=50)
 
 else:
     print 'No input mzML'
