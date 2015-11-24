@@ -19,5 +19,12 @@ if infile_type.lower() == 'mzml':
     xic_spec = XIC(infile_name)
     xic_spec.find_mz(778.560)
 
+if infile_type.lower() == 'mzml.gz':
+    infile_name = config.get('inputfile', 'filename')
+    print infile_name
+
+    xic_spec = XIC(infile_name)
+    xic_spec.find_mz(778.560)
+
 else:
     print 'No input mzML'
