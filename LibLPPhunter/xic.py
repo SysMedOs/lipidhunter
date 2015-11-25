@@ -16,24 +16,50 @@ import pymzml.run
 
 import pandas as pd
 
+from encode_checker import add_encode_info
+from LibLPPhunter.tic import TIC
+
 
 class XIC(object):
 
-    def __init__(self, mzml):
+    def __init__(self, mzml, encode_type, ms1_precision=None, msn_precision=None):
+        if 0 < ms1_precision < 1:
+            pass
+        else:
+            ms1_precision = 20e-6
+        if 0 < msn_precision < 1:
+            pass
+        else:
+            msn_precision = 200e-6
+        self.mzml_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
+        self.encode_type = encode_type
+        self.mzml = mzml
 
-        self.mzml_obj = pymzml.run.Reader(mzml, MS1_Precision=20e-6, MSn_Precision=200e-6)
+    def extract_mz(self, mz2xic, rt=None, ppm=None):
 
-
-    def find_mz(self, mz2xic, ppm=None):
-
-        if ppm == None:
+        if ppm is None:
             ppm = 20
         else:
             pass
 
+        if rt is None:
+            tic_spec = TIC(self.mzml, self.encode_type)
+            rt_max = tic_spec.get_maxtime()
+            print rt_max
+            rt = [0.1, rt_max]
+        else:
+            try:
+                if len(rt) == 2 and rt[0] < rt[1]:
+                    pass
+            except:
+                tic_spec = TIC(self.mzml_obj, self.encode_type)
+                rt_max = tic_spec.get_maxtime()
+                print rt_max
+                rt = [0.1, rt_max]
+
         mz_bot = mz2xic - (ppm / 1000000) * mz2xic
         mz_top = mz2xic + (ppm / 1000000) * mz2xic
-        # print mz_bot, mz_top
+        print 'Start to extract %.4f from %.2f to %.2f with %d ppm' % (mz2xic, rt[0], rt[1], ppm)
 
         # timeDependentIntensities = []
         '''
@@ -62,33 +88,13 @@ class XIC(object):
         for spectrum in self.mzml_obj:
             # print spectrum.keys()
             try:
-                if 22.0 < spectrum['MS:1000016'] < 30.0 and spectrum['MS:1000511'] == 1:  # 'MS:1000511' == 'ms level'
+                if rt[0] < spectrum['MS:1000016'] < rt[1] and spectrum['MS:1000511'] == 1:  # 'MS:1000511' == 'ms level'
 
-                    # Add 32-bit/64-bit encoding to mzML
-                    try:
-                        # print spectrum['BinaryArrayOrder']
-                        # [('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'mz'),
-                        # ('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'i')]
-
-                        if spectrum['BinaryArrayOrder'] == []:
-                            spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
-                                                            ('compression', 'no'), ('arrayType', 'mz'),
-                                                            ('encoding', '32-bit float'), ('compression', 'no'),
-                                                            ('arrayType', 'i')]
-                            # print r"spectrum['BinaryArrayOrder'] existed"
-                            # print spectrum['BinaryArrayOrder']
-                        else:
-                            # print r"spectrum['BinaryArrayOrder'] existed"
-                            pass
-                    except KeyError:
-                        spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
-                                                        ('compression', 'no'), ('arrayType', 'mz'),
-                                                        ('encoding', '32-bit float'), ('compression', 'no'),
-                                                        ('arrayType', 'i')]
-                        print 'BinaryArrayOrder Added!'
+                    spectrum = add_encode_info(spectrum, self.encode_type)
 
                     # print spectrum.keys()
                     _toppeaks_lst = spectrum.highestPeaks(50)
+                    # todo zhixu.ni@uni-leipzig.de: rewrite this part to add rt faster.
                     toppeaks_lst = []
                     for _p in _toppeaks_lst:
                         p = list(_p)
@@ -122,8 +128,6 @@ class XIC(object):
 
                 # timeDependentIntensities.append([spectrum['MS:1000016'], I, mz])
 
-
-        print xic_pd
         xic_pd = xic_pd.sort_values(by='rt')
 
         xic_pd.to_csv('xic.csv')
@@ -132,4 +136,4 @@ class XIC(object):
 
         rt_lst = [min(rt_whole_lst), max(rt_whole_lst)]
 
-        return rt_lst
+        return rt_lst, xic_pd

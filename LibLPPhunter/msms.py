@@ -6,18 +6,26 @@
 
 
 from __future__ import division
-
+import pandas as pd
 import pymzml
 import pymzml.spec
 import pymzml.run
 
-import pandas as pd
+from encode_checker import add_encode_info
 
 class MSMS(object):
 
-    def __init__(self, mzml):
-
-        self.mzml_obj = pymzml.run.Reader(mzml, MS1_Precision=20e-6, MSn_Precision=200e-6)
+    def __init__(self, mzml, encode_type, ms1_precision=None, msn_precision=None):
+        if 0 < ms1_precision < 1:
+            pass
+        else:
+            ms1_precision = 20e-6
+        if 0 < msn_precision < 1:
+            pass
+        else:
+            msn_precision = 200e-6
+        self.mzml_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
+        self.encode_type = encode_type
 
     def get_ms2(self, mz2find, rt_lst, ppm=None):
 
@@ -49,72 +57,14 @@ class MSMS(object):
                     if mz_bot < _pr_mz < mz_top:
                         print 'found', _pr_mz, spectrum['MS:1000016']
 
-                        # Add 32-bit/64-bit encoding to mzML
-                        try:
-                            # print spectrum['BinaryArrayOrder']
-                            # [('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'mz'),
-                            # ('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'i')]
-
-                            if spectrum['BinaryArrayOrder'] == []:
-                                spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
-                                                                ('compression', 'no'), ('arrayType', 'mz'),
-                                                                ('encoding', '32-bit float'), ('compression', 'no'),
-                                                                ('arrayType', 'i')]
-                                # print r"spectrum['BinaryArrayOrder'] existed"
-                                # print spectrum['BinaryArrayOrder']
-                            else:
-                                # print r"spectrum['BinaryArrayOrder'] existed"
-                                pass
-                        except KeyError:
-                            spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
-                                                            ('compression', 'no'), ('arrayType', 'mz'),
-                                                            ('encoding', '32-bit float'), ('compression', 'no'),
-                                                            ('arrayType', 'i')]
-                            print 'BinaryArrayOrder Added!'
+                        spectrum = add_encode_info(spectrum, self.encode_type)
 
                         _toppeaks_lst = spectrum.highestPeaks(100)
                         # print _toppeaks_lst
                         _msms_pd = pd.DataFrame()
                         _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
-                        _toppeaks_df = _toppeaks_df.sort(columns='mz', ascending=False)
-                        # print _toppeaks_df.head(10)
-                        # print _toppeaks_df.tail(10)
-                        #
-                        # _toppeaks_df.to_csv('msms.csv')
-                        # break
-                        # toppeaks_lst = []
-                        # for _p in _toppeaks_lst:
-                        #     p = list(_p)
-                        #     p.append(spectrum['MS:1000016'])
-                        #     toppeaks_lst.append(p)
-                        #
-                        # # print toppeaks_lst[1]
-                        #
-                        # _toppeaks_df = pd.DataFrame(data=toppeaks_lst, columns=['mz', 'i', 'rt'])
-                        #
-                        # print _toppeaks_df.head()
-                        #
-                        # _query_str = '( %f < mz < %f)' % (mz_bot, mz_top)
-                        # # print _query_str
-                        #
-                        # _fund_df = _toppeaks_df.query(_query_str)
-                        # _found_count = len(_fund_df['mz'].tolist())
-                        # # rt_lst = [spectrum['MS:1000016']] * _found_count
-                        #
-                        # if _fund_df['mz'].tolist() == []:
-                        #     pass
-                        # else:
-                        #
-                        #     # _fund_df.loc[:, 'rt'] = pd.Series(rt_lst, index=_fund_df.index)
-                        #     # print _fund_df.head()
-                        #     xic_pd = xic_pd.append(_fund_df, ignore_index=True)
+                        _toppeaks_df = _toppeaks_df.sort_values(by='mz', ascending=False)
+
 
             except KeyError:
                 pass
-
-            # break
-
-
-        # print xic_pd
-
-        # xic_pd.to_csv('msms.csv')
