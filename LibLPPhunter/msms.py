@@ -19,64 +19,69 @@ class MSMS(object):
 
         self.mzml_obj = pymzml.run.Reader(mzml, MS1_Precision=20e-6, MSn_Precision=200e-6)
 
-    def get_ms2(self, mz2find, ppm=None):
+    def get_ms2(self, mz2find, rt_lst, ppm=None):
+
+        if len(rt_lst) == 2:
+            rt_bot = rt_lst[0]
+            rt_top = rt_lst[1]
+
+        else:
+            print 'no rt'
+            rt_bot = 0.0
+            rt_top = 30.0
 
         if ppm == None:
             ppm = 500
         else:
             pass
 
-        # mz_bot = mz2find - (ppm / 1000000) * mz2find
-        # mz_top = mz2find + (ppm / 1000000) * mz2find
         mz_bot = mz2find
         mz_top = mz2find + 1
         print mz_bot, mz_top
 
-        # xic_pd = pd.DataFrame()
-        # 'MS:1000511' == 'ms level'
-
         for spectrum in self.mzml_obj:
 
             try:
-                if 22.0 < spectrum['MS:1000016'] < 30.0 and spectrum['MS:1000511'] == 2:
-                    # print 'found1', type(spectrum['precursors']), spectrum['precursors']
+                if rt_bot < spectrum['MS:1000016'] < rt_top and spectrum['MS:1000511'] == 2:
                     _pr_info_dct = spectrum['precursors'][0]
                     _pr_mz = _pr_info_dct['mz']
-                    # print _pr_mz
+
                     if mz_bot < _pr_mz < mz_top:
                         print 'found', _pr_mz, spectrum['MS:1000016']
-                        # print spectrum.keys()
-                        # # print spectrum['MS:1000016']
-                        # print spectrum['precursors']
-                        # print spectrum
-                    # break
 
-                    # Add 32-bit/64-bit encoding to mzML
-                    # try:
-                    #     # print spectrum['BinaryArrayOrder']
-                    #     # [('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'mz'),
-                    #     # ('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'i')]
-                    #
-                    #     if spectrum['BinaryArrayOrder'] == []:
-                    #         spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
-                    #                                         ('compression', 'no'), ('arrayType', 'mz'),
-                    #                                         ('encoding', '32-bit float'), ('compression', 'no'),
-                    #                                         ('arrayType', 'i')]
-                    #         # print r"spectrum['BinaryArrayOrder'] existed"
-                    #         # print spectrum['BinaryArrayOrder']
-                    #     else:
-                    #         # print r"spectrum['BinaryArrayOrder'] existed"
-                    #         pass
-                    # except KeyError:
-                    #     spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
-                    #                                     ('compression', 'no'), ('arrayType', 'mz'),
-                    #                                     ('encoding', '32-bit float'), ('compression', 'no'),
-                    #                                     ('arrayType', 'i')]
-                    #     print 'BinaryArrayOrder Added!'
+                        # Add 32-bit/64-bit encoding to mzML
+                        try:
+                            # print spectrum['BinaryArrayOrder']
+                            # [('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'mz'),
+                            # ('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'i')]
 
-                    # print spectrum.keys()
-                    # _toppeaks_lst = spectrum.highestPeaks(20)
-                    # print _toppeaks_lst
+                            if spectrum['BinaryArrayOrder'] == []:
+                                spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
+                                                                ('compression', 'no'), ('arrayType', 'mz'),
+                                                                ('encoding', '32-bit float'), ('compression', 'no'),
+                                                                ('arrayType', 'i')]
+                                # print r"spectrum['BinaryArrayOrder'] existed"
+                                # print spectrum['BinaryArrayOrder']
+                            else:
+                                # print r"spectrum['BinaryArrayOrder'] existed"
+                                pass
+                        except KeyError:
+                            spectrum['BinaryArrayOrder'] = [('encoding', '32-bit float'),
+                                                            ('compression', 'no'), ('arrayType', 'mz'),
+                                                            ('encoding', '32-bit float'), ('compression', 'no'),
+                                                            ('arrayType', 'i')]
+                            print 'BinaryArrayOrder Added!'
+
+                        _toppeaks_lst = spectrum.highestPeaks(100)
+                        # print _toppeaks_lst
+                        _msms_pd = pd.DataFrame()
+                        _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
+                        _toppeaks_df = _toppeaks_df.sort(columns='mz', ascending=False)
+                        # print _toppeaks_df.head(10)
+                        # print _toppeaks_df.tail(10)
+                        #
+                        # _toppeaks_df.to_csv('msms.csv')
+                        # break
                         # toppeaks_lst = []
                         # for _p in _toppeaks_lst:
                         #     p = list(_p)

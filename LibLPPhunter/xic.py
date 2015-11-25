@@ -64,8 +64,6 @@ class XIC(object):
             try:
                 if 22.0 < spectrum['MS:1000016'] < 30.0 and spectrum['MS:1000511'] == 1:  # 'MS:1000511' == 'ms level'
 
-                    print spectrum['MS:1000016']
-
                     # Add 32-bit/64-bit encoding to mzML
                     try:
                         # print spectrum['BinaryArrayOrder']
@@ -101,7 +99,7 @@ class XIC(object):
 
                     _toppeaks_df = pd.DataFrame(data=toppeaks_lst, columns=['mz', 'i', 'rt'])
 
-                    print _toppeaks_df.head()
+                    # print _toppeaks_df.head()
 
                     _query_str = '( %f < mz < %f)' % (mz_bot, mz_top)
                     # print _query_str
@@ -116,6 +114,7 @@ class XIC(object):
 
                         # _fund_df.loc[:, 'rt'] = pd.Series(rt_lst, index=_fund_df.index)
                         # print _fund_df.head()
+                        print spectrum['MS:1000016']
                         xic_pd = xic_pd.append(_fund_df, ignore_index=True)
 
             except KeyError:
@@ -125,5 +124,12 @@ class XIC(object):
 
 
         print xic_pd
+        xic_pd = xic_pd.sort_values(by='rt')
 
         xic_pd.to_csv('xic.csv')
+
+        rt_whole_lst = xic_pd['rt'].tolist()
+
+        rt_lst = [min(rt_whole_lst), max(rt_whole_lst)]
+
+        return rt_lst

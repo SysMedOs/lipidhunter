@@ -19,10 +19,11 @@ if infile_type.lower() == 'mzml':
     infile_name = config.get('inputfile', 'filename')
     print infile_name
     #
-    # xic_spec = XIC(infile_name)
-    # xic_spec.find_mz(778.560)
+    xic_spec = XIC(infile_name)
+    rt_lst = xic_spec.find_mz(778.560)
+    print rt_lst
     msms_spec = MSMS(infile_name)
-    msms_spec.get_ms2(778.560)
+    msms_spec.get_ms2(778.560, rt_lst)
 
 if infile_type.lower() == 'mzml.gz':
     infile_name = config.get('inputfile', 'filename')
