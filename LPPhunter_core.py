@@ -6,25 +6,33 @@
 
 import ConfigParser
 from LibLPPhunter.xic import XIC
+from LibLPPhunter.msms import MSMS
+import time
 
 
 config = ConfigParser.ConfigParser()
 config.read('config.ini')
+st_time = time.clock()
 
 infile_type = config.get('inputfile', 'filetype')
 if infile_type.lower() == 'mzml':
     infile_name = config.get('inputfile', 'filename')
     print infile_name
-
-    xic_spec = XIC(infile_name)
-    xic_spec.find_mz(778.560)
+    #
+    # xic_spec = XIC(infile_name)
+    # xic_spec.find_mz(778.560)
+    msms_spec = MSMS(infile_name)
+    msms_spec.get_ms2(778.560)
 
 if infile_type.lower() == 'mzml.gz':
     infile_name = config.get('inputfile', 'filename')
     print infile_name
 
     xic_spec = XIC(infile_name)
-    xic_spec.find_mz(778.560, ppm=50)
+    xic_spec.find_mz(778.560, ppm=20)
 
 else:
     print 'No input mzML'
+
+ed_time = time.clock() - st_time
+print ed_time

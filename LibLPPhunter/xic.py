@@ -5,13 +5,10 @@
 # For more info please contact zhixu.ni@uni-leipzig.de
 
 from __future__ import division
-from base64 import b64decode as b64dec
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
-
-import zlib
 
 import pymzml
 import pymzml.spec
@@ -93,7 +90,7 @@ class XIC(object):
                         print 'BinaryArrayOrder Added!'
 
                     # print spectrum.keys()
-                    _toppeaks_lst = spectrum.highestPeaks(300)
+                    _toppeaks_lst = spectrum.highestPeaks(50)
                     toppeaks_lst = []
                     for _p in _toppeaks_lst:
                         p = list(_p)
@@ -104,7 +101,7 @@ class XIC(object):
 
                     _toppeaks_df = pd.DataFrame(data=toppeaks_lst, columns=['mz', 'i', 'rt'])
 
-                    # print _toppeaks_df.head()
+                    print _toppeaks_df.head()
 
                     _query_str = '( %f < mz < %f)' % (mz_bot, mz_top)
                     # print _query_str
