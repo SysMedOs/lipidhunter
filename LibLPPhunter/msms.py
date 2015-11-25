@@ -47,6 +47,8 @@ class MSMS(object):
         mz_top = mz2find + 1
         print mz_bot, mz_top
 
+        msms_spectra_dct = {}
+
         for spectrum in self.mzml_obj:
 
             try:
@@ -61,10 +63,19 @@ class MSMS(object):
 
                         _toppeaks_lst = spectrum.highestPeaks(100)
                         # print _toppeaks_lst
-                        _msms_pd = pd.DataFrame()
+                        _msms_df = pd.DataFrame()
                         _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
                         _toppeaks_df = _toppeaks_df.sort_values(by='mz', ascending=False)
 
+                        _msms = (_pr_mz, spectrum['MS:1000016'])
+                        msms_spectra_dct[_msms] = _toppeaks_df
 
             except KeyError:
                 pass
+
+        # for _msms in msms_spectra_dct:
+        #     print(_msms)
+        #     print(msms_spectra_dct[_msms])
+        #     break
+
+        return msms_spectra_dct

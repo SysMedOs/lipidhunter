@@ -83,7 +83,7 @@ class XIC(object):
         :return:
         '''
 
-        xic_pd = pd.DataFrame()
+        xic_df = pd.DataFrame()
 
         for spectrum in self.mzml_obj:
             # print spectrum.keys()
@@ -121,19 +121,19 @@ class XIC(object):
                         # _fund_df.loc[:, 'rt'] = pd.Series(rt_lst, index=_fund_df.index)
                         # print _fund_df.head()
                         print spectrum['MS:1000016']
-                        xic_pd = xic_pd.append(_fund_df, ignore_index=True)
+                        xic_df = xic_df.append(_fund_df, ignore_index=True)
 
             except KeyError:
                 pass
 
                 # timeDependentIntensities.append([spectrum['MS:1000016'], I, mz])
 
-        xic_pd = xic_pd.sort_values(by='rt')
+        xic_df = xic_df.sort_values(by='rt')
 
-        xic_pd.to_csv('xic.csv')
+        xic_df.to_csv('xic.csv')
 
-        rt_whole_lst = xic_pd['rt'].tolist()
+        rt_whole_lst = xic_df['rt'].tolist()
 
         rt_lst = [min(rt_whole_lst), max(rt_whole_lst)]
 
-        return rt_lst, xic_pd
+        return rt_lst, xic_df

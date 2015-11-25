@@ -10,6 +10,7 @@ import time
 
 from LibLPPhunter.xic import XIC
 from LibLPPhunter.msms import MSMS
+from LibLPPhunter.plot import Spectra_Ploter
 
 from LibLPPhunter.encode_checker import check_encode
 
@@ -32,11 +33,15 @@ if infile_type.lower() == 'mzml':
 
     xic_spec = XIC(infile_name, encode_typ, ms1_precision, msn_precision)
 
-    rt_lst, xic_pd = xic_spec.extract_mz(778.560, rt_range)
+    rt_lst, xic_df = xic_spec.extract_mz(778.560, rt_range)
+
     print 'main peaks in range', rt_lst
-    print xic_pd.tail(5)
+    print xic_df.tail(5)
     msms_spec = MSMS(infile_name, encode_typ, ms1_precision, msn_precision)
-    msms_spec.get_ms2(778.560, rt_lst)
+    msms_spectra_dct = msms_spec.get_ms2(778.560, rt_lst)
+
+    spec_plt = Spectra_Ploter()
+    spec_plt.plot_dual(xic_df, msms_spectra_dct)
 
 # if infile_type.lower() == 'mzml.gz':
 #     infile_name = config.get('inputfile', 'filename')
