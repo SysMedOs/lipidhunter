@@ -61,7 +61,7 @@ class MSMS(object):
 
                         spectrum = add_encode_info(spectrum, self.encode_type)
 
-                        _toppeaks_lst = spectrum.highestPeaks(100)
+                        _toppeaks_lst = spectrum.highestPeaks(200)
                         # print _toppeaks_lst
                         _msms_df = pd.DataFrame()
                         _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])

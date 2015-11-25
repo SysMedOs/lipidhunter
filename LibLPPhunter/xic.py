@@ -84,6 +84,7 @@ class XIC(object):
         '''
 
         xic_df = pd.DataFrame()
+        ms_spectra_dct = {}
 
         for spectrum in self.mzml_obj:
             # print spectrum.keys()
@@ -94,6 +95,7 @@ class XIC(object):
 
                     # print spectrum.keys()
                     _toppeaks_lst = spectrum.highestPeaks(50)
+
                     # todo zhixu.ni@uni-leipzig.de: rewrite this part to add rt faster.
                     toppeaks_lst = []
                     for _p in _toppeaks_lst:
@@ -110,18 +112,21 @@ class XIC(object):
                     _query_str = '( %f < mz < %f)' % (mz_bot, mz_top)
                     # print _query_str
 
-                    _fund_df = _toppeaks_df.query(_query_str)
-                    _found_count = len(_fund_df['mz'].tolist())
+                    _found_df = _toppeaks_df.query(_query_str)
+                    _found_count = len(_found_df['mz'].tolist())
                     # rt_lst = [spectrum['MS:1000016']] * _found_count
 
-                    if _fund_df['mz'].tolist() == []:
+                    if _found_df['mz'].tolist() == []:
                         pass
                     else:
 
-                        # _fund_df.loc[:, 'rt'] = pd.Series(rt_lst, index=_fund_df.index)
-                        # print _fund_df.head()
+                        # _found_df.loc[:, 'rt'] = pd.Series(rt_lst, index=_found_df.index)
+                        # print _found_df.head()
                         print spectrum['MS:1000016']
-                        xic_df = xic_df.append(_fund_df, ignore_index=True)
+                        xic_df = xic_df.append(_found_df, ignore_index=True)
+                        _mspeaks_lst = spectrum.highestPeaks(100)
+                        _found_lst = (_found_df['mz'].tolist(), _found_df['i'].tolist())
+                        ms_spectra_dct[spectrum['MS:1000016']] = (_found_lst, _mspeaks_lst)
 
             except KeyError:
                 pass
@@ -136,4 +141,4 @@ class XIC(object):
 
         rt_lst = [min(rt_whole_lst), max(rt_whole_lst)]
 
-        return rt_lst, xic_df
+        return rt_lst, xic_df, ms_spectra_dct

@@ -5,7 +5,7 @@
 # For more info please contact zhixu.ni@uni-leipzig.de
 
 import ConfigParser
-import pandas as pd
+# import pandas as pd
 import time
 
 from LibLPPhunter.xic import XIC
@@ -25,6 +25,8 @@ msn_precision = config.get('inputfile', 'msn_precision')
 
 rt_range = [24.0, 30.0]
 
+mz2get = 778.560
+
 if infile_type.lower() == 'mzml':
     infile_name = config.get('inputfile', 'filename')
     print infile_name
@@ -33,15 +35,15 @@ if infile_type.lower() == 'mzml':
 
     xic_spec = XIC(infile_name, encode_typ, ms1_precision, msn_precision)
 
-    rt_lst, xic_df = xic_spec.extract_mz(778.560, rt_range)
+    rt_lst, xic_df, ms_spectra_dct = xic_spec.extract_mz(mz2get, rt_range)
 
     print 'main peaks in range', rt_lst
     print xic_df.tail(5)
     msms_spec = MSMS(infile_name, encode_typ, ms1_precision, msn_precision)
-    msms_spectra_dct = msms_spec.get_ms2(778.560, rt_lst)
+    msms_spectra_dct = msms_spec.get_ms2(mz2get, rt_lst)
 
     spec_plt = Spectra_Ploter()
-    spec_plt.plot_dual(xic_df, msms_spectra_dct)
+    spec_plt.plot_all(mz2get, xic_df, ms_spectra_dct, msms_spectra_dct)
 
 # if infile_type.lower() == 'mzml.gz':
 #     infile_name = config.get('inputfile', 'filename')
