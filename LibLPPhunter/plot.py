@@ -4,6 +4,8 @@
 # A suitable license will be chosen before the official release.               
 # For more info please contact zhixu.ni@uni-leipzig.de
 
+import os
+
 from matplotlib import pyplot as plt
 import matplotlib as mpl
 import pandas as pd
@@ -11,7 +13,17 @@ import pandas as pd
 
 class Spectra_Ploter(object):
 
-    def plot_all(self, mz2get, xic_df, ms_spectra_dct, msms_spectra_dct):
+    def plot_all(self, mz2get, xic_df, ms_spectra_dct, msms_spectra_dct, path=None):
+
+        if path is None:
+            _path = os.getcwd()
+        else:
+            if os.path.exists(path):
+                _path = os.path.abspath(path)
+            else:
+                _path = os.getcwd()
+
+        print _path
 
         xic_mz_lst = xic_df['rt'].tolist()
         xic_i_lst = xic_df['i'].tolist()
@@ -145,7 +157,7 @@ class Spectra_Ploter(object):
                 msms_low_pic.set_title(msms_low_str, color='b', fontsize=10, y=0.98)
                 msms_high_pic.set_title(msms_high_str, color='b', fontsize=10, y=0.98)
 
-                image_name_str = 'mz%.4f_%.2fmin.png' % (_pr_mz, _pr_rt)
+                image_name_str = _path + r'/mz%.4f_%.2fmin.png' % (_pr_mz, _pr_rt)
 
                 plt.savefig(image_name_str, dpi=300)
                 print image_name_str, '===> Saved!'
