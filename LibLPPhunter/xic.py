@@ -108,7 +108,7 @@ class XIC(object):
                     spectrum = add_encode_info(spectrum, self.encode_type)
 
                     # print spectrum.keys()
-                    _toppeaks_lst = spectrum.highestPeaks(50)
+                    _toppeaks_lst = spectrum.highestPeaks(200)
 
                     # prepare MS spectrum
 
@@ -145,7 +145,7 @@ class XIC(object):
                             print spectrum['MS:1000016'], mz2xic
                             xic_dct[mz2xic] = xic_dct[mz2xic].append(_found_df, ignore_index=True)
                             _ms_dct = ms_spectra_dct[mz2xic]
-                            _mspeaks_lst = spectrum.highestPeaks(100)
+                            _mspeaks_lst = spectrum.highestPeaks(300)
                             _found_lst = (_found_df['mz'].tolist(), _found_df['i'].tolist())
                             _ms_dct[spectrum['MS:1000016']] = (_found_lst, _mspeaks_lst)
 

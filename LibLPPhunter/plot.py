@@ -58,7 +58,7 @@ class Spectra_Ploter(object):
                     print 'MS @ %.2f for DDA @ %.2f' % (_ms_rt_pr, _pr_rt)
 
                     # skip the image if MS and MS/MS time do not match
-                    if _pr_rt - _ms_rt_pr > 0.5:
+                    if _pr_rt - _ms_rt_pr > 0.2:
                         print 'MS and MS/MS time NOT match.'
                         pass
 
