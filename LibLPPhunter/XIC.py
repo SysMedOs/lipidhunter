@@ -149,7 +149,6 @@ class XIC(object):
                             _found_lst = (_found_df['mz'].tolist(), _found_df['i'].tolist())
                             _ms_dct[spectrum['MS:1000016']] = (_found_lst, _mspeaks_lst)
 
-
             except KeyError:
                 pass
 

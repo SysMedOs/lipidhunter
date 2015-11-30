@@ -38,7 +38,7 @@ class MSMS(object):
         #     rt_bot = 0.0
         #     rt_top = 30.0
 
-        if ppm == None:
+        if ppm is None:
             ppm = 500
         else:
             pass
