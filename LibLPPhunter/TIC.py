@@ -7,7 +7,7 @@
 from __future__ import division
 import pymzml
 
-from encode_checker import add_encode_info
+from EncodeChecker import add_encode_info
 
 
 class TIC(object):

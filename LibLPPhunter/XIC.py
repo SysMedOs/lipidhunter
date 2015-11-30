@@ -16,8 +16,8 @@ import pymzml.run
 
 import pandas as pd
 
-from encode_checker import add_encode_info
-from LibLPPhunter.tic import TIC
+from EncodeChecker import add_encode_info
+from LibLPPhunter.TIC import TIC
 
 
 class XIC(object):

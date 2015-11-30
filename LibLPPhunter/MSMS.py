@@ -11,7 +11,7 @@ import pymzml
 import pymzml.spec
 import pymzml.run
 
-from encode_checker import add_encode_info
+from EncodeChecker import add_encode_info
 
 class MSMS(object):
 

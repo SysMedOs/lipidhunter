@@ -9,11 +9,11 @@ import time
 
 from rdkit import Chem
 
-from LibLPPhunter.xic import XIC
-from LibLPPhunter.msms import MSMS
-from LibLPPhunter.plot import Spectra_Ploter
+from LibLPPhunter.XIC import XIC
+from LibLPPhunter.MSMS import MSMS
+from LibLPPhunter.Plot import Spectra_Ploter
 
-from LibLPPhunter.encode_checker import check_encode
+from LibLPPhunter.EncodeChecker import check_encode
 from LibLPPhunter.ExactMassCalc import Elem2Mass
 
 
