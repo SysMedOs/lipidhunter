@@ -27,48 +27,62 @@ class MSMS(object):
         self.mzml_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
         self.encode_type = encode_type
 
-    def get_ms2(self, mz2find, rt_lst, ppm=None):
+    def get_ms2(self, mz2get_lst, rt_dct, ppm=None):
 
-        if len(rt_lst) == 2:
-            rt_bot = rt_lst[0]
-            rt_top = rt_lst[1]
-
-        else:
-            print 'no rt'
-            rt_bot = 0.0
-            rt_top = 30.0
+        # if len(rt_lst) == 2:
+        #     rt_bot = rt_lst[0]
+        #     rt_top = rt_lst[1]
+        #
+        # else:
+        #     print 'no rt'
+        #     rt_bot = 0.0
+        #     rt_top = 30.0
 
         if ppm == None:
             ppm = 500
         else:
             pass
 
-        mz_bot = mz2find
-        mz_top = mz2find + 1
-        print mz_bot, mz_top
-
         msms_spectra_dct = {}
+        for mz2get in mz2get_lst:
+            msms_spectra_dct[mz2get] = {}
 
         for spectrum in self.mzml_obj:
 
             try:
-                if rt_bot < spectrum['MS:1000016'] < rt_top and spectrum['MS:1000511'] == 2:
-                    _pr_info_dct = spectrum['precursors'][0]
-                    _pr_mz = _pr_info_dct['mz']
+                if spectrum['MS:1000511'] == 2:
+                    for mz2get in mz2get_lst:
+                        rt_lst = rt_dct[mz2get]
+                        if len(rt_lst) == 2:
+                            rt_bot = rt_lst[0]
+                            rt_top = rt_lst[1]
+                        else:
+                            print 'no rt !'
+                            rt_bot = 0.0
+                            rt_top = 30.0
+                        if rt_bot < spectrum['MS:1000016'] < rt_top:
+                            _pr_info_dct = spectrum['precursors'][0]
+                            _pr_mz = _pr_info_dct['mz']
 
-                    if mz_bot < _pr_mz < mz_top:
-                        print 'found', _pr_mz, spectrum['MS:1000016']
+                            mz_bot = mz2get
+                            mz_top = mz2get + 1
+                            print mz_bot, mz_top
 
-                        spectrum = add_encode_info(spectrum, self.encode_type)
+                            if mz_bot < _pr_mz < mz_top:
+                                print 'found', _pr_mz, spectrum['MS:1000016']
 
-                        _toppeaks_lst = spectrum.highestPeaks(200)
-                        # print _toppeaks_lst
-                        _msms_df = pd.DataFrame()
-                        _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
-                        _toppeaks_df = _toppeaks_df.sort_values(by='mz', ascending=False)
+                                spectrum = add_encode_info(spectrum, self.encode_type)
 
-                        _msms = (_pr_mz, spectrum['MS:1000016'])
-                        msms_spectra_dct[_msms] = _toppeaks_df
+                                _toppeaks_lst = spectrum.highestPeaks(300)
+                                # print _toppeaks_lst
+                                _msms_df = pd.DataFrame()
+                                _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
+                                _toppeaks_df = _toppeaks_df.sort_values(by='mz', ascending=False)
+
+                                _msms = (_pr_mz, spectrum['MS:1000016'])
+
+                                _msms_dct = msms_spectra_dct[mz2get]
+                                _msms_dct[_msms] = _toppeaks_df
 
             except KeyError:
                 pass

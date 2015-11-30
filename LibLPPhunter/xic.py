@@ -35,7 +35,7 @@ class XIC(object):
         self.encode_type = encode_type
         self.mzml = mzml
 
-    def extract_mz(self, mz2xic, rt=None, ppm=None):
+    def extract_mz(self, mz2xic_lst, rt=None, ppm=None):
 
         if ppm is None:
             ppm = 20
@@ -57,9 +57,17 @@ class XIC(object):
                 print rt_max
                 rt = [0.1, rt_max]
 
-        mz_bot = mz2xic - (ppm / 1000000) * mz2xic
-        mz_top = mz2xic + (ppm / 1000000) * mz2xic
-        print 'Start to extract %.4f from %.2f to %.2f with %d ppm' % (mz2xic, rt[0], rt[1], ppm)
+        # mz_bot_lst = []
+        # mz_top_lst = []
+        # # mz_range_lst = []
+        # for mz2xic in mz2xic_lst:
+        #     mz_bot = mz2xic - (ppm / 1000000) * mz2xic
+        #     mz_top = mz2xic + (ppm / 1000000) * mz2xic
+        #     mz_bot_lst.append(mz_bot)
+        #     mz_top_lst.append(mz_top)
+        # mz_range_lst = zip(mz_bot_lst, mz_top_lst)
+
+        # print 'Start to extract %.4f from %.2f to %.2f with %d ppm' % (mz2xic, rt[0], rt[1], ppm)
 
         # timeDependentIntensities = []
         '''
@@ -82,9 +90,15 @@ class XIC(object):
         :param mz:
         :return:
         '''
-
-        xic_df = pd.DataFrame()
+        rt_dct = {}
+        xic_dct = {}
         ms_spectra_dct = {}
+        for mz2xic in mz2xic_lst:
+            rt_dct[mz2xic] = {}
+            xic_dct[mz2xic] = pd.DataFrame()
+            ms_spectra_dct[mz2xic] = {}
+
+        # xic_df = pd.DataFrame()
 
         for spectrum in self.mzml_obj:
             # print spectrum.keys()
@@ -94,7 +108,9 @@ class XIC(object):
                     spectrum = add_encode_info(spectrum, self.encode_type)
 
                     # print spectrum.keys()
-                    _toppeaks_lst = spectrum.highestPeaks(50)
+                    _toppeaks_lst = spectrum.highestPeaks(200)
+
+                    # prepare MS spectrum
 
                     # todo zhixu.ni@uni-leipzig.de: rewrite this part to add rt faster.
                     toppeaks_lst = []
@@ -109,36 +125,42 @@ class XIC(object):
 
                     # print _toppeaks_df.head()
 
-                    _query_str = '( %f < mz < %f)' % (mz_bot, mz_top)
-                    # print _query_str
+                    for mz2xic in mz2xic_lst:
+                        mz_bot = mz2xic - (ppm / 1000000) * mz2xic
+                        mz_top = mz2xic + (ppm / 1000000) * mz2xic
 
-                    _found_df = _toppeaks_df.query(_query_str)
-                    _found_count = len(_found_df['mz'].tolist())
-                    # rt_lst = [spectrum['MS:1000016']] * _found_count
+                        _query_str = '( %f < mz < %f)' % (mz_bot, mz_top)
+                        # print _query_str
 
-                    if _found_df['mz'].tolist() == []:
-                        pass
-                    else:
+                        _found_df = _toppeaks_df.query(_query_str)
+                        # _found_count = len(_found_df['mz'].tolist())
+                        # rt_lst = [spectrum['MS:1000016']] * _found_count
 
-                        # _found_df.loc[:, 'rt'] = pd.Series(rt_lst, index=_found_df.index)
-                        # print _found_df.head()
-                        print spectrum['MS:1000016']
-                        xic_df = xic_df.append(_found_df, ignore_index=True)
-                        _mspeaks_lst = spectrum.highestPeaks(100)
-                        _found_lst = (_found_df['mz'].tolist(), _found_df['i'].tolist())
-                        ms_spectra_dct[spectrum['MS:1000016']] = (_found_lst, _mspeaks_lst)
+                        if len(_found_df['mz'].tolist()) == 0:
+                            pass
+                        else:
+
+                            # _found_df.loc[:, 'rt'] = pd.Series(rt_lst, index=_found_df.index)
+                            # print _found_df.head()
+                            print spectrum['MS:1000016'], mz2xic
+                            xic_dct[mz2xic] = xic_dct[mz2xic].append(_found_df, ignore_index=True)
+                            _ms_dct = ms_spectra_dct[mz2xic]
+                            _mspeaks_lst = spectrum.highestPeaks(300)
+                            _found_lst = (_found_df['mz'].tolist(), _found_df['i'].tolist())
+                            _ms_dct[spectrum['MS:1000016']] = (_found_lst, _mspeaks_lst)
+
 
             except KeyError:
                 pass
 
                 # timeDependentIntensities.append([spectrum['MS:1000016'], I, mz])
+        for mz2xic in mz2xic_lst:
+            try:
+                xic_dct[mz2xic] = xic_dct[mz2xic].sort_values(by='rt')
+                # xic_dct[mz2xic].to_csv('xic.csv')
+                rt_whole_lst = xic_dct[mz2xic]['rt'].tolist()
+                rt_dct[mz2xic] = [min(rt_whole_lst), max(rt_whole_lst)]
+            except:
+                pass
 
-        xic_df = xic_df.sort_values(by='rt')
-
-        xic_df.to_csv('xic.csv')
-
-        rt_whole_lst = xic_df['rt'].tolist()
-
-        rt_lst = [min(rt_whole_lst), max(rt_whole_lst)]
-
-        return rt_lst, xic_df, ms_spectra_dct
+        return rt_dct, xic_dct, ms_spectra_dct
