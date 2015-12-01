@@ -8,7 +8,13 @@ import os
 
 from matplotlib import pyplot as plt
 import matplotlib as mpl
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+from matplotlib._png import read_png
 import pandas as pd
+
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from rdkit.Chem import Draw
 
 
 class Spectra_Ploter(object):
@@ -42,6 +48,7 @@ class Spectra_Ploter(object):
                 _hmdb_id = row['hmdb_id']
                 _sn1_mz = row['sn1_mz']
                 _sn2_mz = row['sn2_mz']
+                _pr_smi = row['pr_smi']
 
                 try:
 
@@ -134,6 +141,17 @@ class Spectra_Ploter(object):
                             msms_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
                             msms_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
                             msms_pic.set_ylabel("Intensity", fontsize=10)
+
+                            _pr_mol = Chem.MolFromSmiles(_pr_smi)
+                            AllChem.Compute2DCoords(_pr_mol)
+
+                            # arr_hand = read_png('/path/to/this/image.png')
+                            _pr_img = Draw.MolToImage(_pr_mol, size=(450, 300))
+                            imagebox = OffsetImage(_pr_img)
+                            xy = [max(_msms_df['mz'].tolist()) * 0.5, max(_msms_df['i'].tolist())]
+                            _pr_ab = AnnotationBbox(imagebox, xy, xycoords='data', xybox=(90., -60.),
+                                                    boxcoords="offset points", frameon=True)
+                            msms_pic.add_artist(_pr_ab)
 
                             for _mz in [_sn1_mz, _sn2_mz]:
                                 _msms_top_df = _msms_df.sort(columns='i', ascending=False)

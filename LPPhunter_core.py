@@ -34,7 +34,7 @@ output_folder = config.get('output', 'output_folder')
 
 sdf_f = 'newsdf.sdf'
 
-rt_range = [10.0, 30.0]
+rt_range = [25.0, 26.0]
 
 # mz2get = 778.560
 # mz2get_lst = [778.560, 776.544, 774.529, 806.591]
@@ -42,7 +42,7 @@ rt_range = [10.0, 30.0]
 mz2get_lst = []
 sdf_obj = Chem.SDMolSupplier(sdf_f)
 mzcalc = Elem2Mass()
-sdf_dct = {'hmdb_id': [], 'formula': [], 'pr_mz': [],
+sdf_dct = {'hmdb_id': [], 'formula': [], 'pr_mz': [], 'pr_smi': [],
            'hg_smi': [], 'hg_mz': [],
            'sn1_smi': [], 'sn1_mz': [],
            'sn2_smi': [], 'sn2_mz': []}
@@ -61,6 +61,7 @@ for _mol in sdf_obj:
 
     sdf_dct['hmdb_id'].append(_hmdb_id)
     sdf_dct['formula'].append(_formula)
+    sdf_dct['pr_smi'].append(Chem.MolToSmiles(_mol))
     sdf_dct['pr_mz'].append(_mz_COOH)
     sdf_dct['hg_smi'].append(_pl_dct['hg_smi'])
     sdf_dct['sn1_smi'].append(_pl_dct['sn1_smi'])
