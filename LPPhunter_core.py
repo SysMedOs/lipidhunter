@@ -7,6 +7,8 @@
 import ConfigParser
 import time
 
+import pandas as pd
+
 from rdkit import Chem
 
 from LibLPPhunter.XIC import XIC
@@ -16,7 +18,10 @@ from LibLPPhunter.Plot import Spectra_Ploter
 from LibLPPhunter.EncodeChecker import check_encode
 from LibLPPhunter.ExactMassCalc import Elem2Mass
 
+from LibLPPhunter.SDFparser import MolReader
 
+
+print('Start --->')
 config = ConfigParser.ConfigParser()
 config.read('config.ini')
 st_time = time.clock()
@@ -37,15 +42,39 @@ rt_range = [10.0, 30.0]
 mz2get_lst = []
 sdf_obj = Chem.SDMolSupplier(sdf_f)
 mzcalc = Elem2Mass()
-for _sdf in sdf_obj:
-    _formula = _sdf.GetProp('CHEMICAL_FORMULA')
+sdf_dct = {'hmdb_id': [], 'formula': [], 'pr_mz': [],
+           'hg_smi': [], 'hg_mz': [],
+           'sn1_smi': [], 'sn1_mz': [],
+           'sn2_smi': [], 'sn2_mz': []}
+
+print('Reading SDF--->')
+molreader = MolReader()
+
+for _mol in sdf_obj:
+    _hmdb_id = _mol.GetProp('HMDB_ID')
+    _formula = _mol.GetProp('CHEMICAL_FORMULA')
     _formula_COOH = ''.join([_formula, 'COOH'])
     _formula_COOH = mzcalc.get_elem(_formula_COOH)
     _mz_COOH = mzcalc.get_mass(_formula_COOH)
+
+    _pl_dct = molreader.get_pl_backbone(_mol)
+
+    sdf_dct['hmdb_id'].append(_hmdb_id)
+    sdf_dct['formula'].append(_formula)
+    sdf_dct['pr_mz'].append(_mz_COOH)
+    sdf_dct['hg_smi'].append(_pl_dct['hg_smi'])
+    sdf_dct['sn1_smi'].append(_pl_dct['sn1_smi'])
+    sdf_dct['sn2_smi'].append(_pl_dct['sn2_smi'])
+    sdf_dct['hg_mz'].append(_pl_dct['hg_mz'])
+    sdf_dct['sn1_mz'].append(_pl_dct['sn1_mz'])
+    sdf_dct['sn2_mz'].append(_pl_dct['sn2_mz'])
+
     if _mz_COOH not in mz2get_lst:
         mz2get_lst.append(_mz_COOH)
     else:
         pass
+
+sdf_df = pd.DataFrame(data=sdf_dct)
 
 mz2get_lst.sort()
 
@@ -83,7 +112,7 @@ if infile_type.lower() == 'mzml':
     #     print msms_spectra_dct[x]
 
     spec_plt = Spectra_Ploter()
-    spec_plt.plot_all(mz2get_lst, xic_dct, ms_spectra_dct, msms_spectra_dct, path=output_folder)
+    spec_plt.plot_all(mz2get_lst, sdf_df, xic_dct, ms_spectra_dct, msms_spectra_dct, path=output_folder)
 
 # if infile_type.lower() == 'mzml.gz':
 #     infile_name = config.get('inputfile', 'filename')

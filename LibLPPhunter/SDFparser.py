@@ -7,10 +7,11 @@
 import re
 from rdkit import Chem
 from rdkit.Chem import AllChem
+from rdkit.Chem import Descriptors
 from rdkit.Chem import Draw
 
 
-class SDFreader(object):
+class MolReader(object):
 
     def __init__(self):
         self.pc_hg_smi = r'OP(=O)([O-])OCC[N+](C)(C)C'
@@ -37,28 +38,25 @@ class SDFreader(object):
         # std_smi = r'CCCCCC[C]=[C]CCCCCCCC(=O)OC(COC(=O)CCCCCCCCCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C'
         checker_lst = [checker_1_std, checker_2_std, checker_3_std, checker_4_std]
         try:
-            # print('checker_1_std')
-            # _pl_dct = self._re_checker(checker_1_std, std_smi, usr_mol)
-            # # print(_pl_dct)
-            # print('checker_2_std')
-            # _pl_dct = self._re_checker(checker_2_std, std_smi, usr_mol)
-            # # print(_pl_dct)
-            # print('checker_3_std')
-            # _pl_dct = self._re_checker(checker_3_std, std_smi, usr_mol)
-            # # print(_pl_dct)
-            # print('checker_4_std')
-            # _pl_dct = self._re_checker(checker_4_std, std_smi, usr_mol)
-            # # print(_pl_dct)
+
             for _checker in checker_lst:
                 # print('checker', checker_lst.index(_checker) + 1)
                 _pl_dct = self._re_checker(_checker, std_smi, usr_mol)
                 if len(_pl_dct.keys()) > 0:
+                    _h_mass = 1.007825
+                    _pl_dct['sn1_mz'] = Descriptors.ExactMolWt(Chem.MolFromSmiles(_pl_dct['sn1_smi'])) - _h_mass
+                    _pl_dct['sn2_mz'] = Descriptors.ExactMolWt(Chem.MolFromSmiles(_pl_dct['sn2_smi'])) - _h_mass
+                    _pl_dct['hg_mz'] = Descriptors.ExactMolWt(Chem.MolFromSmiles(_pl_dct['hg_smi'])) - _h_mass
+                    _pl_dct['rest_mz'] = Descriptors.ExactMolWt(Chem.MolFromSmiles(_pl_dct['rest_smi'])) - _h_mass
                     break
                 else:
                     pass
         except:
             print('Not pass --->', std_smi)
-            pass
+            _pl_dct = {'sn1_smi': '', 'sn2_smi': '', 'rest_smi': '', 'hg_smi': '',
+                       'sn1_mz': '', 'sn2_mz': '', 'rest_mz': '', 'hg_mz': ''}
+
+        return _pl_dct
 
     def _re_checker(self, usr_patt, usr_smi, usr_mol):
 
@@ -107,17 +105,17 @@ class SDFreader(object):
                         _match_hg = usr_mol.GetSubstructMatch(self.pc_hg_mol)
                         # _match = usr_mol.GetSubstructMatch(_rest_mol)
 
+                        _pl_dct['sn1_smi'] = _sn1
+                        _pl_dct['sn2_smi'] = _sn2
+                        _pl_dct['rest_smi'] = _rest_str
+                        _pl_dct['hg_smi'] = self.pc_hg_smi
 
-                        _pl_dct['sn1'] = _sn1
-                        _pl_dct['sn2'] = _sn1
-                        _pl_dct['rest'] = _rest_str
-                        _pl_dct['HG'] = self.pc_hg_smi
-
-                        _hmdb_id = usr_mol.GetProp('HMDB_ID')
-                        _img_fp = _hmdb_id + '.png'
-
-                        img = Draw.MolToImage(usr_mol, highlightAtoms=_match_hg, size=(600, 600))
-                        img.save(_img_fp)
+                        # save structure as images
+                        # _hmdb_id = usr_mol.GetProp('HMDB_ID')
+                        # _img_fp = _hmdb_id + '.png'
+                        #
+                        # img = Draw.MolToImage(usr_mol, highlightAtoms=_match_hg, size=(600, 600))
+                        # img.save(_img_fp)
 
                         return _pl_dct
 
@@ -140,15 +138,15 @@ class SDFreader(object):
             return _pl_dct
 
 
-usr_sdf = r'newsdf.sdf'
-sdf_obj = Chem.SDMolSupplier(usr_sdf)
-sdf = SDFreader()
-i = 1
-for m in sdf_obj:
-    sdf.get_pl_backbone(m)
-    print i
-    i += 1
-    # break
+# usr_sdf = r'newsdf.sdf'
+# sdf_obj = Chem.SDMolSupplier(usr_sdf)
+# sdf = SDFreader()
+# i = 1
+# for m in sdf_obj:
+#     sdf.get_pl_backbone(m)
+#     print i
+#     i += 1
+#     # break
 
 
 

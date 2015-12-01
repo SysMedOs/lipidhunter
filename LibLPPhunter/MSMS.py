@@ -57,7 +57,7 @@ class MSMS(object):
                             rt_bot = rt_lst[0]
                             rt_top = rt_lst[1]
                         else:
-                            print 'no rt !'
+                            # print 'no rt !'
                             rt_bot = 0.0
                             rt_top = 30.0
                         if rt_bot < spectrum['MS:1000016'] < rt_top:
@@ -66,7 +66,7 @@ class MSMS(object):
 
                             mz_bot = mz2get
                             mz_top = mz2get + 1
-                            print mz_bot, mz_top
+                            # print mz_bot, mz_top
 
                             if mz_bot < _pr_mz < mz_top:
                                 print 'found', _pr_mz, spectrum['MS:1000016']
