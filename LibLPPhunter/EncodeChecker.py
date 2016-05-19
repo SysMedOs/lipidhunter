@@ -8,6 +8,16 @@ import pymzml
 
 
 def check_encode(mzml):
+    """
+    This is to solve the bug? from Proteowizard 3.0.9xxx
+    The mzML converted from Waters .raw files are without encoder type info.
+    This is to test if the file is 32bit or 64bit and rerun the encoder.
+
+    :param mzml: file name of the .mzML file
+    :type mzml: str
+    :return _encoder: the type of encoder. Can be  ``32-bit float`` or ``64-bit float``
+    :type _encoder: str
+    """
 
     # The waters.raw converted mzML by proteowizard may not contain encode info.
     # The '32-bit float' or '64-bit float' will be add to allow following process
@@ -18,7 +28,7 @@ def check_encode(mzml):
     print 'try 32-bit/64-bit float'
 
     # take 1 scan from mzML
-    spectrum = mzml_obj[1]
+    spectrum = mzml_obj[100]
 
     # check if 32-bit/64-bit encoding to mzML
     # [('encoding', '32-bit float'), ('compression', 'zlib'), ('arrayType', 'mz'),
@@ -37,7 +47,8 @@ def check_encode(mzml):
                                                 ('arrayType', 'i')]
                 if spectrum.highestPeaks(1)[0][1] > 1:
                     # print 'assume:', spectrum['BinaryArrayOrder'][0][1]
-                    return spectrum['BinaryArrayOrder'][0][1]
+                    _encoder = spectrum['BinaryArrayOrder'][0][1]
+                    return _encoder
 
             except:
                 # print 'try 64-bit float'
@@ -47,7 +58,8 @@ def check_encode(mzml):
                                             ('arrayType', 'i')]
                 if spectrum.highestPeaks(1)[0][1] > 1:
                     # print 'assume:', spectrum['BinaryArrayOrder'][0][1]
-                    return spectrum['BinaryArrayOrder'][0][1]
+                    _encoder = spectrum['BinaryArrayOrder'][0][1]
+                    return _encoder
 
     else:
         try:
@@ -58,7 +70,8 @@ def check_encode(mzml):
                                             ('arrayType', 'i')]
             if spectrum.highestPeaks(1)[0][1] > 1:
                 # print 'assume:', spectrum['BinaryArrayOrder'][0][1]
-                return spectrum['BinaryArrayOrder'][0][1]
+                _encoder = spectrum['BinaryArrayOrder'][0][1]
+                return _encoder
 
         except:
             # print 'try 32-bit float'
@@ -68,10 +81,19 @@ def check_encode(mzml):
                                         ('arrayType', 'i')]
             if spectrum.highestPeaks(1)[0][1] > 1:
                 # print 'assume:', spectrum['BinaryArrayOrder'][0][1]
-                return spectrum['BinaryArrayOrder'][0][1]
+                _encoder = spectrum['BinaryArrayOrder'][0][1]
+                return _encoder
 
 
 def add_encode_info(spectrum, encode_type):
+    """
+    This is to decode a spectrum from a given encoder type.
+
+    :param spectrum: ``mzML spectrum`` a spectrum from .mzML
+    :param encode_type: ``string`` the type of encoder. Can be  ``32-bit float`` or ``64-bit float``
+    :type encode_type: str
+    :return spectrum: ``mzML spectrum`` the spectrum with correct encoder info inside
+    """
 
     if encode_type in ['32-bit float', '64-bit float']:
         pass

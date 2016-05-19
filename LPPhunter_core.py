@@ -34,7 +34,7 @@ output_folder = config.get('output', 'output_folder')
 
 sdf_f = 'newsdf.sdf'
 
-rt_range = [25.0, 26.0]
+rt_range = [22.0, 25.0]
 
 # mz2get = 778.560
 # mz2get_lst = [778.560, 776.544, 774.529, 806.591]

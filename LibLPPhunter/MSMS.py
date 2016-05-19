@@ -13,9 +13,21 @@ import pymzml.run
 
 from EncodeChecker import add_encode_info
 
+
 class MSMS(object):
+    """
+    This class is designed to operate MS/MS related processes
+    """
 
     def __init__(self, mzml, encode_type, ms1_precision=None, msn_precision=None):
+        """
+
+        :param mzml: the file name of mzML file
+        :param encode_type: `string`  the type of encoder. Can be  '32-bit float' or '64-bit float'
+        :param ms1_precision: `float` the MS level tolerance
+        :param msn_precision: `float` the MSn level tolerance
+        :return:
+        """
         if 0 < ms1_precision < 1:
             pass
         else:
@@ -28,6 +40,17 @@ class MSMS(object):
         self.encode_type = encode_type
 
     def get_ms2(self, mz2get_lst, rt_dct, ppm=None):
+        """
+        Get a list of m/z, a dictinary of Retention time (RT) and ppm value to get the peak list of give m/z
+
+        :param mz2get_lst: A list of m/z to have corresponding MS/MS spectra extracted
+        :type mz2get_lst: list
+        :param rt_dct: A dict contains rt info
+        :type rt_dct: dict
+        :param ppm: ppm values, usually 5~500, default is set to 500
+        :type ppm: int
+        :return msms_spectra_dct: ``dict`` A dict of m/z of precursor : MS/MS peak list
+        """
 
         # if len(rt_lst) == 2:
         #     rt_bot = rt_lst[0]

@@ -24,6 +24,10 @@ class TIC(object):
         self.encode_type = encode_type
 
     def get_maxtime(self):
+        """
+        get the max time of LC
+        :return rt_max: max time of LC
+        """
 
         rt_max = 0.0
 
