@@ -145,8 +145,16 @@ class XIC(object):
                             print spectrum['MS:1000016'], mz2xic
                             xic_dct[mz2xic] = xic_dct[mz2xic].append(_found_df, ignore_index=True)
                             _ms_dct = ms_spectra_dct[mz2xic]
-                            _mspeaks_lst = spectrum.highestPeaks(300)
+                            _mspeaks_lst = spectrum.highestPeaks(1000)
                             _found_lst = (_found_df['mz'].tolist(), _found_df['i'].tolist())
+
+                            # _mspeaks_lst = spectrum.peaks
+                            # # Trigger MS/MS at MS precursor > 1000
+                            # _found_lst = []
+                            # for _pre_found_mz in _mspeaks_lst:
+                            #     if _pre_found_mz[1] > 1000:
+                            #         _found_lst.append(_pre_found_mz)
+
                             _ms_dct[spectrum['MS:1000016']] = (_found_lst, _mspeaks_lst)
 
             except KeyError:
