@@ -22,8 +22,9 @@ from LibLPPhunter.ExactMassCalc import Elem2Mass
 st_time = time.clock()
 print('Start --->')
 infile_name = r'D:\LPPhunter\spectra_mzML\070120_CM_neg_70min_SIN_II.mzML'
-usr_xlsx = r'D:\LPPhunter\Marked_PC_70min_mgfHunter_3.xlsx'
-output_folder = 'D:\LPPhunter\images'
+usr_xlsx = r'D:\LPPhunter\Marked_PS_70min_mgfHunter_3.xlsx'
+output_folder = r'D:\LPPhunter\images\70min_SIN_II\PS'
+fa_list_csv = r'D:\LPPhunter\FA_list.csv'
 
 ms1_precision = 100e-6
 msn_precision = 200e-6
@@ -60,7 +61,8 @@ msms_spectra_dct = msms_spec.get_ms2(usr_df)
 # print ('msms_spectra_dct')
 # print (msms_spectra_dct)
 spec_plt = Spectra_Ploter()
-spec_plt.plot_all(mz1get_lst, mz2get_lst, usr_df, xic_dct, ms_spectra_dct, msms_spectra_dct, path=output_folder)
+spec_plt.plot_all(mz1get_lst, mz2get_lst, usr_df, xic_dct, ms_spectra_dct,
+                  msms_spectra_dct, fa_list_csv, path=output_folder)
 
 ed_time = time.clock() - st_time
 print ed_time

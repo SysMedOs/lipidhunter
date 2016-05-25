@@ -16,10 +16,14 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import Draw
 
+from FAindicator import FAindicator
+from FAindicator import Lyso_indicator
+
 
 class Spectra_Ploter(object):
 
-    def plot_all(self, mz1get_lst, mz2get_lst, sdf_df, xic_dct, ms_spectra_dct, msms_spectra_dct, path=None):
+    def plot_all(self, mz1get_lst, mz2get_lst, sdf_df, xic_dct,
+                 ms_spectra_dct, msms_spectra_dct, usr_fa_csv, path=None):
         """
 
         :param mz2get_lst: A list of m/z values to be searched.
@@ -49,6 +53,8 @@ class Spectra_Ploter(object):
 
         _fa_checker = 0
         _hg_checker = 0
+        fa_indicator = FAindicator(usr_fa_csv)
+        lyso_indicator = Lyso_indicator(usr_fa_csv)
 
         for mz2get in mz2get_lst:
             print ('Start looking for m/z', mz2get)
@@ -204,7 +210,9 @@ class Spectra_Ploter(object):
                                 msms_pic.set_ylim([0, max(_msms_df['i'].tolist()) * 1.3])
 
                                 # add annotations
-                                _msms_peak_list = zip(_msms_df['mz'].tolist(), _msms_df['i'].tolist())
+                                _top_msms_df = _msms_df.sort_values(by='i', ascending=False)
+                                _top_msms_df = _top_msms_df.head(20)
+                                _msms_peak_list = zip(_top_msms_df['mz'].tolist(), _top_msms_df['i'].tolist())
                                 for _msms_peak in _msms_peak_list:
                                     _msms_peak_str = '%.4f' % _msms_peak[0]
                                     _msms_peak_y = (max(_msms_df['i'].tolist()) * 1.3) * 0.175 + _msms_peak[1]
@@ -269,6 +277,44 @@ class Spectra_Ploter(object):
                                 else:
                                     pass
 
+                                # get identification
+                                (fa_df, fa_info_dct) = fa_indicator.indicate(_msms_df)
+
+                                if fa_info_dct != None:
+                                    # print fa_info
+                                    fa_count = len(fa_info_dct['mz'])
+                                    fa_count_lst = range(fa_count)
+                                    _fa_name_lst = fa_info_dct['name']
+                                    _fa_mz_lst = fa_info_dct['mz']
+                                    _fa_i_lst = fa_info_dct['i']
+                                    _fa_ppm_lst = fa_info_dct['ppm']
+                                    _fa_delta_lst = fa_info_dct['D']
+
+                                    fa_info_df = pd.DataFrame(fa_info_dct, columns=['name', 'mz', 'i', 'ppm'])
+                                    fa_info_df = fa_info_df.sort('mz')
+                                    fa_info_df = fa_info_df.round({'mz': 4})
+                                    # fa_info_df.index = range(1, len(fa_info['mz']) + 1)
+                                    table_info_df = fa_info_df
+
+                                    # print table_info_df.head(5)
+                                    old_idx_lst = table_info_df.index.tolist()
+                                    table_info_df.index = range(1, len(old_idx_lst) + 1)
+
+                                    col_labels = table_info_df.columns.tolist()
+                                    # col_labels = mz_info_df.head().tolist()
+                                    row_labels = table_info_df.index.tolist()
+                                    table_vals = map(list, table_info_df.values)
+
+                                    # the rectangle is where I want to place the table
+                                    fa_table = msms_pic.table(cellText=table_vals, rowLabels=row_labels,
+                                                              colWidths=[.10] * len(col_labels),
+                                                              colLabels=col_labels, loc='upper center')
+                                    fa_table.set_fontsize(5)
+                                    # table_props = the_table.properties()
+                                    # table_cells = table_props['child_artists']
+                                    # for cell in table_cells:
+                                    #     cell.set_height(0.12)
+
                                 # msms spectrum zoomed above 350 start
                                 _msms_high_df = _msms_df.query('mz > 350')
                                 if len(_msms_high_df['mz'].tolist()) > 0:
@@ -292,6 +338,41 @@ class Spectra_Ploter(object):
                                 else:
                                     pass
 
+                                # get Lyso identification
+                                (lyso_df, lyso_info_dct) = lyso_indicator.indicate(_msms_df, _ms)
+
+                                if lyso_info_dct != None:
+                                    # print lyso_info
+                                    lyso_count = len(lyso_info_dct['mz'])
+                                    lyso_count_lst = range(lyso_count)
+                                    _lyso_name_lst = lyso_info_dct['name']
+                                    _lyso_mz_lst = lyso_info_dct['mz']
+                                    _lyso_i_lst = lyso_info_dct['i']
+                                    _lyso_ppm_lst = lyso_info_dct['ppm']
+                                    _lyso_delta_lst = lyso_info_dct['D']
+
+                                    lyso_info_df = pd.DataFrame(lyso_info_dct, columns=['name', 'mz', 'i', 'ppm'])
+                                    lyso_info_df = lyso_info_df.sort_values(by='i', ascending=False)
+                                    lyso_info_df = lyso_info_df.round({'mz': 4})
+
+                                    # print table_info_df.head(5)
+                                    old_idx_lst = lyso_info_df.index.tolist()
+                                    lyso_info_df.index = range(1, len(old_idx_lst) + 1)
+
+                                    col_labels = lyso_info_df.columns.tolist()
+                                    # col_labels = mz_info_df.head().tolist()
+                                    row_labels = lyso_info_df.index.tolist()
+                                    table_vals = map(list, lyso_info_df.values)
+                                    # plot lyso table
+                                    try:
+                                        # the rectangle is where I want to place the table
+                                        lyso_table = msms_high_pic.table(cellText=table_vals, rowLabels=row_labels,
+                                                                         colWidths=[.22, .1, .1, .1],
+                                                                         colLabels=col_labels, loc='upper center')
+                                        lyso_table.set_fontsize(7)
+                                    except IndexError:
+                                        pass
+
                                 # set title
                                 xic_title_str = 'XIC of m/z %.4f HMDB_ID: %s' % (_ms, _hmdb_id)
                                 ms_title_str = 'MS @ %.3f min [top 1000]' % _ms_rt_pr
@@ -314,6 +395,8 @@ class Spectra_Ploter(object):
                                     _n_hmdb_id = _n_hmdb_id.replace('(', '[')
                                     _n_hmdb_id = _n_hmdb_id.replace(')', ']')
                                     _n_hmdb_id = _n_hmdb_id.replace(':', '-')
+                                    _n_hmdb_id = _n_hmdb_id.replace('\\', '_')
+                                    _n_hmdb_id = _n_hmdb_id.replace('/', '_')
                                 except:
                                     print ('Nothing to replace in ID %s' % _hmdb_id)
                                 print ('_n_hmdb_id', _n_hmdb_id)
