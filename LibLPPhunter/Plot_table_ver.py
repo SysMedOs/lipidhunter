@@ -63,11 +63,11 @@ class Spectra_Ploter(object):
             if _ms in xic_dct.keys() and xic_dct[_ms].shape[0] > 0:
                 xic_df = xic_dct[_ms]
 
-                print ('xic_df')
-                print (xic_df)
+                # print ('xic_df')
+                # print (xic_df)
                 _ms_spectra_dct = ms_spectra_dct[_ms]
                 _msms_spectra_dct = msms_spectra_dct[mz2get]
-                print ('_msms_spectra_dct', _msms_spectra_dct)
+                # print ('_msms_spectra_dct', _msms_spectra_dct)
 
                 _query_str = 'mz == %.6f' % mz2get
                 _sdf_df = sdf_df.query(_query_str)
@@ -100,7 +100,7 @@ class Spectra_Ploter(object):
                         print ('_msms', _msms)
                         _pr_mz = _msms[0]
                         _pr_rt = _msms[1]
-                        print (_pr_mz, _pr_rt, ms_rt_lst)
+                        # print (_pr_mz, _pr_rt, ms_rt_lst)
                         _msms_df = _msms_spectra_dct[_msms]
 
                         _ms_rt_lst = []
@@ -171,6 +171,13 @@ class Spectra_Ploter(object):
 
                                 _mz_zoom_query_str = ' %.2f < mz < %.2f' % (mz2get - 2.1, mz2get + 2.1)
                                 _ms_zoom_df = _ms_pkl_df.query(_mz_zoom_query_str)
+                                _ms_zoom_df = _ms_zoom_df.sort_values(by='i', ascending=False)
+                                _max_ms_iso = _ms_zoom_df['mz'].tolist()[0]
+                                if mz2get - 0.75 < _max_ms_iso < mz2get + 0.75:
+                                    pass
+                                else:
+                                    print ('Isotopes--->>>--->>>--->>>pass>>>')
+                                    break
                                 ms_zoom_pic.stem(_ms_zoom_df['mz'].tolist(), _ms_zoom_df['i'].tolist(),
                                                  'black', lw=4, markerfmt=" ")
                                 _ms_pr_lst = _ms_spectra_dct[_ms_rt_pr][0]

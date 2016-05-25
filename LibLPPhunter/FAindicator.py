@@ -10,8 +10,9 @@ class FAindicator(object):
 
     def __init__(self, fa_csv):
 
-        self.fa_df = pd.read_csv(fa_csv, index_col=0)
-        self.fa_lst = self.fa_df.index.tolist()
+        self.fa_df = pd.read_csv(fa_csv)
+        self.fa_lst = self.fa_df['FA'].tolist()
+        self.fa_idx_lst = self.fa_df.index.tolist()
 
     def indicate(self, spec_df, charge=None, top=None, ppm=None):
 
@@ -55,10 +56,10 @@ class FAindicator(object):
         for idx in spec_lmw_df.index.tolist():
             tmp_mz = spec_lmw_df.loc[idx, 'mz']
 
-            for fa in self.fa_lst:
+            for fa_idx in self.fa_idx_lst:
                 for mz_typ in fa_mz_typ_lst:
                     # print 'mz_target_mz =', mz_target_mz
-                    mz_target_mz = self.fa_df.loc[fa, mz_typ]
+                    mz_target_mz = self.fa_df.loc[fa_idx, mz_typ]
                     if mz_target_mz - 0.5 <= tmp_mz <= mz_target_mz + 0.5:
                         tmp_ppm = ((tmp_mz-mz_target_mz)/mz_target_mz) * 1000000
                         if ppm_neg <= tmp_ppm <= ppm:
@@ -66,6 +67,8 @@ class FAindicator(object):
                             tmp_i = spec_lmw_df.loc[idx, 'i']
                             match_i_lst.append('%.2e' % tmp_i)
                             match_mz_lst.append(tmp_mz)
+                            fa = self.fa_df.loc[fa_idx, 'FA']
+                            print (fa)
                             fa_label = fa + mz_typ
                             match_name_lst.append(fa_label)
                             tmp_delta = tmp_mz-mz_target_mz
@@ -96,8 +99,9 @@ class Lyso_indicator(object):
 
     def __init__(self, fa_csv):
 
-        self.fa_df = pd.read_csv(fa_csv, index_col=0)
-        self.fa_lst = self.fa_df.index.tolist()
+        self.fa_df = pd.read_csv(fa_csv)
+        self.fa_lst = self.fa_df['FA'].tolist()
+        self.fa_idx_lst = self.fa_df.index.tolist()
 
     def indicate(self, spec_df, prmz, top=None, ppm=None):
 
@@ -127,10 +131,11 @@ class Lyso_indicator(object):
         for idx in spec_lmw_df.index.tolist():
             tmp_mz = spec_lmw_df.loc[idx, 'mz']
 
-            for fa in self.fa_lst:
+            for fa_idx in self.fa_idx_lst:
                 for mz_typ in lyso_typ_lst:
                     # print 'mz_target_mz =', mz_target_mz
-                    mz_target_mz = prmz - self.fa_df.loc[fa, mz_typ]
+                    mz_target_mz = prmz - self.fa_df.loc[fa_idx, mz_typ]
+                    fa = self.fa_df.loc[fa_idx, 'FA']
                     if mz_target_mz - 0.5 <= tmp_mz <= mz_target_mz + 0.5:
                         tmp_ppm = ((tmp_mz-mz_target_mz)/mz_target_mz) * 1000000
                         if ppm_neg <= tmp_ppm <= ppm:

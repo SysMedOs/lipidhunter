@@ -22,13 +22,13 @@ from LibLPPhunter.ExactMassCalc import Elem2Mass
 st_time = time.clock()
 print('Start --->')
 infile_name = r'D:\LPPhunter\spectra_mzML\070120_CM_neg_70min_SIN_II.mzML'
-usr_xlsx = r'D:\LPPhunter\Marked_PS_70min_mgfHunter_3.xlsx'
-output_folder = r'D:\LPPhunter\images\70min_SIN_II\PS'
+usr_xlsx = r'D:\LPPhunter\Marked_PG_70min_mgfHunter_3.xlsx'
+output_folder = r'D:\LPPhunter\images\70min_SIN_II\PG'
 fa_list_csv = r'D:\LPPhunter\FA_list.csv'
 
 ms1_precision = 100e-6
 msn_precision = 200e-6
-rt_range = [20, 30]
+rt_range = [25, 26]
 usr_df = pd.read_excel(usr_xlsx)
 
 print usr_df.head()
