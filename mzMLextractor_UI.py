@@ -1,0 +1,480 @@
+# -*- coding: utf-8 -*-
+# Copyright 2014-16 Zhixu Ni, AG Bioanalytik,BBZ,University of Leipzig
+# The software is currently  under development and is not ready to be released.
+# A suitable license will be chosen before the official release.
+# For more info please contact zhixu.ni@uni-leipzig.de
+#
+# Form implementation generated from reading ui file 'mzMLextractor_UI.ui'
+#
+# Created: Mon Oct 31 22:44:11 2016
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
+
+from PySide import QtCore, QtGui
+
+
+class Ui_mzMLhunter(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(640, 480)
+        self.centralwidget = QtGui.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.tab_b_addmzml_pb = QtGui.QTabWidget(self.centralwidget)
+        self.tab_b_addmzml_pb.setGeometry(QtCore.QRect(6, 9, 621, 431))
+        self.tab_b_addmzml_pb.setObjectName("tab_b_addmzml_pb")
+        self.extract_ms_level_tab = QtGui.QWidget()
+        self.extract_ms_level_tab.setObjectName("extract_ms_level_tab")
+        self.gridLayoutWidget = QtGui.QWidget(self.extract_ms_level_tab)
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(10, 10, 601, 361))
+        self.gridLayoutWidget.setObjectName("gridLayoutWidget")
+        self.gridLayout = QtGui.QGridLayout(self.gridLayoutWidget)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.tab_a_savecsv_pb = QtGui.QPushButton(self.gridLayoutWidget)
+        self.tab_a_savecsv_pb.setObjectName("tab_a_savecsv_pb")
+        self.gridLayout.addWidget(self.tab_a_savecsv_pb, 8, 2, 1, 1)
+        self.tab_a_runextractor_pb = QtGui.QPushButton(self.gridLayoutWidget)
+        self.tab_a_runextractor_pb.setObjectName("tab_a_runextractor_pb")
+        self.gridLayout.addWidget(self.tab_a_runextractor_pb, 5, 0, 1, 1)
+        self.tab_a_xlsxfolder_le = QtGui.QLineEdit(self.gridLayoutWidget)
+        self.tab_a_xlsxfolder_le.setObjectName("tab_a_xlsxfolder_le")
+        self.gridLayout.addWidget(self.tab_a_xlsxfolder_le, 4, 1, 1, 1)
+        self.tab_a_infiles_pte = QtGui.QPlainTextEdit(self.gridLayoutWidget)
+        self.tab_a_infiles_pte.setObjectName("tab_a_infiles_pte")
+        self.gridLayout.addWidget(self.tab_a_infiles_pte, 2, 1, 1, 1)
+        self.tab_a_6_lb = QtGui.QLabel(self.gridLayoutWidget)
+        self.tab_a_6_lb.setObjectName("tab_a_6_lb")
+        self.gridLayout.addWidget(self.tab_a_6_lb, 7, 1, 1, 1)
+        self.tab_a_1_lb = QtGui.QLabel(self.gridLayoutWidget)
+        self.tab_a_1_lb.setObjectName("tab_a_1_lb")
+        self.gridLayout.addWidget(self.tab_a_1_lb, 0, 1, 1, 1)
+        self.tab_a_runmerge_pb = QtGui.QPushButton(self.gridLayoutWidget)
+        self.tab_a_runmerge_pb.setObjectName("tab_a_runmerge_pb")
+        self.gridLayout.addWidget(self.tab_a_runmerge_pb, 9, 0, 1, 1)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout.addItem(spacerItem, 6, 1, 1, 1)
+        self.tab_a_statusmerger_pte = QtGui.QPlainTextEdit(self.gridLayoutWidget)
+        self.tab_a_statusmerger_pte.setMaximumSize(QtCore.QSize(16777215, 40))
+        self.tab_a_statusmerger_pte.setObjectName("tab_a_statusmerger_pte")
+        self.gridLayout.addWidget(self.tab_a_statusmerger_pte, 9, 1, 1, 1)
+        self.tab_a_7_lb = QtGui.QLabel(self.gridLayoutWidget)
+        self.tab_a_7_lb.setObjectName("tab_a_7_lb")
+        self.gridLayout.addWidget(self.tab_a_7_lb, 8, 0, 1, 1)
+        self.tab_a_csvfolder_le = QtGui.QLineEdit(self.gridLayoutWidget)
+        self.tab_a_csvfolder_le.setObjectName("tab_a_csvfolder_le")
+        self.gridLayout.addWidget(self.tab_a_csvfolder_le, 8, 1, 1, 1)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.tab_a_addmzml_pb = QtGui.QPushButton(self.gridLayoutWidget)
+        self.tab_a_addmzml_pb.setObjectName("tab_a_addmzml_pb")
+        self.horizontalLayout_2.addWidget(self.tab_a_addmzml_pb)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem1)
+        self.tab_a_3_lb = QtGui.QLabel(self.gridLayoutWidget)
+        self.tab_a_3_lb.setObjectName("tab_a_3_lb")
+        self.horizontalLayout_2.addWidget(self.tab_a_3_lb)
+        self.tab_a_addmzmlfolder_pb = QtGui.QPushButton(self.gridLayoutWidget)
+        self.tab_a_addmzmlfolder_pb.setObjectName("tab_a_addmzmlfolder_pb")
+        self.horizontalLayout_2.addWidget(self.tab_a_addmzmlfolder_pb)
+        self.gridLayout.addLayout(self.horizontalLayout_2, 1, 1, 1, 1)
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
+        spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem2)
+        self.tab_a_clearall_pb = QtGui.QPushButton(self.gridLayoutWidget)
+        self.tab_a_clearall_pb.setObjectName("tab_a_clearall_pb")
+        self.verticalLayout.addWidget(self.tab_a_clearall_pb)
+        spacerItem3 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem3)
+        self.gridLayout.addLayout(self.verticalLayout, 2, 2, 1, 1)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.tab_a_4_lb = QtGui.QLabel(self.gridLayoutWidget)
+        self.tab_a_4_lb.setObjectName("tab_a_4_lb")
+        self.horizontalLayout.addWidget(self.tab_a_4_lb)
+        self.tab_a_msthreshold_spb = QtGui.QSpinBox(self.gridLayoutWidget)
+        self.tab_a_msthreshold_spb.setMaximum(999999)
+        self.tab_a_msthreshold_spb.setProperty("value", 1000)
+        self.tab_a_msthreshold_spb.setObjectName("tab_a_msthreshold_spb")
+        self.horizontalLayout.addWidget(self.tab_a_msthreshold_spb)
+        spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem4)
+        self.gridLayout.addLayout(self.horizontalLayout, 3, 1, 1, 1)
+        self.tab_a_2_lb = QtGui.QLabel(self.gridLayoutWidget)
+        self.tab_a_2_lb.setObjectName("tab_a_2_lb")
+        self.gridLayout.addWidget(self.tab_a_2_lb, 1, 0, 1, 1)
+        self.tab_a_5_lb = QtGui.QLabel(self.gridLayoutWidget)
+        self.tab_a_5_lb.setObjectName("tab_a_5_lb")
+        self.gridLayout.addWidget(self.tab_a_5_lb, 4, 0, 1, 1)
+        self.tab_a_statusextractor_pte = QtGui.QPlainTextEdit(self.gridLayoutWidget)
+        self.tab_a_statusextractor_pte.setMaximumSize(QtCore.QSize(16777215, 40))
+        self.tab_a_statusextractor_pte.setObjectName("tab_a_statusextractor_pte")
+        self.gridLayout.addWidget(self.tab_a_statusextractor_pte, 5, 1, 1, 1)
+        self.tab_a_savexlsxfolder_pb = QtGui.QPushButton(self.gridLayoutWidget)
+        self.tab_a_savexlsxfolder_pb.setObjectName("tab_a_savexlsxfolder_pb")
+        self.gridLayout.addWidget(self.tab_a_savexlsxfolder_pb, 4, 2, 1, 1)
+        self.tab_b_addmzml_pb.addTab(self.extract_ms_level_tab, "")
+        self.scan_info_tab = QtGui.QWidget()
+        self.scan_info_tab.setObjectName("scan_info_tab")
+        self.gridLayoutWidget_2 = QtGui.QWidget(self.scan_info_tab)
+        self.gridLayoutWidget_2.setGeometry(QtCore.QRect(10, 10, 601, 309))
+        self.gridLayoutWidget_2.setObjectName("gridLayoutWidget_2")
+        self.gridLayout_2 = QtGui.QGridLayout(self.gridLayoutWidget_2)
+        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.verticalLayout_2 = QtGui.QVBoxLayout()
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        spacerItem5 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem5)
+        self.tab_b_clearall_pb = QtGui.QPushButton(self.gridLayoutWidget_2)
+        self.tab_b_clearall_pb.setObjectName("tab_b_clearall_pb")
+        self.verticalLayout_2.addWidget(self.tab_b_clearall_pb)
+        spacerItem6 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem6)
+        self.gridLayout_2.addLayout(self.verticalLayout_2, 1, 2, 1, 1)
+        self.horizontalLayout_4 = QtGui.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.tab_b_3_lb = QtGui.QLabel(self.gridLayoutWidget_2)
+        self.tab_b_3_lb.setObjectName("tab_b_3_lb")
+        self.horizontalLayout_4.addWidget(self.tab_b_3_lb)
+        self.tab_b_msthreshold_spb = QtGui.QSpinBox(self.gridLayoutWidget_2)
+        self.tab_b_msthreshold_spb.setMaximum(999999)
+        self.tab_b_msthreshold_spb.setProperty("value", 1000)
+        self.tab_b_msthreshold_spb.setObjectName("tab_b_msthreshold_spb")
+        self.horizontalLayout_4.addWidget(self.tab_b_msthreshold_spb)
+        spacerItem7 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_4.addItem(spacerItem7)
+        self.tab_b_4_lb = QtGui.QLabel(self.gridLayoutWidget_2)
+        self.tab_b_4_lb.setObjectName("tab_b_4_lb")
+        self.horizontalLayout_4.addWidget(self.tab_b_4_lb)
+        self.tab_b_ms2threshold_spb = QtGui.QSpinBox(self.gridLayoutWidget_2)
+        self.tab_b_ms2threshold_spb.setMaximum(99999)
+        self.tab_b_ms2threshold_spb.setProperty("value", 10)
+        self.tab_b_ms2threshold_spb.setObjectName("tab_b_ms2threshold_spb")
+        self.horizontalLayout_4.addWidget(self.tab_b_ms2threshold_spb)
+        spacerItem8 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_4.addItem(spacerItem8)
+        self.gridLayout_2.addLayout(self.horizontalLayout_4, 2, 1, 1, 1)
+        self.tab_b_savexlsxfolder_pb = QtGui.QPushButton(self.gridLayoutWidget_2)
+        self.tab_b_savexlsxfolder_pb.setObjectName("tab_b_savexlsxfolder_pb")
+        self.gridLayout_2.addWidget(self.tab_b_savexlsxfolder_pb, 4, 2, 1, 1)
+        spacerItem9 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout_2.addItem(spacerItem9, 3, 1, 1, 1)
+        self.tab_b_1_lb = QtGui.QLabel(self.gridLayoutWidget_2)
+        self.tab_b_1_lb.setObjectName("tab_b_1_lb")
+        self.gridLayout_2.addWidget(self.tab_b_1_lb, 0, 0, 1, 1)
+        self.tab_b_5_lb = QtGui.QLabel(self.gridLayoutWidget_2)
+        self.tab_b_5_lb.setObjectName("tab_b_5_lb")
+        self.gridLayout_2.addWidget(self.tab_b_5_lb, 4, 0, 1, 1)
+        self.tab_b_outpufolder_le = QtGui.QLineEdit(self.gridLayoutWidget_2)
+        self.tab_b_outpufolder_le.setObjectName("tab_b_outpufolder_le")
+        self.gridLayout_2.addWidget(self.tab_b_outpufolder_le, 4, 1, 1, 1)
+        spacerItem10 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout_2.addItem(spacerItem10, 5, 1, 1, 1)
+        self.tab_b_infiles_pte = QtGui.QPlainTextEdit(self.gridLayoutWidget_2)
+        self.tab_b_infiles_pte.setObjectName("tab_b_infiles_pte")
+        self.gridLayout_2.addWidget(self.tab_b_infiles_pte, 1, 1, 1, 1)
+        self.horizontalLayout_3 = QtGui.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.tab_b_addmzml_pb_2 = QtGui.QPushButton(self.gridLayoutWidget_2)
+        self.tab_b_addmzml_pb_2.setObjectName("tab_b_addmzml_pb_2")
+        self.horizontalLayout_3.addWidget(self.tab_b_addmzml_pb_2)
+        spacerItem11 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_3.addItem(spacerItem11)
+        self.tab_b_2_lb = QtGui.QLabel(self.gridLayoutWidget_2)
+        self.tab_b_2_lb.setObjectName("tab_b_2_lb")
+        self.horizontalLayout_3.addWidget(self.tab_b_2_lb)
+        self.tab_b_addmzmlfolder_pb = QtGui.QPushButton(self.gridLayoutWidget_2)
+        self.tab_b_addmzmlfolder_pb.setObjectName("tab_b_addmzmlfolder_pb")
+        self.horizontalLayout_3.addWidget(self.tab_b_addmzmlfolder_pb)
+        self.gridLayout_2.addLayout(self.horizontalLayout_3, 0, 1, 1, 1)
+        self.tab_b_runextract_pb = QtGui.QPushButton(self.gridLayoutWidget_2)
+        self.tab_b_runextract_pb.setObjectName("tab_b_runextract_pb")
+        self.gridLayout_2.addWidget(self.tab_b_runextract_pb, 6, 0, 1, 1)
+        self.tab_b_statusrun_pte = QtGui.QPlainTextEdit(self.gridLayoutWidget_2)
+        self.tab_b_statusrun_pte.setMaximumSize(QtCore.QSize(16777215, 40))
+        self.tab_b_statusrun_pte.setObjectName("tab_b_statusrun_pte")
+        self.gridLayout_2.addWidget(self.tab_b_statusrun_pte, 6, 1, 1, 1)
+        self.tab_b_addmzml_pb.addTab(self.scan_info_tab, "")
+        self.search_tab = QtGui.QWidget()
+        self.search_tab.setObjectName("search_tab")
+        self.gridLayoutWidget_4 = QtGui.QWidget(self.search_tab)
+        self.gridLayoutWidget_4.setGeometry(QtCore.QRect(10, 10, 591, 111))
+        self.gridLayoutWidget_4.setObjectName("gridLayoutWidget_4")
+        self.gridLayout_4 = QtGui.QGridLayout(self.gridLayoutWidget_4)
+        self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.tab_c_5_lb = QtGui.QLabel(self.gridLayoutWidget_4)
+        self.tab_c_5_lb.setObjectName("tab_c_5_lb")
+        self.gridLayout_4.addWidget(self.tab_c_5_lb, 4, 1, 1, 1)
+        self.tab_c_3_lb = QtGui.QLabel(self.gridLayoutWidget_4)
+        self.tab_c_3_lb.setObjectName("tab_c_3_lb")
+        self.gridLayout_4.addWidget(self.tab_c_3_lb, 2, 1, 1, 1)
+        self.tab_c_4_lb = QtGui.QLabel(self.gridLayoutWidget_4)
+        self.tab_c_4_lb.setObjectName("tab_c_4_lb")
+        self.gridLayout_4.addWidget(self.tab_c_4_lb, 3, 0, 1, 1)
+        self.tab_c_2_lb = QtGui.QLabel(self.gridLayoutWidget_4)
+        self.tab_c_2_lb.setMaximumSize(QtCore.QSize(140, 16777215))
+        self.tab_c_2_lb.setObjectName("tab_c_2_lb")
+        self.gridLayout_4.addWidget(self.tab_c_2_lb, 1, 0, 1, 1)
+        self.tab_c_1_lb = QtGui.QLabel(self.gridLayoutWidget_4)
+        self.tab_c_1_lb.setObjectName("tab_c_1_lb")
+        self.gridLayout_4.addWidget(self.tab_c_1_lb, 0, 1, 1, 1)
+        self.tab_b_addmzml_pb.addTab(self.search_tab, "")
+        self.link_tab = QtGui.QWidget()
+        self.link_tab.setObjectName("link_tab")
+        self.gridLayoutWidget_3 = QtGui.QWidget(self.link_tab)
+        self.gridLayoutWidget_3.setGeometry(QtCore.QRect(10, 10, 601, 333))
+        self.gridLayoutWidget_3.setObjectName("gridLayoutWidget_3")
+        self.gridLayout_3 = QtGui.QGridLayout(self.gridLayoutWidget_3)
+        self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        spacerItem12 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout_3.addItem(spacerItem12, 5, 1, 1, 1)
+        self.horizontalLayout_5 = QtGui.QHBoxLayout()
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.tab_d_5_lb = QtGui.QLabel(self.gridLayoutWidget_3)
+        self.tab_d_5_lb.setObjectName("tab_d_5_lb")
+        self.horizontalLayout_5.addWidget(self.tab_d_5_lb)
+        self.tab_d_msthreshold_spb = QtGui.QSpinBox(self.gridLayoutWidget_3)
+        self.tab_d_msthreshold_spb.setMaximum(999999)
+        self.tab_d_msthreshold_spb.setProperty("value", 1000)
+        self.tab_d_msthreshold_spb.setObjectName("tab_d_msthreshold_spb")
+        self.horizontalLayout_5.addWidget(self.tab_d_msthreshold_spb)
+        spacerItem13 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_5.addItem(spacerItem13)
+        self.tab_d_6_lb = QtGui.QLabel(self.gridLayoutWidget_3)
+        self.tab_d_6_lb.setObjectName("tab_d_6_lb")
+        self.horizontalLayout_5.addWidget(self.tab_d_6_lb)
+        self.tab_b_ms2threshold_spb_2 = QtGui.QSpinBox(self.gridLayoutWidget_3)
+        self.tab_b_ms2threshold_spb_2.setMaximum(99999)
+        self.tab_b_ms2threshold_spb_2.setProperty("value", 10)
+        self.tab_b_ms2threshold_spb_2.setObjectName("tab_b_ms2threshold_spb_2")
+        self.horizontalLayout_5.addWidget(self.tab_b_ms2threshold_spb_2)
+        spacerItem14 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_5.addItem(spacerItem14)
+        self.gridLayout_3.addLayout(self.horizontalLayout_5, 4, 1, 1, 1)
+        self.tab_d_1_lb = QtGui.QLabel(self.gridLayoutWidget_3)
+        self.tab_d_1_lb.setObjectName("tab_d_1_lb")
+        self.gridLayout_3.addWidget(self.tab_d_1_lb, 0, 0, 1, 1)
+        self.tab_b_xlsxpath_pb = QtGui.QPushButton(self.gridLayoutWidget_3)
+        self.tab_b_xlsxpath_pb.setObjectName("tab_b_xlsxpath_pb")
+        self.gridLayout_3.addWidget(self.tab_b_xlsxpath_pb, 6, 2, 1, 1)
+        self.tab_d_7_lb = QtGui.QLabel(self.gridLayoutWidget_3)
+        self.tab_d_7_lb.setObjectName("tab_d_7_lb")
+        self.gridLayout_3.addWidget(self.tab_d_7_lb, 6, 0, 1, 1)
+        self.tab_d_xlsxpath_le = QtGui.QLineEdit(self.gridLayoutWidget_3)
+        self.tab_d_xlsxpath_le.setObjectName("tab_d_xlsxpath_le")
+        self.gridLayout_3.addWidget(self.tab_d_xlsxpath_le, 6, 1, 1, 1)
+        spacerItem15 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout_3.addItem(spacerItem15, 7, 1, 1, 1)
+        self.tab_d_ms2mzml_le = QtGui.QLineEdit(self.gridLayoutWidget_3)
+        self.tab_d_ms2mzml_le.setObjectName("tab_d_ms2mzml_le")
+        self.gridLayout_3.addWidget(self.tab_d_ms2mzml_le, 3, 1, 1, 1)
+        self.tab_d_3_lb = QtGui.QLabel(self.gridLayoutWidget_3)
+        self.tab_d_3_lb.setObjectName("tab_d_3_lb")
+        self.gridLayout_3.addWidget(self.tab_d_3_lb, 2, 0, 1, 1)
+        self.tab_d_msmzml_le = QtGui.QLineEdit(self.gridLayoutWidget_3)
+        self.tab_d_msmzml_le.setObjectName("tab_d_msmzml_le")
+        self.gridLayout_3.addWidget(self.tab_d_msmzml_le, 2, 1, 1, 1)
+        self.tab_d_msmzml_pb = QtGui.QPushButton(self.gridLayoutWidget_3)
+        self.tab_d_msmzml_pb.setObjectName("tab_d_msmzml_pb")
+        self.gridLayout_3.addWidget(self.tab_d_msmzml_pb, 2, 2, 1, 1)
+        self.tab_d_statusrun_pte = QtGui.QPlainTextEdit(self.gridLayoutWidget_3)
+        self.tab_d_statusrun_pte.setMaximumSize(QtCore.QSize(16777215, 40))
+        self.tab_d_statusrun_pte.setObjectName("tab_d_statusrun_pte")
+        self.gridLayout_3.addWidget(self.tab_d_statusrun_pte, 8, 1, 1, 1)
+        self.horizontalLayout_6 = QtGui.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.tab_d_lipidclass_cmb = QtGui.QComboBox(self.gridLayoutWidget_3)
+        self.tab_d_lipidclass_cmb.setMinimumSize(QtCore.QSize(220, 0))
+        self.tab_d_lipidclass_cmb.setObjectName("tab_d_lipidclass_cmb")
+        self.tab_d_lipidclass_cmb.addItem("")
+        self.tab_d_lipidclass_cmb.addItem("")
+        self.tab_d_lipidclass_cmb.addItem("")
+        self.tab_d_lipidclass_cmb.addItem("")
+        self.tab_d_lipidclass_cmb.addItem("")
+        self.tab_d_lipidclass_cmb.addItem("")
+        self.tab_d_lipidclass_cmb.addItem("")
+        self.tab_d_lipidclass_cmb.addItem("")
+        self.horizontalLayout_6.addWidget(self.tab_d_lipidclass_cmb)
+        spacerItem16 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem16)
+        self.gridLayout_3.addLayout(self.horizontalLayout_6, 0, 1, 1, 1)
+        self.tab_d_runextract_pb = QtGui.QPushButton(self.gridLayoutWidget_3)
+        self.tab_d_runextract_pb.setObjectName("tab_d_runextract_pb")
+        self.gridLayout_3.addWidget(self.tab_d_runextract_pb, 8, 0, 1, 1)
+        self.tab_d_4_lb = QtGui.QLabel(self.gridLayoutWidget_3)
+        self.tab_d_4_lb.setObjectName("tab_d_4_lb")
+        self.gridLayout_3.addWidget(self.tab_d_4_lb, 3, 0, 1, 1)
+        self.verticalLayout_3 = QtGui.QVBoxLayout()
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.tab_d_ms2mzml_pb = QtGui.QPushButton(self.gridLayoutWidget_3)
+        self.tab_d_ms2mzml_pb.setObjectName("tab_d_ms2mzml_pb")
+        self.verticalLayout_3.addWidget(self.tab_d_ms2mzml_pb)
+        self.gridLayout_3.addLayout(self.verticalLayout_3, 3, 2, 1, 1)
+        self.tab_d_2_lb = QtGui.QLabel(self.gridLayoutWidget_3)
+        self.tab_d_2_lb.setObjectName("tab_d_2_lb")
+        self.gridLayout_3.addWidget(self.tab_d_2_lb, 1, 0, 1, 1)
+        self.tab_d_lipidstable_le = QtGui.QLineEdit(self.gridLayoutWidget_3)
+        self.tab_d_lipidstable_le.setObjectName("tab_d_lipidstable_le")
+        self.gridLayout_3.addWidget(self.tab_d_lipidstable_le, 1, 1, 1, 1)
+        self.tab_d_lipidstable_pb = QtGui.QPushButton(self.gridLayoutWidget_3)
+        self.tab_d_lipidstable_pb.setObjectName("tab_d_lipidstable_pb")
+        self.gridLayout_3.addWidget(self.tab_d_lipidstable_pb, 1, 2, 1, 1)
+        self.tab_b_addmzml_pb.addTab(self.link_tab, "")
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtGui.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 640, 21))
+        self.menubar.setObjectName("menubar")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.retranslateUi(MainWindow)
+        self.tab_b_addmzml_pb.setCurrentIndex(0)
+        self.tab_d_lipidclass_cmb.setCurrentIndex(2)
+        QtCore.QObject.connect(self.tab_a_addmzml_pb, QtCore.SIGNAL("clicked()"), self.tab_a_infiles_pte.clear)
+        QtCore.QObject.connect(self.tab_a_clearall_pb, QtCore.SIGNAL("clicked()"), self.tab_a_infiles_pte.clear)
+        QtCore.QObject.connect(self.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.tab_b_infiles_pte.clear)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(
+            QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_savecsv_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Save as", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_runextractor_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Run Extract", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_6_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Step 2", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_1_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Step 1", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_runmerge_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Run Merge", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_7_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Merge to CSV", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_addmzml_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Add single file", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_3_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Add folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_addmzmlfolder_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Select a folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_clearall_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Clear all", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_4_lb.setText(QtGui.QApplication.translate("MainWindow", "Absolute threshold on MS level:", None,
+                                                             QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_2_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Input .mzML file:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_5_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Output as Excel", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_savexlsxfolder_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Save to folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_addmzml_pb.setTabText(self.tab_b_addmzml_pb.indexOf(self.extract_ms_level_tab),
+                                         QtGui.QApplication.translate("MainWindow", "1. Extract MS level", None,
+                                                                      QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_clearall_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Clear all", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_3_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_4_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "MS2 Threshold:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_savexlsxfolder_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Save to folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_1_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Input .mzML file:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_5_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Output as Excel", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_addmzml_pb_2.setText(
+            QtGui.QApplication.translate("MainWindow", "Add single file", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_2_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Add folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_addmzmlfolder_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Select a folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_runextract_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Run", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_addmzml_pb.setTabText(self.tab_b_addmzml_pb.indexOf(self.scan_info_tab),
+                                         QtGui.QApplication.translate("MainWindow", "2. Extract Scan info", None,
+                                                                      QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_5_lb.setText(QtGui.QApplication.translate("MainWindow",
+                                                             "http://www.lipidmaps.org/tools/ms/glycerolipids_batch_bulk.html",
+                                                             None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_3_lb.setText(QtGui.QApplication.translate("MainWindow",
+                                                             "http://www.lipidmaps.org/tools/ms/glycerophospholipids_batch_bulk.html",
+                                                             None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_4_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "For Triacylglycerols:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_2_lb.setText(QtGui.QApplication.translate("MainWindow", "For Glycerol phospholipids:", None,
+                                                             QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_1_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Search on LipidMaps", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_addmzml_pb.setTabText(self.tab_b_addmzml_pb.indexOf(self.search_tab),
+                                         QtGui.QApplication.translate("MainWindow", "3. Bulk Search", None,
+                                                                      QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_5_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_6_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "MS2 Threshold:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_1_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Select lipid class", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_xlsxpath_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Save as", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_7_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Output as Excel", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_3_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "MS only .mzML", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_msmzml_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow",
+                                                                              "Phosphatidic acid (PA) [M-H]-", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow",
+                                                                              "Phosphatidylethanolamine (PE) [M-H]-",
+                                                                              None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow",
+                                                                              "Phosphatidylcholine (PC) [M+HCOO]-",
+                                                                              None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow",
+                                                                              "Phosphatidylglycerol (PG) [M-H]-", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow",
+                                                                              "Phosphatidylserine (PS) [M-H]-", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow",
+                                                                              "Phosphatidylinositol (PI) [M-H]-", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(6,
+                                              QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+",
+                                                                           None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow",
+                                                                              "Triacylglycerol (TG) [M+NH4]+", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_runextract_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Run", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_4_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Hole spectra .mzML", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_ms2mzml_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_2_lb.setText(
+            QtGui.QApplication.translate("MainWindow", "Bulk search result", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidstable_pb.setText(
+            QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_addmzml_pb.setTabText(self.tab_b_addmzml_pb.indexOf(self.link_tab),
+                                         QtGui.QApplication.translate("MainWindow", "4. Link lipids to scans", None,
+                                                                      QtGui.QApplication.UnicodeUTF8))
+
+
+if __name__ == "__main__":
+
+    import sys
+
+    app = QtGui.QApplication.instance()
+    if app is None:
+        app = QtGui.QApplication(sys.argv)
+    mzMLhunter = QtGui.QMainWindow()
+    ui = Ui_mzMLhunter()
+    ui.setupUi(mzMLhunter)
+    print 'GUI started'
+    mzMLhunter.show()
+    app.exec_()
+    sys.exit()
