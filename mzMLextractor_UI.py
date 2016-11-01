@@ -12,7 +12,7 @@
 from PySide import QtCore, QtGui
 
 
-class Ui_mzMLhunter(object):
+class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(640, 480)
@@ -334,9 +334,9 @@ class Ui_mzMLhunter(object):
         self.retranslateUi(MainWindow)
         self.tab_b_addmzml_pb.setCurrentIndex(0)
         self.tab_d_lipidclass_cmb.setCurrentIndex(2)
-        QtCore.QObject.connect(self.tab_a_addmzml_pb, QtCore.SIGNAL("clicked()"), self.tab_a_infiles_pte.clear)
-        QtCore.QObject.connect(self.tab_a_clearall_pb, QtCore.SIGNAL("clicked()"), self.tab_a_infiles_pte.clear)
-        QtCore.QObject.connect(self.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.tab_b_infiles_pte.clear)
+        # QtCore.QObject.connect(self.tab_a_addmzml_pb, QtCore.SIGNAL("clicked()"), self.tab_a_infiles_pte.clear)
+        # QtCore.QObject.connect(self.tab_a_clearall_pb, QtCore.SIGNAL("clicked()"), self.tab_a_infiles_pte.clear)
+        # QtCore.QObject.connect(self.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.tab_b_infiles_pte.clear)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -463,18 +463,3 @@ class Ui_mzMLhunter(object):
                                          QtGui.QApplication.translate("MainWindow", "4. Link lipids to scans", None,
                                                                       QtGui.QApplication.UnicodeUTF8))
 
-
-if __name__ == "__main__":
-
-    import sys
-
-    app = QtGui.QApplication.instance()
-    if app is None:
-        app = QtGui.QApplication(sys.argv)
-    mzMLhunter = QtGui.QMainWindow()
-    ui = Ui_mzMLhunter()
-    ui.setupUi(mzMLhunter)
-    print 'GUI started'
-    mzMLhunter.show()
-    app.exec_()
-    sys.exit()
