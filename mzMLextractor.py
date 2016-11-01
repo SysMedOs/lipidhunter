@@ -9,9 +9,12 @@ from __future__ import print_function
 import sys
 import os
 import glob
+
 from PySide import QtCore, QtGui
+import pandas as pd
 
 from mzMLextractor_UI import Ui_MainWindow
+from mzMLextractorLib import Extractor
 
 
 class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
@@ -23,6 +26,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_a_addmzml_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzml)
         QtCore.QObject.connect(self.ui.tab_a_addmzmlfolder_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzmlfolder)
         QtCore.QObject.connect(self.ui.tab_a_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_a_infiles_pte.clear)
+        QtCore.QObject.connect(self.ui.tab_a_savexlsxfolder_pb, QtCore.SIGNAL("clicked()"), self.a_save_xls2folder)
+        QtCore.QObject.connect(self.ui.tab_a_savecsv_pb, QtCore.SIGNAL("clicked()"), self.a_save_csv2folder)
+        QtCore.QObject.connect(self.ui.tab_a_runextractor_pb, QtCore.SIGNAL("clicked()"), self.a_run_extractor)
 
         # slots for tab b
         QtCore.QObject.connect(self.ui.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_b_infiles_pte.clear)
@@ -71,6 +77,35 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 _msgBox = QtGui.QMessageBox()
                 _msgBox.setText(_duplicated_str + u'Already chosen. \n Skipped')
                 _msgBox.exec_()
+
+    def a_save_xls2folder(self):
+        a_save_xlsfolder_str = QtGui.QFileDialog.getExistingDirectory()
+        self.ui.tab_a_xlsxfolder_le.setText(unicode(a_save_xlsfolder_str))
+
+    def a_save_csv2folder(self):
+        a_save_csvfolder_str = QtGui.QFileDialog.getSaveFileName(caption=u'Save file', filter=u'.csv')
+        self.ui.tab_a_csvfolder_le.setText(unicode(a_save_csvfolder_str[0]))
+
+    def a_run_extractor(self):
+        self.ui.tab_a_statusextractor_pte.clear()
+        a_ms_th = self.ui.tab_a_msthreshold_spb.value()
+        self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('MS threshold (absolute): %i \n' % a_ms_th))
+        extractor = Extractor.Extractor()
+        _loaded_mzml_files = str(self.ui.tab_a_infiles_pte.toPlainText())
+        _loaded_mzml_lst = _loaded_mzml_files.split('\n')
+
+        _save_xlsx_folder_str = str(self.ui.tab_a_xlsxfolder_le.text())
+
+        for _mzml in _loaded_mzml_lst:
+            if os.path.isfile(_mzml):
+                _mzml_path, _mzml_name = os.path.split(_mzml)
+                self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Start processing...\n%s \n' % _mzml))
+
+                _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-4] + 'xlsx'
+                _ms_df = extractor.get_ms_all(_mzml, a_ms_th)
+                _ms_df.to_excel(_xlsx_path)
+                self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Save as: \n%s \n' % _mzml))
+                self.ui.tab_a_statusextractor_pte.insertPlainText(u'>>> Next file >>>')
 
 
 if __name__ == '__main__':
