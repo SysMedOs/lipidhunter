@@ -21,7 +21,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         # links
-        self.ui.label_5.setOpenExternalLinks(True)
+        self.ui.logo_lb.setOpenExternalLinks(True)
         self.ui.tab_c_3_lb.setOpenExternalLinks(True)
         self.ui.tab_c_5_lb.setOpenExternalLinks(True)
 
@@ -35,7 +35,11 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_a_runmerge_pb, QtCore.SIGNAL("clicked()"), self.a_run_merger)
 
         # slots for tab b
+        QtCore.QObject.connect(self.ui.tab_b_addmzml_pb, QtCore.SIGNAL("clicked()"), self.b_load_mzml)
+        QtCore.QObject.connect(self.ui.tab_b_addmzmlfolder_pb, QtCore.SIGNAL("clicked()"), self.b_load_mzmlfolder)
         QtCore.QObject.connect(self.ui.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_b_infiles_pte.clear)
+        QtCore.QObject.connect(self.ui.tab_b_savexlsxfolder_pb, QtCore.SIGNAL("clicked()"), self.b_save_xls2folder)
+        QtCore.QObject.connect(self.ui.tab_b_runextract_pb, QtCore.SIGNAL("clicked()"), self.b_run_extractor)
 
     @staticmethod
     def get_same_files(folder, filetype_lst):
@@ -99,7 +103,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             _msgBox.setText(_duplicated_str + u'Already chosen. \n Skipped')
             _msgBox.exec_()
 
-
     def a_save_xls2folder(self):
         a_save_xlsfolder_str = QtGui.QFileDialog.getExistingDirectory()
         self.ui.tab_a_xlsxfolder_le.setText(unicode(a_save_xlsfolder_str))
@@ -125,6 +128,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
                 _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-4] + 'xlsx'
                 _ms_df = extractor.get_ms_all(_mzml, a_ms_th)
+                # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
                 _ms_df.to_excel(_xlsx_path)
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Save as: \n%s.xlsx \n' % _mzml[0:-4]))
         self.ui.tab_a_statusextractor_pte.insertPlainText(u'Finished!')
@@ -150,7 +154,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         cm_pkl_df['rt_2f'] = cm_pkl_df['rt']
         cm_pkl_df = cm_pkl_df.round({'mz_2f': 2, 'rt_2f': 2})
         cm_pkl_df = cm_pkl_df.sort_values(by=['mz', 'rt'])
+        cm_pkl_df = cm_pkl_df.drop_duplicates(subset=['mz'], keep='first')
         cm_pkl_df = cm_pkl_df.reset_index()
+
         if cm_pkl_df.shape[0] > 500000:
             cm_pkl_df_p1 = cm_pkl_df[:500000, :]
             print cm_pkl_df_p1.shape
@@ -163,6 +169,76 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             cm_pkl_df.to_csv(_save_csv_str)
 
         self.ui.tab_a_statusmerger_pte.insertPlainText(unicode('Merged and saved as %s' % _save_csv_str))
+
+    def b_load_mzml(self):
+        # check existed files
+        _loaded_files = str(self.ui.tab_b_infiles_pte.toPlainText())
+        _loaded_lst = _loaded_files.split('\n')
+
+        b_load_mzml_dialog = QtGui.QFileDialog(self)
+        b_load_mzml_dialog.setNameFilters([u'mzML spectra files (*.mzML *.mzml)'])
+        b_load_mzml_dialog.selectNameFilter(u'mzML spectra files (*.mzML *.mzml)')
+        if b_load_mzml_dialog.exec_():
+            b_load_mzml_str = b_load_mzml_dialog.selectedFiles()[0]
+            b_load_mzml_str = os.path.abspath(b_load_mzml_str)
+            if b_load_mzml_str not in _loaded_lst:
+                self.ui.tab_b_infiles_pte.insertPlainText(unicode(b_load_mzml_str))  # take unicode only
+                self.ui.tab_b_infiles_pte.insertPlainText(u'\n')
+            else:
+                _msgBox = QtGui.QMessageBox()
+                _msgBox.setText(u'Spectrum has been chosen already.')
+                _msgBox.exec_()
+
+    def b_load_mzmlfolder(self):
+        # check existed files
+        _loaded_files = str(self.ui.tab_b_infiles_pte.toPlainText())
+        _loaded_lst = _loaded_files.split('\n')
+
+        b_load_mzmlfolder_str = QtGui.QFileDialog.getExistingDirectory()
+        _mzml_name_lst, _mzml_path_lst = self.get_same_files(b_load_mzmlfolder_str, filetype_lst=['*.mzml', '*.mzML'])
+        _duplicated_str = ''
+        for _mzml in _mzml_path_lst:
+            if _mzml not in _loaded_lst:
+                self.ui.tab_b_infiles_pte.insertPlainText(unicode(_mzml))
+                self.ui.tab_b_infiles_pte.insertPlainText(u'\n')
+            else:
+                _duplicated_str = _duplicated_str + unicode(_mzml) + u'\n'
+        if len(_duplicated_str) > 0:
+            _msgBox = QtGui.QMessageBox()
+            _msgBox.setText(_duplicated_str + u'Already chosen. \n Skipped')
+            _msgBox.exec_()
+
+    def b_save_xls2folder(self):
+        b_save_xlsfolder_str = QtGui.QFileDialog.getExistingDirectory()
+        self.ui.tab_b_outpufolder_le.setText(unicode(b_save_xlsfolder_str))
+        
+    def b_run_extractor(self):
+        self.ui.tab_b_statusrun_pte.clear()
+        b_ms_th = self.ui.tab_b_msthreshold_spb.value()
+        b_ms2_th = self.ui.tab_b_ms2threshold_spb.value()
+        self.ui.tab_b_statusrun_pte.insertPlainText(unicode('MS threshold (absolute): %i \n' % b_ms_th))
+        extractor = Extractor.Extractor()
+        _loaded_mzml_files = str(self.ui.tab_b_infiles_pte.toPlainText())
+        _loaded_mzml_lst = _loaded_mzml_files.split('\n')
+
+        _save_xlsx_folder_str = str(self.ui.tab_b_outpufolder_le.text())
+
+        for _mzml in _loaded_mzml_lst:
+            if os.path.isfile(_mzml):
+                _mzml_path, _mzml_name = os.path.split(_mzml)
+                self.ui.tab_b_statusrun_pte.insertPlainText(unicode('Start processing...\n%s \n' % _mzml))
+
+                _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_all_scan_info.xlsx'
+                _xlsx_ms2_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_ms2_info.xlsx'
+                _ms_df = extractor.get_scan_events(_mzml, b_ms_th, b_ms2_th)
+                # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
+                _ms_df.to_excel(_xlsx_path)
+                _ms_df['function'] = _ms_df['function'].apply(pd.to_numeric)
+                _ms2_df = _ms_df[_ms_df['function'] > 1]
+                _ms2_df = _ms2_df.reset_index()
+                _ms2_df.to_excel(_xlsx_ms2_path)
+                self.ui.tab_b_statusrun_pte.insertPlainText(unicode('Save as: \n%s.xlsx \n' % _mzml[0:-4]))
+        self.ui.tab_b_statusrun_pte.insertPlainText(u'Finished!')
 
 if __name__ == '__main__':
     import sys
