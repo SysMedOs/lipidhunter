@@ -4,8 +4,6 @@
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
-from __future__ import print_function
-
 import sys
 import os
 import glob
@@ -22,6 +20,11 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         QtGui.QMainWindow.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        # links
+        self.ui.label_5.setOpenExternalLinks(True)
+        self.ui.tab_c_3_lb.setOpenExternalLinks(True)
+        self.ui.tab_c_5_lb.setOpenExternalLinks(True)
+
         # slots for tab a
         QtCore.QObject.connect(self.ui.tab_a_addmzml_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzml)
         QtCore.QObject.connect(self.ui.tab_a_addmzmlfolder_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzmlfolder)
@@ -32,6 +35,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         # slots for tab b
         QtCore.QObject.connect(self.ui.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_b_infiles_pte.clear)
+
 
     def a_load_mzml(self):
         # check existed files
@@ -105,7 +109,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 _ms_df = extractor.get_ms_all(_mzml, a_ms_th)
                 _ms_df.to_excel(_xlsx_path)
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Save as: \n%s \n' % _mzml))
-                self.ui.tab_a_statusextractor_pte.insertPlainText(u'>>> Next file >>>')
+        self.ui.tab_a_statusextractor_pte.insertPlainText(u'Finished!')
+
 
 
 if __name__ == '__main__':
