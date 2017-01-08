@@ -4,11 +4,14 @@
 # A suitable license will be chosen before the official release.
 # For more info please contact zhixu.ni@uni-leipzig.de
 
+from __future__ import print_function
 from __future__ import division
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
+
+import re
 
 import pymzml
 import pymzml.spec
@@ -23,6 +26,15 @@ from LibLPPhunter.TIC import TIC
 class XIC(object):
 
     def __init__(self, mzml, encode_type, ms1_precision=None, msn_precision=None):
+
+        waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
+                          ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']))
+        for _obo in waters_obo_lst:
+            if _obo not in pymzml.minimum.MIN_REQ:
+                pymzml.minimum.MIN_REQ.append(_obo)
+            else:
+                pass
+
         if 0 < ms1_precision < 1:
             pass
         else:
@@ -32,10 +44,18 @@ class XIC(object):
         else:
             msn_precision = 200e-6
         self.mzml_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
-        self.encode_type = encode_type
+        # self.encode_type = encode_type
         self.mzml = mzml
 
-    def extract_mz(self, mz2xic_lst, rt=None, ppm=None):
+    def extract_mz(self, mz2xic_df, rt=None, ppm=None):
+
+        waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
+                          ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']))
+        for _obo in waters_obo_lst:
+            if _obo not in pymzml.minimum.MIN_REQ:
+                pymzml.minimum.MIN_REQ.append(_obo)
+            else:
+                pass
 
         if ppm is None:
             ppm = 20
@@ -43,20 +63,24 @@ class XIC(object):
             pass
 
         if rt is None:
-            tic_spec = TIC(self.mzml, self.encode_type)
+            # tic_spec = TIC(self.mzml, self.encode_type)
+            tic_spec = TIC(self.mzml)
             rt_max = tic_spec.get_maxtime()
-            print rt_max
+            print (rt_max)
             rt = [0.1, rt_max]
         else:
             try:
                 if len(rt) == 2 and rt[0] < rt[1]:
                     pass
-            except:
-                tic_spec = TIC(self.mzml_obj, self.encode_type)
+            except IndexError:
+                tic_spec = TIC(self.mzml_obj)
+                # tic_spec = TIC(self.mzml_obj, self.encode_type)
                 rt_max = tic_spec.get_maxtime()
-                print rt_max
+                print (rt_max)
                 rt = [0.1, rt_max]
-
+        rt_l = rt[0]
+        rt_r = rt[1]
+        print(rt_l, rt_r)
         # mz_bot_lst = []
         # mz_top_lst = []
         # # mz_range_lst = []
@@ -93,81 +117,118 @@ class XIC(object):
         rt_dct = {}
         xic_dct = {}
         ms_spectra_dct = {}
-        for mz2xic in mz2xic_lst:
+        for _i, _r in mz2xic_df.iterrows():
+            mz2xic = _r['MS1_obs_mz']
             rt_dct[mz2xic] = {}
             xic_dct[mz2xic] = pd.DataFrame()
             ms_spectra_dct[mz2xic] = {}
 
         # xic_df = pd.DataFrame()
+        spec_title_obo = 'MS:1000796'
+        function_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)(scan=)(\d*)(.*)')
 
         for spectrum in self.mzml_obj:
-            # print spectrum.keys()
-            try:
-                if rt[0] < spectrum['MS:1000016'] < rt[1] and spectrum['MS:1000511'] == 1:  # 'MS:1000511' == 'ms level'
+            spec_keys = spectrum.keys()
+            # print(spec_keys)
+            # spectrum = add_encode_info(spectrum, self.encode_type)
+            if 'MS:1000511' in spec_keys and 'MS:1000016' in spec_keys and spec_title_obo in spec_keys:
+                spectrum_title = spectrum[spec_title_obo]
+                function_checker = function_re.match(spectrum_title)
+                if function_checker:
+                    function = int(function_checker.groups()[2])
+                    scanid = int(function_checker.groups()[5])
 
-                    spectrum = add_encode_info(spectrum, self.encode_type)
+                    scan_rt = spectrum['MS:1000016']
+                    # 'MS:1000511' == 'ms level'
+                    # if rt[0] < spectrum['MS:1000016'] < rt[1] and spectrum['MS:1000511'] == 1:
+                    if rt_l < scan_rt < rt_r:
+                        if spectrum['MS:1000511'] == 1:
+                            print('Read function:', spectrum['MS:1000511'], ' @RT ', scan_rt)
 
-                    # print spectrum.keys()
-                    _toppeaks_lst = spectrum.highestPeaks(200)
+                            # print spectrum.keys()
+                            # _toppeaks_lst = spectrum.Peaks(500)
 
-                    # prepare MS spectrum
+                            # prepare MS spectrum
 
-                    # todo zhixu.ni@uni-leipzig.de: rewrite this part to add rt faster.
-                    toppeaks_lst = []
-                    for _p in _toppeaks_lst:
-                        p = list(_p)
-                        p.append(spectrum['MS:1000016'])
-                        toppeaks_lst.append(p)
+                            # todo zhixu.ni@uni-leipzig.de: rewrite this part to add rt faster.
+                            # toppeaks_lst = []
+                            # for _p in _toppeaks_lst:
+                            #     p = list(_p)
+                            #     p.append(spectrum['MS:1000016'])
+                            #     toppeaks_lst.append(p)
+                            #
+                            # # print toppeaks_lst[1]
+                            #
+                            # _toppeaks_df = pd.DataFrame(data=toppeaks_lst, columns=['mz', 'i', 'rt'])
 
-                    # print toppeaks_lst[1]
+                            # _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
+                            # _toppeaks_df['rt'] = scan_rt
+                            # print('_toppeaks_df.head()')
+                            # print(_toppeaks_df.head())
 
-                    _toppeaks_df = pd.DataFrame(data=toppeaks_lst, columns=['mz', 'i', 'rt'])
+                            _tmp_ms1_lst = spectrum.peaks
+                            _tmp_ms1_df = pd.DataFrame(data=_tmp_ms1_lst, columns=['mz', 'i'])
 
-                    # print _toppeaks_df.head()
+                            for _i, _r in mz2xic_df.iterrows():
+                                mz2xic = _r['MS1_obs_mz']
+                                rt = _r['rt']
 
-                    for mz2xic in mz2xic_lst:
-                        mz_bot = mz2xic - (ppm / 1000000) * mz2xic
-                        mz_top = mz2xic + (ppm / 1000000) * mz2xic
+                                if rt_l <= scan_rt <= rt_r:
 
-                        _query_str = '( %f < mz < %f)' % (mz_bot, mz_top)
-                        # print _query_str
+                                    # mz_bot = mz2xic - (ppm / 1000000) * mz2xic
+                                    # mz_top = mz2xic + (ppm / 1000000) * mz2xic
+                                    mz_bot = mz2xic - 0.0001
+                                    mz_top = mz2xic + 0.0001
 
-                        _found_df = _toppeaks_df.query(_query_str)
-                        # _found_count = len(_found_df['mz'].tolist())
-                        # rt_lst = [spectrum['MS:1000016']] * _found_count
+                                    _query_str = '(%f <= mz <= %f)' % (mz_bot, mz_top)
 
-                        if len(_found_df['mz'].tolist()) == 0:
-                            pass
-                        else:
+                                    _found_df = _tmp_ms1_df.query(_query_str)
+                                    _found_df['rt'] = scan_rt
+                                    # _found_df = _toppeaks_df.query(_query_str)
+                                    # _found_count = len(_found_df['mz'].tolist())
+                                    # rt_lst = [spectrum['MS:1000016']] * _found_count
 
-                            # _found_df.loc[:, 'rt'] = pd.Series(rt_lst, index=_found_df.index)
-                            # print _found_df.head()
-                            print spectrum['MS:1000016'], mz2xic
-                            xic_dct[mz2xic] = xic_dct[mz2xic].append(_found_df, ignore_index=True)
-                            _ms_dct = ms_spectra_dct[mz2xic]
-                            _mspeaks_lst = spectrum.highestPeaks(1000)
-                            _found_lst = (_found_df['mz'].tolist(), _found_df['i'].tolist())
+                                    if _found_df.shape[0] == 0:
+                                        pass
+                                    else:
+                                        xic_dct[mz2xic] = xic_dct[mz2xic].append(_found_df, ignore_index=True)
+                                        _ms2_pr_th_chker_df = _found_df.query('1000 <= i')
+                                        _ms_dct = ms_spectra_dct[mz2xic]
 
-                            # _mspeaks_lst = spectrum.peaks
-                            # # Trigger MS/MS at MS precursor > 1000
-                            # _found_lst = []
-                            # for _pre_found_mz in _mspeaks_lst:
-                            #     if _pre_found_mz[1] > 1000:
-                            #         _found_lst.append(_pre_found_mz)
+                                        if _ms2_pr_th_chker_df.shape[0] > 0:
+                                            _tmp_ms1_df = _tmp_ms1_df.sort_values(by='i', ascending=False)
+                                            _tmp_ms1_df = _tmp_ms1_df.head(1000)
+                                            # print(_tmp_ms1_df.head())
+                                            _ms_dct[scan_rt] = (_found_df, _tmp_ms1_df, function, scanid)
+                                        # _found_df.loc[:, 'rt'] = pd.Series(rt_lst, index=_found_df.index)
+                                        # print _found_df.head()
+                                        # print(scan_rt, mz2xic)
+                                        # print(_query_str)
+                                        # xic_dct[mz2xic] = xic_dct[mz2xic].append(_found_df, ignore_index=True)
+                                        # _ms_dct = ms_spectra_dct[mz2xic]
+                                        # _mspeaks_lst = spectrum.highestPeaks(500)
+                                        # _found_lst = (_found_df['mz'].tolist(), _found_df['i'].tolist())
+                                        # print('_found_lst')
+                                        # print(_found_lst)
 
-                            _ms_dct[spectrum['MS:1000016']] = (_found_lst, _mspeaks_lst)
-
-            except KeyError:
-                pass
-
-                # timeDependentIntensities.append([spectrum['MS:1000016'], I, mz])
-        for mz2xic in mz2xic_lst:
-            try:
-                xic_dct[mz2xic] = xic_dct[mz2xic].sort_values(by='rt')
-                # xic_dct[mz2xic].to_csv('xic.csv')
-                rt_whole_lst = xic_dct[mz2xic]['rt'].tolist()
-                rt_dct[mz2xic] = [min(rt_whole_lst), max(rt_whole_lst)]
-            except:
-                pass
+                                        # _mspeaks_lst = spectrum.peaks
+                                        # # Trigger MS/MS at MS precursor > 1000
+                                        # _found_lst = []
+                                        # for _pre_found_mz in _mspeaks_lst:
+                                        #     if _pre_found_mz[1] > 1000:
+                                        #         _found_lst.append(_pre_found_mz)
+                                        # if rt - 1 <= spectrum['MS:1000016'] <= rt:
+                                        # _ms_dct[scan_rt] = (_found_lst, _mspeaks_lst)
+            else:
+                print('not MS1')
+        # for _i, _r in mz2xic_df.iterrows():
+        #     mz2xic = _r['MS1_obs_mz']
+        #     try:
+        #         xic_dct[mz2xic] = xic_dct[mz2xic].sort_values(by='rt')
+        #         # xic_dct[mz2xic].to_csv('xic.csv')
+        #         rt_whole_lst = xic_dct[mz2xic]['rt'].tolist()
+        #         rt_dct[mz2xic] = [min(rt_whole_lst), max(rt_whole_lst)]
+        #     except:
+        #         pass
 
         return rt_dct, xic_dct, ms_spectra_dct

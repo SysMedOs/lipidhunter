@@ -29,6 +29,16 @@ class MSMS(object):
         :param msn_precision: `float` the MSn level tolerance
         :return:
         """
+
+        waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
+                          ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']))
+        for _obo in waters_obo_lst:
+            if _obo not in pymzml.minimum.MIN_REQ:
+                pymzml.minimum.MIN_REQ.append(_obo)
+            else:
+                pass
+                # end hot patch
+
         if 0 < ms1_precision < 1:
             pass
         else:
@@ -40,7 +50,7 @@ class MSMS(object):
         self.mzml_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
         self.encode_type = encode_type
 
-    def get_ms2(self, usr_df, ppm=500):
+    def get_ms2(self, usr_df, ppm=1000):
         """
         Get a list of m/z, a dictinary of Retention time (RT) and ppm value to get the peak list of give m/z
 
@@ -53,6 +63,14 @@ class MSMS(object):
         :return msms_spectra_dct: ``dict`` A dict of m/z of precursor : MS/MS peak list
         """
 
+        waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
+                          ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']))
+        for _obo in waters_obo_lst:
+            if _obo not in pymzml.minimum.MIN_REQ:
+                pymzml.minimum.MIN_REQ.append(_obo)
+            else:
+                pass
+                # end hot patch
 
         if ppm is None:
             ppm = 500
@@ -81,13 +99,13 @@ class MSMS(object):
                 if _function_checker:
                     _function = _function_checker.groups()[2]
                     _scan = _function_checker.groups()[5]
-                    # print (_function, _scan)
+                    print ('_function, _scan', _function, _scan)
                     if (int(_function), int(_scan)) in _ms2_scan_lst:
                         _idx = _ms2_scan_lst.index((int(_function), int(_scan)))
                         _pr_mz = _pr_mz_lst[_idx]
                         print ('Function: %s, Scan_num: %s, Scan_time: %s;' %
                                (_function, _scan, _spectrum['MS:1000016']))
-                        _toppeaks_lst = _spectrum.highestPeaks(500)
+                        _toppeaks_lst = _spectrum.highestPeaks(1000)
                         _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
                         _toppeaks_df['function'] = _function
                         _toppeaks_df['rt'] = _spectrum['MS:1000016']
@@ -100,10 +118,10 @@ class MSMS(object):
                         _msms_dct = msms_spectra_dct[_pr_mz]
                         _msms_dct[_msms] = _toppeaks_df
 
-                        if int(_function) == 4 and int(_scan) == 360:
-                            print ('_______found____750')
-                            print (_msms)
-                            print (_toppeaks_df)
+                        # if int(_function) == 4 and int(_scan) == 360:
+                        #     print ('_______found____750')
+                        #     print (_msms)
+                        #     print (_toppeaks_df)
                 else:
                     print 'NOT MS level'
             except KeyError:

@@ -11,7 +11,8 @@ from EncodeChecker import add_encode_info
 
 
 class TIC(object):
-    def __init__(self, mzml, encode_type, ms1_precision=None, msn_precision=None):
+    # def __init__(self, mzml, encode_type, ms1_precision=None, msn_precision=None):
+    def __init__(self, mzml, ms1_precision=None, msn_precision=None):
         if 0 < ms1_precision < 1:
             pass
         else:
@@ -21,7 +22,7 @@ class TIC(object):
         else:
             msn_precision = 200e-6
         self.mzml_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
-        self.encode_type = encode_type
+        # self.encode_type = encode_type
 
     def get_maxtime(self):
         """
