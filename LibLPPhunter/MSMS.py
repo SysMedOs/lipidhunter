@@ -54,10 +54,7 @@ class MSMS(object):
         """
         Get a list of m/z, a dictinary of Retention time (RT) and ppm value to get the peak list of give m/z
 
-        :param mz2get_lst: A list of m/z to have corresponding MS/MS spectra extracted
-        :type mz2get_lst: list
-        :param rt_dct: A dict contains rt info
-        :type rt_dct: dict
+        :param usr_df:
         :param ppm: ppm values, usually 5~500, default is set to 500
         :type ppm: int
         :return msms_spectra_dct: ``dict`` A dict of m/z of precursor : MS/MS peak list

@@ -141,7 +141,7 @@ def get_spectra(mz, function, ms2_scan_id, scan_info_df, spectra_pl, dda_top=12)
             ms2_scan_id = _tmp_mz_scan_info_df.get_value(_tmp_mz_scan_info_df.index[0], 'scan_id')
             ms2_rt = _tmp_mz_scan_info_df.get_value(_tmp_mz_scan_info_df.index[0], 'rt')
 
-            print('%.6f @ DDA#:%.0f | Total scan id:%.0f | function: %.0f | Scan ID: %.0f | RT: %.4f'
+            print('%.6f @ DDA#: %.0f | Total scan id: %.0f | function: %.0f | Scan ID: %.0f | RT: %.4f'
                   % (mz, ms2_dda_idx, ms2_spec_idx, ms2_function, ms2_scan_id, ms2_rt)
                   )
 
@@ -173,6 +173,7 @@ def get_spectra(mz, function, ms2_scan_id, scan_info_df, spectra_pl, dda_top=12)
             # print(ms2_df.head(5))
 
             print('--------------- NEXT _idx')
+
         print('== == == == == == NEXT DF')
 
     else:
@@ -230,6 +231,84 @@ def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=
                     ms1_xic_df = ms1_xic_df.append(_found_ms1_df.sort_values(by='ppm').head(1))
 
     return ms1_xic_df
+
+
+def get_xic_all(abbr_info_df, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=500e-6):
+
+    waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
+                      ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']))
+    for _obo in waters_obo_lst:
+        if _obo not in pymzml.minimum.MIN_REQ:
+            pymzml.minimum.MIN_REQ.append(_obo)
+        else:
+            pass
+
+    ms1_obs_df = abbr_info_df.query('MS1_obs_mz > 0')
+    ms1_obs_lst = ms1_obs_df['MS1_obs_mz'].tolist()
+    ms1_obs_lst = sorted(set(ms1_obs_lst))
+    print('Unique precursor m/z:', len(ms1_obs_lst))
+
+    rt_start = rt_range[0]
+    rt_end = rt_range[1]
+
+    ms1_xic_dct = {}
+
+    for _mz in ms1_obs_lst:
+        ms1_xic_dct[_mz] = pd.DataFrame()
+    spec_title_obo = 'MS:1000796'
+    scan_rt_obo = 'MS:1000016'
+
+    spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
+
+    scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)')
+
+    for _spectrum in spec_obj:
+
+        if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
+            _spectrum_title = _spectrum[spec_title_obo]
+            _scan_rt = float(_spectrum[scan_rt_obo])
+            scan_info_checker = scan_info_re.match(_spectrum_title)
+
+            if rt_start <= _scan_rt <= rt_end and scan_info_checker:
+                _function = int(scan_info_checker.groups()[2])
+                if _function == 1:
+                    print('Reading MS survey scan @:', _scan_rt)
+                    # slow but more accurate mode. At least 10 time slower
+                    # _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                    for _ms1_obs in ms1_obs_lst:
+
+                        ms1_xic_df = ms1_xic_dct[_ms1_obs]
+
+                        # slow but more accurate mode. At least 10 time slower
+                        # ms1_low = _ms1_obs - _ms1_obs * ppm * 1e-6
+                        # ms1_high = _ms1_obs + _ms1_obs * ppm * 1e-6
+                        # ms1_query = '%f <= mz <= %f' % (ms1_low, ms1_high)
+
+                        # _found_ms1_df = _tmp_spec_df.query(ms1_query)
+                        # _found_ms1_df.loc[:, 'ppm'] = 1e6 * (_found_ms1_df['mz'] - _ms1_obs) / _ms1_obs
+                        # _found_ms1_df['ppm'] = _found_ms1_df['ppm'].abs()
+                        # _found_ms1_df.loc[:, 'rt'] = _scan_rt
+
+                        # ms1_xic_df = ms1_xic_df.append(_found_ms1_df.sort_values(by='ppm').head(1))
+                        # ms1_xic_dct[_ms1_obs] = ms1_xic_df
+
+                        # faster mode
+                        _xic_lst = _spectrum.hasPeak(_ms1_obs)
+                        if len(_xic_lst) == 1:
+                            _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
+                            _tmp_mz_df.loc[:, 'rt'] = _scan_rt
+                            _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
+                            ms1_xic_df = ms1_xic_df.append(_tmp_mz_df)
+                            ms1_xic_dct[_ms1_obs] = ms1_xic_df
+
+                        if len(_xic_lst) > 1:
+                            _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
+                            _tmp_mz_df.loc[:, 'rt'] = _scan_rt
+                            _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
+                            ms1_xic_df = ms1_xic_df.append(_tmp_mz_df.sort_values(by='i', ascending=False).head(1))
+                            ms1_xic_dct[_ms1_obs] = ms1_xic_df
+
+    return ms1_xic_dct
 
 
 if __name__ == '__main__':

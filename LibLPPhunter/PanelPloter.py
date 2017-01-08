@@ -12,15 +12,10 @@ from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib._png import read_png
 import pandas as pd
 
-from rdkit import Chem
-from rdkit.Chem import AllChem
-from rdkit.Chem import Draw
-
-
 from StructureScore import AssignStructure
 
 
-def plot_spectra(mz_se, xic_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
+def plot_spectra(mz_se, xic_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
                  fa_indicator, lyso_indicator, fa_list_csv, save_img_as=None):
 
     pr_mz = mz_se['mz']
@@ -55,6 +50,8 @@ def plot_spectra(mz_se, xic_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
 
         if _ms_isotope_df.get_value(_ms_isotope_df.index[0], 'mz') == _ms1_pr_df.get_value(_ms1_pr_df.index[0], 'mz'):
             print('>>> Isotope checker=====> passed! >>>')
+
+            xic_df = xic_dct[ms1_obs]
 
             _auto_ident_chker = 0
 
@@ -413,7 +410,7 @@ def plot_spectra(mz_se, xic_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
                 print ('>>> >>> >>> try to plot >>> >>> >>>')
 
                 plt.savefig(save_img_as, dpi=300)
-                print (save_img_as, '=====> Image saved as: %s' % save_img_as)
+                print ('=====> Image saved as: %s' % save_img_as)
                 plt.close()
                 _fa_checker = 0
                 _hg_checker = 0
