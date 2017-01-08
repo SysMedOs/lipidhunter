@@ -16,21 +16,21 @@ class FAindicator(object):
 
     def indicate(self, spec_df, charge=None, top=None, ppm=None):
 
-        if charge in ['PL[+]_mz', 'PL[Na+]_mz', 'TG[+]_mz', 'TG[NH4+]_mz', 'PL[-]_mz', 'PL[FA-]_mz']:
+        if charge in ['PL[+]_usr_mz', 'PL[Na+]_usr_mz', 'TG[+]_usr_mz', 'TG[NH4+]_usr_mz', 'PL[-]_usr_mz', 'PL[FA-]_usr_mz']:
             pass
         else:
-            charge = 'PL[-]_mz'
+            charge = 'PL[-]_usr_mz'
 
-        if charge == 'PL[-]_mz':
+        if charge == 'PL[-]_usr_mz':
             fa_mz_typ_lst = ['[M-H]-', '[M-W-H]-']
 
-        elif charge == 'PL[FA-]_mz':
+        elif charge == 'PL[FA-]_usr_mz':
             fa_mz_typ_lst = ['[M-H]-', '[M+FA-H]-', '[M-W-H]-', 'M+FA-W-H]-']
 
-        elif charge == 'TG[+]_mz':
+        elif charge == 'TG[+]_usr_mz':
             fa_mz_typ_lst = ['[M-OH]+']
 
-        elif charge == 'TG[NH4+]_mz':
+        elif charge == 'TG[NH4+]_usr_mz':
             fa_mz_typ_lst = ['[M-OH]+']
 
         else:

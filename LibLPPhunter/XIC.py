@@ -91,7 +91,7 @@ class XIC(object):
         #     mz_top_lst.append(mz_top)
         # mz_range_lst = zip(mz_bot_lst, mz_top_lst)
 
-        # print 'Start to extract %.4f from %.2f to %.2f with %d ppm' % (mz2xic, rt[0], rt[1], ppm)
+        # print 'Start to extract_mzml %.4f from %.2f to %.2f with %d ppm' % (mz2xic, rt[0], rt[1], ppm)
 
         # timeDependentIntensities = []
         '''

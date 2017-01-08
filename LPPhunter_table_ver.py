@@ -5,9 +5,6 @@
 # For more info please contact zhixu.ni@uni-leipzig.de
 
 from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
 import ConfigParser
 import time
 
@@ -28,8 +25,8 @@ print('Start --->')
 Pl_type = 'PS'
 # sp_name = '70min_SIN_II'
 # infile_name = r'D:\LPPhunter\spectra_mzML\070120_CM_neg_%s.mzML' % sp_name
-# usr_xlsx = r'D:\LPPhunter\inputfiles\%s\Marked_%s_70min_mgfHunter_3.xlsx' % (sp_name, Pl_type)
-# output_folder = r'D:\LPPhunter\images\%s\%s_3' % (sp_name, Pl_type)
+# usr_xlsx = r'D:\LPPhunter\inputfiles\%s\Marked_%s_70min_mgfHunter_3.xlsx' % (sp_name, pl_type)
+# output_folder = r'D:\LPPhunter\images\%s\%s_3' % (sp_name, pl_type)
 # fa_list_csv = r'D:\LPPhunter\FA_list.csv'
 infile_name = r'D:\project_mzML\CM_DDA_neg_mzML\070120_CM_neg_70min_SIN_II.mzML'
 usr_xlsx = r'D:\project_mzML\CM_DDA_neg_mzML\extractor_output\PC\PC_70min_SIN_II.xlsx'

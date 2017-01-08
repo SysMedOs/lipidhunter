@@ -99,7 +99,7 @@ class MSMS(object):
                 if _function_checker:
                     _function = _function_checker.groups()[2]
                     _scan = _function_checker.groups()[5]
-                    print ('_function, _scan', _function, _scan)
+                    print ('_ms2_function, _ms2_scan_id', _function, _scan)
                     if (int(_function), int(_scan)) in _ms2_scan_lst:
                         _idx = _ms2_scan_lst.index((int(_function), int(_scan)))
                         _pr_mz = _pr_mz_lst[_idx]
@@ -118,7 +118,7 @@ class MSMS(object):
                         _msms_dct = msms_spectra_dct[_pr_mz]
                         _msms_dct[_msms] = _toppeaks_df
 
-                        # if int(_function) == 4 and int(_scan) == 360:
+                        # if int(_ms2_function) == 4 and int(_ms2_scan_id) == 360:
                         #     print ('_______found____750')
                         #     print (_msms)
                         #     print (_toppeaks_df)
