@@ -102,8 +102,6 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_precision=50e-6, msn_precision=5
                     scan_id_lst.append(_scanid)
                     pr_mz_lst.append(pr_mz)
 
-                    # print(dda_event_idx, spec_idx, _ms2_function, _scanid, _scan_rt, pr_mz)
-
                     spec_idx += 1
 
     scan_info_df = pd.DataFrame(data=scan_info_dct, columns=['dda_event_idx', 'spec_index', 'rt',
@@ -233,7 +231,7 @@ def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=
     return ms1_xic_df
 
 
-def get_xic_all(abbr_info_df, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=500e-6):
+def get_xic_all(abbr_info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e-6):
 
     waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
                       ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']))

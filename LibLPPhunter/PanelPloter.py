@@ -15,9 +15,8 @@ import pandas as pd
 from StructureScore import AssignStructure
 
 
-def plot_spectra(mz_se, xic_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
+def plot_spectra(mz_se, xic_dct, ident_info_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
                  fa_indicator, lyso_indicator, fa_list_csv, save_img_as=None):
-
     pr_mz = mz_se['mz']
     ms1_obs = mz_se['MS1_obs_mz']
     _usr_rt = mz_se['rt']
@@ -26,9 +25,6 @@ def plot_spectra(mz_se, xic_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
     _usr_formula = mz_se['Formula']
     _usr_ms2_function = mz_se['function']
     _usr_ms2_scan_id = mz_se['scan_id']
-
-    _fa_checker = 0
-    _hg_checker = 0
 
     print ('Start looking for m/z', pr_mz)
 
@@ -52,8 +48,6 @@ def plot_spectra(mz_se, xic_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
             print('>>> Isotope checker=====> passed! >>>')
 
             xic_df = xic_dct[ms1_obs]
-
-            _auto_ident_chker = 0
 
             # Generate A4 image in landscape
             fig, pic_array = plt.subplots(nrows=3, ncols=2, figsize=(11.692, 8.267), sharex=False,
@@ -180,6 +174,32 @@ def plot_spectra(mz_se, xic_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
             #     except:
             #         print('no sn fit')
 
+            # msms spectrum zoomed above 350 start
+            _msms_high_df = ms2_df.query('mz > 350')
+            if len(_msms_high_df['mz'].tolist()) > 0:
+                msms_high_pic.stem(_msms_high_df['mz'].tolist(),
+                                   _msms_high_df['i'].tolist(),
+                                   'black', lw=4, markerfmt=" ")
+                msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+                msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
+                msms_high_pic.set_ylabel("Intensity", fontsize=10)
+                msms_high_pic.set_xlim([350, pr_mz + 20])
+                msms_high_pic.set_ylim([0, max(_msms_high_df['i'].tolist()) * 1.3])
+
+                # add annotations
+                _top_msms_high_df = _msms_high_df.sort_values(by='i', ascending=False)
+                _top_msms_high_df = _top_msms_high_df.head(20)
+                _msms_high_peak_list = zip(_top_msms_high_df['mz'].tolist(),
+                                           _top_msms_high_df['i'].tolist())
+                for _msms_high_peak in _msms_high_peak_list:
+                    _msms_high_peak_str = '%.4f' % _msms_high_peak[0]
+                    _msms_high_peak_y = ((max(_msms_high_df['i'].tolist()) * 1.3) * 0.175 +
+                                         _msms_high_peak[1])
+                    msms_high_pic.text(_msms_high_peak[0], _msms_high_peak_y, _msms_high_peak_str,
+                                       rotation=90, fontsize=6)
+            else:
+                pass
+
             # msms spectrum zoomed below 355 start
             _msms_low_df = ms2_df.query('mz < 350')
             if len(_msms_low_df['mz'].tolist()) > 0:
@@ -211,217 +231,80 @@ def plot_spectra(mz_se, xic_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
                                           _top_msms_low_df['i'].tolist())
                 for _msms_low_peak in _msms_low_peak_list:
                     _msms_low_peak_str = '%.4f' % _msms_low_peak[0]
-                    _msms_low_peak_y = (max(_msms_low_df['i'].tolist()) * 1.3) * 0.175 + \
-                                       _msms_low_peak[1]
+                    _msms_low_peak_y = ((max(_msms_low_df['i'].tolist()) * 1.3)
+                                        * 0.175 + _msms_low_peak[1]
+                                        )
                     msms_low_pic.text(_msms_low_peak[0], _msms_low_peak_y, _msms_low_peak_str,
                                       rotation=90, fontsize=6)
             else:
                 pass
 
-            # get identification
-            (fa_df, fa_info_dct) = fa_indicator.indicate(ms2_df)
+            # print fa_info
 
-            if fa_info_dct is not None:
-                # print fa_info
-                fa_count = len(fa_info_dct['mz'])
-                fa_count_lst = range(fa_count)
-                _fa_name_lst = fa_info_dct['name']
-                _fa_mz_lst = fa_info_dct['mz']
-                _fa_i_lst = fa_info_dct['i']
-                _fa_ppm_lst = fa_info_dct['ppm']
-                _fa_delta_lst = fa_info_dct['D']
+            _ident_table_df = ident_info_df['SCORE_INFO']
+            _fa_table_df = ident_info_df['FA_INFO']
+            _lyso_table_df = ident_info_df['LYSO_INFO']
 
-                fa_info_df = pd.DataFrame(fa_info_dct, columns=['name', 'mz', 'i', 'ppm'])
-                fa_info_df = fa_info_df.sort_values(by='i', ascending=False)
-                fa_info_df = fa_info_df.round({'mz': 4})
-                # fa_info_df.index = range(1, len(fa_info['mz']) + 1)
-                table_info_df = fa_info_df
+            ident_col_labels = _ident_table_df.columns.tolist()
+            ident_row_labels = _ident_table_df.index.tolist()
+            ident_table_vals = map(list, _ident_table_df.values)
 
-                # print table_info_df.head(5)
-                old_idx_lst = table_info_df.index.tolist()
-                table_info_df.index = range(1, len(old_idx_lst) + 1)
+            fa_col_labels = _fa_table_df.columns.tolist()
+            fa_row_labels = _fa_table_df.index.tolist()
+            fa_table_vals = map(list, _fa_table_df.values)
 
-                col_labels = table_info_df.columns.tolist()
-                # col_labels = mz_info_df.head().tolist()
-                row_labels = table_info_df.index.tolist()
-                table_vals = map(list, table_info_df.values)
-                try:
-                    # the rectangle is where I want to place the table
-                    fa_table = msms_pic.table(cellText=table_vals, rowLabels=row_labels,
-                                              colWidths=[.10] * len(col_labels),
-                                              colLabels=col_labels, loc='upper center')
-                    fa_table.set_fontsize(5)
-                    _auto_ident_chker += 1
-                except IndexError:
-                    pass
-                    # table_props = the_table.properties()
-                    # table_cells = table_props['child_artists']
-                    # for cell in table_cells:
-                    #     cell.set_height(0.12)
+            lyso_col_labels = _lyso_table_df.columns.tolist()
+            lyso_row_labels = _lyso_table_df.index.tolist()
+            lyso_table_vals = map(list, _lyso_table_df.values)
 
-            # msms spectrum zoomed above 350 start
-            _msms_high_df = ms2_df.query('mz > 350')
-            if len(_msms_high_df['mz'].tolist()) > 0:
-                msms_high_pic.stem(_msms_high_df['mz'].tolist(),
-                                   _msms_high_df['i'].tolist(),
-                                   'black', lw=4, markerfmt=" ")
-                msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-                msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
-                msms_high_pic.set_ylabel("Intensity", fontsize=10)
-                msms_high_pic.set_xlim([350, pr_mz + 20])
-                msms_high_pic.set_ylim([0, max(_msms_high_df['i'].tolist()) * 1.3])
+            try:
 
-                # add annotations
-                _top_msms_high_df = _msms_high_df.sort_values(by='i', ascending=False)
-                _top_msms_high_df = _top_msms_high_df.head(20)
-                _msms_high_peak_list = zip(_top_msms_high_df['mz'].tolist(),
-                                           _top_msms_high_df['i'].tolist())
-                for _msms_high_peak in _msms_high_peak_list:
-                    _msms_high_peak_str = '%.4f' % _msms_high_peak[0]
-                    _msms_high_peak_y = ((max(_msms_high_df['i'].tolist()) * 1.3) * 0.175 +
-                                         _msms_high_peak[1])
-                    msms_high_pic.text(_msms_high_peak[0], _msms_high_peak_y, _msms_high_peak_str,
-                                       rotation=90, fontsize=6)
-            else:
+                ident_table = ms_pic.table(cellText=ident_table_vals, rowLabels=ident_row_labels,
+                                           colWidths=[.2] * len(ident_col_labels),
+                                           colLabels=ident_col_labels, loc='upper left')
+                ident_table.set_fontsize(6)
+            except:
                 pass
 
-            # get Lyso identification
-            (lyso_df, lyso_info_dct) = lyso_indicator.indicate(ms2_df, pr_mz, PLtype=_usr_pl_class)
-
-            if lyso_info_dct is not None:
-                # print lyso_info
-                lyso_count = len(lyso_info_dct['mz'])
-                lyso_count_lst = range(lyso_count)
-                _lyso_name_lst = lyso_info_dct['name']
-                _lyso_mz_lst = lyso_info_dct['mz']
-                _lyso_i_lst = lyso_info_dct['i']
-                _lyso_ppm_lst = lyso_info_dct['ppm']
-                _lyso_delta_lst = lyso_info_dct['D']
-
-                lyso_info_df = pd.DataFrame(lyso_info_dct, columns=['name', 'mz', 'i', 'ppm'])
-                lyso_info_df = lyso_info_df.sort_values(by='i', ascending=False)
-                lyso_info_df = lyso_info_df.round({'mz': 4})
-
-                # print table_info_df.head(5)
-                old_idx_lst = lyso_info_df.index.tolist()
-                lyso_info_df.index = range(1, len(old_idx_lst) + 1)
-
-                col_labels = lyso_info_df.columns.tolist()
-                # col_labels = mz_info_df.head().tolist()
-                row_labels = lyso_info_df.index.tolist()
-                table_vals = map(list, lyso_info_df.values)
-                # plot lyso table
-                try:
-                    # the rectangle is where I want to place the table
-                    lyso_table = msms_high_pic.table(cellText=table_vals, rowLabels=row_labels,
-                                                     colWidths=[.22, .1, .1, .1],
-                                                     colLabels=col_labels, loc='upper center')
-                    lyso_table.set_fontsize(7)
-                    _auto_ident_chker += 1
-                except IndexError:
-                    pass
-
-                # get assignment
-                ident_struct = AssignStructure()
-                _match_fa_df = pd.DataFrame()
-                usr_std_fa_df = pd.read_csv(fa_list_csv)
-                usr_std_fa_df['C'].astype(int)
-                usr_std_fa_df['DB'].astype(int)
-                for _ident_idx, _ident_row in usr_std_fa_df.iterrows():
-                    pre_ident_fa_df = usr_std_fa_df
-                    pre_ident_fa_df['abs'] = 0
-                    tmp_fa = pre_ident_fa_df.ix[_ident_idx]['FA']
-                    if tmp_fa in fa_info_dct['fa']:
-                        _tmp_fa_idx = fa_info_dct['fa'].index(tmp_fa)
-                        _tmp_i = fa_info_dct['abs'][_tmp_fa_idx]
-                        pre_ident_fa_df.set_value(_ident_idx, 'abs', _tmp_i)
-                        _match_fa_df = _match_fa_df.append(pre_ident_fa_df.ix[_ident_idx])
-                _match_lyso_df = pd.DataFrame()
-                for _ident_idx, _ident_row in usr_std_fa_df.iterrows():
-                    pre_lyso_fa_df = usr_std_fa_df
-                    pre_lyso_fa_df['type'] = ''
-                    pre_lyso_fa_df['abs'] = 0
-                    tmp_lyso = pre_lyso_fa_df.ix[_ident_idx]['FA']
-                    lyso_info_zip_lst = zip(lyso_info_dct['type'], lyso_info_dct['fa'])
-                    if ('Lyso-H2O', tmp_lyso) in lyso_info_zip_lst:
-                        # _tmp_lyso_idx = lyso_info_dct['fa'].index(tmp_lyso)
-                        # _tmp_type = lyso_info_dct['type'][_tmp_lyso_idx]
-                        _tmp_lyso_idx = lyso_info_zip_lst.index(('Lyso-H2O', tmp_lyso))
-                        _tmp_i = lyso_info_dct['abs'][_tmp_lyso_idx]
-                        pre_lyso_fa_df.set_value(_ident_idx, 'type', 'Lyso-H2O')
-                        pre_lyso_fa_df.set_value(_ident_idx, 'abs', _tmp_i)
-                        _match_lyso_df = _match_lyso_df.append(pre_lyso_fa_df.ix[_ident_idx])
-                    if ('Lyso', tmp_lyso) in lyso_info_zip_lst:
-                        _tmp_lyso_idx = lyso_info_zip_lst.index(('Lyso', tmp_lyso))
-                        _tmp_i = lyso_info_dct['abs'][_tmp_lyso_idx]
-                        pre_lyso_fa_df.set_value(_ident_idx, 'type', 'Lyso')
-                        pre_lyso_fa_df.set_value(_ident_idx, 'abs', _tmp_i)
-                        _match_lyso_df = _match_lyso_df.append(pre_lyso_fa_df.ix[_ident_idx])
-
-                print ('_match_fa_df', _match_fa_df.shape, '_match_lyso_df', _match_lyso_df.shape)
-
-                _ident_df = ident_struct.check(abbr_id, _match_fa_df,
-                                               _match_lyso_df, usr_std_fa_df)
-                print ('_ident_df')
-                print (_ident_df)
-
-                if _ident_df.shape[0] > 0:
-                    # print fa_info
-
-                    _ident_table_df = _ident_df.loc[:, ['Abbr', 'Score']]
-                    _ident_table_df = _ident_table_df.sort_values(by=['Score', 'Abbr'],
-                                                                  ascending=[False, True])
-                    # print table_info_df.head(5)
-                    old_idx_lst = _ident_table_df.index.tolist()
-                    _ident_table_df.index = range(1, len(old_idx_lst) + 1)
-
-                    col_labels = _ident_table_df.columns.tolist()
-                    # col_labels = mz_info_df.head().tolist()
-                    row_labels = _ident_table_df.index.tolist()
-                    table_vals = map(list, _ident_table_df.values)
-
-                    try:
-                        # the rectangle is where I want to place the table
-                        fa_table = ms_pic.table(cellText=table_vals, rowLabels=row_labels,
-                                                colWidths=[.2] * len(col_labels),
-                                                colLabels=col_labels, loc='upper left')
-                        fa_table.set_fontsize(6)
-                        _auto_ident_chker += 1
-                    except:
-                        pass
-
-                # if _auto_ident_chker > 0:
-                # set title
-                xic_title_str = 'XIC of m/z %.4f Abbr.: %s @ %.4f' % (ms1_obs, abbr_id, _mzlib_id)
-                ms_title_str = 'MS @ %.3f min [top 1000]' % _usr_rt
-                ms_zoom_title_str = 'MS zoomed'
-                msms_title_str = ('MS/MS of m/z %.4f @ fuc %d - %.3f min [top 500]' %
-                                  (pr_mz, _func_id, _usr_rt))
-                msms_low_str = 'MS/MS zoomed below 350'
-                msms_high_str = 'MS/MS zoomed above 350'
-
-                xic_pic.set_title(xic_title_str, color='b', fontsize=10, y=0.98)
-                ms_pic.set_title(ms_title_str, color='b', fontsize=10, y=0.98)
-                ms_zoom_pic.set_title(ms_zoom_title_str, color='b', fontsize=10, y=0.98)
-                msms_pic.set_title(msms_title_str, color='b', fontsize=10, y=0.98)
-                msms_low_pic.set_title(msms_low_str, color='b', fontsize=10, y=0.98)
-                msms_high_pic.set_title(msms_high_str, color='b', fontsize=10, y=0.98)
-
-                print ('>>> >>> >>> try to plot >>> >>> >>>')
-
-                plt.savefig(save_img_as, dpi=300)
-                print ('=====> Image saved as: %s' % save_img_as)
-                plt.close()
-                _fa_checker = 0
-                _hg_checker = 0
-            else:
+            try:
+                fa_table = msms_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
+                                          colWidths=[.2] * len(fa_col_labels),
+                                          colLabels=fa_col_labels, loc='upper center')
+                fa_table.set_fontsize(6)
+            except:
                 pass
+
+            try:
+                lyso_table = msms_high_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
+                                                 colWidths=[.2] * len(lyso_col_labels),
+                                                 colLabels=lyso_col_labels, loc='upper left')
+                lyso_table.set_fontsize(6)
+            except:
+                pass
+
+            # set title
+            xic_title_str = 'XIC of m/z %.4f Abbr.: %s @ %.4f' % (ms1_obs, abbr_id, _mzlib_id)
+            ms_title_str = 'MS @ %.3f min [top 1000]' % _usr_rt
+            ms_zoom_title_str = 'MS zoomed'
+            msms_title_str = ('MS/MS of m/z %.4f @ fuc %d - %.3f min [top 500]' %
+                              (pr_mz, _func_id, _usr_rt))
+            msms_low_str = 'MS/MS zoomed below 350'
+            msms_high_str = 'MS/MS zoomed above 350'
+
+            xic_pic.set_title(xic_title_str, color='b', fontsize=10, y=0.98)
+            ms_pic.set_title(ms_title_str, color='b', fontsize=10, y=0.98)
+            ms_zoom_pic.set_title(ms_zoom_title_str, color='b', fontsize=10, y=0.98)
+            msms_pic.set_title(msms_title_str, color='b', fontsize=10, y=0.98)
+            msms_low_pic.set_title(msms_low_str, color='b', fontsize=10, y=0.98)
+            msms_high_pic.set_title(msms_high_str, color='b', fontsize=10, y=0.98)
+
+            print ('>>> >>> >>> try to plot >>> >>> >>>')
+
+            plt.savefig(save_img_as, dpi=300)
+            print ('=====> Image saved as: %s' % save_img_as)
+            plt.close()
+
         else:
             print ('Isotopes >>>>>> PASS !!!!!!')
             plt.close()
             print ('Not identified !!!!!! =>> >>>>>>')
-
-    else:
-        print ('Corresponding MS1 to low >>>>>> PASS !!!!!!')
-        plt.close()
-        print ('Not identified !!!!!! =>> >>>>>>')

@@ -16,7 +16,8 @@ class FAindicator(object):
 
     def indicate(self, spec_df, charge=None, top=None, ppm=None):
 
-        if charge in ['PL[+]_usr_mz', 'PL[Na+]_usr_mz', 'TG[+]_usr_mz', 'TG[NH4+]_usr_mz', 'PL[-]_usr_mz', 'PL[FA-]_usr_mz']:
+        if charge in ['PL[+]_usr_mz', 'PL[Na+]_usr_mz', 'TG[+]_usr_mz', 'TG[NH4+]_usr_mz',
+                      'PL[-]_usr_mz', 'PL[FA-]_usr_mz']:
             pass
         else:
             charge = 'PL[-]_usr_mz'
