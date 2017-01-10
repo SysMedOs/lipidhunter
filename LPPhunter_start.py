@@ -109,34 +109,53 @@ for _i, _row_se in checked_info_df.iterrows():
         _usr_abbr_bulk = _usr_abbr_bulk.replace('/', '_')
 
         print ('_usr_abbr_bulk', _usr_abbr_bulk)
-        score_df = score_df[['Lipid_abbr', 'Score']]
-        score_df = score_df.rename({'Lipid_abbr': 'Proposed structure'})
+        score_df = score_df[['Lipid_species', 'Score']]
+        score_df = score_df.rename({'Lipid_species': 'Proposed structures'})
         score_df = score_df.query('Score > 20')
         score_df = score_df.sort_values(by='Score', ascending=False)
+        score_df = score_df.reset_index(drop=True)
+        score_df.index += 1
+        print(score_df)
+
+        # format fa info DataFrame
+        fa_ident_df = fa_ident_df[['Lipid_species', 'mz', 'i', 'ppm']].reset_index(drop=True)
+        fa_ident_df = fa_ident_df.rename({'Lipid_species': 'Identified species'})
+        fa_ident_df = fa_ident_df.round({'mz': 4, 'ppm': 2})
+        print(fa_ident_df)
+        _fa_i_lst = []
+        for _idx, _fa_se in fa_ident_df.iterrows():
+            _fa_i_lst.append('%.2e' % float(_fa_se['i']))
+        fa_ident_df.loc[:, 'i'] = _fa_i_lst
+        fa_ident_df.index += 1
+        print(fa_ident_df)
 
         # merge Lyso and Lyso - H2O
         lyso_ident_df = lyso_ident_df.append(lyso_w_ident_df)
-        lyso_ident_df = lyso_ident_df.sort_values(by='i', ascending=False)
-
-        score_df = score_df.reset_index(drop=True)
-        fa_ident_df = fa_ident_df.reset_index(drop=True)
-        lyso_ident_df = lyso_ident_df.reset_index(drop=True)
-
-        fa_ident_df = fa_ident_df.round({'mz': 4, 'ppm': 2})
-        lyso_ident_df = lyso_ident_df.round({'mz': 4, 'ppm': 2})
-
-        score_df.index += 1
-        fa_ident_df.index += 1
-        lyso_ident_df.index += 1
-
-        print('score_df')
+        if lyso_ident_df.shape[0] > 0:
+            lyso_ident_df = lyso_ident_df.sort_values(by='i', ascending=False)
+            lyso_ident_df = lyso_ident_df[['Lipid_species', 'mz', 'i', 'ppm']].reset_index(drop=True)
+            lyso_ident_df = lyso_ident_df.rename({'Lipid_species': 'Identified species'})
+            lyso_ident_df = lyso_ident_df.round({'mz': 4, 'ppm': 2})
+            print(lyso_ident_df)
+            _lyso_i_lst = []
+            for _idx, _lyso_se in lyso_ident_df.iterrows():
+                _lyso_i_lst.append('%.2e' % float(_lyso_se['i']))
+            lyso_ident_df.loc[:, 'i'] = _lyso_i_lst
+            lyso_ident_df.index += 1
+            print(lyso_ident_df)
+        else:
+            lyso_ident_df = pd.DataFrame()
 
         usr_ident_info_df = {'SCORE_INFO': score_df, 'FA_INFO': fa_ident_df, 'LYSO_INFO': lyso_ident_df}
 
         if score_df.shape[0] > 0:
 
-            img_name = output_folder + '\%s_%.4f_scan%.0f_%.4f_%s.png' % (pl_type, _usr_mz, ms2_spec_idx,
-                                                                          _usr_ms2_rt, _usr_abbr_bulk)
+            img_name = output_folder + '\%s_%.4f_rt%.4f_DDAtop%.0f_scan%.0f_%s.png' % (pl_type, _usr_mz,
+                                                                                       _usr_ms2_rt,
+                                                                                       _usr_ms2_function - 1,
+                                                                                       _usr_ms2_scan_id,
+                                                                                       _usr_abbr_bulk
+                                                                                       )
 
             plot_spectra(_row_se, xic_dct, usr_ident_info_df,
                          _ms1_rt, _ms2_rt, ms1_df, ms2_df,

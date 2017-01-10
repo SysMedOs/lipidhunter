@@ -245,38 +245,50 @@ def plot_spectra(mz_se, xic_dct, ident_info_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
             _fa_table_df = ident_info_df['FA_INFO']
             _lyso_table_df = ident_info_df['LYSO_INFO']
 
-            ident_col_labels = _ident_table_df.columns.tolist()
+            ident_col_labels = _ident_table_df.columns.values.tolist()
             ident_row_labels = _ident_table_df.index.tolist()
             ident_table_vals = map(list, _ident_table_df.values)
+            # ident_col_width_lst = [0.03 * len(str(x)) for x in ident_col_labels]
+            ident_col_width_lst = [0.3, 0.1]
 
-            fa_col_labels = _fa_table_df.columns.tolist()
+            fa_col_labels = _fa_table_df.columns.values.tolist()
             fa_row_labels = _fa_table_df.index.tolist()
             fa_table_vals = map(list, _fa_table_df.values)
+            # fa_col_width_lst = [0.025 * len(str(x)) for x in fa_col_labels]
+            fa_col_width_lst = [0.3, 0.1, 0.1, 0.1]
 
-            lyso_col_labels = _lyso_table_df.columns.tolist()
+            lyso_col_labels = _lyso_table_df.columns.values.tolist()
             lyso_row_labels = _lyso_table_df.index.tolist()
             lyso_table_vals = map(list, _lyso_table_df.values)
+            # lyso_col_width_lst = [0.01 * len(str(x)) for x in lyso_col_labels]
+            lyso_col_width_lst = [0.3, 0.1, 0.1, 0.1]
+
+            print(ident_col_width_lst)
+            print(fa_col_width_lst)
+            print(lyso_col_width_lst)
 
             try:
 
                 ident_table = ms_pic.table(cellText=ident_table_vals, rowLabels=ident_row_labels,
-                                           colWidths=[.175] * len(ident_col_labels),
+                                           colWidths=ident_col_width_lst,
                                            colLabels=ident_col_labels, loc='upper right')
                 ident_table.set_fontsize(6)
             except:
                 pass
 
             try:
+
                 fa_table = msms_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
-                                          colWidths=[.09] * len(fa_col_labels),
+                                          colWidths=fa_col_width_lst,
                                           colLabels=fa_col_labels, loc='upper center')
                 fa_table.set_fontsize(6)
             except:
                 pass
 
             try:
+
                 lyso_table = msms_high_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
-                                                 colWidths=[.09] * len(lyso_col_labels),
+                                                 colWidths=lyso_col_width_lst,
                                                  colLabels=lyso_col_labels, loc='upper center')
                 lyso_table.set_fontsize(6)
             except:
