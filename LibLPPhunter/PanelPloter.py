@@ -260,15 +260,15 @@ def plot_spectra(mz_se, xic_dct, ident_info_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
             try:
 
                 ident_table = ms_pic.table(cellText=ident_table_vals, rowLabels=ident_row_labels,
-                                           colWidths=[.2] * len(ident_col_labels),
-                                           colLabels=ident_col_labels, loc='upper left')
+                                           colWidths=[.175] * len(ident_col_labels),
+                                           colLabels=ident_col_labels, loc='upper right')
                 ident_table.set_fontsize(6)
             except:
                 pass
 
             try:
                 fa_table = msms_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
-                                          colWidths=[.2] * len(fa_col_labels),
+                                          colWidths=[.09] * len(fa_col_labels),
                                           colLabels=fa_col_labels, loc='upper center')
                 fa_table.set_fontsize(6)
             except:
@@ -276,8 +276,8 @@ def plot_spectra(mz_se, xic_dct, ident_info_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
 
             try:
                 lyso_table = msms_high_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
-                                                 colWidths=[.2] * len(lyso_col_labels),
-                                                 colLabels=lyso_col_labels, loc='upper left')
+                                                 colWidths=[.09] * len(lyso_col_labels),
+                                                 colLabels=lyso_col_labels, loc='upper center')
                 lyso_table.set_fontsize(6)
             except:
                 pass

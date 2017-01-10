@@ -113,17 +113,24 @@ for _i, _row_se in checked_info_df.iterrows():
         score_df = score_df.rename({'Lipid_abbr': 'Proposed structure'})
         score_df = score_df.query('Score > 20')
         score_df = score_df.sort_values(by='Score', ascending=False)
-        score_df = score_df.reset_index(drop=True)
-        print('score_df')
-        print(score_df)
+
+        # merge Lyso and Lyso - H2O
         lyso_ident_df = lyso_ident_df.append(lyso_w_ident_df)
         lyso_ident_df = lyso_ident_df.sort_values(by='i', ascending=False)
 
-        lyso_ident_df = lyso_ident_df.reset_index(drop=True)
+        score_df = score_df.reset_index(drop=True)
         fa_ident_df = fa_ident_df.reset_index(drop=True)
+        lyso_ident_df = lyso_ident_df.reset_index(drop=True)
 
-        lyso_ident_df = lyso_ident_df.round({'mz': 4, 'ppm': 2})
         fa_ident_df = fa_ident_df.round({'mz': 4, 'ppm': 2})
+        lyso_ident_df = lyso_ident_df.round({'mz': 4, 'ppm': 2})
+
+        score_df.index += 1
+        fa_ident_df.index += 1
+        lyso_ident_df.index += 1
+
+        print('score_df')
+
         usr_ident_info_df = {'SCORE_INFO': score_df, 'FA_INFO': fa_ident_df, 'LYSO_INFO': lyso_ident_df}
 
         if score_df.shape[0] > 0:

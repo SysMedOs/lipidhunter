@@ -14,18 +14,131 @@ class ScoreGenerator:
         self.fa_def_df = fa_def_df
         self.weight_df = weight_df
 
+    @staticmethod
+    def get_pr_mz(charge_type, mz_lib):
+
+        pr_mz = 0.0
+
+        if charge_type in ['[M-H]-', '[M+HCOO]-', '[M+FA-H]-', '[M+CH3COO]-', '[M+OAc-H]-', '[M+AcOH-H]-']:
+            charge_mode = 'NEG'
+            if charge_type == '[M-H]-':
+                pr_mz = mz_lib
+            elif charge_type in ['[M+HCOO]-', '[M+FA-H]-']:
+                pr_mz = mz_lib - 46.005480  # - HCOOH
+            elif charge_type == '[M+CH3COO]-':
+                pr_mz = mz_lib - 60.021130  # - CH3COOH
+
+        elif charge_type in ['[M+H]+', '[M+Na]+', '[M+NH4]+', '[M+K]+']:
+            charge_mode = 'POS'
+            if charge_type == '[M+H]+':
+                pr_mz = mz_lib
+            elif charge_type == '[M+Na]+':
+                pr_mz = mz_lib - 22.989770 + 1.007825  # - Na + H
+            elif charge_type == '[M+NH4]+':
+                pr_mz = mz_lib - 17.026549  # - NH3
+            elif charge_type == '[M+K]+':
+                pr_mz = mz_lib - 38.963708 + 1.007825  # - K + H
+        else:
+            charge_mode = 'NEG'
+            pr_mz = mz_lib
+
+        return pr_mz, charge_mode
+
+    @staticmethod
+    def decode_abbr(abbr):
+
+        pl_checker = re.compile(r'(P[ACEGSI])([(])(.*)([)])')
+        pip_checker = re.compile(r'(PIP)([(])(.*)([)])')
+        tg_checker = re.compile(r'(TG)([(])(.*)([)])')
+        fa_checker = re.compile(r'(\d{1,2})([:])(\d)')
+        fa_o_checker = re.compile(r'(O-)(\d{1,2})([:])(\d)')
+        fa_p_checker = re.compile(r'(P-)(\d{1,2})([:])(\d)')
+
+        # Check PL Type
+        _pl_typ = ''
+        bulk_fa_typ = ''
+        bulk_fa_linker = ''
+        bulk_fa_c = 0
+        bulk_fa_db = 0
+        lyso_fa_linker_dct = {'sn1': '', 'sn2': ''}
+
+        if pl_checker.match(abbr):
+            print ('PL')
+            pl_re_chk = pl_checker.match(abbr)
+            pl_typ_lst = pl_re_chk.groups()
+            _pl_typ = pl_typ_lst[0]
+            bulk_fa_typ = pl_typ_lst[2]
+        if pip_checker.match(abbr):
+            print ('PIP')
+            pip_re_chk = pip_checker.match(abbr)
+            pip_typ_lst = pip_re_chk.groups()
+            _pl_typ = pip_typ_lst[0]
+            bulk_fa_typ = pip_typ_lst[2]
+        if tg_checker.match(abbr):
+            print ('TG')
+            pip_re_chk = pip_checker.match(abbr)
+            pip_typ_lst = pip_re_chk.groups()
+            _pl_typ = pip_typ_lst[0]
+            bulk_fa_typ = pip_typ_lst[2]
+        if fa_checker.match(abbr):
+            print ('FA')
+            _pl_typ = 'FA'
+            bulk_fa_typ = abbr
+        if fa_o_checker.match(abbr):
+            print ('FA')
+            _pl_typ = 'FA'
+            bulk_fa_typ = abbr
+        if fa_p_checker.match(abbr):
+            print ('FA')
+            _pl_typ = 'FA'
+            bulk_fa_typ = abbr
+
+        print(bulk_fa_typ)
+
+        if fa_checker.match(bulk_fa_typ):
+            bulk_fa_linker = 'A-A-'
+            lyso_fa_linker_dct = {'sn1': '', 'sn2': ''}
+            fa_chk = fa_checker.match(bulk_fa_typ)
+            bulk_fa_lst = fa_chk.groups()
+            bulk_fa_c = bulk_fa_lst[0]
+            bulk_fa_db = bulk_fa_lst[2]
+        elif fa_o_checker.match(bulk_fa_typ):
+            bulk_fa_linker = 'O-A-'
+            lyso_fa_linker_dct = {'sn1': 'O-', 'sn2': ''}
+            fa_chk = fa_o_checker.match(bulk_fa_typ)
+            bulk_fa_lst = fa_chk.groups()
+            bulk_fa_c = bulk_fa_lst[1]
+            bulk_fa_db = bulk_fa_lst[3]
+        elif fa_p_checker.match(bulk_fa_typ):
+            bulk_fa_linker = 'P-A-'
+            lyso_fa_linker_dct = {'sn1': 'P-', 'sn2': ''}
+            fa_chk = fa_p_checker.match(bulk_fa_typ)
+            bulk_fa_lst = fa_chk.groups()
+            bulk_fa_c = bulk_fa_lst[1]
+            bulk_fa_db = bulk_fa_lst[3]
+
+        bulk_fa_c = int(bulk_fa_c)
+        bulk_fa_db = int(bulk_fa_db)
+
+        lipid_info_dct = {'TYPE': _pl_typ, 'LINK': bulk_fa_linker, 'C': bulk_fa_c, 'DB': bulk_fa_db,
+                          'LYSO_LINK': lyso_fa_linker_dct}
+
+        return lipid_info_dct
+
     def get_fa_search(self, abbr, charge_type, mz_lib, ms2_df, ms2_precision=500e-6, ms2_threshold=100):
 
         fa_ident_df = pd.DataFrame()
         lyso_ident_df = pd.DataFrame()
         lyso_w_ident_df = pd.DataFrame()
 
-        if charge_type in ['[M-H]-', '[M+HCOO]-']:
-            charge_mode = 'NEG'
-        elif charge_type in ['[M+H]+', '[M+Na]+', '[M+NH4]+', '[M+K]+']:
-            charge_mode = 'POS'
-        else:
-            charge_mode = 'NEG'
+        lipid_info_dct = self.decode_abbr(abbr)
+        _pl_typ = lipid_info_dct['TYPE']
+        bulk_fa_c = lipid_info_dct['C']
+        bulk_fa_db = lipid_info_dct['DB']
+        bulk_fa_linker = lipid_info_dct['LINK']
+        lyso_fa_linker_dct = lipid_info_dct['LYSO_LINK']
+
+        calc_pr_mz, charge_mode = self.get_pr_mz(charge_type, mz_lib)
 
         if abbr[:2] in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'SM']:
             lipid_type = 'PL'
@@ -37,8 +150,8 @@ class ScoreGenerator:
         if lipid_type == 'PL' and charge_mode == 'NEG':
             fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M-H]-', 'NL-H2O']]
             fa_chk_df = fa_chk_df.rename(columns={'[M-H]-': 'sn', 'mass': 'NL'})
-            fa_chk_df['M-sn'] = mz_lib - fa_chk_df['NL-H2O']
-            fa_chk_df['M-(sn-H2O)'] = mz_lib - fa_chk_df['NL']
+            fa_chk_df['M-sn'] = calc_pr_mz - fa_chk_df['NL-H2O']
+            fa_chk_df['M-(sn-H2O)'] = calc_pr_mz - fa_chk_df['NL']
 
             for _i, _fa_se in fa_chk_df.iterrows():
 
@@ -74,17 +187,23 @@ class ScoreGenerator:
                     elif _frag_type == 'M-sn':
                         lyso_ident_df = lyso_ident_df.append(_frag_df)
                     elif _frag_type == 'M-(sn-H2O)':
-                        lyso_w_ident_df = lyso_ident_df.append(_frag_df)
+                        lyso_w_ident_df = lyso_w_ident_df.append(_frag_df)
 
-        fa_ident_df = fa_ident_df.query('i > %f' % ms2_threshold)
-        lyso_ident_df = lyso_ident_df.query('i > %f' % ms2_threshold)
-        lyso_w_ident_df = lyso_w_ident_df.query('i > %f' % ms2_threshold)
-        fa_ident_df = fa_ident_df[['FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
-        lyso_ident_df = fa_ident_df[['FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
-        lyso_w_ident_df = fa_ident_df[['FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
-        fa_ident_df = fa_ident_df.sort_values(by='i', ascending=False).head(10)
-        lyso_ident_df = lyso_ident_df.sort_values(by='i', ascending=False).head(5)
-        lyso_w_ident_df = lyso_w_ident_df.sort_values(by='i', ascending=False).head(5)
+        # format the output DataFrame
+        if fa_ident_df.shape[0] > 0:
+            fa_ident_df = fa_ident_df.query('i > %f' % ms2_threshold)
+            fa_ident_df = fa_ident_df[['FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
+            fa_ident_df = fa_ident_df.sort_values(by='i', ascending=False).head(10)
+
+        if lyso_ident_df.shape[0] > 0:
+            lyso_ident_df = lyso_ident_df.query('i > %f' % ms2_threshold)
+            lyso_ident_df = lyso_ident_df[['FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
+            lyso_ident_df = lyso_ident_df.sort_values(by='i', ascending=False).head(5)
+
+        if lyso_w_ident_df.shape[0] > 0:
+            lyso_w_ident_df = lyso_w_ident_df.query('i > %f' % ms2_threshold)
+            lyso_w_ident_df = lyso_w_ident_df[['FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
+            lyso_w_ident_df = lyso_w_ident_df.sort_values(by='i', ascending=False).head(5)
 
         return fa_ident_df, lyso_ident_df, lyso_w_ident_df
 
@@ -96,62 +215,11 @@ class ScoreGenerator:
         db_sn1_lst = []
         db_sn2_lst = []
 
-        pl_checker = re.compile(r'(P[ACEGSI])([(])(.*)([)])')
-        pip_checker = re.compile(r'(PIP)([(])(.*)([)])')
-        tg_checker = re.compile(r'(TG)([(])(.*)([)])')
-        fa_checker = re.compile(r'(\d{1,2})([:])(\d)')
-        fa_o_checker = re.compile(r'(O-)(\d{1,2})([:])(\d)')
-        fa_p_checker = re.compile(r'(P-)(\d{1,2})([:])(\d)')
-
-        # Check PL Type
-        _pl_typ = ''
-        bulk_fa_typ = ''
-        bulk_fa_linker = ''
-        bulk_fa_c = 0
-        bulk_fa_db = 0
-
-        if pl_checker.match(abbr):
-            print ('PL')
-            pl_re_chk = pl_checker.match(abbr)
-            pl_typ_lst = pl_re_chk.groups()
-            _pl_typ = pl_typ_lst[0]
-            bulk_fa_typ = pl_typ_lst[2]
-        if pip_checker.match(abbr):
-            print ('PIP')
-            pip_re_chk = pip_checker.match(abbr)
-            pip_typ_lst = pip_re_chk.groups()
-            _pl_typ = pip_typ_lst[0]
-            bulk_fa_typ = pip_typ_lst[2]
-        if tg_checker.match(abbr):
-            print ('TG')
-            pip_re_chk = pip_checker.match(abbr)
-            pip_typ_lst = pip_re_chk.groups()
-            _pl_typ = pip_typ_lst[0]
-            bulk_fa_typ = pip_typ_lst[2]
-
-        print(bulk_fa_typ)
-
-        if fa_checker.match(bulk_fa_typ):
-            bulk_fa_linker = 'A-A-'
-            fa_chk = fa_checker.match(bulk_fa_typ)
-            bulk_fa_lst = fa_chk.groups()
-            bulk_fa_c = bulk_fa_lst[0]
-            bulk_fa_db = bulk_fa_lst[2]
-        elif fa_o_checker.match(bulk_fa_typ):
-            bulk_fa_linker = 'O-A-'
-            fa_chk = fa_o_checker.match(bulk_fa_typ)
-            bulk_fa_lst = fa_chk.groups()
-            bulk_fa_c = bulk_fa_lst[1]
-            bulk_fa_db = bulk_fa_lst[3]
-        elif fa_p_checker.match(bulk_fa_typ):
-            bulk_fa_linker = 'P-A-'
-            fa_chk = fa_p_checker.match(bulk_fa_typ)
-            bulk_fa_lst = fa_chk.groups()
-            bulk_fa_c = bulk_fa_lst[1]
-            bulk_fa_db = bulk_fa_lst[3]
-
-        bulk_fa_c = int(bulk_fa_c)
-        bulk_fa_db = int(bulk_fa_db)
+        lipid_info_dct = self.decode_abbr(abbr)
+        pl_typ = lipid_info_dct['TYPE']
+        bulk_fa_c = lipid_info_dct['C']
+        bulk_fa_db = lipid_info_dct['DB']
+        bulk_fa_linker = lipid_info_dct['LINK']
 
         for _i, _fa_se in self.fa_def_df.iterrows():
             # FA, Link, C, DB
@@ -176,7 +244,7 @@ class ScoreGenerator:
                         # else:
                         #     pass
                         _rest_fa_abbr = _rest_fa_df['FA'].tolist()[0]
-                        lipid_abbr = '%s(%s_%s)' % (_pl_typ, _fa_abbr, _rest_fa_abbr)
+                        lipid_abbr = '%s(%s_%s)' % (pl_typ, _fa_abbr, _rest_fa_abbr)
 
                         lipid_abbr_lst.append(lipid_abbr)
                         lipid_sn1_lst.append(_fa_abbr)
@@ -284,153 +352,8 @@ if __name__ == '__main__':
     usr_lyso_ident_df = usr_fa_def_df.head(4)
     usr_lyso_w_ident_df = usr_fa_def_df.head(2)
 
-    # usr_weight_df = score_calc.get_match(usr_lp, '[M+HCOO]-', mz_lib, ms2_df, ms2_precision=500e-6)
-    # print(usr_weight_df)
-
-    # fa_indicator = FAindicator(fa_list_csv)
-    # lyso_indicator = Lyso_indicator(fa_list_csv)
-    #
-    # (fa_df, fa_info_dct) = fa_indicator.indicate(ms2_df)
-    #
-    # if fa_info_dct is not None:
-    #     # print fa_info
-    #     fa_count = len(fa_info_dct['mz'])
-    #     fa_count_lst = range(fa_count)
-    #     _fa_name_lst = fa_info_dct['name']
-    #     _fa_mz_lst = fa_info_dct['mz']
-    #     _fa_i_lst = fa_info_dct['i']
-    #     _fa_ppm_lst = fa_info_dct['ppm']
-    #     _fa_delta_lst = fa_info_dct['D']
-    #
-    #     fa_info_df = pd.DataFrame(fa_info_dct, columns=['name', 'mz', 'i', 'ppm'])
-    #     fa_info_df = fa_info_df.sort_values(by='i', ascending=False)
-    #     fa_info_df = fa_info_df.round({'mz': 4})
-    #     # fa_info_df.index = range(1, len(fa_info['mz']) + 1)
-    #     table_info_df = fa_info_df
-    #
-    #     # print table_info_df.head(5)
-    #     old_idx_lst = table_info_df.index.tolist()
-    #     table_info_df.index = range(1, len(old_idx_lst) + 1)
-    #
-    #     col_labels = table_info_df.columns.tolist()
-    #     # col_labels = mz_info_df.head().tolist()
-    #     row_labels = table_info_df.index.tolist()
-    #     table_vals = map(list, table_info_df.values)
-    #     try:
-    #         # the rectangle is where I want to place the table
-    #         fa_table = msms_pic.table(cellText=table_vals, rowLabels=row_labels,
-    #                                   colWidths=[.10] * len(col_labels),
-    #                                   colLabels=col_labels, loc='upper center')
-    #         fa_table.set_fontsize(5)
-    #         _auto_ident_chker += 1
-    #     except IndexError:
-    #         pass
-    #         # table_props = the_table.properties()
-    #         # table_cells = table_props['child_artists']
-    #         # for cell in table_cells:
-    #         #     cell.set_height(0.12)
-    #
-    # # get Lyso identification
-    # (lyso_df, lyso_info_dct) = lyso_indicator.indicate(ms2_df, pr_mz, PLtype=_usr_pl_class)
-    #
-    # if lyso_info_dct is not None:
-    #     # print lyso_info
-    #     lyso_count = len(lyso_info_dct['mz'])
-    #     lyso_count_lst = range(lyso_count)
-    #     _lyso_name_lst = lyso_info_dct['name']
-    #     _lyso_mz_lst = lyso_info_dct['mz']
-    #     _lyso_i_lst = lyso_info_dct['i']
-    #     _lyso_ppm_lst = lyso_info_dct['ppm']
-    #     _lyso_delta_lst = lyso_info_dct['D']
-    #
-    #     lyso_info_df = pd.DataFrame(lyso_info_dct, columns=['name', 'mz', 'i', 'ppm'])
-    #     lyso_info_df = lyso_info_df.sort_values(by='i', ascending=False)
-    #     lyso_info_df = lyso_info_df.round({'mz': 4})
-    #
-    #     # print table_info_df.head(5)
-    #     old_idx_lst = lyso_info_df.index.tolist()
-    #     lyso_info_df.index = range(1, len(old_idx_lst) + 1)
-    #
-    #     col_labels = lyso_info_df.columns.tolist()
-    #     # col_labels = mz_info_df.head().tolist()
-    #     row_labels = lyso_info_df.index.tolist()
-    #     table_vals = map(list, lyso_info_df.values)
-    #     # plot lyso table
-    #     try:
-    #         # the rectangle is where I want to place the table
-    #         lyso_table = msms_high_pic.table(cellText=table_vals, rowLabels=row_labels,
-    #                                          colWidths=[.22, .1, .1, .1],
-    #                                          colLabels=col_labels, loc='upper center')
-    #         lyso_table.set_fontsize(7)
-    #         _auto_ident_chker += 1
-    #     except IndexError:
-    #         pass
-    #
-    #     # get assignment
-    #     ident_struct = AssignStructure()
-    #     _match_fa_df = pd.DataFrame()
-    #     usr_std_fa_df = pd.read_csv(fa_list_csv)
-    #     usr_std_fa_df['C'].astype(int)
-    #     usr_std_fa_df['DB'].astype(int)
-    #     for _ident_idx, _ident_row in usr_std_fa_df.iterrows():
-    #         pre_ident_fa_df = usr_std_fa_df
-    #         pre_ident_fa_df['abs'] = 0
-    #         tmp_fa = pre_ident_fa_df.ix[_ident_idx]['FA']
-    #         if tmp_fa in fa_info_dct['fa']:
-    #             _tmp_fa_idx = fa_info_dct['fa'].index(tmp_fa)
-    #             _tmp_i = fa_info_dct['abs'][_tmp_fa_idx]
-    #             pre_ident_fa_df.set_value(_ident_idx, 'abs', _tmp_i)
-    #             _match_fa_df = _match_fa_df.append(pre_ident_fa_df.ix[_ident_idx])
-    #     _match_lyso_df = pd.DataFrame()
-    #     for _ident_idx, _ident_row in usr_std_fa_df.iterrows():
-    #         pre_lyso_fa_df = usr_std_fa_df
-    #         pre_lyso_fa_df['type'] = ''
-    #         pre_lyso_fa_df['abs'] = 0
-    #         tmp_lyso = pre_lyso_fa_df.ix[_ident_idx]['FA']
-    #         lyso_info_zip_lst = zip(lyso_info_dct['type'], lyso_info_dct['fa'])
-    #         if ('Lyso-H2O', tmp_lyso) in lyso_info_zip_lst:
-    #             # _tmp_lyso_idx = lyso_info_dct['fa'].index(tmp_lyso)
-    #             # _tmp_type = lyso_info_dct['type'][_tmp_lyso_idx]
-    #             _tmp_lyso_idx = lyso_info_zip_lst.index(('Lyso-H2O', tmp_lyso))
-    #             _tmp_i = lyso_info_dct['abs'][_tmp_lyso_idx]
-    #             pre_lyso_fa_df.set_value(_ident_idx, 'type', 'Lyso-H2O')
-    #             pre_lyso_fa_df.set_value(_ident_idx, 'abs', _tmp_i)
-    #             _match_lyso_df = _match_lyso_df.append(pre_lyso_fa_df.ix[_ident_idx])
-    #         if ('Lyso', tmp_lyso) in lyso_info_zip_lst:
-    #             _tmp_lyso_idx = lyso_info_zip_lst.index(('Lyso', tmp_lyso))
-    #             _tmp_i = lyso_info_dct['abs'][_tmp_lyso_idx]
-    #             pre_lyso_fa_df.set_value(_ident_idx, 'type', 'Lyso')
-    #             pre_lyso_fa_df.set_value(_ident_idx, 'abs', _tmp_i)
-    #             _match_lyso_df = _match_lyso_df.append(pre_lyso_fa_df.ix[_ident_idx])
-    #
-    #     print ('_match_fa_df', _match_fa_df.shape, '_match_lyso_df', _match_lyso_df.shape)
-    #
-    #     _ident_df = ident_struct.check(abbr_id, _match_fa_df,
-    #                                    _match_lyso_df, usr_std_fa_df)
-    #     print ('_ident_df')
-    #     print (_ident_df)
-    #
-    #     if _ident_df.shape[0] > 0:
-    #         # print fa_info
-    #
-    #         _ident_table_df = _ident_df.loc[:, ['Abbr', 'Score']]
-    #         _ident_table_df = _ident_table_df.sort_values(by=['Score', 'Abbr'],
-    #                                                       ascending=[False, True])
-    #         # print table_info_df.head(5)
-    #         old_idx_lst = _ident_table_df.index.tolist()
-    #         _ident_table_df.index = range(1, len(old_idx_lst) + 1)
-    #
-    #         col_labels = _ident_table_df.columns.tolist()
-    #         # col_labels = mz_info_df.head().tolist()
-    #         row_labels = _ident_table_df.index.tolist()
-    #         table_vals = map(list, _ident_table_df.values)
-    #
-    #         try:
-    #             # the rectangle is where I want to place the table
-    #             fa_table = ms_pic.table(cellText=table_vals, rowLabels=row_labels,
-    #                                     colWidths=[.2] * len(col_labels),
-    #                                     colLabels=col_labels, loc='upper left')
-    #             fa_table.set_fontsize(6)
-    #             _auto_ident_chker += 1
-    #         except:
-    #             pass
+    fa_abbr_lst = ['PC(40:5)', '20:5', 'O-18:1', 'P-16:0']
+    for _fa in fa_abbr_lst:
+        print(_fa)
+        fa_info_dct = score_calc.decode_abbr(_fa)
+        print(fa_info_dct)
