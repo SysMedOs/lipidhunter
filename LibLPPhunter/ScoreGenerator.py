@@ -10,9 +10,14 @@ import pandas as pd
 
 
 class ScoreGenerator:
-    def __init__(self, fa_def_df, weight_df):
+    def __init__(self, fa_def_df, weight_df, key_frag_df, lipid_type):
         self.fa_def_df = fa_def_df
         self.weight_df = weight_df
+        self.target_frag_df = key_frag_df.query('CLASS == "%s" and TYPE == "FRAG"' % lipid_type)
+        self.target_nl_df = key_frag_df.query('CLASS == "%s" and TYPE == "NL"' % lipid_type)
+        self.other_frag_df = key_frag_df.query('CLASS != "%s" and TYPE == "FRAG"' % lipid_type)
+        self.other_nl_df = key_frag_df.query('CLASS != "%s" and TYPE == "NL"' % lipid_type)
+        self.lipid_type = lipid_type
 
     @staticmethod
     def get_pr_mz(charge_type, mz_lib):
@@ -340,6 +345,79 @@ class ScoreGenerator:
         else:
             print('!!!!!! NO FA identified =====>--> Skip >>> >>>')
         return lipid_abbr_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df
+
+    def get_specific_peaks(self, mz_lib, ms2_df, ms2_precision=50e-6, ms2_threshold=10):
+
+        _target_frag_df = pd.DataFrame()
+        _target_nl_df = pd.DataFrame()
+        _other_frag_df = pd.DataFrame()
+        _other_nl_df = pd.DataFrame()
+
+        for _i, _frag_se in self.target_frag_df.iterrows():
+
+            _frag_mz = _frag_se['EXACTMASS']
+            _frag_class = _frag_se['CLASS']
+
+            _frag_mz_low = _frag_mz - _frag_mz * ms2_precision
+            _frag_mz_high = _frag_mz + _frag_mz * ms2_precision
+            _frag_mz_query_code = '%f <= mz <= %f and i > %f' % (_frag_mz_low, _frag_mz_high, ms2_threshold)
+
+            _frag_df = ms2_df.query(_frag_mz_query_code)
+
+            if _frag_df.shape[0] > 0:
+                _frag_df = _frag_df.sort_values(by='i', ascending=False)
+                _frag_df.loc[:, 'CLASS'] = _frag_class
+                _target_frag_df = _target_frag_df.append(_frag_df.head(1))
+
+        for _i, _frag_se in self.other_frag_df.iterrows():
+
+            _frag_mz = _frag_se['EXACTMASS']
+            _frag_class = _frag_se['CLASS']
+
+            _frag_mz_low = _frag_mz - _frag_mz * ms2_precision
+            _frag_mz_high = _frag_mz + _frag_mz * ms2_precision
+            _frag_mz_query_code = '%f <= mz <= %f and i > %f' % (_frag_mz_low, _frag_mz_high, ms2_threshold)
+
+            _frag_df = ms2_df.query(_frag_mz_query_code)
+
+            if _frag_df.shape[0] > 0:
+                _frag_df = _frag_df.sort_values(by='i', ascending=False)
+                _frag_df.loc[:, 'CLASS'] = _frag_class
+                _other_frag_df = _other_frag_df.append(_frag_df.head(1))
+
+        for _i, _nl_se in self.target_nl_df.iterrows():
+
+            _nl_mz = _nl_se['EXACTMASS']
+            _nl_class = _nl_se['CLASS']
+
+            _nl_mz_low = mz_lib - _nl_mz - _nl_mz * ms2_precision
+            _nl_mz_high = mz_lib - _nl_mz + _nl_mz * ms2_precision
+            _nl_mz_query_code = '%f <= mz <= %f and i > %f' % (_nl_mz_low, _nl_mz_high, ms2_threshold)
+
+            _nl_df = ms2_df.query(_nl_mz_query_code)
+
+            if _nl_df.shape[0] > 0:
+                _nl_df = _nl_df.sort_values(by='i', ascending=False)
+                _nl_df.loc[:, 'CLASS'] = _nl_class
+                _target_nl_df = _target_nl_df.append(_nl_df.head(1))
+
+        for _i, _nl_se in self.other_nl_df.iterrows():
+
+            _nl_mz = _nl_se['EXACTMASS']
+            _nl_class = _nl_se['CLASS']
+
+            _nl_mz_low = mz_lib - _nl_mz - _nl_mz * ms2_precision
+            _nl_mz_high = mz_lib - _nl_mz + _nl_mz * ms2_precision
+            _nl_mz_query_code = '%f <= mz <= %f and i > %f' % (_nl_mz_low, _nl_mz_high, ms2_threshold)
+
+            _nl_df = ms2_df.query(_nl_mz_query_code)
+
+            if _nl_df.shape[0] > 0:
+                _nl_df = _nl_df.sort_values(by='i', ascending=False)
+                _nl_df.loc[:, 'CLASS'] = _nl_class
+                _other_nl_df = _other_nl_df.append(_nl_df.head(1))
+
+        return _target_frag_df, _target_nl_df, _other_frag_df, _other_nl_df
 
 
 if __name__ == '__main__':

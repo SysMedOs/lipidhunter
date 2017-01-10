@@ -16,7 +16,7 @@ from StructureScore import AssignStructure
 
 
 def plot_spectra(mz_se, xic_dct, ident_info_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
-                 fa_indicator, lyso_indicator, fa_list_csv, save_img_as=None):
+                 target_frag_df, target_nl_df, other_frag_df, other_nl_df, save_img_as=None):
     pr_mz = mz_se['mz']
     ms1_obs = mz_se['MS1_obs_mz']
     _usr_rt = mz_se['rt']
@@ -72,8 +72,8 @@ def plot_spectra(mz_se, xic_dct, ident_info_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
             ms_pic.stem(ms1_df['mz'].tolist(), ms1_df['i'].tolist(),
                         'blue', lw=4, markerfmt=" ")
             _dash_i = [ms1_df['i'].max()]
-            print(_dash_i)
-            print(_ms1_pr_df['mz'])
+            # print(_dash_i)
+            # print(_ms1_pr_df['mz'])
             ms_pic.stem(_ms1_pr_df['mz'], _dash_i, ':', 'yellow', markerfmt=" ")
             ms_pic.stem(_ms1_pr_df['mz'], _ms1_pr_df['i'], 'red', lw=4, markerfmt=" ")
 
@@ -263,10 +263,6 @@ def plot_spectra(mz_se, xic_dct, ident_info_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
             # lyso_col_width_lst = [0.01 * len(str(x)) for x in lyso_col_labels]
             lyso_col_width_lst = [0.3, 0.1, 0.1, 0.1]
 
-            print(ident_col_width_lst)
-            print(fa_col_width_lst)
-            print(lyso_col_width_lst)
-
             try:
 
                 ident_table = ms_pic.table(cellText=ident_table_vals, rowLabels=ident_row_labels,
@@ -293,6 +289,49 @@ def plot_spectra(mz_se, xic_dct, ident_info_df, ms1_rt, ms2_rt, ms1_df, ms2_df,
                 lyso_table.set_fontsize(6)
             except:
                 pass
+
+            # add specific ion info
+
+            if target_frag_df.shape[0] > 0:
+                for _idx, _frag_se in target_frag_df.iterrows():
+                    _frag_mz = _frag_se['mz']
+                    _frag_i = _frag_se['i']
+                    _frag_class = _frag_se['CLASS']
+
+                    msms_low_pic.stem([_frag_mz], [max(_msms_low_df['i'].tolist()) * 0.5], ':', markerfmt=" ")
+                    msms_low_pic.text(_frag_mz, max(_msms_low_df['i'].tolist()) * 0.5, _frag_class,
+                                      fontsize=10, color='green'
+                                      )
+
+            if other_frag_df.shape[0] > 0:
+                for _idx, _frag_se in other_frag_df.iterrows():
+                    _frag_mz = _frag_se['mz']
+                    _frag_i = _frag_se['i']
+                    _frag_class = _frag_se['CLASS']
+
+                    msms_low_pic.stem([_frag_mz], [max(_msms_low_df['i'].tolist()) * 0.5], ':', markerfmt=" ")
+                    msms_low_pic.text(_frag_mz, max(_msms_low_df['i'].tolist()) * 0.5, _frag_class, fontsize=10)
+
+            if target_nl_df.shape[0] > 0:
+                for _idx, _nl_se in target_nl_df.iterrows():
+                    _nl_mz = _nl_se['mz']
+                    _nl_i = _nl_se['i']
+                    _nl_class = _nl_se['CLASS']
+                    print(_nl_mz, _nl_i, _nl_class)
+
+                    msms_high_pic.stem([_nl_mz], [max(_msms_high_df['i'].tolist()) * 1.1], ':', markerfmt=" ")
+                    msms_high_pic.text(_nl_mz, max(_msms_high_df['i'].tolist()) * 1.1, _nl_class,
+                                       fontsize=10, color='green'
+                                       )
+
+            if other_nl_df.shape[0] > 0:
+                for _idx, _nl_se in other_nl_df.iterrows():
+                    _nl_mz = _nl_se['mz']
+                    _nl_i = _nl_se['i']
+                    _nl_class = _nl_se['CLASS']
+
+                    msms_high_pic.stem([_nl_mz], [max(_msms_high_df['i'].tolist()) * 1.1], ':', markerfmt=" ")
+                    msms_high_pic.text(_nl_mz, max(_msms_high_df['i'].tolist()) * 1.1, _nl_class, fontsize=10)
 
             # set title
             xic_title_str = 'XIC of m/z %.4f Abbr.: %s @ %.4f' % (ms1_obs, abbr_id, _mzlib_id)

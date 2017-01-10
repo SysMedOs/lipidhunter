@@ -14,27 +14,25 @@ from LibLPPhunter.SpectraExtractor import get_xic_all
 from LibLPPhunter.ScoreGenerator import ScoreGenerator
 from LibLPPhunter.PanelPloter import plot_spectra
 
-from LibLPPhunter.FAindicator import FAindicator
-from LibLPPhunter.FAindicator import Lyso_indicator
-
 st_time = time.clock()
 
-pl_type = 'PC'
+usr_lipid_type = 'PC'
 charge_mode = '[M+FA-H]-'
 usr_mzml = r'D:\project_mzML\CM_DDA_neg_mzML\070120_CM_neg_70min_SIN_II.mzML'
-usr_xlsx = r'D:\project_mzML\CM_DDA_neg_mzML\extractor_output\%s\%s_70min_SIN_II.xlsx' % (pl_type, pl_type)
-output_folder = r'D:\project_mzML\CM_DDA_neg_mzML\images\%s\70min_SIN_II' % pl_type
+usr_xlsx = r'D:\project_mzML\CM_DDA_neg_mzML\extractor_output\%s\%s_70min_SIN_II.xlsx' % (usr_lipid_type, usr_lipid_type)
+output_folder = r'D:\project_mzML\CM_DDA_neg_mzML\images\%s\70min_SIN_II' % usr_lipid_type
 fa_list_csv = r'D:\LPPhunter\FA_list.csv'
 score_cfg = r'D:\LPPhunter\Score_cfg.xlsx'
+key_frag_cfg = r'D:\LPPhunter\PL_specific_ion_cfg.xlsx'
 
-usr_rt_range = [25, 26]
+usr_rt_range = [25, 25.5]
 usr_pr_mz_range = [600, 1000]
 usr_dda_top = 12
 usr_ms1_precision = 50e-6
 usr_ms2_precision = 500e-6
 
 print('=== ==> --> Start to process')
-print('=== ==> --> Phospholipid class: %s' % pl_type)
+print('=== ==> --> Phospholipid class: %s' % usr_lipid_type)
 
 usr_df = pd.read_excel(usr_xlsx)
 usr_df = usr_df.round({'mz': 6})
@@ -45,14 +43,18 @@ usr_df = usr_df.sort_values(by=['rt'])
 print('=== ==> --> Total precursor number: %i' % usr_df.shape[0])
 
 # generate the indicator table
-fa_indicator = FAindicator(fa_list_csv)
-lyso_indicator = Lyso_indicator(fa_list_csv)
-usr_weight_df = pd.read_excel(score_cfg)
+
 usr_fa_def_df = pd.read_csv(fa_list_csv)
 usr_fa_def_df['C'] = usr_fa_def_df['C'].astype(int)
 usr_fa_def_df['DB'] = usr_fa_def_df['DB'].astype(int)
 
-score_calc = ScoreGenerator(usr_fa_def_df, usr_weight_df)
+usr_weight_df = pd.read_excel(score_cfg)
+
+usr_key_frag_df = pd.read_excel(key_frag_cfg)
+usr_key_frag_df = usr_key_frag_df.query('EXACTMASS > 0')
+usr_key_frag_df = usr_key_frag_df[['CLASS', 'TYPE', 'EXACTMASS', 'PR_CHARGE']]
+
+score_calc = ScoreGenerator(usr_fa_def_df, usr_weight_df, usr_key_frag_df, usr_lipid_type)
 
 print('=== ==> --> Start to parse mzML')
 # extract all spectra from mzML to pandas DataFrame
@@ -101,6 +103,14 @@ for _i, _row_se in checked_info_df.iterrows():
                                                                                      ms2_precision=50e-6,
                                                                                      ms2_threshold=100
                                                                                      )
+        target_frag_df, target_nl_df, other_frag_df, other_nl_df = score_calc.get_specific_peaks(_usr_mz_lib,
+                                                                                                 ms2_df,
+                                                                                                 ms2_precision=100e-6,
+                                                                                                 ms2_threshold=100
+                                                                                                 )
+
+        print(target_frag_df)
+        print(target_nl_df)
 
         _usr_abbr_bulk = _usr_abbr_bulk.replace('(', '[')
         _usr_abbr_bulk = _usr_abbr_bulk.replace(')', ']')
@@ -121,7 +131,6 @@ for _i, _row_se in checked_info_df.iterrows():
         fa_ident_df = fa_ident_df[['Lipid_species', 'mz', 'i', 'ppm']].reset_index(drop=True)
         fa_ident_df = fa_ident_df.rename({'Lipid_species': 'Identified species'})
         fa_ident_df = fa_ident_df.round({'mz': 4, 'ppm': 2})
-        print(fa_ident_df)
         _fa_i_lst = []
         for _idx, _fa_se in fa_ident_df.iterrows():
             _fa_i_lst.append('%.2e' % float(_fa_se['i']))
@@ -136,7 +145,6 @@ for _i, _row_se in checked_info_df.iterrows():
             lyso_ident_df = lyso_ident_df[['Lipid_species', 'mz', 'i', 'ppm']].reset_index(drop=True)
             lyso_ident_df = lyso_ident_df.rename({'Lipid_species': 'Identified species'})
             lyso_ident_df = lyso_ident_df.round({'mz': 4, 'ppm': 2})
-            print(lyso_ident_df)
             _lyso_i_lst = []
             for _idx, _lyso_se in lyso_ident_df.iterrows():
                 _lyso_i_lst.append('%.2e' % float(_lyso_se['i']))
@@ -150,7 +158,7 @@ for _i, _row_se in checked_info_df.iterrows():
 
         if score_df.shape[0] > 0:
 
-            img_name = output_folder + '\%s_%.4f_rt%.4f_DDAtop%.0f_scan%.0f_%s.png' % (pl_type, _usr_mz,
+            img_name = output_folder + '\%s_%.4f_rt%.4f_DDAtop%.0f_scan%.0f_%s.png' % (usr_lipid_type, _usr_mz,
                                                                                        _usr_ms2_rt,
                                                                                        _usr_ms2_function - 1,
                                                                                        _usr_ms2_scan_id,
@@ -159,7 +167,8 @@ for _i, _row_se in checked_info_df.iterrows():
 
             plot_spectra(_row_se, xic_dct, usr_ident_info_df,
                          _ms1_rt, _ms2_rt, ms1_df, ms2_df,
-                         fa_indicator, lyso_indicator, fa_list_csv, save_img_as=img_name
+                         target_frag_df, target_nl_df, other_frag_df, other_nl_df,
+                         save_img_as=img_name
                          )
 
     else:
