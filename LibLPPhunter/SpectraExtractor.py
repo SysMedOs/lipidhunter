@@ -145,32 +145,33 @@ def get_spectra(mz, function, ms2_scan_id, scan_info_df, spectra_pl, dda_top=12)
 
             # get spectra_df of corresponding MS survey scan
             tmp_ms1_info_df = scan_info_df.query('dda_event_idx == %i and function == 1' % ms2_dda_idx)
-            ms1_spec_idx = tmp_ms1_info_df['spec_index'].tolist()[0]
-            ms1_rt = tmp_ms1_info_df['rt'].tolist()[0]
-            if ms1_spec_idx in spectra_pl.items:
-                ms1_df = spectra_pl[ms1_spec_idx]
-                ms1_df = ms1_df.query('i > 0')
-                ms1_df = ms1_df.sort_values(by='i', ascending=False).reset_index(drop=True)
-            else:
-                pass
+            if tmp_ms1_info_df.shape[0] > 0:
+                ms1_spec_idx = tmp_ms1_info_df['spec_index'].tolist()[0]
+                ms1_rt = tmp_ms1_info_df['rt'].tolist()[0]
+                if ms1_spec_idx in spectra_pl.items:
+                    ms1_df = spectra_pl[ms1_spec_idx]
+                    ms1_df = ms1_df.query('i > 0')
+                    ms1_df = ms1_df.sort_values(by='i', ascending=False).reset_index(drop=True)
+                else:
+                    pass
 
-            # get spectra_df of corresponding MS2 DDA scan
-            if ms2_spec_idx in spectra_pl.items:
-                ms2_df = spectra_pl[ms2_spec_idx]
-                ms2_df = ms2_df.query('i > 0')
-                ms2_df = ms2_df.sort_values(by='i', ascending=False).reset_index(drop=True)
-            else:
-                pass
+                # get spectra_df of corresponding MS2 DDA scan
+                if ms2_spec_idx in spectra_pl.items:
+                    ms2_df = spectra_pl[ms2_spec_idx]
+                    ms2_df = ms2_df.query('i > 0')
+                    ms2_df = ms2_df.sort_values(by='i', ascending=False).reset_index(drop=True)
+                else:
+                    pass
 
-            # if _ms1_spec_idx - _ms2_spec_idx > dda_top:
-            #     print('!!!!!!!!!!!! MS1 is NOT for this MS/MS !!!!!!!!!!!!')
+                # if _ms1_spec_idx - _ms2_spec_idx > dda_top:
+                #     print('!!!!!!!!!!!! MS1 is NOT for this MS/MS !!!!!!!!!!!!')
 
-            print('MS1 @ DDA#:%.0f | Total scan id:%.0f' % (ms2_dda_idx, ms1_spec_idx))
-            # print(ms1_df.head(5))
-            print('MS2 @ DDA#:%.0f | Total scan id:%.0f' % (ms2_dda_idx, ms2_spec_idx))
-            # print(ms2_df.head(5))
+                print('MS1 @ DDA#:%.0f | Total scan id:%.0f' % (ms2_dda_idx, ms1_spec_idx))
+                # print(ms1_df.head(5))
+                print('MS2 @ DDA#:%.0f | Total scan id:%.0f' % (ms2_dda_idx, ms2_spec_idx))
+                # print(ms2_df.head(5))
 
-            print('--------------- NEXT _idx')
+                print('--------------- NEXT _idx')
 
         print('== == == == == == NEXT DF')
 

@@ -285,6 +285,8 @@ class ScoreGenerator:
 
     def get_match(self, abbr, charge_type, mz_lib, ms2_df, ms2_precision=500e-6, ms2_threshold=100):
 
+        match_reporter = 0
+
         fa_ident_df, lyso_ident_df, lyso_w_ident_df = self.get_fa_search(abbr, charge_type, mz_lib, ms2_df,
                                                                          ms2_precision=ms2_precision,
                                                                          ms2_threshold=ms2_threshold
@@ -343,10 +345,14 @@ class ScoreGenerator:
                     lipid_abbr_df.set_value(_i_abbr, 'M-(sn2-H2O)',
                                             weight_dct['M-(sn2-H2O)'] * (10 - lyso_w_ident_lst.index(_sn2_abbr)) / 10)
 
-                lipid_abbr_df['Score'] = lipid_abbr_df[weight_type_lst].sum(axis=1, numeric_only=True)
+            lipid_abbr_df['Score'] = lipid_abbr_df[weight_type_lst].sum(axis=1, numeric_only=True)
+            match_reporter = 1
         else:
             print('!!!!!! NO FA identified =====>--> Skip >>> >>>')
-        return lipid_abbr_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df
+
+        match_info_dct = {'MATCH_INFO': match_reporter, 'SCORE_INFO': lipid_abbr_df, 'FA_INFO': fa_ident_df,
+                          'LYSO_INFO': lyso_ident_df, 'LYSO_W_INFO': lyso_w_ident_df}
+        return match_info_dct
 
     def get_specific_peaks(self, mz_lib, ms2_df, ms2_precision=50e-6, ms2_threshold=10):
 
@@ -359,6 +365,7 @@ class ScoreGenerator:
 
             _frag_mz = _frag_se['EXACTMASS']
             _frag_class = _frag_se['CLASS']
+            _frag_label = _frag_se['LABEL']
 
             _frag_mz_low = _frag_mz - _frag_mz * ms2_precision
             _frag_mz_high = _frag_mz + _frag_mz * ms2_precision
@@ -369,12 +376,14 @@ class ScoreGenerator:
             if _frag_df.shape[0] > 0:
                 _frag_df = _frag_df.sort_values(by='i', ascending=False)
                 _frag_df.loc[:, 'CLASS'] = _frag_class
+                _frag_df.loc[:, 'LABEL'] = _frag_label
                 _target_frag_df = _target_frag_df.append(_frag_df.head(1))
 
         for _i, _frag_se in self.other_frag_df.iterrows():
 
             _frag_mz = _frag_se['EXACTMASS']
             _frag_class = _frag_se['CLASS']
+            _frag_label = _frag_se['LABEL']
 
             _frag_mz_low = _frag_mz - _frag_mz * ms2_precision
             _frag_mz_high = _frag_mz + _frag_mz * ms2_precision
@@ -385,12 +394,14 @@ class ScoreGenerator:
             if _frag_df.shape[0] > 0:
                 _frag_df = _frag_df.sort_values(by='i', ascending=False)
                 _frag_df.loc[:, 'CLASS'] = _frag_class
+                _frag_df.loc[:, 'LABEL'] = _frag_label
                 _other_frag_df = _other_frag_df.append(_frag_df.head(1))
 
         for _i, _nl_se in self.target_nl_df.iterrows():
 
             _nl_mz = _nl_se['EXACTMASS']
             _nl_class = _nl_se['CLASS']
+            _nl_label = _nl_se['LABEL']
 
             _nl_mz_low = mz_lib - _nl_mz - _nl_mz * ms2_precision
             _nl_mz_high = mz_lib - _nl_mz + _nl_mz * ms2_precision
@@ -401,12 +412,14 @@ class ScoreGenerator:
             if _nl_df.shape[0] > 0:
                 _nl_df = _nl_df.sort_values(by='i', ascending=False)
                 _nl_df.loc[:, 'CLASS'] = _nl_class
+                _nl_df.loc[:, 'LABEL'] = _nl_label
                 _target_nl_df = _target_nl_df.append(_nl_df.head(1))
 
         for _i, _nl_se in self.other_nl_df.iterrows():
 
             _nl_mz = _nl_se['EXACTMASS']
             _nl_class = _nl_se['CLASS']
+            _nl_label = _nl_se['LABEL']
 
             _nl_mz_low = mz_lib - _nl_mz - _nl_mz * ms2_precision
             _nl_mz_high = mz_lib - _nl_mz + _nl_mz * ms2_precision
@@ -417,9 +430,20 @@ class ScoreGenerator:
             if _nl_df.shape[0] > 0:
                 _nl_df = _nl_df.sort_values(by='i', ascending=False)
                 _nl_df.loc[:, 'CLASS'] = _nl_class
+                _nl_df.loc[:, 'LABEL'] = _nl_label
                 _other_nl_df = _other_nl_df.append(_nl_df.head(1))
 
-        return _target_frag_df, _target_nl_df, _other_frag_df, _other_nl_df
+        specific_ion_dct = {}
+        if _target_frag_df.shape[0] > 0:
+            specific_ion_dct['TARGET_FRAG'] = _target_frag_df
+        if _target_nl_df.shape[0] > 0:
+            specific_ion_dct['TARGET_NL'] = _target_nl_df
+        if _other_frag_df.shape[0] > 0:
+            specific_ion_dct['OTHER_FRAG'] = _other_frag_df
+        if _other_nl_df.shape[0] > 0:
+            specific_ion_dct['OTHER_NL'] = _other_nl_df
+
+        return specific_ion_dct
 
 
 if __name__ == '__main__':
