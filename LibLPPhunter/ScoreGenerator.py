@@ -193,22 +193,24 @@ class ScoreGenerator:
                             fa_ident_df = fa_ident_df.append(_frag_df)
                         elif _frag_type == 'M-sn':
                             if _fa_link in lyso_fa_linker_dct.keys():
-                                _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
-                                _frag_df.loc[:, 'Lipid_species'] = '[Lyso%s(%s%i:%i)-H2O-H]-' % (pl_typ,
-                                                                                                 _fa_lyso_link,
+                                if bulk_fa_db - _fa_db >=0:
+                                    _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
+                                    _frag_df.loc[:, 'Lipid_species'] = '[Lyso%s(%s%i:%i)-H2O-H]-' % (pl_typ,
+                                                                                                     _fa_lyso_link,
+                                                                                                     bulk_fa_c - _fa_c,
+                                                                                                     bulk_fa_db - _fa_db
+                                                                                                     )
+                                    lyso_ident_df = lyso_ident_df.append(_frag_df)
+                        elif _frag_type == 'M-(sn-H2O)':
+                            if _fa_link in lyso_fa_linker_dct.keys():
+                                if bulk_fa_db - _fa_db >= 0:
+                                    _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
+                                    _frag_df.loc[:, 'Lipid_species'] = '[Lyso%s(%s%i:%i)-H]-' % (pl_typ, _fa_lyso_link,
                                                                                                  bulk_fa_c - _fa_c,
                                                                                                  bulk_fa_db - _fa_db
                                                                                                  )
-                                lyso_ident_df = lyso_ident_df.append(_frag_df)
-                        elif _frag_type == 'M-(sn-H2O)':
-                            if _fa_link in lyso_fa_linker_dct.keys():
-                                _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
-                                _frag_df.loc[:, 'Lipid_species'] = '[Lyso%s(%s%i:%i)-H]-' % (pl_typ, _fa_lyso_link,
-                                                                                             bulk_fa_c - _fa_c,
-                                                                                             bulk_fa_db - _fa_db
-                                                                                             )
 
-                                lyso_w_ident_df = lyso_w_ident_df.append(_frag_df)
+                                    lyso_w_ident_df = lyso_w_ident_df.append(_frag_df)
 
         # format the output DataFrame
         if fa_ident_df.shape[0] > 0:

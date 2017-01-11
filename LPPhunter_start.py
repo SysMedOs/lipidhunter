@@ -14,22 +14,29 @@ from LibLPPhunter.SpectraExtractor import get_xic_all
 from LibLPPhunter.ScoreGenerator import ScoreGenerator
 from LibLPPhunter.PanelPloter import plot_spectra
 
-st_time = time.clock()
+start_time = time.clock()
 
 usr_lipid_type = 'PC'
-charge_mode = '[M+FA-H]-'
+charge_mode = '[M+HCOO]-'
 usr_mzml = r'D:\project_mzML\CM_DDA_neg_mzML\070120_CM_neg_70min_SIN_II.mzML'
-usr_xlsx = r'D:\project_mzML\CM_DDA_neg_mzML\extractor_output\%s\%s_70min_SIN_II.xlsx' % (usr_lipid_type, usr_lipid_type)
+usr_xlsx = r'D:\project_mzML\CM_DDA_neg_mzML\extractor_output\%s\%s_70min_SIN_II.xlsx' % (usr_lipid_type,
+                                                                                          usr_lipid_type
+                                                                                          )
 output_folder = r'D:\project_mzML\CM_DDA_neg_mzML\images\%s\70min_SIN_II' % usr_lipid_type
+output_sum_xlsx = r'D:\project_mzML\CM_DDA_neg_mzML\images\%s\70min_SIN_II\sum_%s_70min_SIN_II.xlsx' % (usr_lipid_type,
+                                                                                                        usr_lipid_type
+                                                                                                        )
 fa_list_csv = r'D:\LPPhunter\FA_list.csv'
 score_cfg = r'D:\LPPhunter\Score_cfg.xlsx'
 key_frag_cfg = r'D:\LPPhunter\PL_specific_ion_cfg.xlsx'
 
-usr_rt_range = [25, 25.5]
+usr_rt_range = [25, 25.3]
 usr_pr_mz_range = [600, 1000]
 usr_dda_top = 12
 usr_ms1_precision = 50e-6
 usr_ms2_precision = 500e-6
+
+output_df = pd.DataFrame()
 
 print('=== ==> --> Start to process')
 print('=== ==> --> Phospholipid class: %s' % usr_lipid_type)
@@ -118,7 +125,7 @@ for _i, _row_se in checked_info_df.iterrows():
         _usr_abbr_bulk = _usr_abbr_bulk.replace('\\', '_')
         _usr_abbr_bulk = _usr_abbr_bulk.replace('/', '_')
 
-        print ('_usr_abbr_bulk', _usr_abbr_bulk)
+        print ('Check now for %s' % _usr_abbr_bulk)
         score_df = score_df[['Lipid_species', 'Score']]
         score_df = score_df.rename({'Lipid_species': 'Proposed structures'})
         score_df = score_df.query('Score > 20')
@@ -154,10 +161,9 @@ for _i, _row_se in checked_info_df.iterrows():
         else:
             lyso_ident_df = pd.DataFrame()
 
-        usr_ident_info_df = {'SCORE_INFO': score_df, 'FA_INFO': fa_ident_df, 'LYSO_INFO': lyso_ident_df}
+        usr_ident_info_dct = {'SCORE_INFO': score_df, 'FA_INFO': fa_ident_df, 'LYSO_INFO': lyso_ident_df}
 
         if score_df.shape[0] > 0:
-
             img_name = output_folder + '\%s_%.4f_rt%.4f_DDAtop%.0f_scan%.0f_%s.png' % (usr_lipid_type, _usr_mz,
                                                                                        _usr_ms2_rt,
                                                                                        _usr_ms2_function - 1,
@@ -165,15 +171,46 @@ for _i, _row_se in checked_info_df.iterrows():
                                                                                        _usr_abbr_bulk
                                                                                        )
 
-            plot_spectra(_row_se, xic_dct, usr_ident_info_df,
-                         _ms1_rt, _ms2_rt, ms1_df, ms2_df,
-                         target_frag_df, target_nl_df, other_frag_df, other_nl_df,
-                         save_img_as=img_name
-                         )
+            _ms1_pr_i, _ppm, isotope_checker = plot_spectra(_row_se, xic_dct, usr_ident_info_dct,
+                                                            _ms1_rt, _ms2_rt, ms1_df, ms2_df,
+                                                            target_frag_df, target_nl_df, other_frag_df, other_nl_df,
+                                                            save_img_as=img_name
+                                                            )
+
+            if _ms1_pr_i > 0 and isotope_checker == 0:
+                _tmp_output_df = score_df
+
+                _tmp_output_df['Bulk_identification'] = _usr_abbr_bulk
+                _tmp_output_df['MS1_obs_mz'] = _usr_ms1_obs_mz
+                _tmp_output_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
+                _tmp_output_df['Lib_mz'] = _usr_mz_lib
+                _tmp_output_df['MS2_rt'] = _usr_ms2_rt
+                _tmp_output_df['MS2_function'] = _usr_ms2_function
+                _tmp_output_df['scan_id'] = _usr_ms2_scan_id
+                _tmp_output_df['specific peaks'] = target_frag_df.shape[0] + target_nl_df.shape[0]
+                _tmp_output_df['contaminated peaks'] = other_frag_df.shape[0] + other_nl_df.shape[0]
+                _tmp_output_df['ppm'] = _ppm
+
+                output_df = output_df.append(_tmp_output_df)
 
     else:
         print('!!!!!!!!!!!! PR NOT in list !!!!!!!!!!!!')
 
     print('---------------------NEXT---------------------------')
+print('=== ==> --> Generate the output table')
 
-print('>>> FINISHED!<<<')
+# output_df['ppm'] = 1e6 * (output_df['MS1_obs_mz'] - output_df['Lib_mz']) / output_df['Lib_mz']
+output_df = output_df.round({'MS1_obs_mz': 4, 'Lib_mz': 4, 'ppm': 2, 'MS2_rt': 3})
+output_df['Proposed structures'] = output_df['Lipid_species']
+output_df = output_df[['Bulk_identification', 'Proposed structures', 'Score', 'specific peaks', 'contaminated peaks',
+                       'Lib_mz', 'MS1_obs_mz', 'MS1_obs_i', 'ppm', 'MS2_rt', 'MS2_function', 'scan_id']]
+output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_rt', 'Score'], ascending=[True, True, False])
+output_df = output_df.reset_index(drop=True)
+output_df.index += 1
+output_df.to_excel(output_sum_xlsx)
+print(output_sum_xlsx)
+print('=== ==> --> saved >>> >>> >>>')
+
+tot_run_time = time.clock() - start_time
+
+print('>>> >>> >>> FINISHED in %f sec <<< <<< <<<' % tot_run_time)
