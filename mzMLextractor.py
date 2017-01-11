@@ -4,15 +4,16 @@
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
-import sys
 import os
 import glob
+import re
 
 from PySide import QtCore, QtGui
 import pandas as pd
 
 from mzMLextractor_UI import Ui_MainWindow
 from mzMLextractorLib import Extractor
+from mzMLextractorLib.Linker import hunt_link
 
 
 class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
@@ -40,6 +41,13 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_b_infiles_pte.clear)
         QtCore.QObject.connect(self.ui.tab_b_savexlsxfolder_pb, QtCore.SIGNAL("clicked()"), self.b_save_xls2folder)
         QtCore.QObject.connect(self.ui.tab_b_runextract_pb, QtCore.SIGNAL("clicked()"), self.b_run_extractor)
+
+        # slots for tab d
+        QtCore.QObject.connect(self.ui.tab_d_lipidstable_pb, QtCore.SIGNAL("clicked()"), self.d_load_lipidstable)
+        QtCore.QObject.connect(self.ui.tab_d_ms2info_pb, QtCore.SIGNAL("clicked()"), self.d_load_ms2info)
+        QtCore.QObject.connect(self.ui.tab_d_ms2mzml_pb, QtCore.SIGNAL("clicked()"), self.d_load_mzml)
+        QtCore.QObject.connect(self.ui.tab_b_xlsxpath_pb, QtCore.SIGNAL("clicked()"), self.d_save_output)
+        QtCore.QObject.connect(self.ui.tab_d_runextract_pb, QtCore.SIGNAL("clicked()"), self.d_run_linker)
 
     @staticmethod
     def get_same_files(folder, filetype_lst):
@@ -88,7 +96,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         # check existed files
         _loaded_files = str(self.ui.tab_a_infiles_pte.toPlainText())
         _loaded_lst = _loaded_files.split('\n')
-
         a_load_mzmlfolder_str = QtGui.QFileDialog.getExistingDirectory()
         _mzml_name_lst, _mzml_path_lst = self.get_same_files(a_load_mzmlfolder_str, filetype_lst=['*.mzml', '*.mzML'])
         _duplicated_str = ''
@@ -122,6 +129,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         _save_xlsx_folder_str = str(self.ui.tab_a_xlsxfolder_le.text())
 
         for _mzml in _loaded_mzml_lst:
+            print('_mzml', _mzml)
+            print('MS_TH', a_ms_th, type(a_ms_th))
             if os.path.isfile(_mzml):
                 _mzml_path, _mzml_name = os.path.split(_mzml)
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Start processing...\n%s \n' % _mzml))
@@ -150,12 +159,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             _tmp_df['file'] = _cm[0]
             cm_pkl_df = cm_pkl_df.append(_tmp_df)
 
-        cm_pkl_df['mz_2f'] = cm_pkl_df['mz']
-        cm_pkl_df['rt_2f'] = cm_pkl_df['rt']
-        cm_pkl_df = cm_pkl_df.round({'mz_2f': 2, 'rt_2f': 2})
-        cm_pkl_df = cm_pkl_df.sort_values(by=['mz', 'rt'])
+        cm_pkl_df = cm_pkl_df[['mz', 'i']]
+        cm_pkl_df = cm_pkl_df.sort_values(by=['mz', 'i'], ascending=[True, False])
         cm_pkl_df = cm_pkl_df.drop_duplicates(subset=['mz'], keep='first')
-        cm_pkl_df = cm_pkl_df.reset_index()
+        cm_pkl_df = cm_pkl_df.reset_index(drop=True)
 
         if cm_pkl_df.shape[0] > 500000:
             cm_pkl_df_p1 = cm_pkl_df[:500000, :]
@@ -239,6 +246,126 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 _ms2_df.to_excel(_xlsx_ms2_path)
                 self.ui.tab_b_statusrun_pte.insertPlainText(unicode('Save as: \n%s.xlsx \n' % _mzml[0:-4]))
         self.ui.tab_b_statusrun_pte.insertPlainText(u'Finished!')
+
+    def d_load_lipidstable(self):
+        d_load_lipidstable_dialog = QtGui.QFileDialog(self)
+        d_load_lipidstable_dialog.setNameFilters([u'MS Excel files (*.xlsx *.XLSX)'])
+        d_load_lipidstable_dialog.selectNameFilter(u'MS Excel files (*.xlsx *.XLSX)')
+        if d_load_lipidstable_dialog.exec_():
+            self.ui.tab_d_lipidstable_le.clear()
+            d_load_mzml_str = d_load_lipidstable_dialog.selectedFiles()[0]
+            d_load_mzml_str = os.path.abspath(d_load_mzml_str)
+            self.ui.tab_d_lipidstable_le.setText(unicode(d_load_mzml_str))
+
+    def d_load_ms2info(self):
+        d_load_ms2info_dialog = QtGui.QFileDialog(self)
+        d_load_ms2info_dialog.setNameFilters([u'MS Excel files (*.xlsx *.XLSX)'])
+        d_load_ms2info_dialog.selectNameFilter(u'MS Excel files (*.xlsx *.XLSX)')
+        if d_load_ms2info_dialog.exec_():
+            self.ui.tab_d_ms2info_le.clear()
+            d_load_mzml_str = d_load_ms2info_dialog.selectedFiles()[0]
+            d_load_mzml_str = os.path.abspath(d_load_mzml_str)
+            self.ui.tab_d_ms2info_le.setText(unicode(d_load_mzml_str))
+
+    def d_load_mzml(self):
+        d_load_mzml_dialog = QtGui.QFileDialog(self)
+        d_load_mzml_dialog.setNameFilters([u'mzML spectra files (*.mzML *.mzml)'])
+        d_load_mzml_dialog.selectNameFilter(u'mzML spectra files (*.mzML *.mzml)')
+        if d_load_mzml_dialog.exec_():
+            self.ui.tab_d_ms2mzml_le.clear()
+            d_load_mzml_str = d_load_mzml_dialog.selectedFiles()[0]
+            d_load_mzml_str = os.path.abspath(d_load_mzml_str)
+            self.ui.tab_d_ms2mzml_le.setText(unicode(d_load_mzml_str))
+
+    def d_save_output(self):
+        d_save_output_path = QtGui.QFileDialog.getSaveFileName(caption=u'Save file', filter=u'.xlsx')
+        self.ui.tab_d_xlsxpath_le.clear()
+        d_load_mzml_str = os.path.abspath(d_save_output_path[0])
+        self.ui.tab_d_xlsxpath_le.setText(unicode(d_load_mzml_str))
+
+    def d_run_linker(self):
+
+        print('linker started!')
+        _pl_class_info = str(self.ui.tab_d_lipidclass_cmb.currentText())
+
+        pl_class_checker = re.compile(r'(.*)( [\(])(\w{2,3})([\)] )(.*)')
+
+        pl_class_match = pl_class_checker.match(_pl_class_info)
+
+        if pl_class_match:
+            pl_class_info_lst = pl_class_match.groups()
+            _pl_class = pl_class_info_lst[2]
+            _pl_charge = pl_class_info_lst[4]
+        else:
+            _pl_class = 'PC'
+            _pl_charge = '[M+HCOO]-'
+
+        _lipidstable_path_str = str(self.ui.tab_d_lipidstable_le.text())
+        _ms2info_path_str = str(self.ui.tab_d_ms2info_le.text())
+        _mzml_path_str = str(self.ui.tab_d_ms2mzml_le.text())
+        _output_path_str = str(self.ui.tab_d_xlsxpath_le.text())
+
+        ms2_delta = 0.9
+
+        ident_df = pd.read_excel(_lipidstable_path_str, sheetname=0, header=0)
+        ms2_df = pd.read_excel(_ms2info_path_str, sheetname=0)
+
+        # obs_mz_lst = ident_df['Input Mass'].tolist()
+        ident_idx_lst = ident_df.index.tolist()
+        obs_idx_lst = ms2_df.index.tolist()
+
+        step1_df = pd.DataFrame()
+        self.ui.tab_d_statusrun_pte.clear()
+        self.ui.tab_d_statusrun_pte.insertPlainText(u'Start!')
+
+        for _idx, _ident_se in ident_df.iterrows():
+
+            _obs_mz = _ident_se['Input Mass']
+            _lib_mz = _ident_se['Matched Mass']
+            _abbr = _ident_se['Abbreviation']
+            _formula = _ident_se['Formula']
+            _ion = _ident_se['Ion']
+
+            _temp_df = pd.DataFrame()
+
+            _obs_mz_l = _obs_mz - ms2_delta
+            _obs_mz_h = _obs_mz + ms2_delta
+
+            _query_code = '%f <= mz <= %f' % (_obs_mz_l, _obs_mz_h)
+
+            _temp_df = ms2_df.query(_query_code)
+            if _temp_df.shape[0] > 0:
+
+                _temp_df['MS1_obs_mz'] = _obs_mz
+                _temp_df['Lib_mz'] = _lib_mz
+                _temp_df['Abbreviation'] = _abbr
+                _temp_df['Formula'] = _formula
+                _temp_df['Ion'] = _ion
+                # print _temp_df
+                step1_df = step1_df.append(_temp_df)
+            else:
+                print _obs_mz, 'not found!'
+
+        _ms_th = self.ui.tab_d_msthreshold_spb.value()
+        _ms2_th = self.ui.tab_d_ms2threshold_spb.value()
+        _dda_top = self.ui.tab_d_dda_spb.value()
+        _rt_start = self.ui.tab_d_rtstart_dspb.value()
+        _rt_end = self.ui.tab_d_rtend_dspb.value()
+        _mz_start = self.ui.tab_d_mzstart_dspb.value()
+        _mz_end = self.ui.tab_d_mzend_dspb.value()
+
+        # Construct parameters for the hunt_link function
+        link_params_dct = {'MS_THRESHOLD': _ms_th, 'MS2_THRESHOLD': _ms2_th, 'DDA_TOP': _dda_top,
+                           'RT_START': _rt_start, 'RT_END': _rt_end, 'MZ_START': _mz_start, 'MZ_END': _mz_end}
+
+        final_output_df = hunt_link(pl_class=_pl_class, usr_mzml=_mzml_path_str, usr_df=step1_df,
+                                    params_dct=link_params_dct)
+
+        final_output_df = final_output_df[final_output_df['MS1_obs_mz'] > 0]
+
+        final_output_df.to_excel(_output_path_str)
+        self.ui.tab_d_statusrun_pte.insertPlainText(unicode('Finished!'))
+
 
 if __name__ == '__main__':
     import sys

@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# Copyright 2015-2016 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# The software is currently  under development and is not ready to be released.
+# A suitable license will be chosen before the official release of oxLPPdb.
+# For more info please contact: zhixu.ni@uni-leipzig.de
+
 import re
 import pandas as pd
 import pymzml
@@ -88,8 +94,8 @@ class Extractor(object):
         _usr_spectra = pymzml.run.Reader(usr_mzml)
         _pre_ms_df = pd.DataFrame(columns=['function', 'scan_id', 'rt', 'mz', 'i'])
 
-        # _ms2_function_lst = ['2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
-        _ms2_function_lst = ['2', '3', '4', '5', '6', '7']
+        _ms2_function_lst = ['2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
+        # _ms2_function_lst = ['2', '3', '4', '5', '6', '7']
 
         _spec_title_obo = 'MS:1000796'
 
