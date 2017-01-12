@@ -264,7 +264,7 @@ class Spectra_Ploter(object):
                                 # for _usr_mz in [_sn1_mz, _sn2_mz]:
                                 #     _msms_top_df = _msms_df.sort(columns='i', ascending=False)
                                 #     _msms_top_df = _msms_top_df.head(10)
-                                #     _query_str = '%f - %f <= mz <= %f + %f' % (_usr_mz, 0.25, _usr_mz, 0.25)
+                                #     _query_str = '%f - %f <= mz <= %f + %f' % (_usr_ms2_pr_mz, 0.25, _usr_ms2_pr_mz, 0.25)
                                 #     _sn_msms_df = _msms_top_df.query(_query_str)
                                 #     _sn_msms_df = _sn_msms_df.sort(columns='i', ascending=False)
                                 #     # print _sn_msms_df.head(2)
@@ -288,7 +288,7 @@ class Spectra_Ploter(object):
                                     msms_low_pic.set_ylim([0, max(_msms_low_df['i'].tolist()) * 1.3])
                                     # PC HG form DOI: 10.1021/acs.jproteome.5b00169
                                     # for _usr_mz in [168.0358, 224.0693, 242.0798]:
-                                    #     _query_str = '%f - %f <= mz <= %f + %f' % (_usr_mz, 0.25, _usr_mz, 0.25)
+                                    #     _query_str = '%f - %f <= mz <= %f + %f' % (_usr_ms2_pr_mz, 0.25, _usr_ms2_pr_mz, 0.25)
                                     #     _sn_msms_df = _msms_df.query(_query_str)
                                     #     _sn_msms_df = _sn_msms_df.sort(columns='i', ascending=False)
                                     #     # print _sn_msms_df.head(2)

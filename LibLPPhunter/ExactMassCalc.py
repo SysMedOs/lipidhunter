@@ -11,7 +11,6 @@ import re
 class Elem2Mass():
     # expands ((((M)N)O)P)Q to M*N*O*P*Q
 
-
     def get_elem(self, formula):
         self.formula = formula.encode("utf-8")
         while len(re.findall('\(\w*\)', str(self.formula))) > 0:

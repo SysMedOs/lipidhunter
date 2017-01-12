@@ -4,6 +4,7 @@
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
+from __future__ import division
 
 import time
 import pandas as pd
@@ -13,30 +14,36 @@ from LibLPPhunter.SpectraExtractor import get_spectra
 from LibLPPhunter.SpectraExtractor import get_xic_all
 from LibLPPhunter.ScoreGenerator import ScoreGenerator
 from LibLPPhunter.PanelPloter import plot_spectra
+from LibLPPhunter.ScoreFilter import check_peaks
 
 start_time = time.clock()
 
-# usr_lipid_type = 'PE'
-# charge_mode = '[M-H]-'
-usr_lipid_type = 'PC'
-charge_mode = '[M+HCOO]-'
-usr_mzml = r'D:\project_mzML\CM_DDA_neg_mzML\070120_CM_neg_70min_SIN_I.mzML'
-usr_xlsx = r'D:\project_mzML\CM_DDA_neg_mzML\extractor_output\%s\%s_70min_SIN_I.xlsx' % (usr_lipid_type,
-                                                                                         usr_lipid_type
-                                                                                         )
-output_folder = r'D:\project_mzML\CM_DDA_neg_mzML\images\%s\70min_SIN_I' % usr_lipid_type
-output_sum_xlsx = r'D:\project_mzML\CM_DDA_neg_mzML\images\%s\70min_SIN_I\sum_%s_70min_SIN_I.xlsx' % (usr_lipid_type,
+usr_lipid_type = 'PE'
+charge_mode = '[M-H]-'
+# usr_lipid_type = 'PC'
+# charge_mode = '[M+HCOO]-'
+usr_mzml = r'D:\project_mzML\CM_DDA_neg_mzML\070120_CM_neg_70min_SIN_II.mzML'
+usr_xlsx = r'D:\project_mzML\CM_DDA_neg_mzML\extractor_output\%s\%s_70min_SIN_II_2.xlsx' % (usr_lipid_type,
+                                                                                          usr_lipid_type
+                                                                                          )
+
+output_folder = r'D:\project_mzML\CM_DDA_neg_mzML\images\%s\70min_SIN_II' % usr_lipid_type
+output_sum_xlsx = r'D:\project_mzML\CM_DDA_neg_mzML\images\%s\70min_SIN_II\sum_%s_70min_SIN_II.xlsx' % (usr_lipid_type,
                                                                                                       usr_lipid_type
                                                                                                       )
 fa_list_csv = r'D:\LPPhunter\FA_list.csv'
 score_cfg = r'D:\LPPhunter\Score_cfg.xlsx'
 key_frag_cfg = r'D:\LPPhunter\PL_specific_ion_cfg.xlsx'
 
-usr_rt_range = [25, 25.3]
+usr_rt_range = [25, 27]
 usr_pr_mz_range = [600, 1000]
 usr_dda_top = 12
 usr_ms1_precision = 50e-6
 usr_ms2_precision = 500e-6
+usr_score_filter = 20
+usr_isotope_pattern_tolerance = 5  # in percent
+
+usr_ms1_ppm = int(usr_ms1_precision * 1e6)
 
 output_df = pd.DataFrame()
 
@@ -45,9 +52,19 @@ print('=== ==> --> Phospholipid class: %s' % usr_lipid_type)
 
 usr_df = pd.read_excel(usr_xlsx)
 usr_df = usr_df.round({'mz': 6})
+usr_df = usr_df.round({'MS1_obs_mz': 6})
 usr_df = usr_df.query('%f<= rt <= %f' % (usr_rt_range[0], usr_rt_range[1]))
 usr_df = usr_df.query('%f<= mz <= %f' % (usr_pr_mz_range[0], usr_pr_mz_range[1]))
+print(usr_df.shape)
+usr_df['MS1_precision'] = (usr_df['MS1_obs_mz'] - usr_df['Lib_mz']) / usr_df['Lib_mz']
+usr_df['ppm'] = 1e6 * usr_df['MS1_precision']
+usr_df['abs_ppm'] = usr_df['ppm'].abs()
+usr_df = usr_df.query('abs_ppm <= %i' % usr_ms1_ppm)
+# usr_df = usr_df.sort_values(by=['Lib_mz', 'abs_ppm'], ascending=[True, True])
+# usr_df = usr_df.drop_duplicates(subset=['Lib_mz', 'rt', 'function', 'scan_id'], keep='first')
 usr_df = usr_df.sort_values(by=['rt'])
+usr_df = usr_df.reset_index(drop=True)
+print(usr_df.shape)
 
 print('=== ==> --> Total precursor number: %i' % usr_df.shape[0])
 
@@ -71,6 +88,7 @@ usr_scan_info_df, usr_spectra_pl = extract_mzml(usr_mzml, usr_rt_range, dda_top=
                                                 ms1_precision=usr_ms1_precision, msn_precision=usr_ms2_precision
                                                 )
 
+usr_scan_info_df.to_excel('scan_info_df.xlsx')
 # remove bad precursors
 checked_info_df = pd.DataFrame()
 for _idx, _check_scan_se in usr_scan_info_df.iterrows():
@@ -79,37 +97,51 @@ for _idx, _check_scan_se in usr_scan_info_df.iterrows():
     _tmp_usr_df = usr_df.query('function == %f and scan_id == %f' % (_function, _scan_id))
     checked_info_df = checked_info_df.append(_tmp_usr_df)
 
-print('=== ==> --> Start to extract XIC')
-xic_dct = get_xic_all(usr_df, usr_mzml, usr_rt_range, ms1_precision=usr_ms1_precision, msn_precision=500e-6)
+checked_info_df.to_excel('checked_info_df.xlsx')
+ms1_obs_mz_lst = usr_df['MS1_obs_mz'].tolist()
+ms1_obs_mz_lst = set(ms1_obs_mz_lst)
 
-print('=== ==> --> Number of XIC extracted: %i' % len(xic_dct.keys()))
+plot_info_dct = {}
+ms1_pr_mz_lst = []
 
 # get spectra of one ABBR and plot
-for _i, _row_se in checked_info_df.iterrows():
-    print(_row_se)
-    _usr_mz = _row_se['mz']
-    _usr_ms1_obs_mz = _row_se['MS1_obs_mz']
+for _n, _subgroup_df in checked_info_df.groupby(['mz', 'Lib_mz', 'Formula', 'rt', 'Abbreviation']):
+    _row_se = _subgroup_df.iloc[0, :]
+    _usr_ms2_pr_mz = _row_se['mz']
+    # _usr_ms1_obs_mz = _row_se['MS1_obs_mz']
     _usr_ms2_rt = _row_se['rt']
-    _usr_abbr_bulk = _row_se['Abbreviation']
     _usr_formula = _row_se['Formula']
     _usr_ms2_function = _row_se['function']
     _usr_ms2_scan_id = _row_se['scan_id']
     _usr_mz_lib = _row_se['Lib_mz']
-    _tmp_chk_df = usr_scan_info_df.query('pr_mz == %f and function == %i and scan_id == %i'
-                                         % (_usr_mz, _usr_ms2_function, _usr_ms2_scan_id))
+    _usr_abbr_bulk = _row_se['Abbreviation']
+    _tmp_chk_df = usr_scan_info_df.query('pr_mz == %.6f and function == %i and scan_id == %i'
+                                         % (_usr_ms2_pr_mz, _usr_ms2_function, _usr_ms2_scan_id))
 
-    _precision_checker = abs((_usr_ms1_obs_mz - _usr_mz_lib) / _usr_mz_lib)
+    if _tmp_chk_df.shape[0] == 1:
+        print('>>> >>> >>> Processing:', _tmp_chk_df.head())
+        print('>>> >>> >>> >>> MS2 PR m/z %f' % _usr_ms2_pr_mz)
+        _ms1_pr_mz, _ms1_rt, _ms2_rt, ms1_spec_idx, ms2_spec_idx, ms1_df, ms2_df = get_spectra(_usr_ms2_pr_mz,
+                                                                                               _usr_mz_lib,
+                                                                                               _usr_ms2_function,
+                                                                                               _usr_ms2_scan_id,
+                                                                                               ms1_obs_mz_lst,
+                                                                                               usr_scan_info_df,
+                                                                                               usr_spectra_pl,
+                                                                                               dda_top=usr_dda_top,
+                                                                                               ms1_precision=
+                                                                                               usr_ms1_precision
+                                                                                               )
 
-    if _tmp_chk_df.shape[0] > 0 and _precision_checker <= usr_ms1_precision:
-        _ms1_rt, _ms2_rt, ms1_spec_idx, ms2_spec_idx, ms1_df, ms2_df = get_spectra(_usr_mz,
-                                                                                   _usr_ms2_function,
-                                                                                   _usr_ms2_scan_id,
-                                                                                   usr_scan_info_df,
-                                                                                   usr_spectra_pl,
-                                                                                   dda_top=usr_dda_top
-                                                                                   )
+        # _ms1_subgroup_df = _subgroup_df.query('MS1_obs_mz == %f' % _ms1_pr_mz)
+        # if _ms1_subgroup_df.shape[0] > 0 and ms1_df.shape[0] > 0 and ms2_df.shape[0] > 0:
         if ms1_df.shape[0] > 0 and ms2_df.shape[0] > 0:
-            match_info_dct = score_calc.get_match(_usr_abbr_bulk, charge_mode, _usr_ms1_obs_mz, ms2_df,
+
+            print('>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
+            _row_se['MS1_obs_mz'] = _ms1_pr_mz
+            print('>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
+            print(_row_se)
+            match_info_dct = score_calc.get_match(_usr_abbr_bulk, charge_mode, _ms1_pr_mz, ms2_df,
                                                   ms2_precision=50e-6, ms2_threshold=100
                                                   )
             match_factor = match_info_dct['MATCH_INFO']
@@ -129,123 +161,107 @@ for _i, _row_se in checked_info_df.iterrows():
                 _usr_abbr_bulk = _usr_abbr_bulk.replace('\\', '_')
                 _usr_abbr_bulk = _usr_abbr_bulk.replace('/', '_')
 
-                print ('Check now for %s' % _usr_abbr_bulk)
-                if fa_ident_df.shape[0]:
-                    score_df = score_df[['Lipid_species', 'Score']]
-                    score_df = score_df.rename({'Lipid_species': 'Proposed structures'})
-                    score_df = score_df.query('Score >= 25')
-                    score_df = score_df.sort_values(by='Score', ascending=False)
-                    score_df = score_df.reset_index(drop=True)
-                    score_df.index += 1
-                    print(score_df)
+                print ('>>> >>> Check now for bulk identification as %s' % _usr_abbr_bulk)
 
-                    # format fa info DataFrame
-                    fa_ident_df = fa_ident_df[['Lipid_species', 'mz', 'i', 'ppm']].reset_index(drop=True)
-                    fa_ident_df = fa_ident_df.rename({'Lipid_species': 'Identified species'})
-                    fa_ident_df = fa_ident_df.round({'mz': 4, 'ppm': 2})
-                    _fa_i_lst = []
-                    for _idx, _fa_se in fa_ident_df.iterrows():
-                        _fa_i_lst.append('%.2e' % float(_fa_se['i']))
-                    fa_ident_df.loc[:, 'i'] = _fa_i_lst
-                    fa_ident_df.index += 1
-                    print(fa_ident_df)
+                usr_ident_info_dct = check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df,
+                                                 score_filter=usr_score_filter)
 
-                    # merge Lyso and Lyso - H2O
-                    lyso_ident_df = lyso_ident_df.append(lyso_w_ident_df)
-                    if lyso_ident_df.shape[0] > 0:
-                        lyso_ident_df = lyso_ident_df.sort_values(by='i', ascending=False)
-                        lyso_ident_df = lyso_ident_df[['Lipid_species', 'mz', 'i', 'ppm']].reset_index(drop=True)
-                        lyso_ident_df = lyso_ident_df.rename({'Lipid_species': 'Identified species'})
-                        lyso_ident_df = lyso_ident_df.round({'mz': 4, 'ppm': 2})
-                        _lyso_i_lst = []
-                        for _idx, _lyso_se in lyso_ident_df.iterrows():
-                            _lyso_i_lst.append('%.2e' % float(_lyso_se['i']))
-                        lyso_ident_df.loc[:, 'i'] = _lyso_i_lst
-                        lyso_ident_df.index += 1
-                        print(lyso_ident_df)
-                    else:
-                        lyso_ident_df = pd.DataFrame()
+                if score_df.shape[0] > 0:
+                    img_name = output_folder + '\%.4f_rt%.4f_DDAtop%.0f_scan%.0f_%s.png' % (_usr_ms2_pr_mz,
+                                                                                            _usr_ms2_rt,
+                                                                                            _usr_ms2_function - 1,
+                                                                                            _usr_ms2_scan_id,
+                                                                                            _usr_abbr_bulk
+                                                                                            )
 
-                    usr_ident_info_dct = {'SCORE_INFO': score_df, 'FA_INFO': fa_ident_df, 'LYSO_INFO': lyso_ident_df}
+                    _tmp_plot_info_dct = {'info_se': _row_se, 'ms1_pr_mz': _ms1_pr_mz, 'ms2_pr_mz': _usr_ms2_rt,
+                                          'lib_mz': _usr_mz_lib, 'formula': _usr_formula, 'abbr': _usr_abbr_bulk,
+                                          'ident_info_dct': usr_ident_info_dct,
+                                          'specific_check_dct': specific_check_dct,
+                                          'ms1_rt': _ms1_rt, 'ms2_rt': _ms2_rt, 'ms1_spec_idx': ms1_spec_idx,
+                                          'ms2_spec_idx': ms2_spec_idx, 'ms2_function': _usr_ms2_function,
+                                          'ms2_scan_id': _usr_ms2_scan_id, 'ms1_df': ms1_df, 'ms2_df': ms2_df,
+                                          'img_name': img_name
+                                          }
+                    plot_info_dct[_n] = _tmp_plot_info_dct
+                    ms1_pr_mz_lst.append(_ms1_pr_mz)
 
-                    if score_df.shape[0] > 0:
-                        img_name = output_folder + '\%.4f_rt%.4f_DDAtop%.0f_scan%.0f_%s.png' % (_usr_mz,
-                                                                                                _usr_ms2_rt,
-                                                                                                _usr_ms2_function - 1,
-                                                                                                _usr_ms2_scan_id,
-                                                                                                _usr_abbr_bulk
-                                                                                                )
+print('Total number of ms1_pr_mz: %i' % len(ms1_pr_mz_lst))
+ms1_pr_mz_lst = set(ms1_pr_mz_lst)
+print('Unique number of ms1_pr_mz: %i' % len(ms1_pr_mz_lst))
 
-                        # print('_row_se', type(_row_se))
-                        # print('xic_dct', type(xic_dct))
-                        # print('xic_dct', _usr_ms1_obs_mz, type(xic_dct[_usr_ms1_obs_mz]))
-                        # print('xic_dct', xic_dct[_usr_ms1_obs_mz].shape)
-                        # print('xic_dct', xic_dct[_usr_ms1_obs_mz])
-                        #
-                        # print('_ms1_rt', type(_ms2_rt))
-                        # print('ms1_df', type(ms1_df), ms1_df.shape)
-                        # print('ms2_df', type(ms2_df), ms2_df.shape)
-                        # print('img_name', type(img_name))
-                        # print('usr_ms1_precision', type(usr_ms1_precision))
-                        # print('usr_ident_info_dct', usr_ident_info_dct.keys())
-                        # for _k in specific_check_dct.keys():
-                        #     print(_k, type(specific_check_dct[_k]), specific_check_dct[_k].shape)
+print('=== ==> --> Start to extract XIC')
+xic_dct = get_xic_all(ms1_pr_mz_lst, usr_mzml, usr_rt_range, ms1_precision=usr_ms1_precision, msn_precision=500e-6)
 
-                        _ms1_pr_i, _ppm, isotope_checker = plot_spectra(_row_se, xic_dct, usr_ident_info_dct,
-                                                                        _ms1_rt, _ms2_rt, ms1_df, ms2_df,
-                                                                        specific_check_dct,
-                                                                        save_img_as=img_name,
-                                                                        ms1_precision=usr_ms1_precision
-                                                                        )
+print('=== ==> --> Number of XIC extracted: %i' % len(xic_dct.keys()))
 
-                        if _ms1_pr_i > 0 and isotope_checker == 0:
-                            _tmp_output_df = score_df
+for _i in plot_info_dct.keys():
+    _tmp_plot_dct = plot_info_dct[_i]
 
-                            if 'OTHER_FRAG' in specific_check_dct.keys():
-                                other_frag_df = specific_check_dct['OTHER_FRAG']
-                                other_frag_count = other_frag_df.shape[0]
-                            else:
-                                other_frag_count = 0
-                            if 'OTHER_NL' in specific_check_dct.keys():
-                                other_nl_df = specific_check_dct['OTHER_NL']
-                                other_nl_count = other_nl_df.shape[0]
-                            else:
-                                other_nl_count = 0
-                            if 'TARGET_FRAG' in specific_check_dct.keys():
-                                target_frag_df = specific_check_dct['TARGET_FRAG']
-                                target_frag_count = target_frag_df.shape[0]
-                            else:
-                                target_frag_count = 0
-                            if 'TARGET_NL' in specific_check_dct.keys():
-                                target_nl_df = specific_check_dct['TARGET_NL']
-                                target_nl_count = target_nl_df.shape[0]
-                            else:
-                                target_nl_count = 0
+    _info_se = _tmp_plot_dct['info_se']
+    _ident_info_dct = _tmp_plot_dct['ident_info_dct']
+    _specific_check_dct = _tmp_plot_dct['specific_check_dct']
+    _ms1_rt = _tmp_plot_dct['ms1_rt']
+    _ms2_rt = _tmp_plot_dct['ms2_rt']
+    _ms1_df = _tmp_plot_dct['ms1_df']
+    _ms2_df = _tmp_plot_dct['ms2_df']
+    _img_name = _tmp_plot_dct['img_name']
 
-                            _tmp_output_df['Bulk_identification'] = _usr_abbr_bulk
-                            _tmp_output_df['MS1_obs_mz'] = _usr_ms1_obs_mz
-                            _tmp_output_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
-                            _tmp_output_df['Lib_mz'] = _usr_mz_lib
-                            _tmp_output_df['MS2_rt'] = _usr_ms2_rt
-                            _tmp_output_df['MS2_function'] = _usr_ms2_function
-                            _tmp_output_df['scan_id'] = _usr_ms2_scan_id
-                            _tmp_output_df['specific peaks'] = target_frag_count + target_nl_count
-                            _tmp_output_df['contaminated peaks'] = other_frag_count + other_nl_count
-                            _tmp_output_df['ppm'] = _ppm
+    print('_ms1_df', _ms1_df.shape)
+    print('_ms2_df', _ms2_df.shape)
 
-                            output_df = output_df.append(_tmp_output_df)
+    _ms1_pr_i, _ppm, isotope_checker = plot_spectra(_info_se, xic_dct, _ident_info_dct,
+                                                    _ms1_rt, _ms2_rt, _ms1_df, _ms2_df,
+                                                    _specific_check_dct,
+                                                    save_img_as=_img_name,
+                                                    ms1_precision=usr_ms1_precision
+                                                    )
 
-    else:
-        print('!!!!!!!!!!!! PR NOT in list !!!!!!!!!!!!')
+    if _ms1_pr_i > 0 and isotope_checker == 0:
+        _tmp_output_df = score_df
 
-    print('---------------------NEXT---------------------------')
+        if 'OTHER_FRAG' in specific_check_dct.keys():
+            other_frag_df = specific_check_dct['OTHER_FRAG']
+            other_frag_count = other_frag_df.shape[0]
+        else:
+            other_frag_count = 0
+        if 'OTHER_NL' in specific_check_dct.keys():
+            other_nl_df = specific_check_dct['OTHER_NL']
+            other_nl_count = other_nl_df.shape[0]
+        else:
+            other_nl_count = 0
+        if 'TARGET_FRAG' in specific_check_dct.keys():
+            target_frag_df = specific_check_dct['TARGET_FRAG']
+            target_frag_count = target_frag_df.shape[0]
+        else:
+            target_frag_count = 0
+        if 'TARGET_NL' in specific_check_dct.keys():
+            target_nl_df = specific_check_dct['TARGET_NL']
+            target_nl_count = target_nl_df.shape[0]
+        else:
+            target_nl_count = 0
+
+        _tmp_output_df['Bulk identification'] = _usr_abbr_bulk
+        _tmp_output_df['MS1_obs_mz'] = _ms1_pr_mz
+        _tmp_output_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
+        _tmp_output_df['Lib_mz'] = _usr_mz_lib
+        _tmp_output_df['MS2_rt'] = _usr_ms2_rt
+        _tmp_output_df['MS2_function'] = _usr_ms2_function
+        _tmp_output_df['MS2_PR_MZ'] = _usr_ms2_pr_mz
+        _tmp_output_df['Scan#'] = _usr_ms2_scan_id
+        _tmp_output_df['Specific peaks'] = target_frag_count + target_nl_count
+        _tmp_output_df['Contaminated peaks'] = other_frag_count + other_nl_count
+        _tmp_output_df['ppm'] = _ppm
+
+        output_df = output_df.append(_tmp_output_df)
+
 print('=== ==> --> Generate the output table')
 
 # output_df['ppm'] = 1e6 * (output_df['MS1_obs_mz'] - output_df['Lib_mz']) / output_df['Lib_mz']
 output_df = output_df.round({'MS1_obs_mz': 4, 'Lib_mz': 4, 'ppm': 2, 'MS2_rt': 3})
 output_df['Proposed structures'] = output_df['Lipid_species']
-output_df = output_df[['Bulk_identification', 'Proposed structures', 'Score', 'specific peaks', 'contaminated peaks',
-                       'Lib_mz', 'MS1_obs_mz', 'MS1_obs_i', 'ppm', 'MS2_rt', 'MS2_function', 'scan_id']]
+output_df = output_df[['Bulk identification', 'Proposed structures', 'Score', 'Specific peaks', 'Contaminated peaks',
+                       'Lib_mz', 'MS1_obs_mz', 'MS1_obs_i', 'ppm', 'MS2_PR_MZ', 'MS2_rt', 'MS2_function', 'Scan#']]
 output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_rt', 'Score'], ascending=[True, True, False])
 output_df = output_df.reset_index(drop=True)
 output_df.index += 1

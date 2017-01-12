@@ -20,6 +20,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
                  save_img_as=None, ms1_precision=50e-6):
     pr_mz = mz_se['mz']
     ms1_obs = mz_se['MS1_obs_mz']
+    lib_mz = mz_se['Lib_mz']
     # _usr_rt = mz_se['rt']
     # _usr_abbr_bulk = mz_se['Abbreviation']
     # _usr_pl_class = mz_se['Class']
@@ -27,23 +28,32 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
     # _usr_ms2_function = mz_se['function']
     # _usr_ms2_scan_id = mz_se['scan_id']
 
-    print ('Start looking for m/z', pr_mz)
+    print ('Start looking for MS2 PR m/z %f @ MS1 best PR m/z %f with lib m/z %f'
+           % (pr_mz, ms1_obs, lib_mz))
 
     abbr_id = mz_se['Abbreviation']
     _mzlib_id = mz_se['Lib_mz']
     _func_id = mz_se['function']
     # _scan_id = mz_se['scan_id']
 
-    _ms1_pr_df = ms1_df[ms1_df['mz'] == ms1_obs]
+    # _ms1_pr_df = ms1_df[ms1_df['mz'] == ms1_obs]
+    _ms1_delta = _mzlib_id * ms1_precision
+    ms1_pr_query = '%.6f <= mz <= %.6f' % (_mzlib_id - _ms1_delta, _mzlib_id + _ms1_delta)
+    _ms1_pr_df = ms1_df.query(ms1_pr_query)
 
-    _ppm = 1e6 * (ms1_obs - _mzlib_id) / _mzlib_id
+    if len(_ms1_pr_df) > 0:
+        _ms1_pr_df['ppm'] = abs(1e6 * (_ms1_pr_df['mz'] - _mzlib_id) / _mzlib_id)
+        _ms1_pr_df = _ms1_pr_df.sort_values(by='i', ascending=False)
 
-    # check if ms1_obs is present in MS survey scan with abs i >= 1000
-    if _ms1_pr_df.shape[0] > 0 and abs(_ppm) <= ms1_precision * 1e6:
+        _ms1_pr_df = _ms1_pr_df.head(1)
+        print('check2')
         _ms1_pr_i = _ms1_pr_df['i'].tolist()[0]
-        _ms1_pr_mz = ms1_obs
+        _ms1_pr_mz = _ms1_pr_df['mz'].tolist()[0]
+        _ppm = 1e6 * (_ms1_pr_mz - _mzlib_id) / _mzlib_id
         _mz_zoom_query_str = ' %.2f < mz < %.2f' % (ms1_obs - 2.1, ms1_obs + 2.1)
         _ms_zoom_df = ms1_df.query(_mz_zoom_query_str)
+        print('_ms_zoom_df')
+        print(_ms_zoom_df.head())
         _ms_zoom_df = _ms_zoom_df.sort_values(by='i', ascending=False)
 
         _mz_isotope_query_str = ' %.2f < mz < %.2f' % (ms1_obs - 1.5, ms1_obs - 0.1)
@@ -87,7 +97,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
             # print(_dash_i)
             # print(_ms1_pr_df['mz'])
 
-            markerline, stemlines, baseline = ms_pic.stem(_ms1_pr_df['mz'], _dash_i, markerfmt=' ')
+            markerline, stemlines, baseline = ms_pic.stem([_ms1_pr_mz], _dash_i, markerfmt=' ')
             plt.setp(stemlines, color='cyan', linewidth=5, alpha=0.3)
             markerline, stemlines, baseline = ms_pic.stem(_ms1_pr_df['mz'], _ms1_pr_df['i'], markerfmt="D")
             plt.setp(stemlines, color='magenta')
@@ -347,8 +357,8 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
                 msms_low_pic.set_xlim([min(_msms_low_df['mz'].tolist()) - 1, 350])
                 msms_low_pic.set_ylim([0, max(_msms_low_df['i'].tolist()) * 1.3])
                 # PC HG form DOI: 10.1021/acs.jproteome.5b00169
-                # for _usr_mz in [168.0358, 224.0693, 242.0798]:
-                #     _query_str = '%f - %f <= mz <= %f + %f' % (_usr_mz, 0.25, _usr_mz, 0.25)
+                # for _usr_ms2_pr_mz in [168.0358, 224.0693, 242.0798]:
+                #     _query_str = '%f - %f <= mz <= %f + %f' % (_usr_ms2_pr_mz, 0.25, _usr_ms2_pr_mz, 0.25)
                 #     _snms2_df = ms2_df.query(_query_str)
                 #     _snms2_df = _snms2_df.sort(columns='i', ascending=False)
                 #     # print _snms2_df.head(2)
@@ -376,7 +386,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
 
             # set title
 
-            xic_title_str = 'XIC of m/z %.4f | %s @ m/z %.4f ppm=%.2f' % (ms1_obs, abbr_id, _mzlib_id, _ppm)
+            xic_title_str = 'XIC of m/z %.4f | %s @ m/z %.4f ppm=%.2f' % (_ms1_pr_mz, abbr_id, _mzlib_id, _ppm)
             ms_title_str = 'MS @ %.3f min' % ms1_rt
             ms_zoom_title_str = 'MS zoomed'
             msms_title_str = ('MS/MS of m/z %.4f | DDA Top %d @ %.3f min' % (pr_mz, _func_id, ms2_rt))
@@ -404,3 +414,11 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
             print ('!!!!!! Not identified !!!!!! >>> >>> >>>')
             isotope_checker = 1
             return _ms1_pr_i, _ppm, isotope_checker
+
+    else:
+        print ('!!!!!! MS1 PR & ppm checker !=!=!= FAILED !!!!!!')
+        _ms1_pr_i = 0
+        _ppm = 0
+        isotope_checker = 1
+        print ('!!!!!! Not identified !!!!!! >>> >>> >>>')
+        return _ms1_pr_i, _ppm, isotope_checker

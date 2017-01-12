@@ -4,6 +4,8 @@
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
+from __future__ import division
+
 import re
 
 import pandas as pd
@@ -155,8 +157,8 @@ class ScoreGenerator:
         if lipid_type == 'PL' and charge_mode == 'NEG':
             fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M-H]-', 'NL-H2O']]
             fa_chk_df = fa_chk_df.rename(columns={'[M-H]-': 'sn', 'mass': 'NL'})
-            fa_chk_df['M-sn'] = calc_pr_mz - fa_chk_df['NL-H2O']
-            fa_chk_df['M-(sn-H2O)'] = calc_pr_mz - fa_chk_df['NL']
+            fa_chk_df['M-sn'] = calc_pr_mz - fa_chk_df['NL']
+            fa_chk_df['M-(sn-H2O)'] = calc_pr_mz - fa_chk_df['NL-H2O']
             fa_chk_df['Lipid_species'] = ''
 
             for _i, _fa_se in fa_chk_df.iterrows():
@@ -189,13 +191,13 @@ class ScoreGenerator:
                                 _frag_df = _frag_df.append(_frag_ppm_df)
 
                         if _frag_type == 'sn':
-                            _frag_df.loc[:, 'Lipid_species'] = '[FA%s-H]-' % _fa_abbr
+                            _frag_df.loc[:, 'Lipid_species'] = 'FA %s [M-H]-' % _fa_abbr
                             fa_ident_df = fa_ident_df.append(_frag_df)
                         elif _frag_type == 'M-sn':
                             if _fa_link in lyso_fa_linker_dct.keys():
-                                if bulk_fa_db - _fa_db >=0:
+                                if bulk_fa_db - _fa_db >= 0:
                                     _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
-                                    _frag_df.loc[:, 'Lipid_species'] = '[Lyso%s(%s%i:%i)-H2O-H]-' % (pl_typ,
+                                    _frag_df.loc[:, 'Lipid_species'] = 'Lyso%s(%s%i:%i) [M-H2O-H]-' % (pl_typ,
                                                                                                      _fa_lyso_link,
                                                                                                      bulk_fa_c - _fa_c,
                                                                                                      bulk_fa_db - _fa_db
@@ -205,7 +207,7 @@ class ScoreGenerator:
                             if _fa_link in lyso_fa_linker_dct.keys():
                                 if bulk_fa_db - _fa_db >= 0:
                                     _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
-                                    _frag_df.loc[:, 'Lipid_species'] = '[Lyso%s(%s%i:%i)-H]-' % (pl_typ, _fa_lyso_link,
+                                    _frag_df.loc[:, 'Lipid_species'] = 'Lyso%s(%s%i:%i) [M-H]-' % (pl_typ, _fa_lyso_link,
                                                                                                  bulk_fa_c - _fa_c,
                                                                                                  bulk_fa_db - _fa_db
                                                                                                  )
