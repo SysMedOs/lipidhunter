@@ -316,7 +316,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         step1_df = pd.DataFrame()
         self.ui.tab_d_statusrun_pte.clear()
-        self.ui.tab_d_statusrun_pte.insertPlainText(u'Start!')
+        self.ui.tab_d_statusrun_pte.insertPlainText(u'Start! \n')
 
         for _idx, _ident_se in ident_df.iterrows():
 
