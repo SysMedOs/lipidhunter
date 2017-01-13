@@ -47,7 +47,7 @@ usr_ms1_precision = 50e-6
 usr_ms2_precision = 200e-6
 usr_ms2_specific_peaks_precision = 200e-6
 usr_score_filter = 27.5
-usr_isotope_score_filter = 70  # max 100
+usr_isotope_score_filter = 85  # max 100
 
 usr_ms1_ppm = int(usr_ms1_precision * 1e6)
 
@@ -181,7 +181,7 @@ for _n, _subgroup_df in checked_info_df.groupby(['mz', 'Lib_mz', 'Formula', 'rt'
                                                  score_filter=usr_score_filter)
 
                 score_df = usr_ident_info_dct['SCORE_INFO']
-                if score_df.shape[0] > 0:
+                if score_df.shape[0] > 0 and _ms1_pr_i > 0:
                     img_name = output_folder + '\%.4f_rt%.4f_DDAtop%.0f_scan%.0f_%s.png' % (_usr_ms2_pr_mz,
                                                                                             _usr_ms2_rt,
                                                                                             _usr_ms2_function - 1,

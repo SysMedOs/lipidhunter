@@ -100,7 +100,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
 
             markerline, stemlines, baseline = ms_pic.stem([_ms1_pr_mz], _dash_i, markerfmt=' ')
             plt.setp(stemlines, color='cyan', linewidth=5, alpha=0.3)
-            markerline, stemlines, baseline = ms_pic.stem(_ms1_pr_df['mz'], _ms1_pr_df['i'], markerfmt="D")
+            markerline, stemlines, baseline = ms_pic.stem(_ms1_pr_df['mz'], _ms1_pr_df['i'], markerfmt='D')
             plt.setp(stemlines, color='magenta')
             plt.setp(markerline, markerfacecolor='magenta', markersize=4, markeredgewidth=0)
 
@@ -125,10 +125,11 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
 
             ms_zoom_pic.add_patch(m0_theo_box)
 
-            # isotope region | if any peak in M-1
-            markerline, stemlines, baseline = ms_zoom_pic.stem([_ms1_pr_mz - 1], [_ms1_pr_i], markerfmt=' ')
-            # markerline, stemlines, baseline
-            plt.setp(stemlines, color='orange', linewidth=12, alpha=0.3)
+            # isotope region | if any peak in M-1.0034
+
+            m_pre_theo_box = patches.Rectangle((lib_mz - 1.0034 - _ms1_delta, 0), 2 * _ms1_delta, _ms1_pr_i,
+                                               facecolor=(1.0, 0.0, 0.0, 0.4), edgecolor="none")
+            ms_zoom_pic.add_patch(m_pre_theo_box)
 
             ms_zoom_pic.set_xlim([pr_mz - 2.1, pr_mz + 2.1])
             ms_zoom_pic.set_ylim([0, max(_ms_zoom_df['i'].tolist()) * 1.3])
@@ -146,23 +147,30 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
             _ms_zoom_peak_list = zip(_ms_zoom_top_df['mz'].tolist(),
                                      _ms_zoom_top_df['i'].tolist())
 
-            for _ms_zoom_peak in _ms_zoom_peak_list:
-                if _ms_zoom_peak[0] != _ms1_pr_mz:
-                    _ms_zoom_peak_str = '%.4f' % _ms_zoom_peak[0]
-                    _ms_zoom_peak_y = _ms_zoom_peak[1]
-                    ms_zoom_pic.text(_ms_zoom_peak[0], _ms_zoom_peak_y, _ms_zoom_peak_str,
-                                     fontsize=6)
+            # # label of ms zoomed peaks
+            # for _ms_zoom_peak in _ms_zoom_peak_list:
+            #     if _ms_zoom_peak[0] != _ms1_pr_mz:
+            #         _ms_zoom_peak_str = '%.4f' % _ms_zoom_peak[0]
+            #         _ms_zoom_peak_y = _ms_zoom_peak[1]
+            #         ms_zoom_pic.text(_ms_zoom_peak[0], _ms_zoom_peak_y, _ms_zoom_peak_str,
+            #                          fontsize=6)
 
             ms_zoom_pic.stem(_ms_zoom_df['mz'].tolist(), _ms_zoom_df['i'].tolist(), 'black', markerfmt=' ')
             markerline, stemlines, baseline = ms_zoom_pic.stem(_ms1_pr_df['mz'], _ms1_pr_df['i'],
                                                                'magenta', markerfmt='D'
                                                                )
-            plt.setp(markerline, markerfacecolor='magenta', markersize=6, markeredgewidth=0)
+            plt.setp(markerline, markerfacecolor='magenta', markeredgecolor='none', markeredgewidth=0,
+                     markersize=6, alpha=0.8)
             ms_zoom_pic.text(_ms1_pr_df['mz'], _ms1_pr_df['i'], '%.4f' % float(_ms1_pr_df['mz']),
                              color='magenta', fontsize=6
                              )
+            markerline, stemlines, baseline = ms_zoom_pic.stem([lib_mz], [_ms1_pr_i], '--', markerfmt='o')
+            plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
+            plt.setp(stemlines, color='orange', alpha=0.8)
+            ms_zoom_pic.text(lib_mz - 0.7, _ms1_pr_i, 'Calc m/z: %.4f' % lib_mz, color='orange', fontsize=6)
+
             ms_zoomed_mz_lst = _ms_zoom_top_df['mz'].tolist()
-            # isotope region | highlight the 1st isotope ~ 45 % intensity
+            # isotope region | highlight the 1st isotope
             m1_dct = isotope_checker_dct[1]
             m1_theo_mz = m1_dct['theo_mz']
             m1_theo_i = m1_dct['theo_i']
@@ -172,20 +180,20 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
             m1_obs_r = m1_dct['obs_ratio']
             # theo range box
             m1_theo_box = patches.Rectangle((m1_theo_mz - _ms1_delta, 0), 2 * _ms1_delta, m1_theo_r * _ms1_pr_i,
-                                            facecolor=(0.1, 1.0, 1.0, 0.3), edgecolor="none")
+                                            facecolor=(0.1, 1.0, 1.0, 0.6), edgecolor="none")
             ms_zoom_pic.add_patch(m1_theo_box)
 
-            markerline, stemlines, baseline = ms_zoom_pic.stem([m1_theo_mz], [m1_theo_r * _ms1_pr_i],  '-.',
-                                                               markerfmt='v')
-            plt.setp(stemlines, color='red', alpha=0.8)
-            plt.setp(markerline, markerfacecolor='red', markersize=6, markeredgewidth=0, alpha=0.8)
-            ms_zoom_pic.text(m1_theo_mz - 0.9, m1_theo_r * _ms1_pr_i, 'Calc 1st isotope:%.4f' % m1_theo_mz,
-                             color='red', fontsize=6)
+            markerline, stemlines, baseline = ms_zoom_pic.stem([m1_theo_mz], [m1_theo_r * _ms1_pr_i],  '--',
+                                                               markerfmt='o')
+            plt.setp(stemlines, color='orange', alpha=0.8)
+            plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
+            ms_zoom_pic.text(m1_theo_mz - 0.93, m1_theo_r * _ms1_pr_i, 'Calc 1st isotope: %.4f' % m1_theo_mz,
+                             color='orange', fontsize=6)
             # markerline, stemlines, baseline = ms_zoom_pic.stem([m1_obs_mz], [m1_obs_i], markerfmt=' ')
             # plt.setp(stemlines, color='magenta', alpha=0.3)
-            # ms_zoom_pic.text(m1_obs_mz - 0.25, m1_obs_i, '%.4f' % m1_obs_mz, color='magenta', fontsize=6)
+            ms_zoom_pic.text(m1_obs_mz, m1_obs_i, '%.4f' % m1_obs_mz, color='magenta', fontsize=6)
 
-            # isotope region | highlight the 2nd isotope ~ 15 % intensity
+            # isotope region | highlight the 2nd isotope
             m2_dct = isotope_checker_dct[2]
             m2_theo_mz = m2_dct['theo_mz']
             m2_theo_i = m2_dct['theo_i']
@@ -194,17 +202,17 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
             m2_theo_r = m2_dct['theo_ratio']
             m2_obs_r = m2_dct['obs_ratio']
             m2_theo_box = patches.Rectangle((m2_theo_mz - _ms1_delta, 0), 2 * _ms1_delta, m2_theo_r * _ms1_pr_i,
-                                            facecolor=(0.3, 1.0, 1.0, 0.3), edgecolor="none")
+                                            facecolor=(0.2, 1.0, 1.0, 0.6), edgecolor="none")
             ms_zoom_pic.add_patch(m2_theo_box)
-            markerline, stemlines, baseline = ms_zoom_pic.stem([m2_theo_mz], [m2_theo_r * _ms1_pr_i], '-.',
-                                                               markerfmt='v')
-            plt.setp(stemlines, color='red', alpha=0.8)
-            plt.setp(markerline, markerfacecolor='red', markersize=4, markeredgewidth=0, alpha=0.8)
-            ms_zoom_pic.text(m2_theo_mz - 0.9, m2_theo_r * _ms1_pr_i, 'Calc 2nd isotope:%.4f' % m2_theo_mz,
-                             color='red', fontsize=6)
+            markerline, stemlines, baseline = ms_zoom_pic.stem([m2_theo_mz], [m2_theo_r * _ms1_pr_i], '--',
+                                                               markerfmt='o')
+            plt.setp(stemlines, color='orange', alpha=0.8)
+            plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
+            ms_zoom_pic.text(m2_theo_mz - 0.93, m2_theo_r * _ms1_pr_i, 'Calc 2nd isotope: %.4f' % m2_theo_mz,
+                             color='orange', fontsize=6)
             # markerline, stemlines, baseline = ms_zoom_pic.stem([m2_obs_mz], [m2_obs_i], markerfmt=' ')
             # plt.setp(stemlines, color='magenta', alpha=0.3)
-            # ms_zoom_pic.text(m2_obs_mz - 0.25, m2_obs_i, '%.4f' % m2_obs_mz, color='magenta', fontsize=6)
+            ms_zoom_pic.text(m2_obs_mz, m2_obs_i, '%.4f' % m2_obs_mz, color='magenta', fontsize=6)
 
             ms_zoom_pic.text(m2_theo_mz, max(_ms_zoom_df['i'].tolist()) * 1.2, 'Isotope score = % f' % isotope_score,
                              verticalalignment='top', horizontalalignment='right',
@@ -264,9 +272,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
             if _fa_table_df.shape[0] > 0:
                 fa_row_color_lst = []
                 for _i_fa, _fa_se in _fa_table_df.iterrows():
-                    markerline, stemlines, baseline = msms_low_pic.stem([_fa_se['mz']], [_fa_se['i']],
-                                                                        markerfmt='D'
-                                                                        )
+                    markerline, stemlines, baseline = msms_low_pic.stem([_fa_se['mz']], [_fa_se['i']], markerfmt='D')
                     # color of stemlines is tuple of R, G, B, alpha from 0 to 1
                     _rgb_color = (
                     (20 * _i_fa) / 255, (255 - 5 * _i_fa) / 255, (255 - 5 * _i_fa) / 255, 0.6 - 0.02 * _i_fa)
@@ -317,80 +323,6 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
                                                  colLabels=lyso_col_labels, loc='upper center')
                 lyso_table.set_fontsize(6)
 
-            # add specific ion info
-
-            if 'OTHER_FRAG' in specific_check_dct.keys():
-                other_frag_df = specific_check_dct['OTHER_FRAG']
-                for _idx, _frag_se in other_frag_df.iterrows():
-                    _frag_mz = _frag_se['mz']
-                    _frag_i = _frag_se['i']
-                    _frag_class = _frag_se['LABEL']
-                    _frag_i_x = min(_frag_i * 5, 0.3 * max(_msms_low_df['i'].tolist()))
-                    _frag_i = sorted([max(_msms_low_df['i'].tolist()) * 1.1, _frag_i * 1.1, _frag_i_x])[1]
-                    markerline, stemlines, baseline = msms_low_pic.stem([_frag_mz], [_frag_i], markerfmt=' ')
-                    plt.setp(stemlines, color='orange', linewidth=3, alpha=0.4)
-                    msms_low_pic.text(_frag_mz, _frag_i, _frag_class, fontsize=8, color='orange')
-
-            if 'OTHER_NL' in specific_check_dct.keys():
-                other_nl_df = specific_check_dct['OTHER_NL']
-                for _idx, _nl_se in other_nl_df.iterrows():
-                    _nl_mz = _nl_se['mz']
-                    _nl_i = _nl_se['i']
-                    _nl_class = _nl_se['LABEL']
-                    _nl_i_x = min(_nl_i * 5, 0.3 * max(_msms_high_df['i'].tolist()))
-                    _nl_i = sorted([max(_msms_high_df['i'].tolist()) * 1.1, _nl_i * 1.1, _nl_i_x])[1]
-                    markerline, stemlines, baseline = msms_high_pic.stem([_nl_mz], [_nl_i], markerfmt=' ')
-                    plt.setp(stemlines, color='orange', linewidth=3, alpha=0.4)
-                    msms_high_pic.text(_nl_mz, _nl_i, _nl_class, fontsize=8, color='orange')
-
-            if 'TARGET_FRAG' in specific_check_dct.keys():
-                target_frag_df = specific_check_dct['TARGET_FRAG']
-                for _idx, _frag_se in target_frag_df.iterrows():
-                    _frag_mz = _frag_se['mz']
-                    _frag_i = _frag_se['i']
-                    _frag_class = _frag_se['LABEL']
-                    _frag_i_x = min(_frag_i * 5, 0.5 * max(_msms_low_df['i'].tolist()))
-                    _frag_i = sorted([max(_msms_low_df['i'].tolist()) * 1.1, _frag_i * 1.1, _frag_i_x])[1]
-                    markerline, stemlines, baseline = msms_low_pic.stem([_frag_mz], [_frag_i], markerfmt=' ')
-                    plt.setp(stemlines, color='green', linewidth=3, alpha=0.4)
-                    msms_low_pic.text(_frag_mz, _frag_i, _frag_class, fontsize=8, color='green')
-
-            if 'TARGET_NL' in specific_check_dct.keys():
-                target_nl_df = specific_check_dct['TARGET_NL']
-                for _idx, _nl_se in target_nl_df.iterrows():
-                    _nl_mz = _nl_se['mz']
-                    _nl_i = _nl_se['i']
-                    _nl_class = _nl_se['LABEL']
-                    _nl_i_x = min(_nl_i * 5, 0.3 * max(_msms_low_df['i'].tolist()))
-                    _nl_i = sorted([max(_msms_high_df['i'].tolist()) * 1.1, _nl_i * 1.1, _nl_i_x])[1]
-                    markerline, stemlines, baseline = msms_high_pic.stem([_nl_mz], [_nl_i], markerfmt=' ')
-                    # markerline, stemlines, baseline
-                    plt.setp(stemlines, color='green', linewidth=3, alpha=0.4)
-                    msms_high_pic.text(_nl_mz, _nl_i, _nl_class, fontsize=8, color='green')
-
-            # msms spectrum zoomed > 350 start
-            if _msms_high_df.shape[0] > 0:
-                msms_high_pic.stem(_msms_high_df['mz'].tolist(),
-                                   _msms_high_df['i'].tolist(),
-                                   'black', lw=4, markerfmt=' ')
-                msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-                msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
-                msms_high_pic.set_ylabel("Intensity", fontsize=10)
-                msms_high_pic.set_xlim([350, pr_mz + 20])
-                msms_high_pic.set_ylim([0, max(_msms_high_df['i'].tolist()) * 1.3])
-
-                # add annotations
-                _top_msms_high_df = _msms_high_df.sort_values(by='i', ascending=False)
-                _top_msms_high_df = _top_msms_high_df.head(10)
-                _msms_high_peak_list = zip(_top_msms_high_df['mz'].tolist(),
-                                           _top_msms_high_df['i'].tolist())
-                for _msms_high_peak in _msms_high_peak_list:
-                    _msms_high_peak_str = '%.4f' % _msms_high_peak[0]
-                    _msms_high_peak_y = _msms_high_peak[1]
-                    msms_high_pic.text(_msms_high_peak[0], _msms_high_peak_y, _msms_high_peak_str, fontsize=6)
-            else:
-                pass
-
             # msms spectrum zoomed < 350 start
             if _msms_low_df.shape[0] > 0:
                 msms_low_pic.stem(_msms_low_df['mz'].tolist(),
@@ -429,8 +361,83 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
             else:
                 pass
 
-            # set title
+            # msms spectrum zoomed > 350 start
+            if _msms_high_df.shape[0] > 0:
+                msms_high_pic.stem(_msms_high_df['mz'].tolist(),
+                                   _msms_high_df['i'].tolist(),
+                                   'black', lw=4, markerfmt=' ')
+                msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+                msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
+                msms_high_pic.set_ylabel("Intensity", fontsize=10)
+                msms_high_pic.set_xlim([350, pr_mz + 20])
+                msms_high_pic.set_ylim([0, max(_msms_high_df['i'].tolist()) * 1.3])
 
+                # add annotations
+                _top_msms_high_df = _msms_high_df.sort_values(by='i', ascending=False)
+                _top_msms_high_df = _top_msms_high_df.head(10)
+                _msms_high_peak_list = zip(_top_msms_high_df['mz'].tolist(),
+                                           _top_msms_high_df['i'].tolist())
+                for _msms_high_peak in _msms_high_peak_list:
+                    _msms_high_peak_str = '%.4f' % _msms_high_peak[0]
+                    _msms_high_peak_y = _msms_high_peak[1]
+                    msms_high_pic.text(_msms_high_peak[0], _msms_high_peak_y, _msms_high_peak_str, fontsize=6)
+            else:
+                pass
+
+            # add specific ion info
+
+            if 'OTHER_FRAG' in specific_check_dct.keys():
+                other_frag_df = specific_check_dct['OTHER_FRAG']
+                for _idx, _frag_se in other_frag_df.iterrows():
+                    _frag_mz = _frag_se['mz']
+                    _frag_i = _frag_se['i']
+                    _frag_class = _frag_se['LABEL']
+                    _frag_i_x = min(_frag_i * 5, 0.3 * max(_msms_low_df['i'].tolist()))
+                    _frag_i = sorted([max(_msms_low_df['i'].tolist()) * 1.1, _frag_i * 1.1, _frag_i_x])[1]
+                    markerline, stemlines, baseline = msms_low_pic.stem([_frag_mz], [_frag_i], markerfmt=' ')
+                    plt.setp(stemlines, color='red', linewidth=3, alpha=0.4)
+                    msms_low_pic.text(_frag_mz, _frag_i, _frag_class, fontsize=8, color='red')
+
+            if 'OTHER_NL' in specific_check_dct.keys():
+                other_nl_df = specific_check_dct['OTHER_NL']
+                for _idx, _nl_se in other_nl_df.iterrows():
+                    _nl_mz = _nl_se['mz']
+                    _nl_i = _nl_se['i']
+                    _nl_class = _nl_se['LABEL']
+                    _nl_i_x = min(_nl_i * 5, 0.3 * max(_msms_high_df['i'].tolist()))
+                    _nl_i = sorted([max(_msms_high_df['i'].tolist()) * 1.1, _nl_i * 1.1, _nl_i_x])[1]
+                    markerline, stemlines, baseline = msms_high_pic.stem([_nl_mz], [_nl_i], markerfmt=' ')
+                    plt.setp(stemlines, color='red', linewidth=3, alpha=0.4)
+                    msms_high_pic.text(_nl_mz, _nl_i, _nl_class, fontsize=8, color='red')
+
+            if 'TARGET_FRAG' in specific_check_dct.keys():
+                target_frag_df = specific_check_dct['TARGET_FRAG']
+                for _idx, _frag_se in target_frag_df.iterrows():
+                    _frag_mz = _frag_se['mz']
+                    _frag_i = _frag_se['i']
+                    _frag_class = _frag_se['LABEL']
+                    _frag_i_x = min(_frag_i * 5, 0.5 * max(_msms_low_df['i'].tolist()))
+                    _frag_i = sorted([max(_msms_low_df['i'].tolist()) * 1.1, _frag_i * 1.1, _frag_i_x])[1]
+                    markerline, stemlines, baseline = msms_low_pic.stem([_frag_mz], [_frag_i], markerfmt=' ')
+                    plt.setp(stemlines, color='green', linewidth=3, alpha=0.4)
+                    msms_low_pic.text(_frag_mz, _frag_i, _frag_class, fontsize=8, color='green')
+
+            if 'TARGET_NL' in specific_check_dct.keys():
+                target_nl_df = specific_check_dct['TARGET_NL']
+                for _idx, _nl_se in target_nl_df.iterrows():
+                    _nl_mz = _nl_se['mz']
+                    _nl_i = _nl_se['i']
+                    _nl_class = _nl_se['LABEL']
+                    _nl_i_x = min(_nl_i * 5, 0.3 * max(_msms_low_df['i'].tolist()))
+                    _nl_i = sorted([max(_msms_high_df['i'].tolist()) * 1.1, _nl_i * 1.1, _nl_i_x])[1]
+                    markerline, stemlines, baseline = msms_high_pic.stem([_nl_mz], [_nl_i], markerfmt=' ')
+                    # markerline, stemlines, baseline
+                    plt.setp(stemlines, color='green', linewidth=3, alpha=0.4)
+                    msms_high_pic.text(_nl_mz, _nl_i, _nl_class, fontsize=8, color='green')
+
+
+
+            # set title
             xic_title_str = 'XIC of m/z %.4f | %s @ m/z %.4f ppm=%.2f' % (_ms1_pr_mz, abbr_id, _mzlib_id, _ppm)
             ms_title_str = 'MS @ %.3f min' % ms1_rt
             ms_zoom_title_str = 'MS zoomed'
