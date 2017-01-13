@@ -12,7 +12,8 @@ import pandas as pd
 import pymzml
 
 
-def extract_mzml(mzml, rt_range, dda_top=6, ms1_precision=50e-6, msn_precision=500e-6):
+def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10,
+                 ms1_precision=50e-6, ms2_precision=500e-6):
 
     """
     Extract mzML to a scan info DataFrame and a pandas panel for spectra DataFrame of mz and i
@@ -25,8 +26,8 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_precision=50e-6, msn_precision=5
     :type dda_top: int
     :param ms1_precision: e.g. 50e-6 for 50 ppm
     :type ms1_precision: float
-    :param msn_precision: e.g. 500e-6 for 500 ppm
-    :type msn_precision: float
+    :param ms2_precision: e.g. 500e-6 for 500 ppm
+    :type ms2_precision: float
     :returns: scan_info_df, spec_pl
     :rtype: pandas.DataFrame, pandas.Panel
 
@@ -50,7 +51,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_precision=50e-6, msn_precision=5
     scan_rt_obo = 'MS:1000016'
     scan_pr_mz_obo = 'MS:1000744'
 
-    spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
+    spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=ms2_precision)
 
     scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)(scan=)(\d*)(.*)')
 
@@ -87,15 +88,14 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_precision=50e-6, msn_precision=5
                         dda_event_idx += 1
 
                         # _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False).head(1000)
-                        _tmp_spec_df = _tmp_spec_df.query('i >= 1000')
+                        _tmp_spec_df = _tmp_spec_df.query('i >= %f' % ms1_threshold)
                         _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False)
                         _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
-
                         spec_dct[spec_idx] = _tmp_spec_df
 
                     if _function in ms2_function_range_lst:
                         pr_mz = _spectrum[scan_pr_mz_obo]
-                        spec_dct[spec_idx] = _tmp_spec_df.query('i >= 10')
+                        spec_dct[spec_idx] = _tmp_spec_df.query('i >= %f' % ms2_threshold)
 
                     spec_idx_lst.append(spec_idx)
                     dda_event_lst.append(dda_event_idx)
@@ -130,6 +130,7 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
     ms1_rt = 0
     ms2_rt = 0
     ms1_mz = 0
+    ms1_i = 0
 
     if mz in scan_info_df['pr_mz'].tolist():
         _tmp_mz_scan_info_df = scan_info_df.query('pr_mz == %.6f and function == %f and scan_id == %f'
@@ -168,6 +169,7 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
                     ms1_pr_df = ms1_pr_df.sort_values(by=['i', 'ppm'], ascending=[False, True])
                     if ms1_pr_df.shape[0] > 0:
                         ms1_mz = ms1_pr_df['mz'].tolist()[0]
+                        ms1_i = ms1_pr_df['i'].tolist()[0]
                 else:
                     pass
 
@@ -183,9 +185,9 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
                 #     print('!!!!!!!!!!!! MS1 is NOT for this MS/MS !!!!!!!!!!!!')
 
                 print('MS1 @ DDA#:%.0f | Total scan id:%.0f' % (ms2_dda_idx, ms1_spec_idx))
-                # print(ms1_df.head(5))
+                # print(_ms1_df.head(5))
                 print('MS2 @ DDA#:%.0f | Total scan id:%.0f' % (ms2_dda_idx, ms2_spec_idx))
-                # print(ms2_df.head(5))
+                # print(_ms2_df.head(5))
 
                 print('--------------- NEXT _idx')
 
@@ -195,8 +197,11 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
         print('=== ===DO NOT have this precursor pr_mz == %f and function == %f and scan_id == %f!!!!!!'
               % (mz, function, ms2_scan_id)
               )
-    print(ms2_rt)
-    return ms1_mz, ms1_rt, ms2_rt, ms1_spec_idx, ms2_spec_idx, ms1_df, ms2_df
+
+    spec_info_dct = {'ms1_i': ms1_i, 'ms1_mz': ms1_mz, 'ms1_rt': ms1_rt, 'ms2_rt': ms2_rt,
+                     '_ms1_spec_idx': ms1_spec_idx, '_ms2_spec_idx': ms2_spec_idx, '_ms1_df': ms1_df, '_ms2_df': ms2_df}
+
+    return spec_info_dct
 
 
 def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=500e-6):
@@ -248,7 +253,7 @@ def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=
     return ms1_xic_df
 
 
-def get_xic_all(mz_list, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e-6):
+def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e-6):
 
     waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
                       ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']))
@@ -258,17 +263,17 @@ def get_xic_all(mz_list, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
         else:
             pass
 
-    # ms1_obs_df = info_df.query('MS1_obs_mz > 0')
-    # ms1_obs_lst = ms1_obs_df['MS1_obs_mz'].tolist()
-    # ms1_obs_lst = sorted(set(ms1_obs_lst))
-    # print('Unique precursor m/z:', len(ms1_obs_lst))
+    ms1_obs_df = info_df.query('MS1_obs_mz > 0')
+    ms1_obs_lst = ms1_obs_df['MS1_obs_mz'].tolist()
+    ms1_obs_lst = sorted(set(ms1_obs_lst))
+    print('Unique precursor m/z:', len(ms1_obs_lst))
 
     rt_start = rt_range[0]
     rt_end = rt_range[1]
 
     ms1_xic_dct = {}
 
-    for _mz in mz_list:
+    for _mz in ms1_obs_lst:
         ms1_xic_dct[_mz] = pd.DataFrame()
     spec_title_obo = 'MS:1000796'
     scan_rt_obo = 'MS:1000016'
@@ -290,7 +295,7 @@ def get_xic_all(mz_list, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
                     print('Reading MS survey scan @:', _scan_rt)
                     # slow but more accurate mode. At least 10 time slower
                     # _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
-                    for _ms1_obs in mz_list:
+                    for _ms1_obs in ms1_obs_lst:
 
                         ms1_xic_df = ms1_xic_dct[_ms1_obs]
 

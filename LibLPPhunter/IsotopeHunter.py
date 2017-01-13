@@ -29,7 +29,6 @@ class IsotopeHunter(object):
                                    'K': [(38.9637069, 0.932581), (39.96399867, 0.000117), (40.96182597, 0.067302)],
                                    }
 
-
     def get_elements(self, formula):
         elem_dct = {}
         elem_key_lst = self.periodic_table_dct.keys()
@@ -91,20 +90,48 @@ class IsotopeHunter(object):
         # consider C only
         isotope_pattern = stats.binom.pmf(range(0, isotope_number + 1), c_count, ration_13c12c)
         m0_i = isotope_pattern[0]
-        isotope_pattern = [100 * x / m0_i for x in isotope_pattern]
+        isotope_pattern = [x / m0_i for x in isotope_pattern]
 
         isotope_distribution_df = pd.DataFrame(data={'mz': isotope_mz_lst, 'ratio': isotope_pattern})
-        isotope_distribution_df['ratio'] = isotope_distribution_df['ratio'].astype(int)
+        isotope_distribution_df = isotope_distribution_df.round({'ratio': 6})
         print(isotope_distribution_df)
         return isotope_distribution_df
 
-    def check_isotope(self, formula, spec_df, isotope_number=2):
+    def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2,
+                          ms1_precision=50e-6, pattern_tolerance=5):
 
         elem_dct = self.get_elements(formula)
         # mono_mz = self.get_mono_mz(elem_dct)
-        isotope_pattern_dct = self.get_isotope_mz(elem_dct, isotope_number=2)
+        isotope_pattern_df = self.get_isotope_mz(elem_dct, isotope_number=2)
 
-        return isotope_pattern_dct
+        isotope_checker_dct = {}
+        isotope_score_delta = 0
+        for _i, _se in isotope_pattern_df.iterrows():
+
+            if _i > 0:
+                _mz = _se['mz']
+                _ratio = _se['ratio']
+                _mz_delta = _mz * ms1_precision
+                _i_df = spec_df.query('%f <= mz <= %f' % (_mz - _mz_delta, _mz + _mz_delta))
+                _i_info_dct = {'theo_mz': _mz, 'theo_i': ms1_pr_i * _ratio, 'theo_ratio': _ratio}
+                if _i_df.shape[0] > 0:
+                    _i_df = _i_df.sort_values(by='i', ascending=False).head(1)
+                    _i_max = _i_df['i'].tolist()[0]
+                    _mz_max = _i_df['mz'].tolist()[0]
+                    _i_info_dct['obs_i'] = _i_max
+                    _i_info_dct['obs_mz'] = _mz_max
+                else:
+                    _i_max = 0.0
+                    _i_info_dct['obs_i'] = 0
+                    _i_info_dct['obs_mz'] = 0
+                _i_r = _i_max / ms1_pr_i
+                _i_info_dct['obs_ratio'] = _i_r
+                isotope_score_delta += abs(_i_r - _ratio)
+                isotope_checker_dct[_i] = _i_info_dct
+
+        isotope_score = 100 * (1 - isotope_score_delta)
+
+        return isotope_score, isotope_checker_dct
 
 
 if __name__ == '__main__':
@@ -114,6 +141,6 @@ if __name__ == '__main__':
     isohunter = IsotopeHunter()
     for _f in f_lst:
         print(_f)
-        isotope_pattern_dct = isohunter.check_isotope(_f, usr_spec_df, isotope_number=2)
+        isotope_pattern_dct = isohunter.get_elements(_f)
 
         print(isotope_pattern_dct)
