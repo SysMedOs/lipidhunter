@@ -20,7 +20,7 @@ import pymzml.run
 import pandas as pd
 
 from EncodeChecker import add_encode_info
-from LibLPPhunter.TIC import TIC
+from LibLipidHunter.TIC import TIC
 
 
 class XIC(object):

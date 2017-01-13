@@ -4,16 +4,16 @@
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
-import os
 import glob
+import os
 import re
 
-from PySide import QtCore, QtGui
 import pandas as pd
+from PySide import QtCore, QtGui
 
-from mzMLextractor_UI import Ui_MainWindow
-from mzMLextractorLib import Extractor
-from mzMLextractorLib.Linker import hunt_link
+from LibLipidHunter import Extractor
+from LibLipidHunter.Linker import hunt_link
+from LipidHunter_UI import Ui_MainWindow
 
 
 class MainWindow(QtGui.QMainWindow, Ui_MainWindow):

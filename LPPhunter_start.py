@@ -9,13 +9,13 @@ from __future__ import division
 import time
 import pandas as pd
 
-from LibLPPhunter.SpectraExtractor import extract_mzml
-from LibLPPhunter.SpectraExtractor import get_spectra
-from LibLPPhunter.SpectraExtractor import get_xic_all
-from LibLPPhunter.ScoreGenerator import ScoreGenerator
-from LibLPPhunter.PanelPloter import plot_spectra
-from LibLPPhunter.ScoreFilter import check_peaks
-from LibLPPhunter.IsotopeHunter import IsotopeHunter
+from LibLipidHunter.SpectraExtractor import extract_mzml
+from LibLipidHunter.SpectraExtractor import get_spectra
+from LibLipidHunter.SpectraExtractor import get_xic_all
+from LibLipidHunter.ScoreGenerator import ScoreGenerator
+from LibLipidHunter.PanelPloter import plot_spectra
+from LibLipidHunter.ScoreFilter import check_peaks
+from LibLipidHunter.IsotopeHunter import IsotopeHunter
 
 start_time = time.clock()
 
