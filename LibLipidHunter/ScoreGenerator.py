@@ -159,7 +159,7 @@ class ScoreGenerator:
             fa_chk_df = fa_chk_df.rename(columns={'[M-H]-': 'sn', 'mass': 'NL'})
             fa_chk_df['M-sn'] = calc_pr_mz - fa_chk_df['NL']
             fa_chk_df['M-(sn-H2O)'] = calc_pr_mz - fa_chk_df['NL-H2O']
-            fa_chk_df['Lipid_species'] = ''
+            fa_chk_df['Proposed_structures'] = ''
 
             for _i, _fa_se in fa_chk_df.iterrows():
 
@@ -191,13 +191,13 @@ class ScoreGenerator:
                                 _frag_df = _frag_df.append(_frag_ppm_df)
 
                         if _frag_type == 'sn':
-                            _frag_df.loc[:, 'Lipid_species'] = 'FA %s [M-H]-' % _fa_abbr
+                            _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [M-H]-' % _fa_abbr
                             fa_ident_df = fa_ident_df.append(_frag_df)
                         elif _frag_type == 'M-sn':
                             if _fa_link in lyso_fa_linker_dct.keys():
                                 if bulk_fa_db - _fa_db >= 0:
                                     _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
-                                    _frag_df.loc[:, 'Lipid_species'] = 'Lyso%s(%s%i:%i) [M-H2O-H]-' % (pl_typ,
+                                    _frag_df.loc[:, 'Proposed_structures'] = 'Lyso%s(%s%i:%i) [M-H2O-H]-' % (pl_typ,
                                                                                                      _fa_lyso_link,
                                                                                                      bulk_fa_c - _fa_c,
                                                                                                      bulk_fa_db - _fa_db
@@ -207,7 +207,7 @@ class ScoreGenerator:
                             if _fa_link in lyso_fa_linker_dct.keys():
                                 if bulk_fa_db - _fa_db >= 0:
                                     _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
-                                    _frag_df.loc[:, 'Lipid_species'] = 'Lyso%s(%s%i:%i) [M-H]-' % (pl_typ, _fa_lyso_link,
+                                    _frag_df.loc[:, 'Proposed_structures'] = 'Lyso%s(%s%i:%i) [M-H]-' % (pl_typ, _fa_lyso_link,
                                                                                                  bulk_fa_c - _fa_c,
                                                                                                  bulk_fa_db - _fa_db
                                                                                                  )
@@ -217,17 +217,17 @@ class ScoreGenerator:
         # format the output DataFrame
         if fa_ident_df.shape[0] > 0:
             fa_ident_df = fa_ident_df.query('i > %f' % ms2_threshold)
-            fa_ident_df = fa_ident_df[['Lipid_species', 'FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
+            fa_ident_df = fa_ident_df[['Proposed_structures', 'FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
             fa_ident_df = fa_ident_df.sort_values(by='i', ascending=False).head(10)
 
         if lyso_ident_df.shape[0] > 0:
             lyso_ident_df = lyso_ident_df.query('i > %f' % ms2_threshold)
-            lyso_ident_df = lyso_ident_df[['Lipid_species', 'FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
+            lyso_ident_df = lyso_ident_df[['Proposed_structures', 'FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
             lyso_ident_df = lyso_ident_df.sort_values(by='i', ascending=False).head(5)
 
         if lyso_w_ident_df.shape[0] > 0:
             lyso_w_ident_df = lyso_w_ident_df.query('i > %f' % ms2_threshold)
-            lyso_w_ident_df = lyso_w_ident_df[['Lipid_species', 'FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
+            lyso_w_ident_df = lyso_w_ident_df[['Proposed_structures', 'FA', 'mz', 'i', 'ppm']].reset_index(drop=True)
             lyso_w_ident_df = lyso_w_ident_df.sort_values(by='i', ascending=False).head(5)
 
         return fa_ident_df, lyso_ident_df, lyso_w_ident_df
@@ -277,17 +277,18 @@ class ScoreGenerator:
                         db_sn1_lst.append(_fa_db)
                         db_sn2_lst.append(_rest_fa_db)
 
-        lipid_abbr_df = pd.DataFrame(data={'Lipid_species': lipid_abbr_lst, 'sn1_abbr': lipid_sn1_lst,
+        lipid_abbr_df = pd.DataFrame(data={'Proposed_structures': lipid_abbr_lst, 'sn1_abbr': lipid_sn1_lst,
                                            'sn2_abbr': lipid_sn2_lst, 'sn1_DB': db_sn1_lst, 'sn2_DB': db_sn2_lst})
 
         lipid_abbr_df = lipid_abbr_df.query('sn1_DB <=sn2_DB')
-        lipid_abbr_df = lipid_abbr_df[['Lipid_species', 'sn1_abbr', 'sn2_abbr']]
+        lipid_abbr_df = lipid_abbr_df[['Proposed_structures', 'sn1_abbr', 'sn2_abbr']]
 
         return lipid_abbr_df
 
     def get_match(self, abbr, charge_type, mz_lib, ms2_df, ms2_precision=500e-6, ms2_threshold=100):
 
         match_reporter = 0
+        ms2_max_i = ms2_df['i'].max()
 
         fa_ident_df, lyso_ident_df, lyso_w_ident_df = self.get_fa_search(abbr, charge_type, mz_lib, ms2_df,
                                                                          ms2_precision=ms2_precision,
@@ -303,15 +304,20 @@ class ScoreGenerator:
         # lipid_abbr_df['Score'] = 0
         if fa_ident_df.shape[0] > 0:
             fa_ident_lst = fa_ident_df['FA'].tolist()
+            fa_i_lst = fa_ident_df['i'].tolist()
 
             try:
                 lyso_ident_lst = lyso_ident_df['FA'].tolist()
+                lyso_i_lst = lyso_ident_df['i'].tolist()
             except KeyError:
                 lyso_ident_lst = []
+                lyso_i_lst = []
             try:
                 lyso_w_ident_lst = lyso_w_ident_df['FA'].tolist()
+                lyso_w_i_lst = lyso_w_ident_df['i'].tolist()
             except KeyError:
                 lyso_w_ident_lst = []
+                lyso_w_i_lst = []
 
             self.weight_df['mz'] = 0.0
             for _i, _weight_se in self.weight_df.iterrows():
@@ -329,23 +335,37 @@ class ScoreGenerator:
                 _sn2_abbr = _abbr_se['sn2_abbr']
 
                 if _sn1_abbr in fa_ident_lst:
+                    _rank_sn1 = fa_ident_lst.index(_sn1_abbr)
+                    lipid_abbr_df.set_value(_i_abbr, 'i_sn1', 100 * fa_i_lst[_rank_sn1] / ms2_max_i)
                     lipid_abbr_df.set_value(_i_abbr, 'sn1',
-                                            weight_dct['sn1'] * (10 - fa_ident_lst.index(_sn1_abbr)) / 10)
+                                            weight_dct['sn1'] * (10 - _rank_sn1) / 10
+                                            )
                 if _sn2_abbr in fa_ident_lst:
+                    _rank_sn2 = fa_ident_lst.index(_sn2_abbr)
+                    lipid_abbr_df.set_value(_i_abbr, 'i_sn2', 100 * fa_i_lst[_rank_sn2] / ms2_max_i)
                     lipid_abbr_df.set_value(_i_abbr, 'sn2',
-                                            weight_dct['sn2'] * (10 - fa_ident_lst.index(_sn2_abbr)) / 10)
+                                            weight_dct['sn2'] * (10 - _rank_sn2) / 10
+                                            )
                 if _sn1_abbr in lyso_ident_lst:
+                    _rank_l_sn1 = lyso_ident_lst.index(_sn1_abbr)
+                    lipid_abbr_df.set_value(_i_abbr, 'i_M-sn1', 100 * lyso_i_lst[_rank_l_sn1] / ms2_max_i)
                     lipid_abbr_df.set_value(_i_abbr, 'M-sn1',
-                                            weight_dct['M-sn1'] * (10 - lyso_ident_lst.index(_sn1_abbr)) / 10)
+                                            weight_dct['M-sn1'] * (10 - _rank_l_sn1) / 10)
                 if _sn2_abbr in lyso_ident_lst:
+                    _rank_l_sn2 = lyso_ident_lst.index(_sn2_abbr)
+                    lipid_abbr_df.set_value(_i_abbr, 'i_M-sn2', 100 * lyso_i_lst[_rank_l_sn2] / ms2_max_i)
                     lipid_abbr_df.set_value(_i_abbr, 'M-sn2',
-                                            weight_dct['M-sn2'] * (10 - lyso_ident_lst.index(_sn2_abbr)) / 10)
+                                            weight_dct['M-sn2'] * (10 - _rank_l_sn2) / 10)
                 if _sn1_abbr in lyso_w_ident_lst:
+                    _rank_lw_sn1 = lyso_w_ident_lst.index(_sn1_abbr)
+                    lipid_abbr_df.set_value(_i_abbr, 'i_M-(sn1-H2O)', 100 * lyso_w_i_lst[_rank_lw_sn1] / ms2_max_i)
                     lipid_abbr_df.set_value(_i_abbr, 'M-(sn1-H2O)',
-                                            weight_dct['M-(sn1-H2O)'] * (10 - lyso_w_ident_lst.index(_sn1_abbr)) / 10)
+                                            weight_dct['M-(sn1-H2O)'] * (10 - _rank_lw_sn1) / 10)
                 if _sn2_abbr in lyso_w_ident_lst:
+                    _rank_lw_sn2 = lyso_w_ident_lst.index(_sn2_abbr)
+                    lipid_abbr_df.set_value(_i_abbr, 'i_M-(sn2-H2O)', 100 * lyso_w_i_lst[_rank_lw_sn2] / ms2_max_i)
                     lipid_abbr_df.set_value(_i_abbr, 'M-(sn2-H2O)',
-                                            weight_dct['M-(sn2-H2O)'] * (10 - lyso_w_ident_lst.index(_sn2_abbr)) / 10)
+                                            weight_dct['M-(sn2-H2O)'] * (10 - _rank_lw_sn2) / 10)
 
             lipid_abbr_df['Score'] = lipid_abbr_df[weight_type_lst].sum(axis=1, numeric_only=True)
             match_reporter = 1

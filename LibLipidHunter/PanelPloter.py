@@ -259,6 +259,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, ms1_rt, ms2_rt, ms1_df, ms2_df,
             _lyso_table_df = ident_info_dct['LYSO_INFO']
 
             if _ident_table_df.shape[0] > 0:
+                _ident_table_df = _ident_table_df[['Proposed_structures', 'Score']]
                 ident_col_labels = _ident_table_df.columns.values.tolist()
                 ident_row_labels = _ident_table_df.index.tolist()
                 ident_table_vals = map(list, _ident_table_df.values)

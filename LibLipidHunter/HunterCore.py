@@ -230,7 +230,7 @@ def huntlipids(param_dct):
                                 else:
                                     target_nl_count = 0
 
-                                _tmp_output_df['Bulk identification'] = _usr_abbr_bulk
+                                _tmp_output_df['Bulk_identification'] = _usr_abbr_bulk
                                 _tmp_output_df['MS1_obs_mz'] = _ms1_pr_mz
                                 _tmp_output_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
                                 _tmp_output_df['Lib_mz'] = _usr_mz_lib
@@ -238,27 +238,33 @@ def huntlipids(param_dct):
                                 _tmp_output_df['MS2_function'] = _usr_ms2_function
                                 _tmp_output_df['MS2_PR_MZ'] = _usr_ms2_pr_mz
                                 _tmp_output_df['Scan#'] = _usr_ms2_scan_id
-                                _tmp_output_df['Specific peaks'] = target_frag_count + target_nl_count
-                                _tmp_output_df['Contaminated peaks'] = other_frag_count + other_nl_count
+                                _tmp_output_df['Specific_peaks'] = target_frag_count + target_nl_count
+                                _tmp_output_df['Contaminated_peaks'] = other_frag_count + other_nl_count
                                 _tmp_output_df['ppm'] = _ppm
                                 _tmp_output_df['Isotope_score'] = '%.2f' % isotope_score
 
                                 output_df = output_df.append(_tmp_output_df)
 
     print('=== ==> --> Generate the output table')
-
-    # output_df['ppm'] = 1e6 * (output_df['MS1_obs_mz'] - output_df['Lib_mz']) / output_df['Lib_mz']
-    output_df = output_df.round({'MS1_obs_mz': 4, 'Lib_mz': 4, 'ppm': 2, 'MS2_rt': 3})
-    output_df['Proposed structures'] = output_df['Lipid_species']
-    output_df = output_df[['Bulk identification', 'Proposed structures', 'Score', 'Specific peaks', 'Contaminated peaks',
-                           'Lib_mz', 'MS1_obs_mz', 'MS1_obs_i', 'ppm', 'Isotope_score',
-                           'MS2_PR_MZ', 'MS2_rt', 'MS2_function', 'Scan#']]
-    output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_rt', 'Score'], ascending=[True, True, False])
-    output_df = output_df.reset_index(drop=True)
-    output_df.index += 1
-    output_df.to_excel(output_sum_xlsx)
-    print(output_sum_xlsx)
-    print('=== ==> --> saved >>> >>> >>>')
+    if output_df.shape[0] > 0:
+        # output_df['ppm'] = 1e6 * (output_df['MS1_obs_mz'] - output_df['Lib_mz']) / output_df['Lib_mz']
+        output_df = output_df.round({'MS1_obs_mz': 4, 'Lib_mz': 4, 'ppm': 2, 'MS2_rt': 3,
+                                     'i_sn1': 2, 'i_sn2': 2, 'i_M-sn1': 2, 'i_M-sn2': 2,
+                                     'i_M-(sn1-H2O)': 2, 'i_M-(sn2-H2O)': 2
+                                     }
+                                    )
+        # output_df['Proposed structures'] = output_df['Lipid_species']
+        output_df = output_df[['Bulk_identification', 'Proposed_structures', 'Score', 'Specific_peaks',
+                               'Contaminated_peaks',
+                               'Lib_mz', 'MS1_obs_mz', 'MS1_obs_i', 'ppm', 'Isotope_score',
+                               'MS2_PR_MZ', 'MS2_rt', 'MS2_function', 'Scan#', 'i_sn1', 'i_sn2',
+                               'i_M-sn1', 'i_M-sn2', 'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']]
+        output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_rt', 'Score'], ascending=[True, True, False])
+        output_df = output_df.reset_index(drop=True)
+        output_df.index += 1
+        output_df.to_excel(output_sum_xlsx)
+        print(output_sum_xlsx)
+        print('=== ==> --> saved >>> >>> >>>')
 
     tot_run_time = time.clock() - start_time
 

@@ -4,11 +4,12 @@
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
-try:  # python3
-    import configparser
-except NameError:  # python2
-    import ConfigParser as configparser
+# try:  # python3
+#     import configparser
+# except NameError:  # python2
+#     import ConfigParser as configparser
 
+import ConfigParser as configparser
 import glob
 import os
 import re
@@ -432,7 +433,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def e_run_hunter(self):
         print('Hunter started!')
-        _pl_class_info = str(self.ui.tab_d_lipidclass_cmb.currentText())
+        _pl_class_info = str(self.ui.tab_e_lipidclass_cmb.currentText())
 
         pl_class_checker = re.compile(r'(.*)( [\(])(\w{2,3})([\)] )(.*)')
 
