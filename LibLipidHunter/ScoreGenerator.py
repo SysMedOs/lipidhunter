@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2016 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
@@ -383,6 +383,8 @@ class ScoreGenerator:
         _other_frag_df = pd.DataFrame()
         _other_nl_df = pd.DataFrame()
 
+        ms2_max_i = ms2_df['i'].max()
+
         for _i, _frag_se in self.target_frag_df.iterrows():
 
             _frag_mz = _frag_se['EXACTMASS']
@@ -399,6 +401,7 @@ class ScoreGenerator:
                 _frag_df = _frag_df.sort_values(by='i', ascending=False)
                 _frag_df.loc[:, 'CLASS'] = _frag_class
                 _frag_df.loc[:, 'LABEL'] = _frag_label
+                _frag_df.loc[:, _frag_label] = 100 * _frag_df['i'] / ms2_max_i
                 _target_frag_df = _target_frag_df.append(_frag_df.head(1))
 
         for _i, _frag_se in self.other_frag_df.iterrows():
@@ -417,6 +420,7 @@ class ScoreGenerator:
                 _frag_df = _frag_df.sort_values(by='i', ascending=False)
                 _frag_df.loc[:, 'CLASS'] = _frag_class
                 _frag_df.loc[:, 'LABEL'] = _frag_label
+                _frag_df.loc[:, _frag_label] = 100 * _frag_df['i'] / ms2_max_i
                 _other_frag_df = _other_frag_df.append(_frag_df.head(1))
 
         for _i, _nl_se in self.target_nl_df.iterrows():
@@ -435,6 +439,7 @@ class ScoreGenerator:
                 _nl_df = _nl_df.sort_values(by='i', ascending=False)
                 _nl_df.loc[:, 'CLASS'] = _nl_class
                 _nl_df.loc[:, 'LABEL'] = _nl_label
+                _nl_df.loc[:, _nl_label] = 100 * _nl_df['i'] / ms2_max_i
                 _target_nl_df = _target_nl_df.append(_nl_df.head(1))
 
         for _i, _nl_se in self.other_nl_df.iterrows():
@@ -453,6 +458,7 @@ class ScoreGenerator:
                 _nl_df = _nl_df.sort_values(by='i', ascending=False)
                 _nl_df.loc[:, 'CLASS'] = _nl_class
                 _nl_df.loc[:, 'LABEL'] = _nl_label
+                _nl_df.loc[:, _nl_label] = 100 * _nl_df['i'] / ms2_max_i
                 _other_nl_df = _other_nl_df.append(_nl_df.head(1))
 
         specific_ion_dct = {}

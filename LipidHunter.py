@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2016 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
@@ -63,6 +63,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_e_sumxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.e_save_output)
         QtCore.QObject.connect(self.ui.tab_d_runhunter_pb, QtCore.SIGNAL("clicked()"), self.e_run_hunter)
         # slots for tab f
+        QtCore.QObject.connect(self.ui.tab_f_fawhitelist_pb, QtCore.SIGNAL("clicked()"), self.f_load_fawhitelist)
+        QtCore.QObject.connect(self.ui.tab_f_hgcfg_pb, QtCore.SIGNAL("clicked()"), self.f_load_hgcfg)
+        QtCore.QObject.connect(self.ui.tab_f_scorecfg_pb, QtCore.SIGNAL("clicked()"), self.f_load_scorecfg)
         QtCore.QObject.connect(self.ui.tab_f_savesettings_pb, QtCore.SIGNAL("clicked()"), self.f_set_default_cfg)
 
         # load configurations
@@ -470,7 +473,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         lipid_specific_cfg = self.ui.tab_f_hgcfg_le.text()
         score_cfg = self.ui.tab_f_scorecfg_le.text()
 
-        hunter_param_dct = {'lipidsinfo_path_str': lipidsinfo_path_str, 'mzml_path_str': mzml_path_str,
+        hunter_param_dct = {'lipids_info_path_str': lipidsinfo_path_str, 'mzml_path_str': mzml_path_str,
                             'img_output_folder_str': img_output_folder_str,
                             'xlsx_output_path_str': xlsx_output_path_str, 'rt_start': rt_start, 'rt_end': rt_end,
                             'mz_start': mz_start, 'mz_end': mz_end, 'dda_top': dda_top, 'ms_th': ms_th,
@@ -480,7 +483,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                             'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg}
 
         print(hunter_param_dct)
-        hunter_param_dct['config'] = r'D:\project_mzML\lipidhunter\config.ini'
         tot_run_time = huntlipids(hunter_param_dct)
         self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
         self.ui.tab_e_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
@@ -493,6 +495,36 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             config.set('settings', 'lipid_specific_cfg', self.ui.tab_f_hgcfg_le.text())
             config.set('settings', 'score_cfg', self.ui.tab_f_scorecfg_le.text())
             config.write(default_cfg)
+            
+    def f_load_fawhitelist(self):
+        f_load_lipidstable_dialog = QtGui.QFileDialog(self)
+        f_load_lipidstable_dialog.setNameFilters([u'CSV files (*.csv *.CSV)'])
+        f_load_lipidstable_dialog.selectNameFilter(u'CSV files (*.csv *.CSV)')
+        if f_load_lipidstable_dialog.exec_():
+            self.ui.tab_f_fawhitelist_le.clear()
+            f_load_csv_str = f_load_lipidstable_dialog.selectedFiles()[0]
+            f_load_csv_str = os.path.abspath(f_load_csv_str)
+            self.ui.tab_f_fawhitelist_le.setText(unicode(f_load_csv_str))
+
+    def f_load_hgcfg(self):
+        f_load_lipidstable_dialog = QtGui.QFileDialog(self)
+        f_load_lipidstable_dialog.setNameFilters([u'MS Excel files (*.xlsx *.XLSX)'])
+        f_load_lipidstable_dialog.selectNameFilter(u'MS Excel files (*.xlsx *.XLSX)')
+        if f_load_lipidstable_dialog.exec_():
+            self.ui.tab_f_hgcfg_le.clear()
+            f_load_xlsx_str = f_load_lipidstable_dialog.selectedFiles()[0]
+            f_load_xlsx_str = os.path.abspath(f_load_xlsx_str)
+            self.ui.tab_f_hgcfg_le.setText(unicode(f_load_xlsx_str))
+
+    def f_load_scorecfg(self):
+        f_load_lipidstable_dialog = QtGui.QFileDialog(self)
+        f_load_lipidstable_dialog.setNameFilters([u'MS Excel files (*.xlsx *.XLSX)'])
+        f_load_lipidstable_dialog.selectNameFilter(u'MS Excel files (*.xlsx *.XLSX)')
+        if f_load_lipidstable_dialog.exec_():
+            self.ui.tab_f_scorecfg_le.clear()
+            f_load_xlsx_str = f_load_lipidstable_dialog.selectedFiles()[0]
+            f_load_xlsx_str = os.path.abspath(f_load_xlsx_str)
+            self.ui.tab_f_scorecfg_le.setText(unicode(f_load_xlsx_str))
 
 if __name__ == '__main__':
     import sys

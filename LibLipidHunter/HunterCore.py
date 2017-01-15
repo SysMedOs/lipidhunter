@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2016 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
@@ -19,7 +19,6 @@ from LibLipidHunter.IsotopeHunter import IsotopeHunter
 
 
 def huntlipids(param_dct):
-
     """
 
     :param param_dct:
@@ -30,7 +29,7 @@ def huntlipids(param_dct):
 
     usr_lipid_type = param_dct['lipid_type']
     charge_mode = param_dct['charge_mode']
-    usr_xlsx = param_dct['lipidsinfo_path_str']
+    usr_xlsx = param_dct['lipids_info_path_str']
     usr_mzml = param_dct['mzml_path_str']
     output_folder = param_dct['img_output_folder_str']
     output_sum_xlsx = param_dct['xlsx_output_path_str']
@@ -109,12 +108,14 @@ def huntlipids(param_dct):
     ms1_obs_mz_lst = set(ms1_obs_mz_lst)
 
     print('=== ==> --> Start to extract XIC')
-    xic_dct = get_xic_all(usr_df, usr_mzml, usr_rt_range, ms1_precision=usr_ms1_precision, msn_precision=usr_ms2_precision)
+    xic_dct = get_xic_all(usr_df, usr_mzml, usr_rt_range, ms1_precision=usr_ms1_precision,
+                          msn_precision=usr_ms2_precision)
 
     print('=== ==> --> Number of XIC extracted: %i' % len(xic_dct.keys()))
 
     plot_info_dct = {}
     ms1_pr_mz_lst = []
+    target_ident_lst = []
 
     # get spectra of one ABBR and plot
     for _n, _subgroup_df in checked_info_df.groupby(['mz', 'Lib_mz', 'Formula', 'rt', 'Abbreviation']):
@@ -133,8 +134,8 @@ def huntlipids(param_dct):
         if _tmp_chk_df.shape[0] == 1:
             print('>>> >>> >>> Processing:', _tmp_chk_df.head())
             print('>>> >>> >>> >>> MS2 PR m/z %f' % _usr_ms2_pr_mz)
-            spec_info_dct = get_spectra(_usr_ms2_pr_mz, _usr_mz_lib, _usr_ms2_function, _usr_ms2_scan_id, ms1_obs_mz_lst,
-                                        usr_scan_info_df, usr_spectra_pl,
+            spec_info_dct = get_spectra(_usr_ms2_pr_mz, _usr_mz_lib, _usr_ms2_function, _usr_ms2_scan_id,
+                                        ms1_obs_mz_lst, usr_scan_info_df, usr_spectra_pl,
                                         dda_top=usr_dda_top, ms1_precision=usr_ms1_precision
                                         )
             _ms1_pr_i = spec_info_dct['ms1_i']
@@ -169,13 +170,15 @@ def huntlipids(param_dct):
                                                                        ms2_threshold=usr_ms2_specific_peaks_threshold
                                                                        )
 
-                    _usr_abbr_bulk = _usr_abbr_bulk.replace('(', '[')
-                    _usr_abbr_bulk = _usr_abbr_bulk.replace(')', ']')
-                    _usr_abbr_bulk = _usr_abbr_bulk.replace(':', '-')
-                    _usr_abbr_bulk = _usr_abbr_bulk.replace('\\', '_')
-                    _usr_abbr_bulk = _usr_abbr_bulk.replace('/', '_')
+                    # format abbr. for file names
+                    _save_abbr_bulk = _usr_abbr_bulk
+                    _save_abbr_bulk = _save_abbr_bulk.replace('(', '[')
+                    _save_abbr_bulk = _save_abbr_bulk.replace(')', ']')
+                    _save_abbr_bulk = _save_abbr_bulk.replace(':', '-')
+                    _save_abbr_bulk = _save_abbr_bulk.replace('\\', '_')
+                    _save_abbr_bulk = _save_abbr_bulk.replace('/', '_')
 
-                    print ('>>> >>> Check now for bulk identification as %s' % _usr_abbr_bulk)
+                    print ('>>> >>> Check now for bulk identification as %s' % _save_abbr_bulk)
 
                     usr_ident_info_dct = check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df,
                                                      score_filter=usr_score_filter)
@@ -186,7 +189,7 @@ def huntlipids(param_dct):
                                                                                                 _usr_ms2_rt,
                                                                                                 _usr_ms2_function - 1,
                                                                                                 _usr_ms2_scan_id,
-                                                                                                _usr_abbr_bulk
+                                                                                                _save_abbr_bulk
                                                                                                 )
 
                         isotope_hunter = IsotopeHunter()
@@ -203,7 +206,8 @@ def huntlipids(param_dct):
                                                                                            isotope_checker_dct,
                                                                                            isotope_score,
                                                                                            save_img_as=img_name,
-                                                                                           ms1_precision=usr_ms1_precision
+                                                                                           ms1_precision=
+                                                                                           usr_ms1_precision
                                                                                            )
 
                             if _ms1_pr_i > 0 and isotope_checker == 0 and isotope_score > usr_isotope_score_filter:
@@ -222,11 +226,27 @@ def huntlipids(param_dct):
                                 if 'TARGET_FRAG' in specific_check_dct.keys():
                                     target_frag_df = specific_check_dct['TARGET_FRAG']
                                     target_frag_count = target_frag_df.shape[0]
+                                    target_frag_col_lst = target_frag_df.columns.tolist()
+                                    for _frag_abbr in target_frag_col_lst:
+                                        if _frag_abbr not in ['mz', 'i', 'LABEL', 'CLASS']:
+                                            for _i, _f_se in target_frag_df.iterrows():
+                                                if _f_se['LABEL'] == _frag_abbr:
+                                                    _tmp_output_df[_frag_abbr] = _f_se[_frag_abbr]
+                                                    if _frag_abbr not in target_ident_lst:
+                                                        target_ident_lst.append(_frag_abbr)
                                 else:
                                     target_frag_count = 0
                                 if 'TARGET_NL' in specific_check_dct.keys():
                                     target_nl_df = specific_check_dct['TARGET_NL']
                                     target_nl_count = target_nl_df.shape[0]
+                                    target_nl_col_lst = target_nl_df.columns.tolist()
+                                    for _nl_abbr in target_nl_col_lst:
+                                        if _nl_abbr not in ['mz', 'i', 'LABEL', 'CLASS']:
+                                            for _i, _n_se in target_nl_df.iterrows():
+                                                if _n_se['LABEL'] == _nl_abbr:
+                                                    _tmp_output_df[_nl_abbr] = _n_se[_nl_abbr]
+                                                    if _nl_abbr not in target_ident_lst:
+                                                        target_ident_lst.append(_nl_abbr)
                                 else:
                                     target_nl_count = 0
 
@@ -247,18 +267,27 @@ def huntlipids(param_dct):
 
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
-        # output_df['ppm'] = 1e6 * (output_df['MS1_obs_mz'] - output_df['Lib_mz']) / output_df['Lib_mz']
-        output_df = output_df.round({'MS1_obs_mz': 4, 'Lib_mz': 4, 'ppm': 2, 'MS2_rt': 3,
-                                     'i_sn1': 2, 'i_sn2': 2, 'i_M-sn1': 2, 'i_M-sn2': 2,
-                                     'i_M-(sn1-H2O)': 2, 'i_M-(sn2-H2O)': 2
-                                     }
-                                    )
+        output_header_lst = output_df.columns.tolist()
+        for _i_check in ['i_sn1', 'i_sn2', 'i_M-sn1', 'i_M-sn2', 'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']:
+            if _i_check not in output_header_lst:
+                output_df['_i_check'] = 0.0
+
+        output_round_dct = {'MS1_obs_mz': 4, 'Lib_mz': 4, 'ppm': 2, 'MS2_rt': 3, 'i_sn1': 2, 'i_sn2': 2,
+                            'i_M-sn1': 2, 'i_M-sn2': 2, 'i_M-(sn1-H2O)': 2, 'i_M-(sn2-H2O)': 2
+                            }
+        # add intensities of target peaks to round list
+        if len(target_ident_lst) > 0:
+            for _t in target_ident_lst:
+                output_round_dct[_t] = 2
+        output_df = output_df.round(output_round_dct)
+
         # output_df['Proposed structures'] = output_df['Lipid_species']
-        output_df = output_df[['Bulk_identification', 'Proposed_structures', 'Score', 'Specific_peaks',
-                               'Contaminated_peaks',
-                               'Lib_mz', 'MS1_obs_mz', 'MS1_obs_i', 'ppm', 'Isotope_score',
-                               'MS2_PR_MZ', 'MS2_rt', 'MS2_function', 'Scan#', 'i_sn1', 'i_sn2',
-                               'i_M-sn1', 'i_M-sn2', 'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']]
+        output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Score', 'Specific_peaks',
+                             'Contaminated_peaks', 'Lib_mz', 'MS1_obs_mz', 'MS1_obs_i', 'ppm', 'Isotope_score',
+                             'MS2_PR_MZ', 'MS2_rt', 'MS2_function', 'Scan#', 'i_sn1', 'i_sn2',
+                             'i_M-sn1', 'i_M-sn2', 'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']
+        output_header_lst += target_ident_lst
+        output_df = output_df[output_header_lst]
         output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_rt', 'Score'], ascending=[True, True, False])
         output_df = output_df.reset_index(drop=True)
         output_df.index += 1
