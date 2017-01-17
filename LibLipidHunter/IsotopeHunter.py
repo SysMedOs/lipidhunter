@@ -94,7 +94,7 @@ class IsotopeHunter(object):
 
         isotope_distribution_df = pd.DataFrame(data={'mz': isotope_mz_lst, 'ratio': isotope_pattern})
         isotope_distribution_df = isotope_distribution_df.round({'ratio': 6})
-        print(isotope_distribution_df)
+        # print(isotope_distribution_df)
         return isotope_distribution_df
 
     def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2,

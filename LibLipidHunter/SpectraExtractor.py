@@ -126,6 +126,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
                 scan_info_df, spectra_pl, dda_top=12, ms1_precision=50e-6):
 
+    # ms1_pr_se = pd.Series()
     ms1_df = pd.DataFrame()
     ms2_df = pd.DataFrame()
     ms1_spec_idx = 0
@@ -134,6 +135,8 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
     ms2_rt = 0
     ms1_mz = 0
     ms1_i = 0
+    ms1_pr_ppm = 0
+    function_max = dda_top + 1
 
     if mz in scan_info_df['pr_mz'].tolist():
         _tmp_mz_scan_info_df = scan_info_df.query('pr_mz == %.6f and function == %f and scan_id == %f'
@@ -153,7 +156,7 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
 
             # get spectra_df of corresponding MS survey scan
             tmp_ms1_info_df = scan_info_df.query('dda_event_idx == %i and function == 1' % ms2_dda_idx)
-            if tmp_ms1_info_df.shape[0] > 0:
+            if tmp_ms1_info_df.shape[0] > 0 and ms2_function <= function_max:
                 ms1_spec_idx = tmp_ms1_info_df['spec_index'].tolist()[0]
                 ms1_rt = tmp_ms1_info_df['rt'].tolist()[0]
                 if ms1_spec_idx in spectra_pl.items:
@@ -172,8 +175,10 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
                             ms1_pr_df['ppm'] = abs(1e6 * (ms1_pr_df['mz'] - mz_lib) / mz_lib)
                             # select best intensity in the precursor ppm range. Priority: i > ppm
                             ms1_pr_df = ms1_pr_df.sort_values(by=['i', 'ppm'], ascending=[False, True])
-                            ms1_mz = ms1_pr_df['mz'].tolist()[0]
-                            ms1_i = ms1_pr_df['i'].tolist()[0]
+                            ms1_pr_se = ms1_pr_df.iloc[0]
+                            ms1_mz = ms1_pr_se['mz']
+                            ms1_i = ms1_pr_se['i']
+                            ms1_pr_ppm = 1e6 * (ms1_mz - mz_lib) / mz_lib
                             # get spectra_df of corresponding MS2 DDA scan
                             if ms2_spec_idx in spectra_pl.items:
                                 ms2_df = spectra_pl[ms2_spec_idx]
@@ -199,8 +204,8 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
               % (mz, function, ms2_scan_id)
               )
 
-    spec_info_dct = {'ms1_i': ms1_i, 'ms1_mz': ms1_mz, 'ms1_rt': ms1_rt, 'ms2_rt': ms2_rt,
-                     '_ms1_spec_idx': ms1_spec_idx, '_ms2_spec_idx': ms2_spec_idx, '_ms1_df': ms1_df, '_ms2_df': ms2_df}
+    spec_info_dct = {'ms1_i': ms1_i, 'ms1_mz': ms1_mz, 'ms1_pr_ppm': ms1_pr_ppm, 'ms1_rt': ms1_rt, 'ms2_rt': ms2_rt,
+                     '_ms1_spec_idx': ms1_spec_idx, '_ms2_spec_idx': ms2_spec_idx, 'ms1_df': ms1_df, 'ms2_df': ms2_df}
 
     return spec_info_dct
 
@@ -241,7 +246,7 @@ def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=
 
             if rt_start <= _scan_rt <= rt_end and scan_info_checker:
                 _function = int(scan_info_checker.groups()[2])
-                _scanid = int(scan_info_checker.groups()[5])
+                # _scanid = int(scan_info_checker.groups()[5])
                 if _function == 1:
                     _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
                     _found_ms1_df = _tmp_spec_df.query(ms1_query)

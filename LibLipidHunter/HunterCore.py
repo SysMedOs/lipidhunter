@@ -114,8 +114,6 @@ def huntlipids(param_dct):
 
     print('=== ==> --> Number of XIC extracted: %i' % len(xic_dct.keys()))
 
-    plot_info_dct = {}
-    ms1_pr_mz_lst = []
     target_ident_lst = []
 
     # get spectra of one ABBR and plot
@@ -135,21 +133,20 @@ def huntlipids(param_dct):
         if _tmp_chk_df.shape[0] == 1:
             print('>>> >>> >>> Processing:', _tmp_chk_df.head())
             print('>>> >>> >>> >>> MS2 PR m/z %f' % _usr_ms2_pr_mz)
-            spec_info_dct = get_spectra(_usr_ms2_pr_mz, _usr_mz_lib, _usr_ms2_function, _usr_ms2_scan_id,
-                                        ms1_obs_mz_lst, usr_scan_info_df, usr_spectra_pl,
-                                        dda_top=usr_dda_top, ms1_precision=usr_ms1_precision
-                                        )
-            _ms1_pr_i = spec_info_dct['ms1_i']
-            _ms1_pr_mz = spec_info_dct['ms1_mz']
-            _ms1_rt = spec_info_dct['ms1_rt']
-            _ms2_rt = spec_info_dct['ms2_rt']
-            _ms1_df = spec_info_dct['_ms1_df']
-            _ms2_df = spec_info_dct['_ms2_df']
-            # _ms1_spec_idx = spec_info_dct['_ms1_spec_idx']
-            # _ms2_spec_idx = spec_info_dct['_ms2_spec_idx']
+            usr_spec_info_dct = get_spectra(_usr_ms2_pr_mz, _usr_mz_lib, _usr_ms2_function, _usr_ms2_scan_id,
+                                            ms1_obs_mz_lst, usr_scan_info_df, usr_spectra_pl,
+                                            dda_top=usr_dda_top, ms1_precision=usr_ms1_precision
+                                            )
+            _ms1_pr_i = usr_spec_info_dct['ms1_i']
+            _ms1_pr_mz = usr_spec_info_dct['ms1_mz']
+            _ms1_df = usr_spec_info_dct['ms1_df']
+            _ms2_df = usr_spec_info_dct['ms2_df']
+            # _ms1_rt = usr_spec_info_dct['ms1_rt']
+            # _ms2_rt = usr_spec_info_dct['ms2_rt']
+            # _ms1_pr_df = usr_spec_info_dct['ms1_pr_df']
+            # _ms1_spec_idx = usr_spec_info_dct['_ms1_spec_idx']
+            # _ms2_spec_idx = usr_spec_info_dct['_ms2_spec_idx']
 
-            # _ms1_subgroup_df = _subgroup_df.query('MS1_obs_mz == %f' % _ms1_pr_mz)
-            # if _ms1_subgroup_df.shape[0] > 0 and _ms1_df.shape[0] > 0 and _ms2_df.shape[0] > 0:
             if _ms1_pr_mz > 0.0 and _ms1_df.shape[0] > 0 and _ms2_df.shape[0] > 0:
 
                 print('>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
@@ -181,6 +178,11 @@ def huntlipids(param_dct):
                         score_df = usr_ident_info_dct['SCORE_INFO']
                         if score_df.shape[0] > 0 and _ms1_pr_i > 0:
                             print ('>>> >>> Check now for bulk identification as %s' % _usr_abbr_bulk)
+
+                            specific_check_dct = score_calc.get_specific_peaks(_usr_mz_lib, _ms2_df,
+                                                                               ms2_precision=usr_ms2_specific_peaks_precision,
+                                                                               ms2_threshold=usr_ms2_specific_peaks_threshold
+                                                                               )
                             # format abbr. for file names
                             _save_abbr_bulk = _usr_abbr_bulk
                             _save_abbr_bulk = _save_abbr_bulk.replace('(', '[')
@@ -194,25 +196,12 @@ def huntlipids(param_dct):
                                         % (_usr_ms2_pr_mz, _usr_ms2_rt, _usr_ms2_function - 1,
                                            _usr_ms2_scan_id, _save_abbr_bulk)
                                         )
-
-                            specific_check_dct = score_calc.get_specific_peaks(_usr_mz_lib, _ms2_df,
-                                                                               ms2_precision=
-                                                                               usr_ms2_specific_peaks_precision,
-                                                                               ms2_threshold=
-                                                                               usr_ms2_specific_peaks_threshold
-                                                                               )
-
-                            _ms1_pr_i, _ppm, isotope_checker, isotope_score = plot_spectra(_row_se, xic_dct,
-                                                                                           usr_ident_info_dct,
-                                                                                           _ms1_rt, _ms2_rt, _ms1_df,
-                                                                                           _ms2_df,
-                                                                                           specific_check_dct,
-                                                                                           isotope_checker_dct,
-                                                                                           isotope_score,
-                                                                                           save_img_as=img_name,
-                                                                                           ms1_precision=
-                                                                                           usr_ms1_precision
-                                                                                           )
+                            isotope_checker, isotope_score = plot_spectra(_row_se, xic_dct, usr_ident_info_dct,
+                                                                          usr_spec_info_dct, specific_check_dct,
+                                                                          isotope_checker_dct, isotope_score,
+                                                                          save_img_as=img_name,
+                                                                          ms1_precision=usr_ms1_precision
+                                                                          )
 
                             if _ms1_pr_i > 0 and isotope_checker == 0 and isotope_score > usr_isotope_score_filter:
                                 _tmp_output_df = score_df
@@ -264,7 +253,7 @@ def huntlipids(param_dct):
                                 _tmp_output_df['Scan#'] = _usr_ms2_scan_id
                                 _tmp_output_df['Specific_peaks'] = target_frag_count + target_nl_count
                                 _tmp_output_df['Contaminated_peaks'] = other_frag_count + other_nl_count
-                                _tmp_output_df['ppm'] = _ppm
+                                _tmp_output_df['ppm'] = usr_spec_info_dct['ms1_pr_ppm']
                                 _tmp_output_df['Isotope_score'] = '%.2f' % isotope_score
 
                                 output_df = output_df.append(_tmp_output_df)
