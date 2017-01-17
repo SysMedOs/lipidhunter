@@ -51,6 +51,7 @@ def huntlipids(param_dct):
     usr_isotope_score_filter = param_dct['isotope_score_filter']
 
     usr_ms1_ppm = int(param_dct['ms_ppm'])
+    isotope_hunter = IsotopeHunter()
 
     output_df = pd.DataFrame()
 
@@ -142,62 +143,65 @@ def huntlipids(param_dct):
             _ms1_pr_mz = spec_info_dct['ms1_mz']
             _ms1_rt = spec_info_dct['ms1_rt']
             _ms2_rt = spec_info_dct['ms2_rt']
-            _ms1_spec_idx = spec_info_dct['_ms1_spec_idx']
-            _ms2_spec_idx = spec_info_dct['_ms2_spec_idx']
             _ms1_df = spec_info_dct['_ms1_df']
             _ms2_df = spec_info_dct['_ms2_df']
+            # _ms1_spec_idx = spec_info_dct['_ms1_spec_idx']
+            # _ms2_spec_idx = spec_info_dct['_ms2_spec_idx']
 
             # _ms1_subgroup_df = _subgroup_df.query('MS1_obs_mz == %f' % _ms1_pr_mz)
             # if _ms1_subgroup_df.shape[0] > 0 and _ms1_df.shape[0] > 0 and _ms2_df.shape[0] > 0:
-            if _ms1_df.shape[0] > 0 and _ms2_df.shape[0] > 0:
+            if _ms1_pr_mz > 0.0 and _ms1_df.shape[0] > 0 and _ms2_df.shape[0] > 0:
 
                 print('>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
-                _row_se['MS1_obs_mz'] = _ms1_pr_mz
-                print('>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
-                print(_row_se)
-                match_info_dct = score_calc.get_match(_usr_abbr_bulk, charge_mode, _ms1_pr_mz, _ms2_df,
-                                                      ms2_precision=usr_ms2_precision, ms2_threshold=usr_ms2_threshold
-                                                      )
-                match_factor = match_info_dct['MATCH_INFO']
-                score_df = match_info_dct['SCORE_INFO']
-                fa_ident_df = match_info_dct['FA_INFO']
-                lyso_ident_df = match_info_dct['LYSO_INFO']
-                lyso_w_ident_df = match_info_dct['LYSO_W_INFO']
 
-                if match_factor > 0 and score_df.shape[0] > 0 and fa_ident_df.shape[0]:
-                    specific_check_dct = score_calc.get_specific_peaks(_usr_mz_lib, _ms2_df,
-                                                                       ms2_precision=usr_ms2_specific_peaks_precision,
-                                                                       ms2_threshold=usr_ms2_specific_peaks_threshold
-                                                                       )
+                isotope_score, isotope_checker_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
+                                                                                      _usr_formula, _ms1_df,
+                                                                                      isotope_number=2)
+                print('isotope_score: %f' % isotope_score)
+                if isotope_score >= usr_isotope_score_filter:
+                    print('>>> isotope_check PASSED! >>> >>> >>>')
+                    print('>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
+                    _row_se['MS1_obs_mz'] = _ms1_pr_mz
+                    print(_row_se)
+                    match_info_dct = score_calc.get_match(_usr_abbr_bulk, charge_mode, _ms1_pr_mz, _ms2_df,
+                                                          ms2_precision=usr_ms2_precision,
+                                                          ms2_threshold=usr_ms2_threshold
+                                                          )
+                    match_factor = match_info_dct['MATCH_INFO']
+                    score_df = match_info_dct['SCORE_INFO']
+                    fa_ident_df = match_info_dct['FA_INFO']
+                    lyso_ident_df = match_info_dct['LYSO_INFO']
+                    lyso_w_ident_df = match_info_dct['LYSO_W_INFO']
 
-                    # format abbr. for file names
-                    _save_abbr_bulk = _usr_abbr_bulk
-                    _save_abbr_bulk = _save_abbr_bulk.replace('(', '[')
-                    _save_abbr_bulk = _save_abbr_bulk.replace(')', ']')
-                    _save_abbr_bulk = _save_abbr_bulk.replace(':', '-')
-                    _save_abbr_bulk = _save_abbr_bulk.replace('\\', '_')
-                    _save_abbr_bulk = _save_abbr_bulk.replace('/', '_')
+                    if match_factor > 0 and score_df.shape[0] > 0 and fa_ident_df.shape[0] > 0:
 
-                    print ('>>> >>> Check now for bulk identification as %s' % _save_abbr_bulk)
+                        usr_ident_info_dct = check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df,
+                                                         score_filter=usr_score_filter)
 
-                    usr_ident_info_dct = check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df,
-                                                     score_filter=usr_score_filter)
+                        score_df = usr_ident_info_dct['SCORE_INFO']
+                        if score_df.shape[0] > 0 and _ms1_pr_i > 0:
+                            print ('>>> >>> Check now for bulk identification as %s' % _usr_abbr_bulk)
+                            # format abbr. for file names
+                            _save_abbr_bulk = _usr_abbr_bulk
+                            _save_abbr_bulk = _save_abbr_bulk.replace('(', '[')
+                            _save_abbr_bulk = _save_abbr_bulk.replace(')', ']')
+                            _save_abbr_bulk = _save_abbr_bulk.replace(':', '-')
+                            _save_abbr_bulk = _save_abbr_bulk.replace('\\', '_')
+                            _save_abbr_bulk = _save_abbr_bulk.replace('/', '_')
 
-                    score_df = usr_ident_info_dct['SCORE_INFO']
-                    if score_df.shape[0] > 0 and _ms1_pr_i > 0:
-                        img_name = output_folder + '\%.4f_rt%.4f_DDAtop%.0f_scan%.0f_%s.png' % (_usr_ms2_pr_mz,
-                                                                                                _usr_ms2_rt,
-                                                                                                _usr_ms2_function - 1,
-                                                                                                _usr_ms2_scan_id,
-                                                                                                _save_abbr_bulk
-                                                                                                )
+                            img_name = (output_folder +
+                                        '\%.4f_rt%.4f_DDAtop%.0f_scan%.0f_%s.png'
+                                        % (_usr_ms2_pr_mz, _usr_ms2_rt, _usr_ms2_function - 1,
+                                           _usr_ms2_scan_id, _save_abbr_bulk)
+                                        )
 
-                        isotope_hunter = IsotopeHunter()
-                        isotope_score, isotope_checker_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
-                                                                                              _usr_formula, _ms1_df,
-                                                                                              isotope_number=2)
-                        print('isotope_score: %f' % isotope_score)
-                        if isotope_score >= usr_isotope_score_filter:
+                            specific_check_dct = score_calc.get_specific_peaks(_usr_mz_lib, _ms2_df,
+                                                                               ms2_precision=
+                                                                               usr_ms2_specific_peaks_precision,
+                                                                               ms2_threshold=
+                                                                               usr_ms2_specific_peaks_threshold
+                                                                               )
+
                             _ms1_pr_i, _ppm, isotope_checker, isotope_score = plot_spectra(_row_se, xic_dct,
                                                                                            usr_ident_info_dct,
                                                                                            _ms1_rt, _ms2_rt, _ms1_df,
@@ -270,7 +274,7 @@ def huntlipids(param_dct):
         output_header_lst = output_df.columns.tolist()
         for _i_check in ['i_sn1', 'i_sn2', 'i_M-sn1', 'i_M-sn2', 'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']:
             if _i_check not in output_header_lst:
-                output_df['_i_check'] = 0.0
+                output_df[_i_check] = 0.0
 
         output_round_dct = {'MS1_obs_mz': 4, 'Lib_mz': 4, 'ppm': 2, 'MS2_rt': 3, 'i_sn1': 2, 'i_sn2': 2,
                             'i_M-sn1': 2, 'i_M-sn2': 2, 'i_M-(sn1-H2O)': 2, 'i_M-(sn2-H2O)': 2
