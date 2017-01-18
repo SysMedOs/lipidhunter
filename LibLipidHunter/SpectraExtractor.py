@@ -13,11 +13,12 @@ import pymzml
 
 
 def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10,
-                 ms1_precision=50e-6, ms2_precision=500e-6):
+                 ms1_precision=50e-6, ms2_precision=500e-6, vendor='waters'):
 
     """
     Extract mzML to a scan info DataFrame and a pandas panel for spectra DataFrame of mz and i
 
+    :param vendor: 'waters' or 'thermo'
     :param ms2_threshold:
     :param ms1_threshold:
     :param mzml: The file path of mzML file
@@ -36,12 +37,16 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
     """
 
     waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
-                      ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']))
-    for _obo in waters_obo_lst:
+                      ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']),
+                      ('MS:1000769', ['name']), ('MS:1000526', ['name']))
+    thermo_obo_lst = (('MS:1000511', ['value']), ('MS:1000768', ['name']), ('MS:1000563', ['name']))
+    vendor_obo_lst = thermo_obo_lst + waters_obo_lst
+    for _obo in vendor_obo_lst:
         if _obo not in pymzml.minimum.MIN_REQ:
             pymzml.minimum.MIN_REQ.append(_obo)
         else:
             pass
+            # end hot patch
 
     rt_start = rt_range[0]
     rt_end = rt_range[1]
@@ -52,10 +57,11 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
     spec_title_obo = 'MS:1000796'
     scan_rt_obo = 'MS:1000016'
     scan_pr_mz_obo = 'MS:1000744'
+    _spec_level_obo = 'MS:1000511'
 
     spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=ms2_precision)
 
-    scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)(scan=)(\d*)(.*)')
+
 
     spec_idx = 0
     dda_event_idx = 0
@@ -74,39 +80,74 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
     ms2_function_range_lst = range(2, dda_top + 1)
     function_range_lst = range(1, dda_top + 1)
 
-    for _spectrum in spec_obj:
-        pr_mz = 0
-        if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
-            _spectrum_title = _spectrum[spec_title_obo]
-            _scan_rt = float(_spectrum[scan_rt_obo])
-            scan_info_checker = scan_info_re.match(_spectrum_title)
+    if vendor == 'waters':
+        scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)(scan=)(\d*)(.*)')
+        for _spectrum in spec_obj:
+            pr_mz = 0
+            if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
+                _spectrum_title = _spectrum[spec_title_obo]
+                _scan_rt = float(_spectrum[scan_rt_obo])
+                scan_info_checker = scan_info_re.match(_spectrum_title)
 
-            if rt_start <= _scan_rt <= rt_end and scan_info_checker:
-                _function = int(scan_info_checker.groups()[2])
-                _scanid = int(scan_info_checker.groups()[5])
-                if _function in function_range_lst:
-                    _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
-                    if _function == 1:
-                        dda_event_idx += 1
+                if rt_start <= _scan_rt <= rt_end and scan_info_checker:
+                    _function = int(scan_info_checker.groups()[2])
+                    _scanid = int(scan_info_checker.groups()[5])
+                    if _function in function_range_lst:
+                        _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                        if _function == 1:
+                            dda_event_idx += 1
 
-                        # _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False).head(1000)
-                        _tmp_spec_df = _tmp_spec_df.query('i >= %f' % ms1_threshold)
-                        _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False)
-                        _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
-                        spec_dct[spec_idx] = _tmp_spec_df
+                            # _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False).head(1000)
+                            _tmp_spec_df = _tmp_spec_df.query('i >= %f' % ms1_threshold)
+                            _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False)
+                            _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
+                            spec_dct[spec_idx] = _tmp_spec_df
 
-                    if _function in ms2_function_range_lst:
-                        pr_mz = _spectrum[scan_pr_mz_obo]
-                        spec_dct[spec_idx] = _tmp_spec_df.query('i >= %f' % ms2_threshold)
+                        if _function in ms2_function_range_lst:
+                            pr_mz = _spectrum[scan_pr_mz_obo]
+                            spec_dct[spec_idx] = _tmp_spec_df.query('i >= %f' % ms2_threshold)
 
-                    spec_idx_lst.append(spec_idx)
-                    dda_event_lst.append(dda_event_idx)
-                    rt_lst.append(_scan_rt)
-                    function_lst.append(_function)
-                    scan_id_lst.append(_scanid)
-                    pr_mz_lst.append(pr_mz)
+                        spec_idx_lst.append(spec_idx)
+                        dda_event_lst.append(dda_event_idx)
+                        rt_lst.append(_scan_rt)
+                        function_lst.append(_function)
+                        scan_id_lst.append(_scanid)
+                        pr_mz_lst.append(pr_mz)
 
-                    spec_idx += 1
+                        spec_idx += 1
+
+    if vendor == 'thermo':
+        for _spectrum in spec_obj:
+            pr_mz = 0
+            if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
+                # _spectrum_title = _spectrum[spec_title_obo]
+                _scan_rt = float(_spectrum[scan_rt_obo])
+                ms_level = _spectrum[_spec_level_obo]
+                if rt_start <= _scan_rt <= rt_end:
+                    _scanid = _spectrum['id']
+                    if ms_level in function_range_lst:
+                        _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                        if ms_level == 1:
+                            dda_event_idx += 1
+
+                            # _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False).head(1000)
+                            _tmp_spec_df = _tmp_spec_df.query('i >= %f' % ms1_threshold)
+                            _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False)
+                            _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
+                            spec_dct[spec_idx] = _tmp_spec_df
+
+                        if ms_level in ms2_function_range_lst:
+                            pr_mz = _spectrum[scan_pr_mz_obo]
+                            spec_dct[spec_idx] = _tmp_spec_df.query('i >= %f' % ms2_threshold)
+
+                        spec_idx_lst.append(spec_idx)
+                        dda_event_lst.append(dda_event_idx)
+                        rt_lst.append(_scan_rt)
+                        function_lst.append(ms_level)
+                        scan_id_lst.append(_scanid)
+                        pr_mz_lst.append(pr_mz)
+
+                        spec_idx += 1
 
     scan_info_df = pd.DataFrame(data=scan_info_dct, columns=['dda_event_idx', 'spec_index', 'rt',
                                                              'function', 'scan_id', 'pr_mz']
@@ -210,15 +251,19 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
     return spec_info_dct
 
 
-def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=500e-6):
+def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=500e-6, vendor='waters'):
 
     waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
-                      ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']))
-    for _obo in waters_obo_lst:
+                      ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']),
+                      ('MS:1000769', ['name']), ('MS:1000526', ['name']))
+    thermo_obo_lst = (('MS:1000511', ['value']), ('MS:1000768', ['name']), ('MS:1000563', ['name']))
+    vendor_obo_lst = thermo_obo_lst + waters_obo_lst
+    for _obo in vendor_obo_lst:
         if _obo not in pymzml.minimum.MIN_REQ:
             pymzml.minimum.MIN_REQ.append(_obo)
         else:
             pass
+            # end hot patch
 
     rt_start = rt_range[0]
     rt_end = rt_range[1]
@@ -232,42 +277,66 @@ def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=
 
     spec_title_obo = 'MS:1000796'
     scan_rt_obo = 'MS:1000016'
+    spec_level_obo = 'MS:1000511'
 
     spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
 
-    scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)(scan=)(\d*)(.*)')
+    if vendor == 'waters':
 
-    for _spectrum in spec_obj:
+        scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)(scan=)(\d*)(.*)')
 
-        if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
-            _spectrum_title = _spectrum[spec_title_obo]
-            _scan_rt = float(_spectrum[scan_rt_obo])
-            scan_info_checker = scan_info_re.match(_spectrum_title)
+        for _spectrum in spec_obj:
 
-            if rt_start <= _scan_rt <= rt_end and scan_info_checker:
-                _function = int(scan_info_checker.groups()[2])
-                # _scanid = int(scan_info_checker.groups()[5])
-                if _function == 1:
-                    _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
-                    _found_ms1_df = _tmp_spec_df.query(ms1_query)
-                    _found_ms1_df['ppm'] = 1e6 * (_found_ms1_df['mz'] - ms1_mz) / ms1_mz
-                    _found_ms1_df['ppm'] = _found_ms1_df['ppm'].abs()
-                    _found_ms1_df['rt'] = _scan_rt
+            if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
+                _spectrum_title = _spectrum[spec_title_obo]
+                _scan_rt = float(_spectrum[scan_rt_obo])
+                scan_info_checker = scan_info_re.match(_spectrum_title)
 
-                    ms1_xic_df = ms1_xic_df.append(_found_ms1_df.sort_values(by='ppm').head(1))
+                if rt_start <= _scan_rt <= rt_end and scan_info_checker:
+                    _function = int(scan_info_checker.groups()[2])
+                    # _scanid = int(scan_info_checker.groups()[5])
+                    if _function == 1:
+                        _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                        _found_ms1_df = _tmp_spec_df.query(ms1_query)
+                        _found_ms1_df['ppm'] = 1e6 * (_found_ms1_df['mz'] - ms1_mz) / ms1_mz
+                        _found_ms1_df['ppm'] = _found_ms1_df['ppm'].abs()
+                        _found_ms1_df['rt'] = _scan_rt
+
+                        ms1_xic_df = ms1_xic_df.append(_found_ms1_df.sort_values(by='ppm').head(1))
+
+    elif vendor == 'thermo':
+
+        for _spectrum in spec_obj:
+
+            if spec_level_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
+                _spec_level = _spectrum[spec_level_obo]
+                _scan_rt = float(_spectrum[scan_rt_obo])
+                if rt_start <= _scan_rt <= rt_end:
+                    if _spec_level == 1:
+                        _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                        _found_ms1_df = _tmp_spec_df.query(ms1_query)
+                        _found_ms1_df['ppm'] = 1e6 * (_found_ms1_df['mz'] - ms1_mz) / ms1_mz
+                        _found_ms1_df['ppm'] = _found_ms1_df['ppm'].abs()
+                        _found_ms1_df['rt'] = _scan_rt
+
+                        ms1_xic_df = ms1_xic_df.append(_found_ms1_df.sort_values(by='ppm').head(1))
 
     return ms1_xic_df
 
 
-def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e-6):
+def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e-6, vendor='waters'):
 
     waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
-                      ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']))
-    for _obo in waters_obo_lst:
+                      ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']),
+                      ('MS:1000769', ['name']), ('MS:1000526', ['name']))
+    thermo_obo_lst = (('MS:1000511', ['value']), ('MS:1000768', ['name']), ('MS:1000563', ['name']))
+    vendor_obo_lst = thermo_obo_lst + waters_obo_lst
+    for _obo in vendor_obo_lst:
         if _obo not in pymzml.minimum.MIN_REQ:
             pymzml.minimum.MIN_REQ.append(_obo)
         else:
             pass
+            # end hot patch
 
     ms1_obs_df = info_df.query('MS1_obs_mz > 0')
     ms1_obs_lst = ms1_obs_df['MS1_obs_mz'].tolist()
@@ -283,43 +352,82 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
         ms1_xic_dct[_mz] = pd.DataFrame()
     spec_title_obo = 'MS:1000796'
     scan_rt_obo = 'MS:1000016'
+    spec_level_obo = 'MS:1000511'
 
     spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
 
-    scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)')
+    if vendor == 'waters':
+        scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)')
+        for _spectrum in spec_obj:
+            if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
+                _spectrum_title = _spectrum[spec_title_obo]
+                _scan_rt = float(_spectrum[scan_rt_obo])
+                scan_info_checker = scan_info_re.match(_spectrum_title)
 
-    for _spectrum in spec_obj:
+                if rt_start <= _scan_rt <= rt_end and scan_info_checker:
+                    _function = int(scan_info_checker.groups()[2])
+                    if _function == 1:
+                        print('Reading MS survey scan @:', _scan_rt)
+                        # slow but more accurate mode. At least 10 time slower
+                        # _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                        for _ms1_obs in ms1_obs_lst:
 
-        if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
-            _spectrum_title = _spectrum[spec_title_obo]
-            _scan_rt = float(_spectrum[scan_rt_obo])
-            scan_info_checker = scan_info_re.match(_spectrum_title)
+                            ms1_xic_df = ms1_xic_dct[_ms1_obs]
+                            _tmp_ms1_xic_df = ms1_xic_df.copy()
 
-            if rt_start <= _scan_rt <= rt_end and scan_info_checker:
-                _function = int(scan_info_checker.groups()[2])
-                if _function == 1:
-                    print('Reading MS survey scan @:', _scan_rt)
-                    # slow but more accurate mode. At least 10 time slower
-                    # _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
-                    for _ms1_obs in ms1_obs_lst:
+                            # faster mode
+                            _xic_lst = _spectrum.hasPeak(_ms1_obs)
+                            if len(_xic_lst) == 1:
+                                _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
+                                _tmp_mz_df.loc[:, 'rt'] = _scan_rt
+                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
+                                ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df)
+                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
 
-                        ms1_xic_df = ms1_xic_dct[_ms1_obs]
+                            if len(_xic_lst) > 1:
+                                _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
+                                _tmp_mz_df.loc[:, 'rt'] = _scan_rt
+                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
+                                ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df.sort_values(by='i', ascending=False).head(1))
+                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
 
-                        # faster mode
-                        _xic_lst = _spectrum.hasPeak(_ms1_obs)
-                        if len(_xic_lst) == 1:
-                            _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
-                            _tmp_mz_df.loc[:, 'rt'] = _scan_rt
-                            _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
-                            ms1_xic_df = ms1_xic_df.append(_tmp_mz_df)
-                            ms1_xic_dct[_ms1_obs] = ms1_xic_df
+    elif vendor == 'thermo':
+        print('Thermo files')
+        for _spectrum in spec_obj:
 
-                        if len(_xic_lst) > 1:
-                            _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
-                            _tmp_mz_df.loc[:, 'rt'] = _scan_rt
-                            _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
-                            ms1_xic_df = ms1_xic_df.append(_tmp_mz_df.sort_values(by='i', ascending=False).head(1))
-                            ms1_xic_dct[_ms1_obs] = ms1_xic_df
+            try:
+                ms_level = _spectrum[spec_level_obo]
+                _spectrum_level = _spectrum[spec_level_obo]
+                _scan_rt = float(_spectrum[scan_rt_obo])
+
+                if rt_start <= _scan_rt <= rt_end:
+                    if _spectrum_level == 1:
+                        print('Reading MS survey scan @:', _scan_rt)
+                        # slow but more accurate mode. At least 10 time slower
+                        # _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                        for _ms1_obs in ms1_obs_lst:
+
+                            ms1_xic_df = ms1_xic_dct[_ms1_obs]
+                            _tmp_ms1_xic_df = ms1_xic_df.copy()
+
+                            # faster mode
+                            _xic_lst = _spectrum.hasPeak(_ms1_obs)
+                            if len(_xic_lst) == 1:
+                                _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
+                                _tmp_mz_df.loc[:, 'rt'] = _scan_rt
+                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
+                                ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df)
+                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
+
+                            if len(_xic_lst) > 1:
+                                _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
+                                _tmp_mz_df.loc[:, 'rt'] = _scan_rt
+                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
+                                ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df.sort_values
+                                                                    (by='i', ascending=False).head(1))
+                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
+            except:
+                pass
 
     return ms1_xic_dct
 

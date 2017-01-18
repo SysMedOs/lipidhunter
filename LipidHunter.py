@@ -9,7 +9,7 @@
 # except NameError:  # python2
 #     import ConfigParser as configparser
 
-import ConfigParser as configparser
+import ConfigParser
 import glob
 import os
 import re
@@ -21,6 +21,8 @@ from LibLipidHunter import ExtractorMZML
 from LibLipidHunter.LinkerMZML import hunt_link
 from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
 from LibLipidHunter.HunterCore import huntlipids
+
+import FileDialog
 
 
 class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
@@ -69,7 +71,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_f_savesettings_pb, QtCore.SIGNAL("clicked()"), self.f_set_default_cfg)
 
         # load configurations
-        config = configparser.ConfigParser()
+        config = ConfigParser.ConfigParser()
         config.read('config.ini')
         if config.has_section('settings'):
             user_cfg = 'settings'
@@ -157,6 +159,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_a_csvfolder_le.setText(unicode(a_save_csvfolder_str[0]))
 
     def a_run_extractor(self):
+        usr_vendor = 'thermo'
         self.ui.tab_a_statusextractor_pte.clear()
         a_ms_th = self.ui.tab_a_msthreshold_spb.value()
         self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('MS threshold (absolute): %i \n' % a_ms_th))
@@ -174,7 +177,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Start processing...\n%s \n' % _mzml))
 
                 _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-4] + 'xlsx'
-                _ms_df = extractor.get_ms_all(_mzml, a_ms_th)
+                _ms_df = extractor.get_ms_all(_mzml, a_ms_th, vendor=usr_vendor)
                 # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
                 _ms_df.to_excel(_xlsx_path)
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Save as: \n%s.xlsx \n' % _mzml[0:-4]))
@@ -258,6 +261,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_b_outpufolder_le.setText(unicode(b_save_xlsfolder_str))
         
     def b_run_extractor(self):
+        usr_vendor = 'thermo'
         self.ui.tab_b_statusrun_pte.clear()
         b_ms_th = self.ui.tab_b_msthreshold_spb.value()
         b_ms2_th = self.ui.tab_b_ms2threshold_spb.value()
@@ -275,10 +279,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
                 _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_all_scan_info.xlsx'
                 _xlsx_ms2_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_ms2_info.xlsx'
-                _ms_df = extractor.get_scan_events(_mzml, b_ms_th, b_ms2_th)
+                _ms_df = extractor.get_scan_events(_mzml, b_ms_th, b_ms2_th, vendor=usr_vendor)
                 # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
                 _ms_df.to_excel(_xlsx_path)
-                _ms_df['function'] = _ms_df['function'].apply(pd.to_numeric)
+                _ms_df['function'] = _ms_df['function'].astype(int)
                 _ms2_df = _ms_df[_ms_df['function'] > 1]
                 _ms2_df = _ms2_df.reset_index()
                 _ms2_df.to_excel(_xlsx_ms2_path)
@@ -322,6 +326,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_d_xlsxpath_le.setText(unicode(d_save_output_str))
 
     def d_run_linker(self):
+        usr_vendor = 'thermo'
 
         print('linker started!')
         _pl_class_info = str(self.ui.tab_d_lipidclass_cmb.currentText())
@@ -373,7 +378,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
             _temp_df = ms2_df.query(_query_code)
             if _temp_df.shape[0] > 0:
-
+                print('Found MS2!', _obs_mz)
                 _temp_df['MS1_obs_mz'] = _obs_mz
                 _temp_df['Lib_mz'] = _lib_mz
                 _temp_df['Abbreviation'] = _abbr
@@ -382,7 +387,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 # print _temp_df
                 step1_df = step1_df.append(_temp_df)
             else:
-                print _obs_mz, 'not found!'
+                pass
+                # print(_obs_mz, 'No MS2 found!')
 
         _ms_th = self.ui.tab_d_msthreshold_spb.value()
         _ms2_th = self.ui.tab_d_ms2threshold_spb.value()
@@ -397,7 +403,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                            'RT_START': _rt_start, 'RT_END': _rt_end, 'MZ_START': _mz_start, 'MZ_END': _mz_end}
 
         final_output_df = hunt_link(pl_class=_pl_class, usr_mzml=_mzml_path_str, usr_df=step1_df,
-                                    params_dct=link_params_dct)
+                                    params_dct=link_params_dct, vendor=usr_vendor)
 
         final_output_df = final_output_df[final_output_df['MS1_obs_mz'] > 0]
 
@@ -435,6 +441,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_e_sumxlsxpath_le.setText(unicode(e_save_output_str))
 
     def e_run_hunter(self):
+        usr_vendor = 'thermo'
         print('Hunter started!')
         _pl_class_info = str(self.ui.tab_e_lipidclass_cmb.currentText())
 
@@ -480,7 +487,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                             'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm, 'hg_th': hg_th, 'hg_ppm': hg_ppm,
                             'score_filter': score_filter, 'isotope_score_filter': isotope_score_filter,
                             'lipid_type': _pl_class, 'charge_mode': _pl_charge, 'fa_white_list_cfg': fa_white_list_cfg,
-                            'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg}
+                            'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor}
 
         print(hunter_param_dct)
         tot_run_time = huntlipids(hunter_param_dct)

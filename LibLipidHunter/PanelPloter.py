@@ -5,7 +5,13 @@
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
 from __future__ import division
+
 import os
+
+import matplotlib
+
+matplotlib.use('Qt4Agg')
+matplotlib.rcParams['backend.qt4'] = 'PySide'
 
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
@@ -100,7 +106,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                        facecolor=(1.0, 0.0, 0.0, 0.4), edgecolor="none")
     ms_zoom_pic.add_patch(m_pre_theo_box)
 
-    ms_zoom_pic.set_xlim([ms1_pr_mz - 1.1, ms1_pr_mz + 2.1])
+    ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 2.1])
     ms_zoom_pic.set_ylim([0, max(ms_zoom_df['i'].tolist()) * 1.3])
     ms_zoom_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0), fontsize=10)
     ms_zoom_pic.ticklabel_format(axis='x', useOffset=False, fontsize=10)

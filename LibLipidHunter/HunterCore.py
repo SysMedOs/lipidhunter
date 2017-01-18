@@ -29,6 +29,7 @@ def huntlipids(param_dct):
 
     usr_lipid_type = param_dct['lipid_type']
     charge_mode = param_dct['charge_mode']
+    usr_vendor = param_dct['vendor']
     usr_xlsx = param_dct['lipids_info_path_str']
     usr_mzml = param_dct['mzml_path_str']
     output_folder = param_dct['img_output_folder_str']
@@ -59,28 +60,33 @@ def huntlipids(param_dct):
     print('=== ==> --> Phospholipid class: %s' % usr_lipid_type)
 
     usr_df = pd.read_excel(usr_xlsx)
-    usr_df = usr_df.round({'mz': 6})
-    usr_df = usr_df.round({'MS1_obs_mz': 6})
-    usr_df = usr_df.query('%f<= rt <= %f' % (usr_rt_range[0], usr_rt_range[1]))
-    usr_df = usr_df.query('%f<= mz <= %f' % (usr_pr_mz_range[0], usr_pr_mz_range[1]))
-    print(usr_df.shape)
-    usr_df['MS1_precision'] = (usr_df['MS1_obs_mz'] - usr_df['Lib_mz']) / usr_df['Lib_mz']
-    usr_df['ppm'] = 1e6 * usr_df['MS1_precision']
-    usr_df['abs_ppm'] = usr_df['ppm'].abs()
-    usr_df = usr_df.query('abs_ppm <= %i' % usr_ms1_ppm)
+    # usr_df = usr_df.round({'mz': 6})
+    # usr_df = usr_df.round({'MS1_obs_mz': 6})
+    tmp_usr_df = usr_df.copy()
+    tmp_usr_df = tmp_usr_df.query('%f<= rt <= %f' % (usr_rt_range[0], usr_rt_range[1]))
+    tmp_usr_df = tmp_usr_df.query('%f<= mz <= %f' % (usr_pr_mz_range[0], usr_pr_mz_range[1]))
+    usr_df = tmp_usr_df.copy()
+
+    for _i, _r in usr_df.iterrows():
+        usr_df.set_value(_i, 'mz', round(_r['mz'], 6))
+        usr_df.set_value(_i, 'MS1_obs_mz', round(_r['MS1_obs_mz'], 6))
+        usr_df.set_value(_i, 'MS1_precision', (_r['MS1_obs_mz'] - _r['Lib_mz']) / _r['Lib_mz'])
+        usr_df.set_value(_i, 'ppm', 1e6 * (_r['MS1_obs_mz'] - _r['Lib_mz']) / _r['Lib_mz'])
+        usr_df.set_value(_i, 'abs_ppm', abs(1e6 * (_r['MS1_obs_mz'] - _r['Lib_mz']) / _r['Lib_mz']))
+    tmp_usr_df = usr_df.query('abs_ppm <= %i' % usr_ms1_ppm)
     # usr_df = usr_df.sort_values(by=['Lib_mz', 'abs_ppm'], ascending=[True, True])
     # usr_df = usr_df.drop_duplicates(subset=['Lib_mz', 'rt', 'function', 'scan_id'], keep='first')
-    usr_df = usr_df.sort_values(by=['rt'])
-    usr_df = usr_df.reset_index(drop=True)
-    print(usr_df.shape)
+    usr_df = tmp_usr_df.sort_values(by=['rt'])
+    tmp_usr_df = usr_df.reset_index(drop=True)
+    usr_df = tmp_usr_df.copy()
 
     print('=== ==> --> Total precursor number: %i' % usr_df.shape[0])
 
     # generate the indicator table
 
     usr_fa_def_df = pd.read_csv(fa_list_csv)
-    usr_fa_def_df['C'] = usr_fa_def_df['C'].astype(int)
-    usr_fa_def_df['DB'] = usr_fa_def_df['DB'].astype(int)
+    usr_fa_def_df.loc[:, 'C'] = usr_fa_def_df['C'].astype(int)
+    usr_fa_def_df.loc[:, 'DB'] = usr_fa_def_df['DB'].astype(int)
 
     usr_weight_df = pd.read_excel(score_cfg)
 
@@ -94,7 +100,8 @@ def huntlipids(param_dct):
     # extract all spectra from mzML to pandas DataFrame
     usr_scan_info_df, usr_spectra_pl = extract_mzml(usr_mzml, usr_rt_range, dda_top=usr_dda_top,
                                                     ms1_threshold=usr_ms1_threshold, ms2_threshold=usr_ms2_threshold,
-                                                    ms1_precision=usr_ms1_precision, ms2_precision=usr_ms2_precision
+                                                    ms1_precision=usr_ms1_precision, ms2_precision=usr_ms2_precision,
+                                                    vendor=usr_vendor
                                                     )
 
     # remove bad precursors
@@ -110,7 +117,7 @@ def huntlipids(param_dct):
 
     print('=== ==> --> Start to extract XIC')
     xic_dct = get_xic_all(usr_df, usr_mzml, usr_rt_range, ms1_precision=usr_ms1_precision,
-                          msn_precision=usr_ms2_precision)
+                          msn_precision=usr_ms2_precision, vendor=usr_vendor)
 
     print('=== ==> --> Number of XIC extracted: %i' % len(xic_dct.keys()))
 
@@ -118,7 +125,7 @@ def huntlipids(param_dct):
 
     # get spectra of one ABBR and plot
     for _n, _subgroup_df in checked_info_df.groupby(['mz', 'Lib_mz', 'Formula', 'rt', 'Abbreviation']):
-        _row_se = _subgroup_df.iloc[0, :]
+        _row_se = _subgroup_df.iloc[0, :].squeeze()
         _usr_ms2_pr_mz = _row_se['mz']
         # _usr_ms1_obs_mz = _row_se['MS1_obs_mz']
         _usr_ms2_rt = _row_se['rt']
@@ -158,7 +165,8 @@ def huntlipids(param_dct):
                 if isotope_score >= usr_isotope_score_filter:
                     print('>>> isotope_check PASSED! >>> >>> >>>')
                     print('>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
-                    _row_se['MS1_obs_mz'] = _ms1_pr_mz
+                    print(type(_row_se))
+                    _row_se.set_value('MS1_obs_mz', _ms1_pr_mz)
                     print(_row_se)
                     match_info_dct = score_calc.get_match(_usr_abbr_bulk, charge_mode, _ms1_pr_mz, _ms2_df,
                                                           ms2_precision=usr_ms2_precision,

@@ -184,11 +184,11 @@ class ScoreGenerator:
                         if _frag_df.shape[0] > 1:
                             _frag_i_df = _frag_df.sort_values(by='i', ascending=False).head(1)
                             _frag_ppm_df = _frag_df.sort_values(by='ppm_abs').head(1)
-                            _frag_df = _frag_i_df
+                            _frag_df = _frag_i_df.copy()
                             if _frag_ppm_df['i'].tolist() == _frag_i_df['i'].tolist():
                                 pass
                             else:
-                                _frag_df = _frag_df.append(_frag_ppm_df)
+                                _frag_df = _frag_i_df.append(_frag_ppm_df)
 
                         if _frag_type == 'sn':
                             _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [M-H]-' % _fa_abbr
@@ -197,20 +197,21 @@ class ScoreGenerator:
                             if _fa_link in lyso_fa_linker_dct.keys():
                                 if bulk_fa_db - _fa_db >= 0:
                                     _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
-                                    _frag_df.loc[:, 'Proposed_structures'] = 'Lyso%s(%s%i:%i) [M-H2O-H]-' % (pl_typ,
-                                                                                                     _fa_lyso_link,
-                                                                                                     bulk_fa_c - _fa_c,
-                                                                                                     bulk_fa_db - _fa_db
-                                                                                                     )
+                                    _frag_df.loc[:, 'Proposed_structures'] = ('Lyso%s(%s%i:%i) [M-H2O-H]-'
+                                                                              % (pl_typ, _fa_lyso_link,
+                                                                                 bulk_fa_c - _fa_c, bulk_fa_db - _fa_db
+                                                                                 )
+                                                                              )
                                     lyso_ident_df = lyso_ident_df.append(_frag_df)
                         elif _frag_type == 'M-(sn-H2O)':
                             if _fa_link in lyso_fa_linker_dct.keys():
                                 if bulk_fa_db - _fa_db >= 0:
                                     _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
-                                    _frag_df.loc[:, 'Proposed_structures'] = 'Lyso%s(%s%i:%i) [M-H]-' % (pl_typ, _fa_lyso_link,
-                                                                                                 bulk_fa_c - _fa_c,
-                                                                                                 bulk_fa_db - _fa_db
-                                                                                                 )
+                                    _frag_df.loc[:, 'Proposed_structures'] = 'Lyso%s(%s%i:%i) [M-H]-' % (
+                                        pl_typ, _fa_lyso_link,
+                                        bulk_fa_c - _fa_c,
+                                        bulk_fa_db - _fa_db
+                                    )
 
                                     lyso_w_ident_df = lyso_w_ident_df.append(_frag_df)
 
