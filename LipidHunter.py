@@ -159,7 +159,13 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_a_csvfolder_le.setText(unicode(a_save_csvfolder_str[0]))
 
     def a_run_extractor(self):
-        usr_vendor = 'thermo'
+        if self.ui.vendor_waters_rb.isChecked():
+            usr_vendor = 'waters'
+        elif self.ui.vendor_thermo_rb.isChecked():
+            usr_vendor = 'thermo'
+        else:
+            usr_vendor = 'waters'
+        print('Vendor mode = %s' % usr_vendor)
         self.ui.tab_a_statusextractor_pte.clear()
         a_ms_th = self.ui.tab_a_msthreshold_spb.value()
         self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('MS threshold (absolute): %i \n' % a_ms_th))
@@ -261,7 +267,13 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_b_outpufolder_le.setText(unicode(b_save_xlsfolder_str))
         
     def b_run_extractor(self):
-        usr_vendor = 'thermo'
+        if self.ui.vendor_waters_rb.isChecked():
+            usr_vendor = 'waters'
+        elif self.ui.vendor_thermo_rb.isChecked():
+            usr_vendor = 'thermo'
+        else:
+            usr_vendor = 'waters'
+        print('Vendor mode = %s' % usr_vendor)
         self.ui.tab_b_statusrun_pte.clear()
         b_ms_th = self.ui.tab_b_msthreshold_spb.value()
         b_ms2_th = self.ui.tab_b_ms2threshold_spb.value()
@@ -326,7 +338,13 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_d_xlsxpath_le.setText(unicode(d_save_output_str))
 
     def d_run_linker(self):
-        usr_vendor = 'thermo'
+        if self.ui.vendor_waters_rb.isChecked():
+            usr_vendor = 'waters'
+        elif self.ui.vendor_thermo_rb.isChecked():
+            usr_vendor = 'thermo'
+        else:
+            usr_vendor = 'waters'
+        print('Vendor mode = %s' % usr_vendor)
 
         print('linker started!')
         _pl_class_info = str(self.ui.tab_d_lipidclass_cmb.currentText())
@@ -441,7 +459,13 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_e_sumxlsxpath_le.setText(unicode(e_save_output_str))
 
     def e_run_hunter(self):
-        usr_vendor = 'thermo'
+        if self.ui.vendor_waters_rb.isChecked():
+            usr_vendor = 'waters'
+        elif self.ui.vendor_thermo_rb.isChecked():
+            usr_vendor = 'thermo'
+        else:
+            usr_vendor = 'waters'
+        print('Vendor mode = %s' % usr_vendor)
         print('Hunter started!')
         _pl_class_info = str(self.ui.tab_e_lipidclass_cmb.currentText())
 
