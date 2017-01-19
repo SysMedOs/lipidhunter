@@ -8,13 +8,15 @@ from __future__ import division
 from __future__ import print_function
 import re
 
+import numpy as np
 import pandas as pd
 import pymzml
+import numba
 
 
+@numba.jit
 def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10,
                  ms1_precision=50e-6, ms2_precision=500e-6, vendor='waters'):
-
     """
     Extract mzML to a scan info DataFrame and a pandas panel for spectra DataFrame of mz and i
 
@@ -61,19 +63,14 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
     spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=ms2_precision)
 
-
-
     spec_idx = 0
     dda_event_idx = 0
-    spec_idx_lst = []
-    dda_event_lst = []
-    rt_lst = []
-    function_lst = []
-    scan_id_lst = []
-    pr_mz_lst = []
-
-    scan_info_dct = {'spec_index': spec_idx_lst, 'rt': rt_lst, 'dda_event_idx': dda_event_lst,
-                     'function': function_lst, 'scan_id': scan_id_lst, 'pr_mz': pr_mz_lst}
+    spec_idx_lst = [000]
+    dda_event_lst = [000]
+    rt_lst = [00.00]
+    function_lst = [000]
+    scan_id_lst = [000]
+    pr_mz_lst = [000]
 
     spec_dct = {}
 
@@ -149,6 +146,16 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
                         spec_idx += 1
 
+    # remove numba str
+    spec_idx_lst = spec_idx_lst[1:]
+    dda_event_lst = dda_event_lst[1:]
+    rt_lst = rt_lst[1:]
+    function_lst = function_lst[1:]
+    scan_id_lst = scan_id_lst[1:]
+    pr_mz_lst = pr_mz_lst[1:]
+
+    scan_info_dct = {'spec_index': spec_idx_lst, 'rt': rt_lst, 'dda_event_idx': dda_event_lst,
+                     'function': function_lst, 'scan_id': scan_id_lst, 'pr_mz': pr_mz_lst}
     scan_info_df = pd.DataFrame(data=scan_info_dct, columns=['dda_event_idx', 'spec_index', 'rt',
                                                              'function', 'scan_id', 'pr_mz']
                                 )
@@ -164,9 +171,9 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
     return scan_info_df, spec_pl
 
 
+@numba.jit
 def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
                 scan_info_df, spectra_pl, dda_top=12, ms1_precision=50e-6):
-
     # ms1_pr_se = pd.Series()
     ms1_df = pd.DataFrame()
     ms2_df = pd.DataFrame()
@@ -251,8 +258,8 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
     return spec_info_dct
 
 
+@numba.jit
 def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=500e-6, vendor='waters'):
-
     waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
                       ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']),
                       ('MS:1000769', ['name']), ('MS:1000526', ['name']))
@@ -324,7 +331,12 @@ def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=
     return ms1_xic_df
 
 
+@numba.jit
 def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e-6, vendor='waters'):
+
+    spec_title_obo = 'MS:1000796'
+    scan_rt_obo = 'MS:1000016'
+    spec_level_obo = 'MS:1000511'
 
     waters_obo_lst = (('MS:1000016', ['value']), ('MS:1000744', ['value']), ('MS:1000042', ['value']),
                       ('MS:1000796', ['value']), ('MS:1000514', ['name']), ('MS:1000515', ['name']),
@@ -338,6 +350,8 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
             pass
             # end hot patch
 
+    spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
+
     ms1_obs_df = info_df.query('MS1_obs_mz > 0')
     ms1_obs_lst = ms1_obs_df['MS1_obs_mz'].tolist()
     ms1_obs_lst = sorted(set(ms1_obs_lst))
@@ -347,14 +361,6 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
     rt_end = rt_range[1]
 
     ms1_xic_dct = {}
-
-    for _mz in ms1_obs_lst:
-        ms1_xic_dct[_mz] = pd.DataFrame()
-    spec_title_obo = 'MS:1000796'
-    scan_rt_obo = 'MS:1000016'
-    spec_level_obo = 'MS:1000511'
-
-    spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=msn_precision)
 
     if vendor == 'waters':
         scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)')
@@ -369,71 +375,49 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
                     if _function == 1:
                         print('Reading MS survey scan @:', _scan_rt)
                         # slow but more accurate mode. At least 10 time slower
-                        # _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                        _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                        _tmp_spec_df = _tmp_spec_df.round({'mz': 6})
                         for _ms1_obs in ms1_obs_lst:
-
-                            ms1_xic_df = ms1_xic_dct[_ms1_obs]
-                            _tmp_ms1_xic_df = ms1_xic_df.copy()
-
-                            # faster mode
-                            _xic_lst = _spectrum.hasPeak(_ms1_obs)
-                            if len(_xic_lst) == 1:
-                                _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
-                                _tmp_mz_df.loc[:, 'rt'] = _scan_rt
-                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
-                                ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df)
-                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
-
-                            if len(_xic_lst) > 1:
-                                _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
-                                _tmp_mz_df.loc[:, 'rt'] = _scan_rt
-                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
-                                ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df.sort_values(by='i', ascending=False).head(1))
-                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
+                            _matched_indices = list(np.where(_tmp_spec_df['mz'] == _ms1_obs)[0])
+                            if len(_matched_indices) > 0:
+                                # print(_matched_indices)
+                                _tmp_mz_df = _tmp_spec_df.iloc[_matched_indices]
+                                _tmp_mz_i = _tmp_mz_df['i'].max()
+                                _tmp_mz_df = pd.DataFrame(data={'mz': [_ms1_obs], 'i': [_tmp_mz_i], 'rt': [_scan_rt]})
+                                if _ms1_obs in ms1_xic_dct.keys():
+                                    _tmp_ms1_obs_df = ms1_xic_dct[_ms1_obs]
+                                    ms1_xic_dct[_ms1_obs] = _tmp_ms1_obs_df.append(_tmp_mz_df)
+                                else:
+                                    ms1_xic_dct[_ms1_obs] = _tmp_mz_df
 
     elif vendor == 'thermo':
         print('Thermo files')
         for _spectrum in spec_obj:
 
-            try:
-                ms_level = _spectrum[spec_level_obo]
+            if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
                 _spectrum_level = _spectrum[spec_level_obo]
                 _scan_rt = float(_spectrum[scan_rt_obo])
-
                 if rt_start <= _scan_rt <= rt_end:
                     if _spectrum_level == 1:
                         print('Reading MS survey scan @:', _scan_rt)
-                        # slow but more accurate mode. At least 10 time slower
-                        # _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                        _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                        _tmp_spec_df = _tmp_spec_df.round({'mz': 6})
                         for _ms1_obs in ms1_obs_lst:
-
-                            ms1_xic_df = ms1_xic_dct[_ms1_obs]
-                            _tmp_ms1_xic_df = ms1_xic_df.copy()
-
-                            # faster mode
-                            _xic_lst = _spectrum.hasPeak(_ms1_obs)
-                            if len(_xic_lst) == 1:
-                                _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
-                                _tmp_mz_df.loc[:, 'rt'] = _scan_rt
-                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
-                                ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df)
-                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
-
-                            if len(_xic_lst) > 1:
-                                _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
-                                _tmp_mz_df.loc[:, 'rt'] = _scan_rt
-                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
-                                ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df.sort_values
-                                                                    (by='i', ascending=False).head(1))
-                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
-            except:
-                pass
+                            _matched_indices = list(np.where(_tmp_spec_df['mz'] == _ms1_obs)[0])
+                            if len(_matched_indices) > 0:
+                                _tmp_mz_df = _tmp_spec_df.iloc[_matched_indices]
+                                _tmp_mz_i = _tmp_mz_df['i'].max()
+                                _tmp_mz_df = pd.DataFrame(data={'mz': [_ms1_obs], 'i': [_tmp_mz_i], 'rt': [_scan_rt]})
+                                if _ms1_obs in ms1_xic_dct.keys():
+                                    _tmp_ms1_obs_df = ms1_xic_dct[_ms1_obs]
+                                    ms1_xic_dct[_ms1_obs] = _tmp_ms1_obs_df.append(_tmp_mz_df)
+                                else:
+                                    ms1_xic_dct[_ms1_obs] = _tmp_mz_df
 
     return ms1_xic_dct
 
 
 if __name__ == '__main__':
-
     usr_mzml = r'D:\project_mzML\CM_DDA_neg_mzML\070120_CM_neg_30min_SIN_II.mzML'
     usr_dda_top = 12
     usr_rt_range = [25, 27]

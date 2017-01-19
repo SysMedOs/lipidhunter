@@ -5,6 +5,7 @@
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
 from __future__ import division
+from __future__ import print_function
 
 import os
 
@@ -19,8 +20,10 @@ import matplotlib as mpl
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib._png import read_png
 import pandas as pd
+import numba
 
 
+@numba.jit
 def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_dct, isotope_checker_dct, isotope_score,
                  save_img_as=None, ms1_precision=50e-6):
     ms2_pr_mz = mz_se['mz']
@@ -48,7 +51,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     ms_zoom_query_str = ' %.2f < mz < %.2f' % (ms1_obs - 2.1, ms1_obs + 2.1)
     ms_zoom_df = ms1_df.query(ms_zoom_query_str)
 
-    print ('Start looking for MS2 PR m/z %f @ MS1 best PR m/z %f with lib m/z %f'
+    print('Start looking for MS2 PR m/z %f @ MS1 best PR m/z %f with lib m/z %f'
            % (ms2_pr_mz, ms1_obs, lib_mz))
 
     xic_df = xic_dct[ms1_obs]
@@ -106,7 +109,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                        facecolor=(1.0, 0.0, 0.0, 0.4), edgecolor="none")
     ms_zoom_pic.add_patch(m_pre_theo_box)
 
-    ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 2.1])
+    ms_zoom_pic.set_xlim([ms1_pr_mz - 1.75, ms1_pr_mz + 2.25])
     ms_zoom_pic.set_ylim([0, max(ms_zoom_df['i'].tolist()) * 1.3])
     ms_zoom_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0), fontsize=10)
     ms_zoom_pic.ticklabel_format(axis='x', useOffset=False, fontsize=10)
@@ -207,7 +210,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         ident_table.set_fontsize(6)
 
     if _fa_table_df.shape[0] > 0:
-        fa_row_color_lst = []
+        fa_row_color_lst = [(0.5, 0.5, 0.5, 0.5)]  # no empty list for numba
         for _i_fa, _fa_se in _fa_table_df.iterrows():
             # color of stemlines is tuple of R, G, B, alpha from 0 to 1
             _rgb_color = ((20 * _i_fa) / 255, (255 - 5 * _i_fa) / 255,
@@ -230,13 +233,14 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         fa_table_vals = map(list, _fa_table_df.values)
         # fa_col_width_lst = [0.025 * len(str(x)) for x in fa_col_labels]
         fa_col_width_lst = [0.3, 0.1, 0.1, 0.1]
+        fa_row_color_lst = fa_row_color_lst[1:]
         fa_table = msms_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
                                   colWidths=fa_col_width_lst, rowColours=fa_row_color_lst,
                                   colLabels=fa_col_labels, loc='upper center')
         fa_table.set_fontsize(6)
 
     if _lyso_table_df.shape[0] > 0:
-        lyso_row_color_lst = []
+        lyso_row_color_lst = [(0.5, 0.5, 0.5, 0.5)]
         for _i_lyso, _lyso_se in _lyso_table_df.iterrows():
             # color of stemlines is tuple of R, G, B, alpha from 0 to 1
             _rgb_color = ((20 * _i_lyso) / 255, (255 - 5 * _i_lyso) / 255,
@@ -261,6 +265,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         lyso_table_vals = map(list, _lyso_table_df.values)
         # lyso_col_width_lst = [0.01 * len(str(x)) for x in lyso_col_labels]
         lyso_col_width_lst = [0.3, 0.1, 0.1, 0.1]
+        lyso_row_color_lst = lyso_row_color_lst[1:]
 
         lyso_table = msms_high_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
                                          colWidths=lyso_col_width_lst, rowColours=lyso_row_color_lst,
@@ -384,10 +389,10 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     msms_low_pic.set_title(msms_low_str, color='b', fontsize=10, y=0.98)
     msms_high_pic.set_title(msms_high_str, color='b', fontsize=10, y=0.98)
 
-    print ('>>> >>> >>> try to plot >>> >>> >>>')
+    print('>>> >>> >>> try to plot >>> >>> >>>')
 
     plt.savefig(save_img_as, dpi=300)
-    print ('=====> Image saved as: %s' % save_img_as)
+    print('=====> Image saved as: %s' % save_img_as)
     plt.close()
     isotope_checker = 0
     return isotope_checker, isotope_score
