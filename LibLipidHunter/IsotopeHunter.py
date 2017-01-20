@@ -100,36 +100,45 @@ class IsotopeHunter(object):
     def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2,
                           ms1_precision=50e-6, pattern_tolerance=5):
 
-        elem_dct = self.get_elements(formula)
-        # mono_mz = self.get_mono_mz(elem_dct)
-        isotope_pattern_df = self.get_isotope_mz(elem_dct, isotope_number=2)
+        mz_delta = ms1_pr_mz * ms1_precision
+        delta_13c = 1.0033548378
+        i_df = spec_df.query('%f <= mz <= %f' % (ms1_pr_mz - delta_13c - mz_delta, ms1_pr_mz - delta_13c + mz_delta))
+        max_pre_m_i = i_df['i'].max()
+        if ms1_pr_i > max_pre_m_i:
 
-        isotope_checker_dct = {}
-        isotope_score_delta = 0
-        for _i, _se in isotope_pattern_df.iterrows():
+            elem_dct = self.get_elements(formula)
+            # mono_mz = self.get_mono_mz(elem_dct)
+            isotope_pattern_df = self.get_isotope_mz(elem_dct, isotope_number=2)
 
-            if _i > 0:
-                _mz = _se['mz']
-                _ratio = _se['ratio']
-                _mz_delta = _mz * ms1_precision
-                _i_df = spec_df.query('%f <= mz <= %f' % (_mz - _mz_delta, _mz + _mz_delta))
-                _i_info_dct = {'theo_mz': _mz, 'theo_i': ms1_pr_i * _ratio, 'theo_ratio': _ratio}
-                if _i_df.shape[0] > 0:
-                    _i_df = _i_df.sort_values(by='i', ascending=False).head(1)
-                    _i_max = _i_df['i'].tolist()[0]
-                    _mz_max = _i_df['mz'].tolist()[0]
-                    _i_info_dct['obs_i'] = _i_max
-                    _i_info_dct['obs_mz'] = _mz_max
-                else:
-                    _i_max = 0.0
-                    _i_info_dct['obs_i'] = 0
-                    _i_info_dct['obs_mz'] = 0
-                _i_r = _i_max / ms1_pr_i
-                _i_info_dct['obs_ratio'] = _i_r
-                isotope_score_delta += abs(_i_r - _ratio)
-                isotope_checker_dct[_i] = _i_info_dct
+            isotope_checker_dct = {}
+            isotope_score_delta = 0
+            for _i, _se in isotope_pattern_df.iterrows():
 
-        isotope_score = 100 * (1 - isotope_score_delta)
+                if _i > 0:
+                    _mz = _se['mz']
+                    _ratio = _se['ratio']
+                    _mz_delta = _mz * ms1_precision
+                    _i_df = spec_df.query('%f <= mz <= %f' % (_mz - _mz_delta, _mz + _mz_delta))
+                    _i_info_dct = {'theo_mz': _mz, 'theo_i': ms1_pr_i * _ratio, 'theo_ratio': _ratio}
+                    if _i_df.shape[0] > 0:
+                        _i_df = _i_df.sort_values(by='i', ascending=False).head(1)
+                        _i_max = _i_df['i'].tolist()[0]
+                        _mz_max = _i_df['mz'].tolist()[0]
+                        _i_info_dct['obs_i'] = _i_max
+                        _i_info_dct['obs_mz'] = _mz_max
+                    else:
+                        _i_max = 0.0
+                        _i_info_dct['obs_i'] = 0
+                        _i_info_dct['obs_mz'] = 0
+                    _i_r = _i_max / ms1_pr_i
+                    _i_info_dct['obs_ratio'] = _i_r
+                    isotope_score_delta += abs(_i_r - _ratio)
+                    isotope_checker_dct[_i] = _i_info_dct
+
+            isotope_score = 100 * (1 - isotope_score_delta)
+        else:
+            isotope_score = 0
+            isotope_checker_dct = {}
 
         return isotope_score, isotope_checker_dct
 

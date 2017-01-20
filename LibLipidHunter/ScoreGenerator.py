@@ -5,15 +5,13 @@
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
 from __future__ import division
-from __future__ import print_function
 
 import re
 
 import pandas as pd
-import numba
 
 
-class ScoreGenerator(object):
+class ScoreGenerator:
     def __init__(self, fa_def_df, weight_df, key_frag_df, lipid_type):
         self.fa_def_df = fa_def_df
         self.weight_df = weight_df
@@ -72,37 +70,37 @@ class ScoreGenerator(object):
         lyso_fa_linker_dct = {'sn1': '', 'sn2': ''}
 
         if pl_checker.match(abbr):
-            # print('PL')
+            print ('PL')
             pl_re_chk = pl_checker.match(abbr)
             pl_typ_lst = pl_re_chk.groups()
             _pl_typ = pl_typ_lst[0]
             bulk_fa_typ = pl_typ_lst[2]
         if pip_checker.match(abbr):
-            # print('PIP')
+            print ('PIP')
             pip_re_chk = pip_checker.match(abbr)
             pip_typ_lst = pip_re_chk.groups()
             _pl_typ = pip_typ_lst[0]
             bulk_fa_typ = pip_typ_lst[2]
         if tg_checker.match(abbr):
-            # print('TG')
+            print ('TG')
             pip_re_chk = pip_checker.match(abbr)
             pip_typ_lst = pip_re_chk.groups()
             _pl_typ = pip_typ_lst[0]
             bulk_fa_typ = pip_typ_lst[2]
         if fa_checker.match(abbr):
-            # print('FA')
+            print ('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
         if fa_o_checker.match(abbr):
-            # print('FA')
+            print ('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
         if fa_p_checker.match(abbr):
-            # print('FA')
+            print ('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
 
-        # print(bulk_fa_typ)
+        print(bulk_fa_typ)
 
         if fa_checker.match(bulk_fa_typ):
             bulk_fa_linker = 'A-A-'
@@ -134,12 +132,11 @@ class ScoreGenerator(object):
 
         return lipid_info_dct
 
-    @numba.jit
     def get_fa_search(self, abbr, charge_type, mz_lib, ms2_df, ms2_precision=500e-6, ms2_threshold=100):
 
-        fa_ident_df = ['numba']
-        lyso_ident_df = ['numba']
-        lyso_w_ident_df = ['numba']
+        fa_ident_df = pd.DataFrame()
+        lyso_ident_df = pd.DataFrame()
+        lyso_w_ident_df = pd.DataFrame()
 
         lipid_info_dct = self.decode_abbr(abbr)
         pl_typ = lipid_info_dct['TYPE']
@@ -158,21 +155,11 @@ class ScoreGenerator(object):
             lipid_type = 'PL'
 
         if lipid_type == 'PL' and charge_mode == 'NEG':
-            r_fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M-H]-', 'NL-H2O']]
-            i_fa_chk_df = r_fa_chk_df.rename(columns={'[M-H]-': 'sn', 'mass': 'NL'})
-            # i_fa_chk_df.loc[:, 'M-sn'] = calc_pr_mz - i_fa_chk_df['NL']
-            # i_fa_chk_df.loc[:, 'M-(sn-H2O)'] = calc_pr_mz - i_fa_chk_df['NL-H2O']
-            # i_fa_chk_df.loc[:, 'Proposed_structures'] = ''
-            for _idx, _f_info_se in i_fa_chk_df.iterrows():
-                i_fa_chk_df.set_value(_idx, 'M-sn', calc_pr_mz - _f_info_se['NL'])
-                i_fa_chk_df.set_value(_idx, 'M-(sn-H2O)', calc_pr_mz - _f_info_se['NL-H2O'])
-                i_fa_chk_df.set_value(_idx, 'Proposed_structures', '')
-            fa_chk_df = i_fa_chk_df.reset_index(drop=True)
-
-            found_fa = 0
-            found_lyso = 0
-            found_lyso_w = 0
-            found_dct = {'found_fa': found_fa, 'found_lyso': found_lyso, 'found_lyso_w': found_lyso_w}
+            fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M-H]-', 'NL-H2O']]
+            fa_chk_df = fa_chk_df.rename(columns={'[M-H]-': 'sn', 'mass': 'NL'})
+            fa_chk_df['M-sn'] = calc_pr_mz - fa_chk_df['NL']
+            fa_chk_df['M-(sn-H2O)'] = calc_pr_mz - fa_chk_df['NL-H2O']
+            fa_chk_df['Proposed_structures'] = ''
 
             for _i, _fa_se in fa_chk_df.iterrows():
 
@@ -190,7 +177,6 @@ class ScoreGenerator(object):
                     _frag_df = ms2_df.query(_frag_mz_query_code)
 
                     if _frag_df.shape[0] > 0:
-
                         _frag_df.loc[:, 'ppm'] = 1e6 * (_frag_df['mz'] - _frag_mz) / _frag_mz
                         _frag_df.loc[:, 'ppm_abs'] = _frag_df['ppm'].abs()
                         _frag_df.loc[:, 'FA'] = _fa_abbr
@@ -206,11 +192,7 @@ class ScoreGenerator(object):
 
                         if _frag_type == 'sn':
                             _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [M-H]-' % _fa_abbr
-                            if found_dct['found_fa'] == 0:
-                                fa_ident_df = _frag_df
-                            else:
-                                fa_ident_df = fa_ident_df.append(_frag_df)
-                            found_dct['found_fa'] += 1
+                            fa_ident_df = fa_ident_df.append(_frag_df)
                         elif _frag_type == 'M-sn':
                             if _fa_link in lyso_fa_linker_dct.keys():
                                 if bulk_fa_db - _fa_db >= 0:
@@ -220,12 +202,7 @@ class ScoreGenerator(object):
                                                                                  bulk_fa_c - _fa_c, bulk_fa_db - _fa_db
                                                                                  )
                                                                               )
-                                    # lyso_ident_df = lyso_ident_df.append(_frag_df)
-                                    if found_dct['found_lyso'] == 0:
-                                        lyso_ident_df = _frag_df
-                                    else:
-                                        lyso_ident_df = lyso_ident_df.append(_frag_df)
-                                    found_dct['found_lyso'] += 1
+                                    lyso_ident_df = lyso_ident_df.append(_frag_df)
                         elif _frag_type == 'M-(sn-H2O)':
                             if _fa_link in lyso_fa_linker_dct.keys():
                                 if bulk_fa_db - _fa_db >= 0:
@@ -236,13 +213,7 @@ class ScoreGenerator(object):
                                         bulk_fa_db - _fa_db
                                     )
 
-                                    # lyso_w_ident_df = lyso_w_ident_df.append(_frag_df)
-
-                                    if found_dct['found_lyso_w'] == 0:
-                                        lyso_w_ident_df = _frag_df
-                                    else:
-                                        lyso_w_ident_df = lyso_w_ident_df.append(_frag_df)
-                                    found_dct['found_lyso_w'] += 1
+                                    lyso_w_ident_df = lyso_w_ident_df.append(_frag_df)
 
         # format the output DataFrame
         if fa_ident_df.shape[0] > 0:
@@ -315,7 +286,6 @@ class ScoreGenerator(object):
 
         return lipid_abbr_df
 
-    @numba.jit
     def get_match(self, abbr, charge_type, mz_lib, ms2_df, ms2_precision=500e-6, ms2_threshold=100):
 
         match_reporter = 0
@@ -325,30 +295,30 @@ class ScoreGenerator(object):
                                                                          ms2_precision=ms2_precision,
                                                                          ms2_threshold=ms2_threshold
                                                                          )
+
         lipid_abbr_df = self.get_structure(abbr)
 
         weight_type_lst = ['sn1', 'sn2', 'M-sn1', 'M-sn2', 'M-(sn1-H2O)', 'M-(sn2-H2O)']
         weight_dct = {}
-
         for _type in weight_type_lst:
             lipid_abbr_df[_type] = 0
         # lipid_abbr_df['Score'] = 0
-        if isinstance(fa_ident_df, pd.DataFrame) and fa_ident_df.shape[0] > 0:
+        if fa_ident_df.shape[0] > 0:
             fa_ident_lst = fa_ident_df['FA'].tolist()
             fa_i_lst = fa_ident_df['i'].tolist()
 
-            if isinstance(lyso_ident_df, pd.DataFrame) and lyso_ident_df.shape[0] > 0:
+            try:
                 lyso_ident_lst = lyso_ident_df['FA'].tolist()
                 lyso_i_lst = lyso_ident_df['i'].tolist()
-            else:
-                lyso_ident_lst = ['']
-                lyso_i_lst = [0]
-            if isinstance(lyso_w_ident_df, pd.DataFrame) and lyso_w_ident_df.shape[0] > 0:
+            except KeyError:
+                lyso_ident_lst = []
+                lyso_i_lst = []
+            try:
                 lyso_w_ident_lst = lyso_w_ident_df['FA'].tolist()
                 lyso_w_i_lst = lyso_w_ident_df['i'].tolist()
-            else:
-                lyso_w_ident_lst = ['']
-                lyso_w_i_lst = [0]
+            except KeyError:
+                lyso_w_ident_lst = []
+                lyso_w_i_lst = []
 
             self.weight_df['mz'] = 0.0
             for _i, _weight_se in self.weight_df.iterrows():
@@ -405,10 +375,8 @@ class ScoreGenerator(object):
 
         match_info_dct = {'MATCH_INFO': match_reporter, 'SCORE_INFO': lipid_abbr_df, 'FA_INFO': fa_ident_df,
                           'LYSO_INFO': lyso_ident_df, 'LYSO_W_INFO': lyso_w_ident_df}
-
         return match_info_dct
 
-    @numba.jit
     def get_specific_peaks(self, mz_lib, ms2_df, ms2_precision=50e-6, ms2_threshold=10):
 
         _target_frag_df = pd.DataFrame()

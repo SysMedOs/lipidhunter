@@ -5,10 +5,8 @@
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
 from __future__ import division
-from __future__ import print_function
 
 import time
-import numpy as np
 import pandas as pd
 
 from LibLipidHunter.SpectraExtractor import extract_mzml
@@ -167,6 +165,7 @@ def huntlipids(param_dct):
                 if isotope_score >= usr_isotope_score_filter:
                     print('>>> isotope_check PASSED! >>> >>> >>>')
                     print('>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
+                    print(type(_row_se))
                     _row_se.set_value('MS1_obs_mz', _ms1_pr_mz)
                     print(_row_se)
                     match_info_dct = score_calc.get_match(_usr_abbr_bulk, charge_mode, _ms1_pr_mz, _ms2_df,
@@ -186,7 +185,7 @@ def huntlipids(param_dct):
 
                         score_df = usr_ident_info_dct['SCORE_INFO']
                         if score_df.shape[0] > 0 and _ms1_pr_i > 0:
-                            # print('>>> >>> Check now for bulk identification as', _usr_abbr_bulk)
+                            print ('>>> >>> Check now for bulk identification as %s' % _usr_abbr_bulk)
 
                             specific_check_dct = score_calc.get_specific_peaks(_usr_mz_lib, _ms2_df,
                                                                                ms2_precision=usr_ms2_specific_peaks_precision,
@@ -281,9 +280,7 @@ def huntlipids(param_dct):
         if len(target_ident_lst) > 0:
             for _t in target_ident_lst:
                 output_round_dct[_t] = 2
-        output_df = output_df.fillna(value=0)
         output_df = output_df.round(output_round_dct)
-        output_df = output_df.replace(0.00, np.nan)
 
         # output_df['Proposed structures'] = output_df['Lipid_species']
         output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Score', 'Specific_peaks',
