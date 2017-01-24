@@ -128,46 +128,48 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     ms_zoom_pic.text(lib_mz - 0.7, ms1_pr_i, 'Calc m/z: %.4f' % lib_mz, color='orange', fontsize=6)
 
     # isotope region | highlight the 1st isotope
+    print('isotope_checker_dct')
+    print(isotope_checker_dct)
     m1_dct = isotope_checker_dct[1]
     m1_theo_mz = m1_dct['theo_mz']
-    # m1_theo_i = m1_dct['theo_i']
+    m1_theo_i = m1_dct['theo_i']
     m1_obs_mz = m1_dct['obs_mz']
     m1_obs_i = m1_dct['obs_i']
-    m1_theo_r = m1_dct['theo_ratio']
+    # m1_theo_r = m1_dct['theo_ratio']
     # m1_obs_r = m1_dct['obs_ratio']
 
     # theo range box
-    m1_theo_box = patches.Rectangle((m1_theo_mz - ms1_delta, 0), 2 * ms1_delta, m1_theo_r * ms1_pr_i,
+    m1_theo_box = patches.Rectangle((m1_theo_mz - ms1_delta, 0), 2 * ms1_delta, m1_theo_i,
                                     facecolor=(0.1, 1.0, 1.0, 0.6), edgecolor="none")
     ms_zoom_pic.add_patch(m1_theo_box)
 
-    markerline, stemlines, baseline = ms_zoom_pic.stem([m1_theo_mz], [m1_theo_r * ms1_pr_i], '--',
+    markerline, stemlines, baseline = ms_zoom_pic.stem([m1_theo_mz], [m1_theo_i], '--',
                                                        markerfmt='o')
     plt.setp(stemlines, color='orange', alpha=0.8)
     plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
-    ms_zoom_pic.text(m1_theo_mz - 0.93, m1_theo_r * ms1_pr_i, 'Calc 1st isotope: %.4f' % m1_theo_mz,
+    ms_zoom_pic.text(m1_theo_mz - 0.93, m1_theo_i, 'Calc 1st isotope: %.4f' % m1_theo_mz,
                      color='orange', fontsize=6)
     ms_zoom_pic.text(m1_obs_mz, m1_obs_i, '%.4f' % m1_obs_mz, color='magenta', fontsize=6)
 
     # isotope region | highlight the 2nd isotope
     m2_dct = isotope_checker_dct[2]
     m2_theo_mz = m2_dct['theo_mz']
-    # m2_theo_i = m2_dct['theo_i']
+    m2_theo_i = m2_dct['theo_i']
     m2_obs_mz = m2_dct['obs_mz']
     m2_obs_i = m2_dct['obs_i']
     m2_theo_r = m2_dct['theo_ratio']
     # m2_obs_r = m2_dct['obs_ratio']
-    m2_theo_box = patches.Rectangle((m2_theo_mz - ms1_delta, 0), 2 * ms1_delta, m2_theo_r * ms1_pr_i,
+    m2_theo_box = patches.Rectangle((m2_theo_mz - ms1_delta, 0), 2 * ms1_delta, m2_theo_i,
                                     facecolor=(0.2, 1.0, 1.0, 0.6), edgecolor="none")
     ms_zoom_pic.add_patch(m2_theo_box)
-    markerline, stemlines, baseline = ms_zoom_pic.stem([m2_theo_mz], [m2_theo_r * ms1_pr_i], '--',
+    markerline, stemlines, baseline = ms_zoom_pic.stem([m2_theo_mz], [m2_theo_i], '--',
                                                        markerfmt='o')
     plt.setp(stemlines, color='orange', alpha=0.8)
     plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
-    ms_zoom_pic.text(m2_theo_mz - 0.93, m2_theo_r * ms1_pr_i, 'Calc 2nd isotope: %.4f' % m2_theo_mz,
+    ms_zoom_pic.text(m2_theo_mz - 0.93, m2_theo_i, 'Calc 2nd isotope: %.4f' % m2_theo_mz,
                      color='orange', fontsize=6)
     ms_zoom_pic.text(m2_obs_mz, m2_obs_i, '%.4f' % m2_obs_mz, color='magenta', fontsize=6)
-    ms_zoom_pic.text(m2_theo_mz, max(ms_zoom_df['i'].tolist()) * 1.2, 'Isotope score = % f' % isotope_score,
+    ms_zoom_pic.text(m1_theo_mz + 1, max(ms_zoom_df['i'].tolist()) * 1.2, 'Isotope score = % f' % isotope_score,
                      verticalalignment='top', horizontalalignment='right',
                      color='magenta', fontsize=8)
 

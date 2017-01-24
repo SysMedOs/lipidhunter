@@ -142,7 +142,7 @@ class ScoreGenerator:
         pl_typ = lipid_info_dct['TYPE']
         bulk_fa_c = lipid_info_dct['C']
         bulk_fa_db = lipid_info_dct['DB']
-        bulk_fa_linker = lipid_info_dct['LINK']
+        # bulk_fa_linker = lipid_info_dct['LINK']
         lyso_fa_linker_dct = lipid_info_dct['LYSO_LINK']
 
         calc_pr_mz, charge_mode = self.get_pr_mz(charge_type, mz_lib)
@@ -476,29 +476,4 @@ class ScoreGenerator:
 
 
 if __name__ == '__main__':
-    fa_list_csv = r'D:\LPPhunter\FA_list.csv'
-    score_cfg = r'D:\LPPhunter\Score_cfg.xlsx'
-
-    usr_fa_def_df = pd.read_csv(fa_list_csv)
-    usr_weight_df = pd.read_excel(score_cfg)
-    usr_fa_def_df['C'] = usr_fa_def_df['C'].astype(int)
-    usr_fa_def_df['DB'] = usr_fa_def_df['DB'].astype(int)
-
-    # for usr_abbr in ['PC(O-36:3)', 'PC(P-38:4)', 'PC(40:5)']:
-    #     struc_df = get_structure(usr_fa_def_df, usr_abbr)
-    #     print(struc_df)
-
-    usr_lp = 'PC(40:5)'
-    score_calc = ScoreGenerator(usr_fa_def_df, usr_weight_df)
-    struc_df = score_calc.get_structure(usr_lp)
-    print(struc_df)
-
-    usr_fa_ident_df = usr_fa_def_df.head(8)
-    usr_lyso_ident_df = usr_fa_def_df.head(4)
-    usr_lyso_w_ident_df = usr_fa_def_df.head(2)
-
-    fa_abbr_lst = ['PC(40:5)', '20:5', 'O-18:1', 'P-16:0']
-    for _fa in fa_abbr_lst:
-        print(_fa)
-        fa_info_dct = score_calc.decode_abbr(_fa)
-        print(fa_info_dct)
+    pass

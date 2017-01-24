@@ -9,10 +9,11 @@
 # except NameError:  # python2
 #     import ConfigParser as configparser
 
-import ConfigParser
+import ConfigParser as configparser
 import glob
 import os
 import re
+import time
 
 import pandas as pd
 from PySide import QtCore, QtGui
@@ -71,7 +72,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_f_savesettings_pb, QtCore.SIGNAL("clicked()"), self.f_set_default_cfg)
 
         # load configurations
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read('config.ini')
         if config.has_section('settings'):
             user_cfg = 'settings'
@@ -481,7 +482,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             _pl_class = 'PC'
             _pl_charge = '[M+HCOO]-'
 
-        lipidsinfo_path_str = str(self.ui.tab_e_loadxlsxpath_le.text())
+        lipids_info_path_str = str(self.ui.tab_e_loadxlsxpath_le.text())
         mzml_path_str = str(self.ui.tab_e_ms2mzml_le.text())
         img_output_folder_str = str(self.ui.tab_e_saveimgfolder_le.text())
         xlsx_output_path_str = str(self.ui.tab_e_sumxlsxpath_le.text())
@@ -504,7 +505,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         lipid_specific_cfg = self.ui.tab_f_hgcfg_le.text()
         score_cfg = self.ui.tab_f_scorecfg_le.text()
 
-        hunter_param_dct = {'lipids_info_path_str': lipidsinfo_path_str, 'mzml_path_str': mzml_path_str,
+        hunter_param_dct = {'lipids_info_path_str': lipids_info_path_str, 'mzml_path_str': mzml_path_str,
                             'img_output_folder_str': img_output_folder_str,
                             'xlsx_output_path_str': xlsx_output_path_str, 'rt_start': rt_start, 'rt_end': rt_end,
                             'mz_start': mz_start, 'mz_end': mz_end, 'dda_top': dda_top, 'ms_th': ms_th,
@@ -512,6 +513,19 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                             'score_filter': score_filter, 'isotope_score_filter': isotope_score_filter,
                             'lipid_type': _pl_class, 'charge_mode': _pl_charge, 'fa_white_list_cfg': fa_white_list_cfg,
                             'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor}
+
+        param_log_output_path_str = (str(self.ui.tab_e_saveimgfolder_le.text()) +
+                                     '/LipidHunter_param-log_%s.txt'
+                                     % (time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+                                        )
+                                     )
+
+        config = configparser.ConfigParser()
+        with open(param_log_output_path_str, 'w') as usr_param_cfg:
+            config.add_section('parameters')
+            for param in hunter_param_dct.keys():
+                config.set('parameters', param, hunter_param_dct[param])
+            config.write(usr_param_cfg)
 
         print(hunter_param_dct)
         tot_run_time = huntlipids(hunter_param_dct)

@@ -61,8 +61,6 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
     spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=ms2_precision)
 
-
-
     spec_idx = 0
     dda_event_idx = 0
     spec_idx_lst = []
@@ -91,14 +89,14 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
                 if rt_start <= _scan_rt <= rt_end and scan_info_checker:
                     _function = int(scan_info_checker.groups()[2])
-                    _scanid = int(scan_info_checker.groups()[5])
+                    _scan_id = int(scan_info_checker.groups()[5])
                     if _function in function_range_lst:
                         _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
                         if _function == 1:
                             dda_event_idx += 1
 
                             # _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False).head(1000)
-                            _tmp_spec_df = _tmp_spec_df.query('i >= %f' % ms1_threshold)
+                            _tmp_spec_df = _tmp_spec_df.query('i >= %f' % (ms1_threshold * 0.1))
                             _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False)
                             _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
                             spec_dct[spec_idx] = _tmp_spec_df
@@ -111,7 +109,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                         dda_event_lst.append(dda_event_idx)
                         rt_lst.append(_scan_rt)
                         function_lst.append(_function)
-                        scan_id_lst.append(_scanid)
+                        scan_id_lst.append(_scan_id)
                         pr_mz_lst.append(pr_mz)
 
                         spec_idx += 1
@@ -124,14 +122,14 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                 _scan_rt = float(_spectrum[scan_rt_obo])
                 ms_level = _spectrum[_spec_level_obo]
                 if rt_start <= _scan_rt <= rt_end:
-                    _scanid = _spectrum['id']
+                    _scan_id = _spectrum['id']
                     if ms_level in function_range_lst:
                         _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
                         if ms_level == 1:
                             dda_event_idx += 1
 
                             # _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False).head(1000)
-                            _tmp_spec_df = _tmp_spec_df.query('i >= %f' % ms1_threshold)
+                            _tmp_spec_df = _tmp_spec_df.query('i >= %f' % (ms1_threshold * 0.1))
                             _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False)
                             _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
                             spec_dct[spec_idx] = _tmp_spec_df
@@ -144,7 +142,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                         dda_event_lst.append(dda_event_idx)
                         rt_lst.append(_scan_rt)
                         function_lst.append(ms_level)
-                        scan_id_lst.append(_scanid)
+                        scan_id_lst.append(_scan_id)
                         pr_mz_lst.append(pr_mz)
 
                         spec_idx += 1
@@ -206,9 +204,12 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
                     ms1_df = ms1_df.sort_values(by='i', ascending=False).reset_index(drop=True)
                     ms1_delta = mz_lib * ms1_precision
                     ms1_pr_query = '%.6f <= mz <= %.6f' % (mz_lib - ms1_delta, mz_lib + ms1_delta)
+                    print(ms1_pr_query)
                     ms1_pr_df = ms1_df.query(ms1_pr_query)
                     if ms1_pr_df.shape[0] > 0:
                         ms1_pr_df = ms1_pr_df.round({'mz': 6})
+                        print('ms1_pr_df mz')
+                        print(ms1_pr_df['mz'])
                         # print('Number of MS1 pr mz in range:', ms1_pr_df.shape[0])
                         ms1_pr_df = ms1_pr_df[ms1_pr_df['mz'].isin(ms1_obs_mz_lst)]
                         if ms1_pr_df.shape[0] > 0:
@@ -294,7 +295,7 @@ def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=
 
                 if rt_start <= _scan_rt <= rt_end and scan_info_checker:
                     _function = int(scan_info_checker.groups()[2])
-                    # _scanid = int(scan_info_checker.groups()[5])
+                    # _scan_id = int(scan_info_checker.groups()[5])
                     if _function == 1:
                         _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
                         _found_ms1_df = _tmp_spec_df.query(ms1_query)
@@ -388,15 +389,16 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
                                 _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
                                 _tmp_mz_df.loc[:, 'rt'] = _scan_rt
                                 _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
-                                ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df.sort_values(by='i', ascending=False).head(1))
+                                ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df.sort_values(by='i',
+                                                                                           ascending=False).head(1))
                                 ms1_xic_dct[_ms1_obs] = ms1_xic_df
 
     elif vendor == 'thermo':
         print('Thermo files')
         for _spectrum in spec_obj:
 
-            try:
-                ms_level = _spectrum[spec_level_obo]
+            if spec_level_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
+                # ms_level = _spectrum[spec_level_obo]
                 _spectrum_level = _spectrum[spec_level_obo]
                 _scan_rt = float(_spectrum[scan_rt_obo])
 
@@ -426,8 +428,6 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
                                 ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df.sort_values
                                                                     (by='i', ascending=False).head(1))
                                 ms1_xic_dct[_ms1_obs] = ms1_xic_df
-            except:
-                pass
 
     return ms1_xic_dct
 

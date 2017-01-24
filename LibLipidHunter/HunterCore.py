@@ -115,6 +115,9 @@ def huntlipids(param_dct):
     ms1_obs_mz_lst = usr_df['MS1_obs_mz'].tolist()
     ms1_obs_mz_lst = set(ms1_obs_mz_lst)
 
+    # print('ms1_obs_mz_lst')
+    # print(ms1_obs_mz_lst)
+
     print('=== ==> --> Start to extract XIC')
     xic_dct = get_xic_all(usr_df, usr_mzml, usr_rt_range, ms1_precision=usr_ms1_precision,
                           msn_precision=usr_ms2_precision, vendor=usr_vendor)

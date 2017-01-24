@@ -936,7 +936,7 @@ class Ui_MainWindow(object):
         self.tab_c_4_lb.setText(QtGui.QApplication.translate("MainWindow", "For Triacylglycerols:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_c_3_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"http://www.lipidmaps.org/tools/ms/glycerophospholipids_batch_bulk.html\"><span style=\" text-decoration: underline; color:#0000ff;\">http://www.lipidmaps.org/tools/ms/glycerophospholipids_batch_bulk.html</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.tabframe.setTabText(self.tabframe.indexOf(self.search_tab), QtGui.QApplication.translate("MainWindow", "3. Bulk Search", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_4_lb.setText(QtGui.QApplication.translate("MainWindow", "Hole spectra .mzML", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_4_lb.setText(QtGui.QApplication.translate("MainWindow", "Whole spectra .mzML", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_runextract_pb.setText(QtGui.QApplication.translate("MainWindow", "Run", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_lipidclass_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Phosphatidic acid (PA) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Phosphatidylethanolamine (PE) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
