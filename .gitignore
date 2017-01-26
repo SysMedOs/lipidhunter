@@ -93,3 +93,6 @@ ENV/
 
 .gitignore
 .idea/
+/temp/
+temp/
+/batchmode.py

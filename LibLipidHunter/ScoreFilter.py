@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2016 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
@@ -10,8 +10,8 @@ import pandas as pd
 def check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df, score_filter=20):
 
     if fa_ident_df.shape[0]:
-        score_df = score_df[['Lipid_species', 'Score']]
-        score_df = score_df.rename({'Lipid_species': 'Proposed structures'})
+        # score_df = score_df[['Lipid_species', 'Score']]
+        # score_df = score_df.rename({'Lipid_species': 'Proposed structures'})
         score_df = score_df.query('Score >= %.2f' % score_filter)
         score_df = score_df.sort_values(by='Score', ascending=False)
         score_df = score_df.reset_index(drop=True)
@@ -19,8 +19,8 @@ def check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df, score_fil
         print(score_df)
 
         # format fa info DataFrame
-        fa_ident_df = fa_ident_df[['Lipid_species', 'mz', 'i', 'ppm']].reset_index(drop=True)
-        fa_ident_df = fa_ident_df.rename({'Lipid_species': 'Identified species'})
+        fa_ident_df = fa_ident_df[['Proposed_structures', 'mz', 'i', 'ppm']].reset_index(drop=True)
+        # fa_ident_df = fa_ident_df.rename({'Lipid_species': 'Identified species'})
         fa_ident_df = fa_ident_df.round({'mz': 4, 'ppm': 2})
         _fa_i_lst = []
         for _idx, _fa_se in fa_ident_df.iterrows():
@@ -33,8 +33,8 @@ def check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df, score_fil
         lyso_ident_df = lyso_ident_df.append(lyso_w_ident_df)
         if lyso_ident_df.shape[0] > 0:
             lyso_ident_df = lyso_ident_df.sort_values(by='i', ascending=False)
-            lyso_ident_df = lyso_ident_df[['Lipid_species', 'mz', 'i', 'ppm']].reset_index(drop=True)
-            lyso_ident_df = lyso_ident_df.rename({'Lipid_species': 'Identified species'})
+            lyso_ident_df = lyso_ident_df[['Proposed_structures', 'mz', 'i', 'ppm']].reset_index(drop=True)
+            # lyso_ident_df = lyso_ident_df.rename({'Lipid_species': 'Identified species'})
             lyso_ident_df = lyso_ident_df.round({'mz': 4, 'ppm': 2})
             _lyso_i_lst = []
             for _idx, _lyso_se in lyso_ident_df.iterrows():

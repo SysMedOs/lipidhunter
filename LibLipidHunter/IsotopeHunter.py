@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2016 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
@@ -94,53 +94,109 @@ class IsotopeHunter(object):
 
         isotope_distribution_df = pd.DataFrame(data={'mz': isotope_mz_lst, 'ratio': isotope_pattern})
         isotope_distribution_df = isotope_distribution_df.round({'ratio': 6})
-        print(isotope_distribution_df)
+        # print(isotope_distribution_df)
         return isotope_distribution_df
 
     def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2,
                           ms1_precision=50e-6, pattern_tolerance=5):
 
-        elem_dct = self.get_elements(formula)
-        # mono_mz = self.get_mono_mz(elem_dct)
-        isotope_pattern_df = self.get_isotope_mz(elem_dct, isotope_number=2)
+        mz_delta = ms1_pr_mz * ms1_precision
+        delta_13c = 1.0033548378
+        i_df = spec_df.query('%f <= mz <= %f' % (ms1_pr_mz - delta_13c - mz_delta, ms1_pr_mz - delta_13c + mz_delta))
 
-        isotope_checker_dct = {}
-        isotope_score_delta = 0
-        for _i, _se in isotope_pattern_df.iterrows():
+        if i_df.shape[0] > 0:
+            max_pre_m_i = i_df['i'].max()
+            if ms1_pr_i > max_pre_m_i:
+                elem_dct = self.get_elements(formula)
+                # mono_mz = self.get_mono_mz(elem_dct)
+                isotope_pattern_df = self.get_isotope_mz(elem_dct, isotope_number=2)
 
-            if _i > 0:
-                _mz = _se['mz']
-                _ratio = _se['ratio']
-                _mz_delta = _mz * ms1_precision
-                _i_df = spec_df.query('%f <= mz <= %f' % (_mz - _mz_delta, _mz + _mz_delta))
-                _i_info_dct = {'theo_mz': _mz, 'theo_i': ms1_pr_i * _ratio, 'theo_ratio': _ratio}
-                if _i_df.shape[0] > 0:
-                    _i_df = _i_df.sort_values(by='i', ascending=False).head(1)
-                    _i_max = _i_df['i'].tolist()[0]
-                    _mz_max = _i_df['mz'].tolist()[0]
-                    _i_info_dct['obs_i'] = _i_max
-                    _i_info_dct['obs_mz'] = _mz_max
-                else:
-                    _i_max = 0.0
-                    _i_info_dct['obs_i'] = 0
-                    _i_info_dct['obs_mz'] = 0
-                _i_r = _i_max / ms1_pr_i
-                _i_info_dct['obs_ratio'] = _i_r
-                isotope_score_delta += abs(_i_r - _ratio)
-                isotope_checker_dct[_i] = _i_info_dct
+                isotope_checker_dct = {}
+                isotope_score_delta = 0
+                for _i, _se in isotope_pattern_df.iterrows():
 
-        isotope_score = 100 * (1 - isotope_score_delta)
+                    if _i > 0:
+                        _mz = _se['mz']
+                        _ratio = _se['ratio']
+                        _mz_delta = _mz * ms1_precision
+                        _i_df = spec_df.query('%f <= mz <= %f' % (_mz - _mz_delta, _mz + _mz_delta))
+                        _i_info_dct = {'theo_mz': _mz, 'theo_i': ms1_pr_i * _ratio, 'theo_ratio': _ratio}
+                        if _i_df.shape[0] > 0:
+                            _i_df = _i_df.sort_values(by='i', ascending=False).head(1)
+                            _i_max = _i_df['i'].tolist()[0]
+                            _mz_max = _i_df['mz'].tolist()[0]
+                            _i_info_dct['obs_i'] = _i_max
+                            _i_info_dct['obs_mz'] = _mz_max
+                        else:
+                            _i_max = 0.0
+                            _i_info_dct['obs_i'] = 0
+                            _i_info_dct['obs_mz'] = 0
+                        _i_r = _i_max / ms1_pr_i
+                        _i_info_dct['obs_ratio'] = _i_r
+                        isotope_score_delta += abs(_i_r - _ratio)
+                        isotope_checker_dct[_i] = _i_info_dct
+
+                isotope_score = 100 * (1 - isotope_score_delta)
+                print('isotope_pattern_df', isotope_pattern_df)
+
+            else:
+                print('MS1 PR is an isotope !!!!!!')
+                isotope_score = 0
+                isotope_checker_dct = {}
+        else:
+            elem_dct = self.get_elements(formula)
+            # mono_mz = self.get_mono_mz(elem_dct)
+            isotope_pattern_df = self.get_isotope_mz(elem_dct, isotope_number=2)
+
+            isotope_checker_dct = {}
+            isotope_score_delta = 0
+            for _i, _se in isotope_pattern_df.iterrows():
+
+                if _i > 0:
+                    _mz = _se['mz']
+                    _ratio = _se['ratio']
+                    _mz_delta = _mz * ms1_precision
+                    _i_df = spec_df.query('%f <= mz <= %f' % (_mz - _mz_delta, _mz + _mz_delta))
+                    _i_info_dct = {'theo_mz': _mz, 'theo_i': ms1_pr_i * _ratio, 'theo_ratio': _ratio}
+                    if _i_df.shape[0] > 0:
+                        _i_df = _i_df.sort_values(by='i', ascending=False).head(1)
+                        _i_max = _i_df['i'].tolist()[0]
+                        _mz_max = _i_df['mz'].tolist()[0]
+                        _i_info_dct['obs_i'] = _i_max
+                        _i_info_dct['obs_mz'] = _mz_max
+                    else:
+                        _i_max = 0.0
+                        _i_info_dct['obs_i'] = 0
+                        _i_info_dct['obs_mz'] = 0
+                    _i_r = _i_max / ms1_pr_i
+                    _i_info_dct['obs_ratio'] = _i_r
+                    isotope_score_delta += abs(_i_r - _ratio)
+                    isotope_checker_dct[_i] = _i_info_dct
+
+            isotope_score = 100 * (1 - isotope_score_delta)
+            print('isotope_pattern_df', isotope_pattern_df)
 
         return isotope_score, isotope_checker_dct
 
 
 if __name__ == '__main__':
-    f = 'C39H67NO8P'  # PE(34:5)
-    f_lst = [f, f + 'K', f + 'Na', f + 'NH4', f + 'S', f + 'D']
+    # f = 'C39H67NO8P'  # PE(34:5)
+    # f_lst = [f, f + 'K', f + 'Na', f + 'NH4', f + 'S', f + 'D']
+    # usr_spec_df = pd.DataFrame()
+    # isohunter = IsotopeHunter()
+    # for _f in f_lst:
+    #     print(_f)
+    #     isotope_pattern_dct = isohunter.get_elements(_f)
+    #
+    #     print(isotope_pattern_dct)
+
+    f = 'C59H108O6'  # TG
+    f_lst = [f, f + 'H']
     usr_spec_df = pd.DataFrame()
     isohunter = IsotopeHunter()
     for _f in f_lst:
         print(_f)
         isotope_pattern_dct = isohunter.get_elements(_f)
+        isotop_distribute = isohunter.get_isotope_mz(isotope_pattern_dct)
 
-        print(isotope_pattern_dct)
+        print(isotop_distribute)

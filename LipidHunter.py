@@ -1,19 +1,29 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2016 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
+# try:  # python3
+#     import configparser
+# except NameError:  # python2
+#     import ConfigParser as configparser
+
+import ConfigParser as configparser
 import glob
 import os
 import re
+import time
 
 import pandas as pd
 from PySide import QtCore, QtGui
 
-from LibLipidHunter import Extractor
-from LibLipidHunter.Linker import hunt_link
-from LipidHunter_UI import Ui_MainWindow
+from LibLipidHunter import ExtractorMZML
+from LibLipidHunter.LinkerMZML import hunt_link
+from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
+from LibLipidHunter.HunterCore import huntlipids
+
+import FileDialog
 
 
 class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
@@ -46,8 +56,39 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_d_lipidstable_pb, QtCore.SIGNAL("clicked()"), self.d_load_lipidstable)
         QtCore.QObject.connect(self.ui.tab_d_ms2info_pb, QtCore.SIGNAL("clicked()"), self.d_load_ms2info)
         QtCore.QObject.connect(self.ui.tab_d_ms2mzml_pb, QtCore.SIGNAL("clicked()"), self.d_load_mzml)
-        QtCore.QObject.connect(self.ui.tab_b_xlsxpath_pb, QtCore.SIGNAL("clicked()"), self.d_save_output)
+        QtCore.QObject.connect(self.ui.tab_d_xlsxpath_pb, QtCore.SIGNAL("clicked()"), self.d_save_output)
         QtCore.QObject.connect(self.ui.tab_d_runextract_pb, QtCore.SIGNAL("clicked()"), self.d_run_linker)
+
+        # slots for tab e
+        QtCore.QObject.connect(self.ui.tab_e_loadxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.e_load_lipidsinfo)
+        QtCore.QObject.connect(self.ui.tab_e_ms2mzml_pb, QtCore.SIGNAL("clicked()"), self.e_load_mzml)
+        QtCore.QObject.connect(self.ui.tab_e_saveimgfolder_pb, QtCore.SIGNAL("clicked()"), self.e_save_img2folder)
+        QtCore.QObject.connect(self.ui.tab_e_sumxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.e_save_output)
+        QtCore.QObject.connect(self.ui.tab_d_runhunter_pb, QtCore.SIGNAL("clicked()"), self.e_run_hunter)
+        # slots for tab f
+        QtCore.QObject.connect(self.ui.tab_f_fawhitelist_pb, QtCore.SIGNAL("clicked()"), self.f_load_fawhitelist)
+        QtCore.QObject.connect(self.ui.tab_f_hgcfg_pb, QtCore.SIGNAL("clicked()"), self.f_load_hgcfg)
+        QtCore.QObject.connect(self.ui.tab_f_scorecfg_pb, QtCore.SIGNAL("clicked()"), self.f_load_scorecfg)
+        QtCore.QObject.connect(self.ui.tab_f_savesettings_pb, QtCore.SIGNAL("clicked()"), self.f_set_default_cfg)
+
+        # load configurations
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        if config.has_section('settings'):
+            user_cfg = 'settings'
+        else:
+            if config.has_section('default'):
+                user_cfg = 'default'
+            else:
+                user_cfg = ''
+        if len(user_cfg) > 2:
+            options = config.options(user_cfg)
+            if 'fa_white_list_cfg' in options:
+                self.ui.tab_f_fawhitelist_le.setText(config.get(user_cfg, 'fa_white_list_cfg'))
+            if 'lipid_specific_cfg' in options:
+                self.ui.tab_f_hgcfg_le.setText(config.get(user_cfg, 'lipid_specific_cfg'))
+            if 'score_cfg' in options:
+                self.ui.tab_f_scorecfg_le.setText(config.get(user_cfg, 'score_cfg'))
 
     @staticmethod
     def get_same_files(folder, filetype_lst):
@@ -64,7 +105,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             for _filetype in filetype_lst:
                 _tmp_found_lst = glob.glob(_filetype)
                 # merge list
-                _pre_found_lst = _pre_found_lst + [f for f in _tmp_found_lst if f not in _pre_found_lst]
+                _pre_found_lst += [f for f in _tmp_found_lst if f not in _pre_found_lst]
             filename_lst = _pre_found_lst
             abs_path_lst = list(os.path.abspath(ff) for ff in _pre_found_lst)
         else:
@@ -119,10 +160,17 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_a_csvfolder_le.setText(unicode(a_save_csvfolder_str[0]))
 
     def a_run_extractor(self):
+        if self.ui.vendor_waters_rb.isChecked():
+            usr_vendor = 'waters'
+        elif self.ui.vendor_thermo_rb.isChecked():
+            usr_vendor = 'thermo'
+        else:
+            usr_vendor = 'waters'
+        print('Vendor mode = %s' % usr_vendor)
         self.ui.tab_a_statusextractor_pte.clear()
         a_ms_th = self.ui.tab_a_msthreshold_spb.value()
         self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('MS threshold (absolute): %i \n' % a_ms_th))
-        extractor = Extractor.Extractor()
+        extractor = ExtractorMZML.Extractor()
         _loaded_mzml_files = str(self.ui.tab_a_infiles_pte.toPlainText())
         _loaded_mzml_lst = _loaded_mzml_files.split('\n')
 
@@ -136,7 +184,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Start processing...\n%s \n' % _mzml))
 
                 _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-4] + 'xlsx'
-                _ms_df = extractor.get_ms_all(_mzml, a_ms_th)
+                _ms_df = extractor.get_ms_all(_mzml, a_ms_th, vendor=usr_vendor)
                 # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
                 _ms_df.to_excel(_xlsx_path)
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Save as: \n%s.xlsx \n' % _mzml[0:-4]))
@@ -220,11 +268,18 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_b_outpufolder_le.setText(unicode(b_save_xlsfolder_str))
         
     def b_run_extractor(self):
+        if self.ui.vendor_waters_rb.isChecked():
+            usr_vendor = 'waters'
+        elif self.ui.vendor_thermo_rb.isChecked():
+            usr_vendor = 'thermo'
+        else:
+            usr_vendor = 'waters'
+        print('Vendor mode = %s' % usr_vendor)
         self.ui.tab_b_statusrun_pte.clear()
         b_ms_th = self.ui.tab_b_msthreshold_spb.value()
         b_ms2_th = self.ui.tab_b_ms2threshold_spb.value()
         self.ui.tab_b_statusrun_pte.insertPlainText(unicode('MS threshold (absolute): %i \n' % b_ms_th))
-        extractor = Extractor.Extractor()
+        extractor = ExtractorMZML.Extractor()
         _loaded_mzml_files = str(self.ui.tab_b_infiles_pte.toPlainText())
         _loaded_mzml_lst = _loaded_mzml_files.split('\n')
 
@@ -237,10 +292,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
                 _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_all_scan_info.xlsx'
                 _xlsx_ms2_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_ms2_info.xlsx'
-                _ms_df = extractor.get_scan_events(_mzml, b_ms_th, b_ms2_th)
+                _ms_df = extractor.get_scan_events(_mzml, b_ms_th, b_ms2_th, vendor=usr_vendor)
                 # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
                 _ms_df.to_excel(_xlsx_path)
-                _ms_df['function'] = _ms_df['function'].apply(pd.to_numeric)
+                _ms_df['function'] = _ms_df['function'].astype(int)
                 _ms2_df = _ms_df[_ms_df['function'] > 1]
                 _ms2_df = _ms2_df.reset_index()
                 _ms2_df.to_excel(_xlsx_ms2_path)
@@ -253,9 +308,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         d_load_lipidstable_dialog.selectNameFilter(u'MS Excel files (*.xlsx *.XLSX)')
         if d_load_lipidstable_dialog.exec_():
             self.ui.tab_d_lipidstable_le.clear()
-            d_load_mzml_str = d_load_lipidstable_dialog.selectedFiles()[0]
-            d_load_mzml_str = os.path.abspath(d_load_mzml_str)
-            self.ui.tab_d_lipidstable_le.setText(unicode(d_load_mzml_str))
+            d_load_xlsx_str = d_load_lipidstable_dialog.selectedFiles()[0]
+            d_load_xlsx_str = os.path.abspath(d_load_xlsx_str)
+            self.ui.tab_d_lipidstable_le.setText(unicode(d_load_xlsx_str))
 
     def d_load_ms2info(self):
         d_load_ms2info_dialog = QtGui.QFileDialog(self)
@@ -280,10 +335,17 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def d_save_output(self):
         d_save_output_path = QtGui.QFileDialog.getSaveFileName(caption=u'Save file', filter=u'.xlsx')
         self.ui.tab_d_xlsxpath_le.clear()
-        d_load_mzml_str = os.path.abspath(d_save_output_path[0])
-        self.ui.tab_d_xlsxpath_le.setText(unicode(d_load_mzml_str))
+        d_save_output_str = os.path.abspath(d_save_output_path[0])
+        self.ui.tab_d_xlsxpath_le.setText(unicode(d_save_output_str))
 
     def d_run_linker(self):
+        if self.ui.vendor_waters_rb.isChecked():
+            usr_vendor = 'waters'
+        elif self.ui.vendor_thermo_rb.isChecked():
+            usr_vendor = 'thermo'
+        else:
+            usr_vendor = 'waters'
+        print('Vendor mode = %s' % usr_vendor)
 
         print('linker started!')
         _pl_class_info = str(self.ui.tab_d_lipidclass_cmb.currentText())
@@ -335,7 +397,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
             _temp_df = ms2_df.query(_query_code)
             if _temp_df.shape[0] > 0:
-
+                print('Found MS2!', _obs_mz)
                 _temp_df['MS1_obs_mz'] = _obs_mz
                 _temp_df['Lib_mz'] = _lib_mz
                 _temp_df['Abbreviation'] = _abbr
@@ -344,7 +406,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 # print _temp_df
                 step1_df = step1_df.append(_temp_df)
             else:
-                print _obs_mz, 'not found!'
+                pass
+                # print(_obs_mz, 'No MS2 found!')
 
         _ms_th = self.ui.tab_d_msthreshold_spb.value()
         _ms2_th = self.ui.tab_d_ms2threshold_spb.value()
@@ -359,13 +422,154 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                            'RT_START': _rt_start, 'RT_END': _rt_end, 'MZ_START': _mz_start, 'MZ_END': _mz_end}
 
         final_output_df = hunt_link(pl_class=_pl_class, usr_mzml=_mzml_path_str, usr_df=step1_df,
-                                    params_dct=link_params_dct)
+                                    params_dct=link_params_dct, vendor=usr_vendor)
 
         final_output_df = final_output_df[final_output_df['MS1_obs_mz'] > 0]
 
         final_output_df.to_excel(_output_path_str)
         self.ui.tab_d_statusrun_pte.insertPlainText(unicode('Finished!'))
 
+    def e_load_lipidsinfo(self):
+        e_load_lipidstable_dialog = QtGui.QFileDialog(self)
+        e_load_lipidstable_dialog.setNameFilters([u'MS Excel files (*.xlsx *.XLSX)'])
+        e_load_lipidstable_dialog.selectNameFilter(u'MS Excel files (*.xlsx *.XLSX)')
+        if e_load_lipidstable_dialog.exec_():
+            self.ui.tab_e_loadxlsxpath_le.clear()
+            e_load_xlsx_str = e_load_lipidstable_dialog.selectedFiles()[0]
+            e_load_xlsx_str = os.path.abspath(e_load_xlsx_str)
+            self.ui.tab_e_loadxlsxpath_le.setText(unicode(e_load_xlsx_str))
+
+    def e_load_mzml(self):
+        e_load_mzml_dialog = QtGui.QFileDialog(self)
+        e_load_mzml_dialog.setNameFilters([u'mzML spectra files (*.mzML *.mzml)'])
+        e_load_mzml_dialog.selectNameFilter(u'mzML spectra files (*.mzML *.mzml)')
+        if e_load_mzml_dialog.exec_():
+            self.ui.tab_e_ms2mzml_le.clear()
+            e_load_mzml_str = e_load_mzml_dialog.selectedFiles()[0]
+            e_load_mzml_str = os.path.abspath(e_load_mzml_str)
+            self.ui.tab_e_ms2mzml_le.setText(unicode(e_load_mzml_str))
+
+    def e_save_img2folder(self):
+        e_save_img2folder_str = QtGui.QFileDialog.getExistingDirectory()
+        self.ui.tab_e_saveimgfolder_le.setText(unicode(e_save_img2folder_str))
+
+    def e_save_output(self):
+        e_save_output_path = QtGui.QFileDialog.getSaveFileName(caption=u'Save file', filter=u'.xlsx')
+        self.ui.tab_d_xlsxpath_le.clear()
+        e_save_output_str = os.path.abspath(e_save_output_path[0])
+        self.ui.tab_e_sumxlsxpath_le.setText(unicode(e_save_output_str))
+
+    def e_run_hunter(self):
+        if self.ui.vendor_waters_rb.isChecked():
+            usr_vendor = 'waters'
+        elif self.ui.vendor_thermo_rb.isChecked():
+            usr_vendor = 'thermo'
+        else:
+            usr_vendor = 'waters'
+        print('Vendor mode = %s' % usr_vendor)
+        print('Hunter started!')
+        _pl_class_info = str(self.ui.tab_e_lipidclass_cmb.currentText())
+
+        pl_class_checker = re.compile(r'(.*)( [\(])(\w{2,3})([\)] )(.*)')
+
+        pl_class_match = pl_class_checker.match(_pl_class_info)
+
+        if pl_class_match:
+            pl_class_info_lst = pl_class_match.groups()
+            _pl_class = pl_class_info_lst[2]
+            _pl_charge = pl_class_info_lst[4]
+        else:
+            _pl_class = 'PC'
+            _pl_charge = '[M+HCOO]-'
+
+        lipids_info_path_str = str(self.ui.tab_e_loadxlsxpath_le.text())
+        mzml_path_str = str(self.ui.tab_e_ms2mzml_le.text())
+        img_output_folder_str = str(self.ui.tab_e_saveimgfolder_le.text())
+        xlsx_output_path_str = str(self.ui.tab_e_sumxlsxpath_le.text())
+
+        rt_start = self.ui.tab_e_rtstart_dspb.value()
+        rt_end = self.ui.tab_e_rtend_dspb.value()
+        mz_start = self.ui.tab_e_mzstart_dspb.value()
+        mz_end = self.ui.tab_e_mzend_dspb.value()
+        dda_top = self.ui.tab_e_dda_spb.value()
+        ms_th = self.ui.tab_e_msthreshold_spb.value()
+        ms2_th = self.ui.tab_e_ms2threshold_spb.value()
+        ms_ppm = self.ui.tab_e_msppm_spb.value()
+        ms2_ppm = self.ui.tab_e_ms2ppm_spb.value()
+        hg_th = self.ui.tab_e_hgthreshold_spb.value()
+        hg_ppm = self.ui.tab_e_hgppm_spb.value()
+        score_filter = self.ui.tab_e_score_spb.value()
+        isotope_score_filter = self.ui.tab_e_isotopescore_spb.value()
+
+        fa_white_list_cfg = self.ui.tab_f_fawhitelist_le.text()
+        lipid_specific_cfg = self.ui.tab_f_hgcfg_le.text()
+        score_cfg = self.ui.tab_f_scorecfg_le.text()
+
+        hunter_param_dct = {'lipids_info_path_str': lipids_info_path_str, 'mzml_path_str': mzml_path_str,
+                            'img_output_folder_str': img_output_folder_str,
+                            'xlsx_output_path_str': xlsx_output_path_str, 'rt_start': rt_start, 'rt_end': rt_end,
+                            'mz_start': mz_start, 'mz_end': mz_end, 'dda_top': dda_top, 'ms_th': ms_th,
+                            'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm, 'hg_th': hg_th, 'hg_ppm': hg_ppm,
+                            'score_filter': score_filter, 'isotope_score_filter': isotope_score_filter,
+                            'lipid_type': _pl_class, 'charge_mode': _pl_charge, 'fa_white_list_cfg': fa_white_list_cfg,
+                            'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor}
+
+        param_log_output_path_str = (str(self.ui.tab_e_saveimgfolder_le.text()) +
+                                     '/LipidHunter_param-log_%s.txt'
+                                     % (time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+                                        )
+                                     )
+
+        config = configparser.ConfigParser()
+        with open(param_log_output_path_str, 'w') as usr_param_cfg:
+            config.add_section('parameters')
+            for param in hunter_param_dct.keys():
+                config.set('parameters', param, hunter_param_dct[param])
+            config.write(usr_param_cfg)
+
+        print(hunter_param_dct)
+        tot_run_time = huntlipids(hunter_param_dct)
+        self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
+        self.ui.tab_e_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+
+    def f_set_default_cfg(self):
+        config = configparser.ConfigParser()
+        with open('config.ini', 'w') as default_cfg:
+            config.add_section('settings')
+            config.set('settings', 'fa_white_list_cfg', self.ui.tab_f_fawhitelist_le.text())
+            config.set('settings', 'lipid_specific_cfg', self.ui.tab_f_hgcfg_le.text())
+            config.set('settings', 'score_cfg', self.ui.tab_f_scorecfg_le.text())
+            config.write(default_cfg)
+            
+    def f_load_fawhitelist(self):
+        f_load_lipidstable_dialog = QtGui.QFileDialog(self)
+        f_load_lipidstable_dialog.setNameFilters([u'CSV files (*.csv *.CSV)'])
+        f_load_lipidstable_dialog.selectNameFilter(u'CSV files (*.csv *.CSV)')
+        if f_load_lipidstable_dialog.exec_():
+            self.ui.tab_f_fawhitelist_le.clear()
+            f_load_csv_str = f_load_lipidstable_dialog.selectedFiles()[0]
+            f_load_csv_str = os.path.abspath(f_load_csv_str)
+            self.ui.tab_f_fawhitelist_le.setText(unicode(f_load_csv_str))
+
+    def f_load_hgcfg(self):
+        f_load_lipidstable_dialog = QtGui.QFileDialog(self)
+        f_load_lipidstable_dialog.setNameFilters([u'MS Excel files (*.xlsx *.XLSX)'])
+        f_load_lipidstable_dialog.selectNameFilter(u'MS Excel files (*.xlsx *.XLSX)')
+        if f_load_lipidstable_dialog.exec_():
+            self.ui.tab_f_hgcfg_le.clear()
+            f_load_xlsx_str = f_load_lipidstable_dialog.selectedFiles()[0]
+            f_load_xlsx_str = os.path.abspath(f_load_xlsx_str)
+            self.ui.tab_f_hgcfg_le.setText(unicode(f_load_xlsx_str))
+
+    def f_load_scorecfg(self):
+        f_load_lipidstable_dialog = QtGui.QFileDialog(self)
+        f_load_lipidstable_dialog.setNameFilters([u'MS Excel files (*.xlsx *.XLSX)'])
+        f_load_lipidstable_dialog.selectNameFilter(u'MS Excel files (*.xlsx *.XLSX)')
+        if f_load_lipidstable_dialog.exec_():
+            self.ui.tab_f_scorecfg_le.clear()
+            f_load_xlsx_str = f_load_lipidstable_dialog.selectedFiles()[0]
+            f_load_xlsx_str = os.path.abspath(f_load_xlsx_str)
+            self.ui.tab_f_scorecfg_le.setText(unicode(f_load_xlsx_str))
 
 if __name__ == '__main__':
     import sys
