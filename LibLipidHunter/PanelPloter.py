@@ -21,7 +21,8 @@ from matplotlib._png import read_png
 import pandas as pd
 
 
-def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_dct, isotope_checker_dct, isotope_score,
+def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_dct,
+                 isotope_checker_dct, isotope_score, formula_charged,
                  save_img_as=None, ms1_precision=50e-6):
     ms2_pr_mz = mz_se['mz']
     ms1_obs = mz_se['MS1_obs_mz']
@@ -106,7 +107,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                        facecolor=(1.0, 0.0, 0.0, 0.4), edgecolor="none")
     ms_zoom_pic.add_patch(m_pre_theo_box)
 
-    ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 2.1])
+    ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 2.35])
     ms_zoom_pic.set_ylim([0, max(ms_zoom_df['i'].tolist()) * 1.3])
     ms_zoom_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0), fontsize=10)
     ms_zoom_pic.ticklabel_format(axis='x', useOffset=False, fontsize=10)
@@ -128,8 +129,6 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     ms_zoom_pic.text(lib_mz - 0.7, ms1_pr_i, 'Calc m/z: %.4f' % lib_mz, color='orange', fontsize=6)
 
     # isotope region | highlight the 1st isotope
-    print('isotope_checker_dct')
-    print(isotope_checker_dct)
     m1_dct = isotope_checker_dct[1]
     m1_theo_mz = m1_dct['theo_mz']
     m1_theo_i = m1_dct['theo_i']
@@ -374,7 +373,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     # set title
     xic_title_str = 'XIC of m/z %.4f | %s @ m/z %.4f ppm=%.2f' % (ms1_pr_mz, abbr_id, lib_mz, ms1_pr_ppm)
     ms_title_str = 'MS @ %.3f min' % ms1_rt
-    ms_zoom_title_str = 'MS zoomed'
+    ms_zoom_title_str = 'MS zoomed | Theoretical isotope distribution of %s' % formula_charged
     msms_title_str = ('MS/MS of m/z %.4f | DDA Top %d @ %.3f min' % (ms2_pr_mz, func_id, ms2_rt))
     msms_low_str = 'MS/MS zoomed below m/z 350'
     msms_high_str = 'MS/MS zoomed above m/z 350'

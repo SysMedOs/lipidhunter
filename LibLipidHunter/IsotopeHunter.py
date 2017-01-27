@@ -183,20 +183,20 @@ if __name__ == '__main__':
     # f = 'C39H67NO8P'  # PE(34:5)
     # f_lst = [f, f + 'K', f + 'Na', f + 'NH4', f + 'S', f + 'D']
     # usr_spec_df = pd.DataFrame()
-    # isohunter = IsotopeHunter()
+    # iso_hunter = IsotopeHunter()
     # for _f in f_lst:
     #     print(_f)
-    #     isotope_pattern_dct = isohunter.get_elements(_f)
+    #     isotope_pattern_dct = iso_hunter.get_elements(_f)
     #
     #     print(isotope_pattern_dct)
 
     f = 'C59H108O6'  # TG
-    f_lst = [f, f + 'H']
+    f_lst = [f, f + 'H+']
     usr_spec_df = pd.DataFrame()
-    isohunter = IsotopeHunter()
+    iso_hunter = IsotopeHunter()
     for _f in f_lst:
         print(_f)
-        isotope_pattern_dct = isohunter.get_elements(_f)
-        isotop_distribute = isohunter.get_isotope_mz(isotope_pattern_dct)
+        isotope_pattern_dct = iso_hunter.get_elements(_f)
+        isotope_distribute = iso_hunter.get_isotope_mz(isotope_pattern_dct)
 
-        print(isotop_distribute)
+        print(isotope_distribute)
