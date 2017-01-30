@@ -132,7 +132,8 @@ class ScoreGenerator:
 
         return lipid_info_dct
 
-    def get_fa_search(self, abbr, charge_type, mz_lib, ms2_df, ms2_precision=500e-6, ms2_threshold=100):
+    def get_fa_search(self, abbr, charge_type, mz_lib, ms2_df, ms2_precision=500e-6,
+                      ms2_threshold=100, ms2_infopeak_threshold=0.02):
 
         fa_ident_df = pd.DataFrame()
         lyso_ident_df = pd.DataFrame()
@@ -144,6 +145,11 @@ class ScoreGenerator:
         bulk_fa_db = lipid_info_dct['DB']
         # bulk_fa_linker = lipid_info_dct['LINK']
         lyso_fa_linker_dct = lipid_info_dct['LYSO_LINK']
+
+        # use the max threshold from abs & relative intensity settings
+        ms2_basepeak_i = ms2_df['i'].max()
+        ms2_info_i = ms2_basepeak_i * ms2_infopeak_threshold
+        ms2_threshold = max(ms2_threshold, ms2_info_i)
 
         calc_pr_mz, charge_mode = self.get_pr_mz(charge_type, mz_lib)
 
@@ -286,14 +292,16 @@ class ScoreGenerator:
 
         return lipid_abbr_df
 
-    def get_match(self, abbr, charge_type, mz_lib, ms2_df, ms2_precision=500e-6, ms2_threshold=100):
+    def get_match(self, abbr, charge_type, mz_lib, ms2_df, ms2_precision=500e-6,
+                  ms2_threshold=100, ms2_infopeak_threshold=0.02):
 
         match_reporter = 0
         ms2_max_i = ms2_df['i'].max()
 
         fa_ident_df, lyso_ident_df, lyso_w_ident_df = self.get_fa_search(abbr, charge_type, mz_lib, ms2_df,
                                                                          ms2_precision=ms2_precision,
-                                                                         ms2_threshold=ms2_threshold
+                                                                         ms2_threshold=ms2_threshold,
+                                                                         ms2_infopeak_threshold=ms2_infopeak_threshold
                                                                          )
 
         lipid_abbr_df = self.get_structure(abbr)
@@ -377,7 +385,7 @@ class ScoreGenerator:
                           'LYSO_INFO': lyso_ident_df, 'LYSO_W_INFO': lyso_w_ident_df}
         return match_info_dct
 
-    def get_specific_peaks(self, mz_lib, ms2_df, ms2_precision=50e-6, ms2_threshold=10):
+    def get_specific_peaks(self, mz_lib, ms2_df, ms2_precision=50e-6, ms2_threshold=10, ms2_hginfo_threshold=0.02):
 
         _target_frag_df = pd.DataFrame()
         _target_nl_df = pd.DataFrame()
@@ -385,6 +393,8 @@ class ScoreGenerator:
         _other_nl_df = pd.DataFrame()
 
         ms2_max_i = ms2_df['i'].max()
+        ms2_hginfo_abs_i = ms2_max_i * ms2_hginfo_threshold
+        ms2_threshold = max(ms2_threshold, ms2_hginfo_abs_i)
 
         for _i, _frag_se in self.target_frag_df.iterrows():
 

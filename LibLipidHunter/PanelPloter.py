@@ -22,7 +22,7 @@ import pandas as pd
 
 
 def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_dct,
-                 isotope_checker_dct, isotope_score, formula_charged,
+                 isotope_checker_dct, isotope_score, formula_charged, charge,
                  save_img_as=None, ms1_precision=50e-6):
     ms2_pr_mz = mz_se['mz']
     ms1_obs = mz_se['MS1_obs_mz']
@@ -373,7 +373,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     # set title
     xic_title_str = 'XIC of m/z %.4f | %s @ m/z %.4f ppm=%.2f' % (ms1_pr_mz, abbr_id, lib_mz, ms1_pr_ppm)
     ms_title_str = 'MS @ %.3f min' % ms1_rt
-    ms_zoom_title_str = 'MS zoomed | Theoretical isotope distribution of %s' % formula_charged
+    ms_zoom_title_str = 'MS zoomed| Theoretical isotope distribution for %s %s' % (formula_charged, charge)
     msms_title_str = ('MS/MS of m/z %.4f | DDA Top %d @ %.3f min' % (ms2_pr_mz, func_id, ms2_rt))
     msms_low_str = 'MS/MS zoomed below m/z 350'
     msms_high_str = 'MS/MS zoomed above m/z 350'

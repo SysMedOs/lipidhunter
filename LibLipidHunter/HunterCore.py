@@ -53,21 +53,25 @@ def huntlipids(param_dct):
     usr_ms2_hg_precision = param_dct['hg_ppm'] * 1e-6
     usr_score_filter = param_dct['score_filter']
     usr_isotope_score_filter = param_dct['isotope_score_filter']
+    usr_ms2_info_th = param_dct['ms2_infopeak_threshold']
+    usr_ms2_hginfo_th = param_dct['ms2_hginfopeak_threshold']
 
     usr_ms1_ppm = int(param_dct['ms_ppm'])
+
+    hunter_start_time_str = param_dct['hunter_start_time']
     isotope_hunter = IsotopeHunter()
     abbr2formula = BulkAbbrFormula()
 
     current_path = os.getcwd()
     if os.path.isdir(output_folder):
         os.chdir(output_folder)
-        if os.path.isdir('lipid_images'):
+        if os.path.isdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str):
             pass
         else:
-            os.mkdir('lipid_images')
+            os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
     os.chdir(current_path)
 
-    logpager = LogPageCreator(output_folder)
+    logpager = LogPageCreator(output_folder, hunter_start_time_str, param_dct)
 
     output_df = pd.DataFrame()
 
@@ -158,7 +162,7 @@ def huntlipids(param_dct):
                                              % (_usr_ms2_pr_mz, _usr_ms2_function, _usr_ms2_scan_id))
 
         _usr_formula_charged, usr_elem_charged_dct = abbr2formula.get_formula(_usr_abbr_bulk, charge=_usr_charge)
-        _usr_formula, usr_elemdct = abbr2formula.get_formula(_usr_abbr_bulk, charge='')
+        _usr_formula, usr_elem_dct = abbr2formula.get_formula(_usr_abbr_bulk, charge='')
 
         if _tmp_chk_df.shape[0] == 1:
             print('>>> >>> >>> Processing:', _tmp_chk_df.head())
@@ -193,7 +197,8 @@ def huntlipids(param_dct):
                     print(_row_se)
                     match_info_dct = score_calc.get_match(_usr_abbr_bulk, charge_mode, _ms1_pr_mz, _ms2_df,
                                                           ms2_precision=usr_ms2_precision,
-                                                          ms2_threshold=usr_ms2_threshold
+                                                          ms2_threshold=usr_ms2_threshold,
+                                                          ms2_infopeak_threshold=usr_ms2_info_th
                                                           )
                     match_factor = match_info_dct['MATCH_INFO']
                     score_df = match_info_dct['SCORE_INFO']
@@ -212,7 +217,8 @@ def huntlipids(param_dct):
 
                             specific_check_dct = score_calc.get_specific_peaks(_usr_mz_lib, _ms2_df,
                                                                                ms2_precision=usr_ms2_hg_precision,
-                                                                               ms2_threshold=usr_ms2_hg_threshold
+                                                                               ms2_threshold=usr_ms2_hg_threshold,
+                                                                               ms2_hginfo_threshold=usr_ms2_hginfo_th
                                                                                )
                             # format abbr. for file names
                             _save_abbr_bulk = _usr_abbr_bulk
@@ -227,17 +233,15 @@ def huntlipids(param_dct):
                                                 _usr_ms2_scan_id, _save_abbr_bulk)
                                              )
 
-                            img_name = output_folder + r'\lipid_images' + img_name_core
+                            img_name = output_folder + r'\LipidHunter_Results_Figures_%s' % hunter_start_time_str + img_name_core
 
                             isotope_checker, isotope_score = plot_spectra(_row_se, xic_dct, usr_ident_info_dct,
                                                                           usr_spec_info_dct, specific_check_dct,
                                                                           isotope_checker_dct, isotope_score,
-                                                                          _usr_formula_charged,
+                                                                          _usr_formula_charged, _usr_charge,
                                                                           save_img_as=img_name,
                                                                           ms1_precision=usr_ms1_precision
                                                                           )
-                            logpager.add_info(img_name_core, ident_page_idx)
-                            ident_page_idx += 1
 
                             if _ms1_pr_i > 0 and isotope_checker == 0 and isotope_score > usr_isotope_score_filter:
                                 _tmp_output_df = score_df
@@ -281,13 +285,13 @@ def huntlipids(param_dct):
 
                                 _tmp_output_df['Bulk_identification'] = _usr_abbr_bulk
                                 _tmp_output_df['Formula_neutral'] = _usr_formula
-                                _tmp_output_df['Formula_charged'] = _usr_formula_charged
-                                _tmp_output_df['Bulk_identification'] = _usr_abbr_bulk
+                                _tmp_output_df['Formula_ion'] = _usr_formula_charged
+                                _tmp_output_df['Charge'] = _usr_charge
                                 _tmp_output_df['MS1_obs_mz'] = _ms1_pr_mz
                                 _tmp_output_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
                                 _tmp_output_df['Lib_mz'] = _usr_mz_lib
                                 _tmp_output_df['MS2_rt'] = _usr_ms2_rt
-                                _tmp_output_df['MS2_function'] = _usr_ms2_function
+                                _tmp_output_df['DDA#'] = _usr_ms2_function - 1
                                 _tmp_output_df['MS2_PR_MZ'] = _usr_ms2_pr_mz
                                 _tmp_output_df['Scan#'] = _usr_ms2_scan_id
                                 _tmp_output_df['Specific_peaks'] = target_frag_count + target_nl_count
@@ -296,6 +300,9 @@ def huntlipids(param_dct):
                                 _tmp_output_df['Isotope_score'] = '%.2f' % isotope_score
 
                                 output_df = output_df.append(_tmp_output_df)
+
+                                logpager.add_info(img_name_core, ident_page_idx, _tmp_output_df)
+                                ident_page_idx += 1
 
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
@@ -314,14 +321,20 @@ def huntlipids(param_dct):
         output_df = output_df.round(output_round_dct)
 
         # output_df['Proposed structures'] = output_df['Lipid_species']
-        output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Formula_neutral', 'Formula_charged',
-                             'Score', 'Specific_peaks', 'Contaminated_peaks',
-                             'Lib_mz', 'MS1_obs_mz', 'MS1_obs_i', 'ppm', 'Isotope_score',
-                             'MS2_PR_MZ', 'MS2_rt', 'MS2_function', 'Scan#', 'i_sn1', 'i_sn2',
-                             'i_M-sn1', 'i_M-sn2', 'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']
+        print(output_df.head())
+        output_df.rename(columns={'Score': 'LipidHunter_Score',
+                                  'Contaminated_peaks': 'Unspecific_peaks'}, inplace=True)
+        output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Formula_neutral', 'Formula_ion', 'Charge',
+                             'Lib_mz', 'ppm', 'LipidHunter_Score', 'MS1_obs_mz', 'MS1_obs_i', 'Isotope_score',
+                             'MS2_PR_MZ', 'MS2_rt', 'DDA#', 'Scan#', 'i_sn1', 'i_sn2',
+                             'i_M-sn1', 'i_M-sn2', 'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)', 'Specific_peaks']
         output_header_lst += target_ident_lst
+        output_header_lst += ['Unspecific_peaks']
+        print(output_df.head())
+        print(output_header_lst)
         output_df = output_df[output_header_lst]
-        output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_rt', 'Score'], ascending=[True, True, False])
+        output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_rt', 'LipidHunter_Score'],
+                                          ascending=[True, True, False])
         output_df = output_df.reset_index(drop=True)
         output_df.index += 1
         output_df.to_excel(output_sum_xlsx)

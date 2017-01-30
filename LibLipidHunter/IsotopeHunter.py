@@ -12,6 +12,7 @@ import re
 
 import pandas as pd
 from scipy import stats
+from numpy.polynomial.polynomial import Polynomial
 
 
 class IsotopeHunter(object):
@@ -58,7 +59,7 @@ class IsotopeHunter(object):
 
         return mono_mz
 
-    def get_isotope_mz(self, elem_dct, isotope_number=2):
+    def get_isotope_mz(self, elem_dct, isotope_number=2, only_c=False):
 
         if isotope_number <= 5:
             isotope_count_lst = range(1, isotope_number + 1)
@@ -71,15 +72,15 @@ class IsotopeHunter(object):
         # delta_13c = self.periodic_table_dct['C'][1][0] - self.periodic_table_dct['C'][0][0]
         # ration_13c = self.periodic_table_dct['C'][1][0] - self.periodic_table_dct['C'][0][0]
 
-        r_12c = self.periodic_table_dct['C'][0][1]
-        r_13c = self.periodic_table_dct['C'][1][1]
-        r_1h = self.periodic_table_dct['H'][0][1]
-        r_2h = self.periodic_table_dct['H'][1][1]
+        # r_12c = self.periodic_table_dct['C'][0][1]
+        # r_13c = self.periodic_table_dct['C'][1][1]
+        # r_1h = self.periodic_table_dct['H'][0][1]
+        # r_2h = self.periodic_table_dct['H'][1][1]
         # r_14n = self.periodic_table_dct['N'][0][1]
         # r_15n = self.periodic_table_dct['N'][1][1]
 
         c_count = elem_dct['C']
-        h_count = elem_dct['C']
+
         delta_13c = 1.0033548378
         ration_13c12c = 0.011
         isotope_mz_lst = [mono_mz]
@@ -87,13 +88,47 @@ class IsotopeHunter(object):
             _isotope_mz = mono_mz + delta_13c * _i_count
             isotope_mz_lst.append(_isotope_mz)
 
-        # consider C only
-        isotope_pattern = stats.binom.pmf(range(0, isotope_number + 1), c_count, ration_13c12c)
+        # calc distribution by selected algorithms
+        if only_c is True:
+            # consider C only --> binomial expansion 3x faster
+            isotope_pattern = stats.binom.pmf(range(0, isotope_number + 1), c_count, ration_13c12c)
+
+        else:
+            # consider more elements --> binomial/polynomial and McLaurin expansion [doi:10.1038/nmeth.3393]
+            h_count = elem_dct['H']
+            o_count = elem_dct['O']
+
+            c_ploy = Polynomial((0.9893, 0.0107))
+            h_ploy = Polynomial((0.999885, 0.0001157))
+            o_ploy = Polynomial((0.99757, 0.00038, 0.00205))
+
+            isotope_pattern_calc = c_ploy ** c_count * h_ploy ** h_count * o_ploy ** o_count
+
+            if 'N' in elem_dct.keys():
+                n_count = elem_dct['N']
+                if n_count > 0:
+                    n_ploy = Polynomial((0.99632, 0.00368))
+                    isotope_pattern_calc *= n_ploy
+
+            if 'S' in elem_dct.keys():
+                s_count = elem_dct['S']
+                if s_count > 0:
+                    s_ploy = Polynomial((0.9493, 0.0076, 0.0429, 0.0002))
+                    isotope_pattern_calc *= s_ploy
+
+            if 'K' in elem_dct.keys():
+                k_count = elem_dct['K']
+                if k_count > 0:
+                    k_ploy = Polynomial((0.932581, 0.000117, 0.067302))
+                    isotope_pattern_calc *= k_ploy
+
+            isotope_pattern = list(isotope_pattern_calc.coef)[:3]
+
         m0_i = isotope_pattern[0]
         isotope_pattern = [x / m0_i for x in isotope_pattern]
 
         isotope_distribution_df = pd.DataFrame(data={'mz': isotope_mz_lst, 'ratio': isotope_pattern})
-        isotope_distribution_df = isotope_distribution_df.round({'ratio': 6})
+        isotope_distribution_df = isotope_distribution_df.round({'ratio': 2})
         # print(isotope_distribution_df)
         return isotope_distribution_df
 

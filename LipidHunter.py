@@ -500,10 +500,14 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         hg_ppm = self.ui.tab_e_hgppm_spb.value()
         score_filter = self.ui.tab_e_score_spb.value()
         isotope_score_filter = self.ui.tab_e_isotopescore_spb.value()
+        ms2_info_threshold = self.ui.tab_e_ms2infoth_dspb.value() * 0.01
+        hgms2_info_threshold = self.ui.tab_e_ms2hginfoth_dspb.value() * 0.01
 
         fa_white_list_cfg = self.ui.tab_f_fawhitelist_le.text()
         lipid_specific_cfg = self.ui.tab_f_hgcfg_le.text()
         score_cfg = self.ui.tab_f_scorecfg_le.text()
+
+        start_time_str = time.strftime("%Y-%m-%d_%H-%M", time.localtime())
 
         hunter_param_dct = {'lipids_info_path_str': lipids_info_path_str, 'mzml_path_str': mzml_path_str,
                             'img_output_folder_str': img_output_folder_str,
@@ -512,12 +516,13 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                             'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm, 'hg_th': hg_th, 'hg_ppm': hg_ppm,
                             'score_filter': score_filter, 'isotope_score_filter': isotope_score_filter,
                             'lipid_type': _pl_class, 'charge_mode': _pl_charge, 'fa_white_list_cfg': fa_white_list_cfg,
-                            'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor}
+                            'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor,
+                            'ms2_infopeak_threshold': ms2_info_threshold,
+                            'ms2_hginfopeak_threshold': hgms2_info_threshold,
+                            'hunter_start_time': start_time_str}
 
         param_log_output_path_str = (str(self.ui.tab_e_saveimgfolder_le.text()) +
-                                     '/LipidHunter_param-log_%s.txt'
-                                     % (time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-                                        )
+                                     '/LipidHunter_Params-Log_%s.txt' % start_time_str
                                      )
 
         config = configparser.ConfigParser()
