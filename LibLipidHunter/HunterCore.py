@@ -55,6 +55,18 @@ def huntlipids(param_dct):
     usr_isotope_score_filter = param_dct['isotope_score_filter']
     usr_ms2_info_th = param_dct['ms2_infopeak_threshold']
     usr_ms2_hginfo_th = param_dct['ms2_hginfopeak_threshold']
+    usr_rank_mode = param_dct['rank_score']
+    usr_fast_isotope = param_dct['fast_isotope']
+
+    if usr_rank_mode is True:
+        score_mode = 'Rank mode'
+    else:
+        score_mode = 'Relative intensity mode'
+
+    if usr_fast_isotope is True:
+        isotope_score_mode = '(Fast mode)'
+    else:
+        isotope_score_mode = ''
 
     usr_ms1_ppm = int(param_dct['ms_ppm'])
 
@@ -187,7 +199,8 @@ def huntlipids(param_dct):
 
                 isotope_score, isotope_checker_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
                                                                                       _usr_formula_charged, _ms1_df,
-                                                                                      isotope_number=2)
+                                                                                      isotope_number=2,
+                                                                                      only_c=usr_fast_isotope)
                 print('isotope_score: %f' % isotope_score)
                 if isotope_score >= usr_isotope_score_filter:
                     print('>>> isotope_check PASSED! >>> >>> >>>')
@@ -198,7 +211,8 @@ def huntlipids(param_dct):
                     match_info_dct = score_calc.get_match(_usr_abbr_bulk, charge_mode, _ms1_pr_mz, _ms2_df,
                                                           ms2_precision=usr_ms2_precision,
                                                           ms2_threshold=usr_ms2_threshold,
-                                                          ms2_infopeak_threshold=usr_ms2_info_th
+                                                          ms2_infopeak_threshold=usr_ms2_info_th,
+                                                          rank_mode=usr_rank_mode
                                                           )
                     match_factor = match_info_dct['MATCH_INFO']
                     score_df = match_info_dct['SCORE_INFO']
@@ -233,14 +247,17 @@ def huntlipids(param_dct):
                                                 _usr_ms2_scan_id, _save_abbr_bulk)
                                              )
 
-                            img_name = output_folder + r'\LipidHunter_Results_Figures_%s' % hunter_start_time_str + img_name_core
+                            img_name = (output_folder + r'\LipidHunter_Results_Figures_%s' % hunter_start_time_str
+                                        + img_name_core)
 
                             isotope_checker, isotope_score = plot_spectra(_row_se, xic_dct, usr_ident_info_dct,
                                                                           usr_spec_info_dct, specific_check_dct,
                                                                           isotope_checker_dct, isotope_score,
                                                                           _usr_formula_charged, _usr_charge,
                                                                           save_img_as=img_name,
-                                                                          ms1_precision=usr_ms1_precision
+                                                                          ms1_precision=usr_ms1_precision,
+                                                                          score_mode=score_mode,
+                                                                          isotope_mode=isotope_score_mode
                                                                           )
 
                             if _ms1_pr_i > 0 and isotope_checker == 0 and isotope_score > usr_isotope_score_filter:

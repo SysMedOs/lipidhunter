@@ -13,11 +13,12 @@ class BulkAbbrFormula(object):
         pc_hg_elem = {'C': 5, 'H': 14, 'O': 4, 'P': 1, 'N': 1}
         pe_hg_elem = {'C': 2, 'H': 8, 'O': 4, 'P': 1, 'N': 1}
         pg_hg_elem = {'C': 3, 'H': 9, 'O': 6, 'P': 1, 'N': 0}
-        pi_hg_elem = {'C': 6, 'H': 14, 'O': 12, 'P': 2, 'N': 0}
+        pi_hg_elem = {'C': 6, 'H': 13, 'O': 9, 'P': 1, 'N': 0}
+        pip_hg_elem = {'C': 6, 'H': 14, 'O': 12, 'P': 2, 'N': 0}
         ps_hg_elem = {'C': 3, 'H': 8, 'O': 6, 'P': 1, 'N': 1}
 
         self.lipid_hg_elem_dct = {'PA': pa_hg_elem, 'PC': pc_hg_elem, 'PE': pe_hg_elem,
-                                  'PG': pg_hg_elem, 'PI': pi_hg_elem, 'PS': ps_hg_elem}
+                                  'PG': pg_hg_elem, 'PI': pi_hg_elem, 'PS': ps_hg_elem, 'PIP': pip_hg_elem}
 
         self.glycerol_bone_elem_dct = {'C': 3, 'H': 2}
         self.link_o_elem_dct = {'O': -1, 'H': 2}

@@ -4,12 +4,14 @@
 # A suitable license will be chosen before the official release of oxLPPdb.
 # For more info please contact: zhixu.ni@uni-leipzig.de
 
+import os
 import shutil
 import pandas as pd
 
 
 class LogPageCreator(object):
     def __init__(self, output_folder, start_time, params):
+        print(os.getcwd())
         self.output_folder = output_folder
         self.output_img_folder = output_folder + r'\LipidHunter_Results_Figures_%s' % start_time
         self.main_page = output_folder + r'\LipidHunter_Results_%s.html' % start_time
@@ -20,6 +22,16 @@ class LogPageCreator(object):
         self.image_lst_page = self.output_img_folder + r'\LipidHunter_Results_Figures_list.html'
         self.params_lst_page = self.output_img_folder + r'\LipidHunter_Params_list.html'
         self.idx_lst_page = self.output_img_folder + r'\LipidHunter_Identification_list.html'
+
+        if params['rank_score'] is True:
+            score_mode = '(Rank mode)'
+        else:
+            score_mode = '(Intensity mode)'
+
+        if params['fast_isotope'] is True:
+            isotope_score_mode = '(Fast mode)'
+        else:
+            isotope_score_mode = ''
 
         with open(self.main_page, 'w') as _m_page:
             m_info_lst = ['<html>\n', '<link rel="icon" href="', self.logo, '" type="image/x-icon"/>\n'
@@ -59,16 +71,16 @@ class LogPageCreator(object):
                                 <li>m/z range: %.1f - %.1f</li>\n<li>RT range: %.1f - %.1f min</li>\n
                                 <li>MS1 Threshold: %i</li>\n<li>MS2 Threshold: %i</li>\n
                                 <li>MS1 ppm %i</li>\n<li>MS2 ppm: %i</li>\n
-                                <li>LipidHunter score > %f</li>\n<li>Isotope score > %f</li>\n
+                                <li>LipidHunter score > %.1f %s</li>\n<li>Isotope score > %.1f %s</li>\n
                                 </ul>\n<hr>\n<h4>Lipid identification list:</h4><font size="1">\n<table>\n<thead>\n
                                 <tr style="text-align: center;">\n
                                 <th>id#</th>\n<th> Exact Mass </th>\n<th>RT(min)</th>\n<th>Bulk</th>\n<th>Score</th>\n
                                 </tr>\n</thead>\n</table>\n</body>\n</html>\n
                                 ''' % ('%', params['hunter_start_time'], params['lipid_type'], params['charge_mode'],
                                        params['mz_start'], params['mz_end'], params['rt_start'], params['rt_end'],
-                                       params['ms_th'], params['ms2_th'],
-                                       params['ms_ppm'], params['ms2_ppm'],
-                                       params['score_filter'], params['isotope_score_filter']))
+                                       params['ms_th'], params['ms2_th'], params['ms_ppm'], params['ms2_ppm'],
+                                       params['score_filter'], score_mode,
+                                       params['isotope_score_filter'], isotope_score_mode))
 
         with open(self.idx_lst_page, 'w') as _idx_page:
             _idx_page.write('''

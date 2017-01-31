@@ -9,6 +9,8 @@
 # except NameError:  # python2
 #     import ConfigParser as configparser
 
+from __future__ import print_function
+from __future__ import print_function
 import ConfigParser as configparser
 import glob
 import os
@@ -36,6 +38,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_c_3_lb.setOpenExternalLinks(True)
         self.ui.tab_c_5_lb.setOpenExternalLinks(True)
 
+        self.d_set_hgfilter()
+
         # slots for tab a
         QtCore.QObject.connect(self.ui.tab_a_addmzml_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzml)
         QtCore.QObject.connect(self.ui.tab_a_addmzmlfolder_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzmlfolder)
@@ -53,6 +57,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_b_runextract_pb, QtCore.SIGNAL("clicked()"), self.b_run_extractor)
 
         # slots for tab d
+        self.ui.tab_d_lipidclass_cmb.currentIndexChanged.connect(self.d_set_hgfilter)
         QtCore.QObject.connect(self.ui.tab_d_lipidstable_pb, QtCore.SIGNAL("clicked()"), self.d_load_lipidstable)
         QtCore.QObject.connect(self.ui.tab_d_ms2info_pb, QtCore.SIGNAL("clicked()"), self.d_load_ms2info)
         QtCore.QObject.connect(self.ui.tab_d_ms2mzml_pb, QtCore.SIGNAL("clicked()"), self.d_load_mzml)
@@ -167,9 +172,19 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         else:
             usr_vendor = 'waters'
         print('Vendor mode = %s' % usr_vendor)
+
+        a_rt_start = self.ui.tab_a_rtstart_dspb.value()
+        a_rt_end = self.ui.tab_a_rtend_dspb.value()
+        a_ms1_th = self.ui.tab_a_msthreshold_spb.value()
+        a_mz_start = self.ui.tab_a_mzstart_dspb.value()
+        a_mz_end = self.ui.tab_a_mzend_dspb.value()
+
+        a_extractor_param_dct = {'rt_start': a_rt_start, 'rt_end': a_rt_end,
+                                 'mz_start': a_mz_start, 'mz_end': a_mz_end,
+                                 'ms1_th': a_ms1_th}
+
         self.ui.tab_a_statusextractor_pte.clear()
-        a_ms_th = self.ui.tab_a_msthreshold_spb.value()
-        self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('MS threshold (absolute): %i \n' % a_ms_th))
+        self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('MS threshold (absolute): %i \n' % a_ms1_th))
         extractor = ExtractorMZML.Extractor()
         _loaded_mzml_files = str(self.ui.tab_a_infiles_pte.toPlainText())
         _loaded_mzml_lst = _loaded_mzml_files.split('\n')
@@ -178,13 +193,12 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         for _mzml in _loaded_mzml_lst:
             print('_mzml', _mzml)
-            print('MS_TH', a_ms_th, type(a_ms_th))
             if os.path.isfile(_mzml):
                 _mzml_path, _mzml_name = os.path.split(_mzml)
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Start processing...\n%s \n' % _mzml))
 
                 _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-4] + 'xlsx'
-                _ms_df = extractor.get_ms_all(_mzml, a_ms_th, vendor=usr_vendor)
+                _ms_df = extractor.get_ms_all(_mzml, params_dct=a_extractor_param_dct, vendor=usr_vendor)
                 # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
                 _ms_df.to_excel(_xlsx_path)
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Save as: \n%s.xlsx \n' % _mzml[0:-4]))
@@ -214,10 +228,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         if cm_pkl_df.shape[0] > 500000:
             cm_pkl_df_p1 = cm_pkl_df[:500000, :]
-            print cm_pkl_df_p1.shape
+            print(cm_pkl_df_p1.shape)
             cm_pkl_df_p1.to_csv(''.join([_save_csv_str[0:-4], ['_1.csv']]))
             cm_pkl_df_p2 = cm_pkl_df[500000:, :]
-            print cm_pkl_df_p2.shape
+            print(cm_pkl_df_p2.shape)
             cm_pkl_df_p2.to_csv(''.join([_save_csv_str[0:-4], ['_2.csv']]))
             _save_csv_str = ''.join([_save_csv_str[0:-4], ['_1.csv'], '\n', _save_csv_str[0:-4], ['_2.csv']])
         else:
@@ -275,10 +289,20 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         else:
             usr_vendor = 'waters'
         print('Vendor mode = %s' % usr_vendor)
-        self.ui.tab_b_statusrun_pte.clear()
-        b_ms_th = self.ui.tab_b_msthreshold_spb.value()
+
+        b_rt_start = self.ui.tab_b_rtstart_dspb.value()
+        b_rt_end = self.ui.tab_b_rtend_dspb.value()
+        b_mz_start = self.ui.tab_b_mzstart_dspb.value()
+        b_mz_end = self.ui.tab_b_mzend_dspb.value()
+        b_ms1_th = self.ui.tab_b_msthreshold_spb.value()
         b_ms2_th = self.ui.tab_b_ms2threshold_spb.value()
-        self.ui.tab_b_statusrun_pte.insertPlainText(unicode('MS threshold (absolute): %i \n' % b_ms_th))
+        b_dda_top = self.ui.tab_b_dda_spb.value()
+
+        b_extractor_param_dct = {'rt_start': b_rt_start, 'rt_end': b_rt_end, 'mz_start': b_mz_start, 'mz_end': b_mz_end,
+                                 'ms1_th': b_ms1_th, 'ms2_th': b_ms2_th, 'dda_top': b_dda_top}
+
+        self.ui.tab_b_statusrun_pte.clear()
+        self.ui.tab_b_statusrun_pte.insertPlainText(unicode('MS threshold (absolute): %i \n' % b_ms1_th))
         extractor = ExtractorMZML.Extractor()
         _loaded_mzml_files = str(self.ui.tab_b_infiles_pte.toPlainText())
         _loaded_mzml_lst = _loaded_mzml_files.split('\n')
@@ -292,7 +316,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
                 _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_all_scan_info.xlsx'
                 _xlsx_ms2_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_ms2_info.xlsx'
-                _ms_df = extractor.get_scan_events(_mzml, b_ms_th, b_ms2_th, vendor=usr_vendor)
+                _ms_df = extractor.get_scan_events(_mzml, params_dct=b_extractor_param_dct, vendor=usr_vendor)
                 # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
                 _ms_df.to_excel(_xlsx_path)
                 _ms_df['function'] = _ms_df['function'].astype(int)
@@ -301,6 +325,34 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 _ms2_df.to_excel(_xlsx_ms2_path)
                 self.ui.tab_b_statusrun_pte.insertPlainText(unicode('Save as: \n%s.xlsx \n' % _mzml[0:-4]))
         self.ui.tab_b_statusrun_pte.insertPlainText(u'Finished!')
+
+    def d_set_hgfilter(self):
+
+        _pl_class_info = str(self.ui.tab_d_lipidclass_cmb.currentText())
+
+        pl_class_checker = re.compile(r'(.*)( [\(])(\w{2,3})([\)] )(.*)')
+
+        pl_class_match = pl_class_checker.match(_pl_class_info)
+
+        if pl_class_match:
+            pl_class_info_lst = pl_class_match.groups()
+            _pl_class = pl_class_info_lst[2]
+        else:
+            _pl_class = 'PC'
+
+        if _pl_class in ['PC', 'PE', 'PS']:
+            self.ui.tab_d_hgfilter_lb.show()
+            self.ui.tab_d_hgfilteron_rb.show()
+            self.ui.tab_d_hgfilteroff_rb.show()
+            self.ui.tab_d_hgfilteron_rb.setChecked(True)
+            self.ui.tab_d_hgfilteroff_rb.setChecked(False)
+
+        else:
+            self.ui.tab_d_hgfilter_lb.hide()
+            self.ui.tab_d_hgfilteron_rb.hide()
+            self.ui.tab_d_hgfilteroff_rb.hide()
+            self.ui.tab_d_hgfilteron_rb.setChecked(False)
+            self.ui.tab_d_hgfilteroff_rb.setChecked(True)
 
     def d_load_lipidstable(self):
         d_load_lipidstable_dialog = QtGui.QFileDialog(self)
@@ -367,7 +419,12 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         _mzml_path_str = str(self.ui.tab_d_ms2mzml_le.text())
         _output_path_str = str(self.ui.tab_d_xlsxpath_le.text())
 
-        ms2_delta = 0.9
+        ms2_delta = self.ui.tab_d_prwindow_spb.value()
+
+        if self.ui.tab_d_hgfilteron_rb.isChecked():
+            usr_hg_filter = True
+        else:
+            usr_hg_filter = False
 
         ident_df = pd.read_excel(_lipidstable_path_str, sheetname=0, header=0)
         ms2_df = pd.read_excel(_ms2info_path_str, sheetname=0)
@@ -422,7 +479,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                            'RT_START': _rt_start, 'RT_END': _rt_end, 'MZ_START': _mz_start, 'MZ_END': _mz_end}
 
         final_output_df = hunt_link(pl_class=_pl_class, usr_mzml=_mzml_path_str, usr_df=step1_df,
-                                    params_dct=link_params_dct, vendor=usr_vendor)
+                                    params_dct=link_params_dct, vendor=usr_vendor, hg_filter=usr_hg_filter)
 
         final_output_df = final_output_df[final_output_df['MS1_obs_mz'] > 0]
 
@@ -466,7 +523,13 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             usr_vendor = 'thermo'
         else:
             usr_vendor = 'waters'
-        print('Vendor mode = %s' % usr_vendor)
+        if self.ui.mode_lcms_rb.isChecked():
+            usr_exp_mode = 'LC-MS'
+        elif self.ui.mode_static_rb.isChecked():
+            usr_exp_mode = 'Static-MS'
+        else:
+            usr_exp_mode = 'LC-MS'
+        print('Vendor mode = %s, Experiment mode = %s' % (usr_vendor, usr_exp_mode))
         print('Hunter started!')
         _pl_class_info = str(self.ui.tab_e_lipidclass_cmb.currentText())
 
@@ -507,6 +570,22 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         lipid_specific_cfg = self.ui.tab_f_hgcfg_le.text()
         score_cfg = self.ui.tab_f_scorecfg_le.text()
 
+        usr_score_mode = self.ui.tab_e_scoremode_cmb.currentIndex()
+        if usr_score_mode == 0:
+            print(self.ui.tab_e_scoremode_cmb.currentText())
+            rank_score = True
+        else:
+            print(self.ui.tab_e_scoremode_cmb.currentText())
+            rank_score = False
+
+        usr_isotope_score_mode = self.ui.tab_e_isotopescoremode_cmb.currentIndex()
+        if usr_isotope_score_mode == 0:
+            print(self.ui.tab_e_isotopescoremode_cmb.currentText())
+            fast_isotope = False
+        else:
+            print(self.ui.tab_e_isotopescoremode_cmb.currentText())
+            fast_isotope = True
+
         start_time_str = time.strftime("%Y-%m-%d_%H-%M", time.localtime())
 
         hunter_param_dct = {'lipids_info_path_str': lipids_info_path_str, 'mzml_path_str': mzml_path_str,
@@ -519,7 +598,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                             'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor,
                             'ms2_infopeak_threshold': ms2_info_threshold,
                             'ms2_hginfopeak_threshold': hgms2_info_threshold,
-                            'hunter_start_time': start_time_str}
+                            'rank_score': rank_score, 'fast_isotope': fast_isotope,
+                            'hunter_start_time': start_time_str, 'Experiment_mode': usr_exp_mode}
 
         param_log_output_path_str = (str(self.ui.tab_e_saveimgfolder_le.text()) +
                                      '/LipidHunter_Params-Log_%s.txt' % start_time_str

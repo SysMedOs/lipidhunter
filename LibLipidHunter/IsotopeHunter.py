@@ -94,35 +94,38 @@ class IsotopeHunter(object):
             isotope_pattern = stats.binom.pmf(range(0, isotope_number + 1), c_count, ration_13c12c)
 
         else:
-            # consider more elements --> binomial/polynomial and McLaurin expansion [doi:10.1038/nmeth.3393]
-            h_count = elem_dct['H']
-            o_count = elem_dct['O']
+            try:
+                # consider more elements --> binomial/polynomial and McLaurin expansion [doi:10.1038/nmeth.3393]
+                h_count = elem_dct['H']
+                o_count = elem_dct['O']
 
-            c_ploy = Polynomial((0.9893, 0.0107))
-            h_ploy = Polynomial((0.999885, 0.0001157))
-            o_ploy = Polynomial((0.99757, 0.00038, 0.00205))
+                c_ploy = Polynomial((0.9893, 0.0107))
+                h_ploy = Polynomial((0.999885, 0.0001157))
+                o_ploy = Polynomial((0.99757, 0.00038, 0.00205))
 
-            isotope_pattern_calc = c_ploy ** c_count * h_ploy ** h_count * o_ploy ** o_count
+                isotope_pattern_calc = c_ploy ** c_count * h_ploy ** h_count * o_ploy ** o_count
 
-            if 'N' in elem_dct.keys():
-                n_count = elem_dct['N']
-                if n_count > 0:
-                    n_ploy = Polynomial((0.99632, 0.00368))
-                    isotope_pattern_calc *= n_ploy
+                if 'N' in elem_dct.keys():
+                    n_count = elem_dct['N']
+                    if n_count > 0:
+                        n_ploy = Polynomial((0.99632, 0.00368))
+                        isotope_pattern_calc *= n_ploy
 
-            if 'S' in elem_dct.keys():
-                s_count = elem_dct['S']
-                if s_count > 0:
-                    s_ploy = Polynomial((0.9493, 0.0076, 0.0429, 0.0002))
-                    isotope_pattern_calc *= s_ploy
+                if 'S' in elem_dct.keys():
+                    s_count = elem_dct['S']
+                    if s_count > 0:
+                        s_ploy = Polynomial((0.9493, 0.0076, 0.0429, 0.0002))
+                        isotope_pattern_calc *= s_ploy
 
-            if 'K' in elem_dct.keys():
-                k_count = elem_dct['K']
-                if k_count > 0:
-                    k_ploy = Polynomial((0.932581, 0.000117, 0.067302))
-                    isotope_pattern_calc *= k_ploy
-
-            isotope_pattern = list(isotope_pattern_calc.coef)[:3]
+                if 'K' in elem_dct.keys():
+                    k_count = elem_dct['K']
+                    if k_count > 0:
+                        k_ploy = Polynomial((0.932581, 0.000117, 0.067302))
+                        isotope_pattern_calc *= k_ploy
+                isotope_pattern = list(isotope_pattern_calc.coef)[:3]
+            except ValueError:
+                # consider C only --> binomial expansion 3x faster
+                isotope_pattern = stats.binom.pmf(range(0, isotope_number + 1), c_count, ration_13c12c)
 
         m0_i = isotope_pattern[0]
         isotope_pattern = [x / m0_i for x in isotope_pattern]
@@ -133,7 +136,7 @@ class IsotopeHunter(object):
         return isotope_distribution_df
 
     def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2,
-                          ms1_precision=50e-6, pattern_tolerance=5):
+                          ms1_precision=50e-6, pattern_tolerance=5, only_c=False):
 
         mz_delta = ms1_pr_mz * ms1_precision
         delta_13c = 1.0033548378
@@ -181,7 +184,7 @@ class IsotopeHunter(object):
         else:
             elem_dct = self.get_elements(formula)
             # mono_mz = self.get_mono_mz(elem_dct)
-            isotope_pattern_df = self.get_isotope_mz(elem_dct, isotope_number=2)
+            isotope_pattern_df = self.get_isotope_mz(elem_dct, isotope_number=2, only_c=only_c)
 
             isotope_checker_dct = {}
             isotope_score_delta = 0
@@ -225,13 +228,15 @@ if __name__ == '__main__':
     #
     #     print(isotope_pattern_dct)
 
-    f = 'C59H108O6'  # TG
-    f_lst = [f, f + 'H+']
+    f = 'C41H71NO7P'  # PE
+    # f_lst = [f, f + 'H+']
+    f_lst = [f]
     usr_spec_df = pd.DataFrame()
     iso_hunter = IsotopeHunter()
     for _f in f_lst:
         print(_f)
         isotope_pattern_dct = iso_hunter.get_elements(_f)
-        isotope_distribute = iso_hunter.get_isotope_mz(isotope_pattern_dct)
-
+        isotope_distribute = iso_hunter.get_isotope_mz(isotope_pattern_dct, only_c=False)
+        print(isotope_distribute)
+        isotope_distribute = iso_hunter.get_isotope_mz(isotope_pattern_dct, only_c=True)
         print(isotope_distribute)
