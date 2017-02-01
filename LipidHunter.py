@@ -10,7 +10,6 @@
 #     import ConfigParser as configparser
 
 from __future__ import print_function
-from __future__ import print_function
 import ConfigParser as configparser
 import glob
 import os

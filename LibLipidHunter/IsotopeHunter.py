@@ -123,7 +123,9 @@ class IsotopeHunter(object):
                         k_ploy = Polynomial((0.932581, 0.000117, 0.067302))
                         isotope_pattern_calc *= k_ploy
                 isotope_pattern = list(isotope_pattern_calc.coef)[:3]
+                print('Full Elements mode')
             except ValueError:
+                print('Elements error --> change to 13C mode')
                 # consider C only --> binomial expansion 3x faster
                 isotope_pattern = stats.binom.pmf(range(0, isotope_number + 1), c_count, ration_13c12c)
 

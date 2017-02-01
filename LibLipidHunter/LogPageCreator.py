@@ -23,6 +23,8 @@ class LogPageCreator(object):
         self.params_lst_page = self.output_img_folder + r'\LipidHunter_Params_list.html'
         self.idx_lst_page = self.output_img_folder + r'\LipidHunter_Identification_list.html'
 
+        self.lipid_type = params['lipid_type']
+
         if params['rank_score'] is True:
             score_mode = '(Rank mode)'
         else:
@@ -68,15 +70,15 @@ class LogPageCreator(object):
                                 <h3><img src="LipidHunter.ico" height=30/>  LipidHunter</h3><font size="1">\n
                                 <hr> <h4>Parameters:</h4>\n<ul>\n
                                 <li>Start time: %s</li>\n<li>Mode: %s %s</li>\n
-                                <li>m/z range: %.1f - %.1f</li>\n<li>RT range: %.1f - %.1f min</li>\n
+                                <li><i>m/z</i> range: %.1f - %.1f <i>m/z</i></li>\n<li>RT range: %.1f - %.1f min</li>\n
                                 <li>MS1 Threshold: %i</li>\n<li>MS2 Threshold: %i</li>\n
-                                <li>MS1 ppm %i</li>\n<li>MS2 ppm: %i</li>\n
+                                <li>MS1 ppm: %i</li>\n<li>MS2 ppm: %i</li>\n
                                 <li>LipidHunter score > %.1f %s</li>\n<li>Isotope score > %.1f %s</li>\n
                                 </ul>\n<hr>\n<h4>Lipid identification list:</h4><font size="1">\n<table>\n<thead>\n
                                 <tr style="text-align: center;">\n
                                 <th>id#</th>\n<th> Exact Mass </th>\n<th>RT(min)</th>\n<th>Bulk</th>\n<th>Score</th>\n
                                 </tr>\n</thead>\n</table>\n</body>\n</html>\n
-                                ''' % ('%', params['hunter_start_time'], params['lipid_type'], params['charge_mode'],
+                                ''' % ('%', params['hunter_start_time'], self.lipid_type , params['charge_mode'],
                                        params['mz_start'], params['mz_end'], params['rt_start'], params['rt_end'],
                                        params['ms_th'], params['ms2_th'], params['ms_ppm'], params['ms2_ppm'],
                                        params['score_filter'], score_mode,
@@ -113,8 +115,16 @@ class LogPageCreator(object):
 
         with open(self.image_lst_page, 'a') as img_page:
             # convert info df to html table code
-            plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_M-sn1', 'i_M-sn2',
-                            'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']
+            if self.lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
+                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_M-sn1', 'i_M-sn2',
+                                'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']
+            elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
+                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_sn3',
+                                'i_M-sn1', 'i_M-sn2', 'i_M-sn3',
+                                'i_M-(sn1+sn2)', 'i_M-(sn1+sn3)', 'i_M-(sn2+sn3)']
+            else:
+                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_M-sn1', 'i_M-sn2',
+                                'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']
             # ident_info_df.fillna('', inplace=True)
             ident_col = ident_info_df.columns.tolist()
 

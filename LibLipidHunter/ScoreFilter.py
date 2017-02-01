@@ -9,7 +9,7 @@ import pandas as pd
 
 def check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df, score_filter=20):
 
-    if fa_ident_df.shape[0] or lyso_ident_df.shape[0]:
+    if fa_ident_df.shape[0]:
         # score_df = score_df[['Lipid_species', 'Score']]
         # score_df = score_df.rename({'Lipid_species': 'Proposed structures'})
         score_df = score_df.query('Score >= %.2f' % score_filter)
@@ -19,16 +19,15 @@ def check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df, score_fil
         print(score_df)
 
         # format fa info DataFrame
-        if fa_ident_df.shape[0] > 0:
-            fa_ident_df = fa_ident_df[['Proposed_structures', 'mz', 'i', 'ppm']].reset_index(drop=True)
-            # fa_ident_df = fa_ident_df.rename({'Lipid_species': 'Identified species'})
-            fa_ident_df = fa_ident_df.round({'mz': 4, 'ppm': 2})
-            _fa_i_lst = []
-            for _idx, _fa_se in fa_ident_df.iterrows():
-                _fa_i_lst.append('%.2e' % float(_fa_se['i']))
-            fa_ident_df.loc[:, 'i'] = _fa_i_lst
-            fa_ident_df.index += 1
-            print(fa_ident_df)
+        fa_ident_df = fa_ident_df[['Proposed_structures', 'mz', 'i', 'ppm']].reset_index(drop=True)
+        # fa_ident_df = fa_ident_df.rename({'Lipid_species': 'Identified species'})
+        fa_ident_df = fa_ident_df.round({'mz': 4, 'ppm': 2})
+        _fa_i_lst = []
+        for _idx, _fa_se in fa_ident_df.iterrows():
+            _fa_i_lst.append('%.2e' % float(_fa_se['i']))
+        fa_ident_df.loc[:, 'i'] = _fa_i_lst
+        fa_ident_df.index += 1
+        print(fa_ident_df)
 
         # merge Lyso and Lyso - H2O
         lyso_ident_df = lyso_ident_df.append(lyso_w_ident_df)
@@ -47,7 +46,7 @@ def check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df, score_fil
             lyso_ident_df = pd.DataFrame()
 
         usr_ident_info_dct = {'SCORE_INFO': score_df, 'FA_INFO': fa_ident_df, 'LYSO_INFO': lyso_ident_df}
-        print usr_ident_info_dct
     else:
-        usr_ident_info_dct= {'SCORE_INFO':pd.DataFrame(), 'FA_INFO': '', 'LYSO_INFO': ''}
+        usr_ident_info_dct = {'SCORE_INFO': pd.DataFrame(), 'FA_INFO': pd.DataFrame(), 'LYSO_INFO': pd.DataFrame()}
+
     return usr_ident_info_dct

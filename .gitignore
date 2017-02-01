@@ -95,4 +95,4 @@ ENV/
 .idea/
 /temp/
 temp/
-/batchmode.py
+/temp/batchmode.py

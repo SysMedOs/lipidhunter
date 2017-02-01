@@ -16,9 +16,10 @@ class BulkAbbrFormula(object):
         pi_hg_elem = {'C': 6, 'H': 13, 'O': 9, 'P': 1, 'N': 0}
         pip_hg_elem = {'C': 6, 'H': 14, 'O': 12, 'P': 2, 'N': 0}
         ps_hg_elem = {'C': 3, 'H': 8, 'O': 6, 'P': 1, 'N': 1}
+        tg_hg_elem = {'C': 0, 'H': 0, 'O': 0, 'P': 0, 'N': 0}
 
-        self.lipid_hg_elem_dct = {'PA': pa_hg_elem, 'PC': pc_hg_elem, 'PE': pe_hg_elem,
-                                  'PG': pg_hg_elem, 'PI': pi_hg_elem, 'PS': ps_hg_elem, 'PIP': pip_hg_elem}
+        self.lipid_hg_elem_dct = {'PA': pa_hg_elem, 'PC': pc_hg_elem, 'PE': pe_hg_elem, 'PG': pg_hg_elem,
+                                  'PI': pi_hg_elem, 'PS': ps_hg_elem, 'PIP': pip_hg_elem, 'TG': tg_hg_elem}
 
         self.glycerol_bone_elem_dct = {'C': 3, 'H': 2}
         self.link_o_elem_dct = {'O': -1, 'H': 2}
@@ -56,10 +57,10 @@ class BulkAbbrFormula(object):
             bulk_fa_typ = pip_typ_lst[2]
         if tg_checker.match(abbr):
             print ('TG')
-            pip_re_chk = pip_checker.match(abbr)
-            pip_typ_lst = pip_re_chk.groups()
-            _pl_typ = pip_typ_lst[0]
-            bulk_fa_typ = pip_typ_lst[2]
+            tg_re_chk = tg_checker.match(abbr)
+            tg_typ_lst = tg_re_chk.groups()
+            _pl_typ = tg_typ_lst[0]
+            bulk_fa_typ = tg_typ_lst[2]
         if fa_checker.match(abbr):
             print ('FA')
             _pl_typ = 'FA'
@@ -109,20 +110,39 @@ class BulkAbbrFormula(object):
 
         usr_lipid_info_dct = self.decode_abbr(abbr)
 
-        if usr_lipid_info_dct['TYPE'] in self.lipid_hg_elem_dct.keys():
-            tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
-            tmp_lipid_elem_dct['O'] += 4
-            tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']
-            tmp_lipid_elem_dct['H'] += (self.glycerol_bone_elem_dct['H'] + usr_lipid_info_dct['C'] * 2
-                                        - usr_lipid_info_dct['DB'] * 2)  # DBE = DB + 2xC=O from FA
+        usr_lipid_type = usr_lipid_info_dct['TYPE']
 
-            if usr_lipid_info_dct['LINK'] == 'O-A-':
-                tmp_lipid_elem_dct['O'] += -1
-                tmp_lipid_elem_dct['H'] += 2
-            elif usr_lipid_info_dct['LINK'] == 'P-A-':
-                tmp_lipid_elem_dct['O'] += -1
+        if usr_lipid_type in self.lipid_hg_elem_dct.keys():
+            if usr_lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
+                tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
+                tmp_lipid_elem_dct['O'] += 4
+                tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']
+                tmp_lipid_elem_dct['H'] += (self.glycerol_bone_elem_dct['H'] + usr_lipid_info_dct['C'] * 2
+                                            - usr_lipid_info_dct['DB'] * 2)  # DBE = DB + 2xC=O from FA
+                if usr_lipid_info_dct['LINK'] == 'O-A-':
+                    tmp_lipid_elem_dct['O'] += -1
+                    tmp_lipid_elem_dct['H'] += 2
+                elif usr_lipid_info_dct['LINK'] == 'P-A-':
+                    tmp_lipid_elem_dct['O'] += -1
 
-            return tmp_lipid_elem_dct
+                return tmp_lipid_elem_dct
+
+            elif usr_lipid_type in ['TG']:
+                tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
+                tmp_lipid_elem_dct['O'] += 6
+                tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']
+                tmp_lipid_elem_dct['H'] += (self.glycerol_bone_elem_dct['H'] + usr_lipid_info_dct['C'] * 2
+                                            - usr_lipid_info_dct['DB'] * 2)  # DBE = DB + 2xC=O from FA
+                if usr_lipid_info_dct['LINK'] == 'O-A-':
+                    tmp_lipid_elem_dct['O'] += -1
+                    tmp_lipid_elem_dct['H'] += 2
+                elif usr_lipid_info_dct['LINK'] == 'P-A-':
+                    tmp_lipid_elem_dct['O'] += -1
+
+                return tmp_lipid_elem_dct
+
+            else:
+                return {'C': 0, 'H': 0, 'O': 0, 'P': 0}
         else:
             return {'C': 0, 'H': 0, 'O': 0, 'P': 0}
 
@@ -193,8 +213,10 @@ class BulkAbbrFormula(object):
 
 if __name__ == '__main__':
 
-    usr_bulk_abbr_lst = ['PC(36:3)', 'PC(O-36:3)', 'PC(P-36:3)']
-    charge_lst = ['', '[M-H]-', '[M+HCOO]-']
+    # usr_bulk_abbr_lst = ['PC(36:3)', 'PC(O-36:3)', 'PC(P-36:3)']
+    # charge_lst = ['', '[M-H]-', '[M+HCOO]-']
+    usr_bulk_abbr_lst = ['TG(P-48:5)', 'TG(44:0)', 'TG(O-46:5)']
+    charge_lst = ['', '[M+H]+', '[M+NH4]+']
 
     abbr2formula = BulkAbbrFormula()
 
