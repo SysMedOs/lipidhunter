@@ -31,7 +31,7 @@ class BulkAbbrFormula(object):
         pl_checker = re.compile(r'(P[ACEGSI])([(])(.*)([)])')
         pip_checker = re.compile(r'(PIP)([(])(.*)([)])')
         tg_checker = re.compile(r'(TG)([(])(.*)([)])')
-        fa_checker = re.compile(r'(\d{1,2})([:])(\d)')
+        fa_checker = re.compile(r'(\d{1,2})([:])(\d{1,2})')
         fa_o_checker = re.compile(r'(O-)(\d{1,2})([:])(\d)')
         fa_p_checker = re.compile(r'(P-)(\d{1,2})([:])(\d)')
 
