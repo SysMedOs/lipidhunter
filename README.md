@@ -5,7 +5,7 @@ Please read the following instructions before you start to run LipidHunter.
 ### Instructions ###
 
 * How to install LipidHunter
-* [License](#license )
+* [License](#license)
 * [A step by step tutorial](https://bitbucket.org/lpp_team/lipidhunter/wiki/Home)
 
 ### How to install LipidHunter? ###
