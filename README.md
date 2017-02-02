@@ -13,6 +13,8 @@ Please read the following instructions before you start to run LipidHunter.
 * Download the source code
     + https://bitbucket.org/lpp_team/lipidhunter/downloads
 * Install Anaconda and dependencies
+    + Install anaconda
+    + Install dependences
 * Configuration
 * Run the test files
 * Run your data
