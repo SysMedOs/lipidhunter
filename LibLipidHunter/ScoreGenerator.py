@@ -13,13 +13,18 @@ import pandas as pd
 
 
 class ScoreGenerator:
-    def __init__(self, fa_def_df, weight_df, key_frag_df, lipid_type):
+    def __init__(self, fa_def_df, weight_df, key_frag_df, lipid_type, ion_charge='[M-H]-'):
         self.fa_def_df = fa_def_df
         self.weight_df = weight_df
-        self.target_frag_df = key_frag_df.query('CLASS == "%s" and TYPE == "FRAG"' % lipid_type)
-        self.target_nl_df = key_frag_df.query('CLASS == "%s" and TYPE == "NL"' % lipid_type)
-        self.other_frag_df = key_frag_df.query('CLASS != "%s" and TYPE == "FRAG"' % lipid_type)
-        self.other_nl_df = key_frag_df.query('CLASS != "%s" and TYPE == "NL"' % lipid_type)
+        self.target_frag_df = key_frag_df.query(r'CLASS == "%s" and TYPE == "FRAG" and PR_CHARGE == "%s"'
+                                                % (lipid_type, ion_charge))
+        self.target_nl_df = key_frag_df.query(r'CLASS == "%s" and TYPE == "NL" and PR_CHARGE == "%s"'
+                                              % (lipid_type, ion_charge))
+
+        self.other_frag_df = key_frag_df.query('CLASS != "%s" and TYPE == "FRAG" and PR_CHARGE == "%s"'
+                                               % (lipid_type, ion_charge))
+        self.other_nl_df = key_frag_df.query('CLASS != "%s" and TYPE == "NL" and PR_CHARGE == "%s"'
+                                             % (lipid_type, ion_charge))
         self.lipid_type = lipid_type
 
     @staticmethod
@@ -262,8 +267,11 @@ class ScoreGenerator:
                                 else:
                                     _frag_df = _frag_df.append(_frag_ppm_df)
                             if _frag_type == 'sn':
-                                _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [M+H]+' % fa_chk_df.loc[_i, 'FA']
-                                fa_ident_df = fa_ident_df.append(_frag_df)
+                                # No O- and P- as individual frags
+                                _fa_link = fa_chk_df.loc[_i, 'FA']
+                                if _fa_link != 'O' and _fa_link != 'P':
+                                    _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [M+H]+' % fa_chk_df.loc[_i, 'FA']
+                                    fa_ident_df = fa_ident_df.append(_frag_df)
                             elif _frag_type == 'M-sn':
                                 #####################################
                                 # For now is not working

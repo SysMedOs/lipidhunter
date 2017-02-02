@@ -127,7 +127,7 @@ def huntlipids(param_dct):
     # get the information from the following columns and leave the rewark back
     usr_key_frag_df = usr_key_frag_df[['CLASS', 'TYPE', 'EXACTMASS', 'PR_CHARGE', 'LABEL']]
 
-    score_calc = ScoreGenerator(usr_fa_def_df, usr_weight_df, usr_key_frag_df, usr_lipid_type)
+    score_calc = ScoreGenerator(usr_fa_def_df, usr_weight_df, usr_key_frag_df, usr_lipid_type, ion_charge=charge_mode)
 
     print('=== ==> --> Start to parse mzML')
     # extract all spectra from mzML to pandas DataFrame
@@ -146,11 +146,7 @@ def huntlipids(param_dct):
         checked_info_df = checked_info_df.append(_tmp_usr_df)
 
     ms1_obs_mz_lst = usr_df['MS1_obs_mz'].tolist()
-    print ms1_obs_mz_lst
     ms1_obs_mz_lst = set(ms1_obs_mz_lst)
-
-    # print('ms1_obs_mz_lst')
-    # print(ms1_obs_mz_lst)
 
     print('=== ==> --> Start to extract XIC')
     xic_dct = get_xic_all(usr_df, usr_mzml, usr_rt_range, ms1_precision=usr_ms1_precision,
@@ -158,8 +154,8 @@ def huntlipids(param_dct):
 
     print('=== ==> --> Number of XIC extracted: %i' % len(xic_dct.keys()))
 
-    plot_info_dct = {}
-    ms1_pr_mz_lst = []
+    # plot_info_dct = {}
+    # ms1_pr_mz_lst = []
     target_ident_lst = []
     ident_page_idx = 1
 
