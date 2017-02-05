@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
-# A suitable license will be chosen before the official release of oxLPPdb.
-# For more info please contact: zhixu.ni@uni-leipzig.de
+# A suitable license will be chosen before the official release of LipidHunter.
+# For more info please contact:
+#     LPP team oxlpp@bbz.uni-leipzig.de
+#     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
+#     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 from __future__ import division
 import os
+
+from PySide import QtCore, QtGui
 import matplotlib
 
 matplotlib.use('Qt4Agg')
@@ -165,7 +170,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                      color='orange', fontsize=6)
     ms_zoom_pic.text(m2_obs_mz, m2_obs_i, '%.4f' % m2_obs_mz, color='magenta', fontsize=6)
     ms_zoom_pic.text(m1_theo_mz + 0.8, max(ms_zoom_df['i'].tolist()) * 1.2,
-                     'Isotope score %s = %.1f' % (isotope_mode, isotope_score),
+                     'Isotope score = %.1f' % isotope_score,
                      verticalalignment='top', horizontalalignment='right',
                      color='magenta', fontsize=8)
 

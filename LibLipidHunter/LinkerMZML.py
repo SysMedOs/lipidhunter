@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
-# A suitable license will be chosen before the official release of oxLPPdb.
-# For more info please contact: zhixu.ni@uni-leipzig.de
+# A suitable license will be chosen before the official release of LipidHunter.
+# For more info please contact:
+#     LPP team oxlpp@bbz.uni-leipzig.de
+#     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
+#     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 from __future__ import print_function
 
@@ -83,7 +86,6 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
     if vendor == 'waters':
         _function_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)(scan=)(\d*)(.*)')
         for _spectrum in _usr_spectra:
-            _toppeaks_lst = []
 
             try:
                 _spectrum_title = _spectrum[_spec_title_obo]
@@ -121,13 +123,13 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                                 print('Found scan!')
                                 print('Function: %s, Scan_num: %s, Scan_time: %f, pr_m/z: %f ;' %
                                       (_function, _scanid, _prrt, _prmz))
-                                _toppeaks_lst = _spectrum.peaks
-                                _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
-
-                                _toppeaks_df = _toppeaks_df.query('i > %i' % usr_ms2_abs_th)
-                                _toppeaks_df = _toppeaks_df.query('%f < mz < %f' % (mz_start, mz_end))
-
                                 if hg_filter is True:
+                                    _toppeaks_lst = _spectrum.peaks
+                                    _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
+
+                                    _toppeaks_df = _toppeaks_df.query('i > %i' % usr_ms2_abs_th)
+                                    _toppeaks_df = _toppeaks_df.query('%f < mz < %f' % (mz_start, mz_end))
+
                                     # for PC
                                     if pl_class == 'PC' or pl_class == 'SM':
                                         _tmp_frag168_df = _toppeaks_df.query('168 < mz < 169')
@@ -269,13 +271,11 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                                     _out_df = _out_df.append(_tmp_usr_df)
                                     _DDA_count += 0
                                     pass
-
                             else:
                                 print('not identified --->>> skip')
                                 _DDA_count += 0
                     else:
                         _DDA_count += 0
-
                 else:
                     print('NOT MS level')
                     _DDA_count += 0
@@ -284,7 +284,7 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
 
     elif vendor == 'thermo':
         for _spectrum in _usr_spectra:
-            _toppeaks_lst = []
+
             try:
                 ms_level = _spectrum[_spec_level_obo]
                 print('ms_level', ms_level, type(ms_level))
@@ -311,16 +311,11 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                     _prmz = float(_spectrum['MS:1000744'])
                     _prrt = float(_spectrum['MS:1000016'])
                     print(ms_level, _scanid, _prmz, _prrt)
-                    # if rt_start <= _prrt <= rt_end:
+
                     if (ms_level, _scanid) in _usr_ident_lst:
                         print('Found scan!')
                         print('Function: %s, Scan_num: %s, Scan_time: %f, pr_m/z: %f ;' %
                               (ms_level, _scanid, _prrt, _prmz))
-                        _toppeaks_lst = _spectrum.peaks
-                        _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
-
-                        _toppeaks_df = _toppeaks_df.query('i > %i' % usr_ms2_abs_th)
-                        _toppeaks_df = _toppeaks_df.query('%f < mz < %f' % (mz_start, mz_end))
 
                         _usr_df_query_code = 'function == %i & scan_id == %i' % (ms_level, _scanid)
                         # print _usr_df_query_code
@@ -342,6 +337,7 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                     print('NOT MS level')
                     _DDA_count += 0
             except KeyError:
+                _toppeaks_lst = []
                 print('Not MS or MS2', _spectrum['id'])
     # _ms_df = _pre_ms_df.sort_values(by='mz')
     print('_out_df_shape', _out_df.shape)

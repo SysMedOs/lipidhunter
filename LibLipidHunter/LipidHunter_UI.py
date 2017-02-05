@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
+# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
+# The software is currently  under development and is not ready to be released.
+# A suitable license will be chosen before the official release of LipidHunter.
+# For more info please contact:
+#     LPP team oxlpp@bbz.uni-leipzig.de
+#     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
+#     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-# Form implementation generated from reading ui file '.\LipidHunter_UI.ui'
-#
 # Created: Tue Jan 31 12:51:28 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
-#
-# WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):

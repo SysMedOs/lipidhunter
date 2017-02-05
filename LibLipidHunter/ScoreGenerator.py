@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
-# A suitable license will be chosen before the official release of oxLPPdb.
-# For more info please contact: zhixu.ni@uni-leipzig.de
-# Changes: 17/1/2017 Georgia 14:40
+# A suitable license will be chosen before the official release of LipidHunter.
+# For more info please contact:
+#     LPP team oxlpp@bbz.uni-leipzig.de
+#     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
+#     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 from __future__ import division
 
@@ -21,10 +23,17 @@ class ScoreGenerator:
         self.target_nl_df = key_frag_df.query(r'CLASS == "%s" and TYPE == "NL" and PR_CHARGE == "%s"'
                                               % (lipid_type, ion_charge))
 
-        self.other_frag_df = key_frag_df.query('CLASS != "%s" and TYPE == "FRAG" and PR_CHARGE == "%s"'
-                                               % (lipid_type, ion_charge))
-        self.other_nl_df = key_frag_df.query('CLASS != "%s" and TYPE == "NL" and PR_CHARGE == "%s"'
-                                             % (lipid_type, ion_charge))
+        if ion_charge in ['[M-H]-', '[M+HCOO]-', '[M+CH3COO]-', '[M+FA-H]-', '[M+OAc]-']:
+            charge_mode = 'NEG'
+        elif ion_charge in ['[M+H]+', '[M+NH4]+']:
+            charge_mode = 'POS'
+        else:
+            charge_mode = 'NEG'
+
+        self.other_frag_df = key_frag_df.query('CLASS != "%s" and TYPE == "FRAG" and CHARGE_MODE == "%s"'
+                                               % (lipid_type, charge_mode))
+        self.other_nl_df = key_frag_df.query('CLASS != "%s" and TYPE == "NL" and CHARGE_MODE == "%s"'
+                                             % (lipid_type, charge_mode))
         self.lipid_type = lipid_type
 
     @staticmethod
@@ -203,8 +212,9 @@ class ScoreGenerator:
                                 _frag_df = _frag_i_df.append(_frag_ppm_df)
 
                         if _frag_type == 'sn':
-                            _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [M-H]-' % _fa_abbr
-                            fa_ident_df = fa_ident_df.append(_frag_df)
+                            if _fa_link != 'O' and _fa_link != 'P':
+                                _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [M-H]-' % _fa_abbr
+                                fa_ident_df = fa_ident_df.append(_frag_df)
                         elif _frag_type == 'M-sn':
                             if _fa_link in lyso_fa_linker_dct.keys():
                                 if bulk_fa_db - _fa_db >= 0:
@@ -758,7 +768,8 @@ class ScoreGenerator:
                           'LYSO_INFO': lyso_ident_df, 'LYSO_W_INFO': lyso_w_ident_df}
         return match_info_dct
 
-    def get_specific_peaks(self, mz_lib, ms2_df, ms2_precision=50e-6, ms2_threshold=10, ms2_hginfo_threshold=0.02):
+    def get_specific_peaks(self, mz_lib, ms2_df, ms2_precision=50e-6, ms2_threshold=10,
+                           ms2_hginfo_threshold=0.02, vendor='waters'):
 
         _target_frag_df = pd.DataFrame()
         _target_nl_df = pd.DataFrame()
@@ -774,9 +785,27 @@ class ScoreGenerator:
             _frag_mz = _frag_se['EXACTMASS']
             _frag_class = _frag_se['CLASS']
             _frag_label = _frag_se['LABEL']
-
-            _frag_mz_low = _frag_mz - _frag_mz * ms2_precision
-            _frag_mz_high = _frag_mz + _frag_mz * ms2_precision
+            if vendor == 'thermo':
+                if mz_lib < 450.0:
+                    seg_shift = 0.0
+                elif 450.0 <= mz_lib < 600.0:
+                    seg_shift = 0.1
+                elif 600.0 <= mz_lib < 750.0:
+                    seg_shift = 0.2
+                elif 750.0 <= mz_lib < 900.0:
+                    seg_shift = 0.3
+                elif 900.0 <= mz_lib < 1200.0:
+                    seg_shift = 0.4
+                elif 1200.0 <= mz_lib:
+                    seg_shift = 0.5
+                else:
+                    seg_shift = 0.0
+                _delta = _frag_mz * ms2_precision + seg_shift
+                _frag_mz_low = _frag_mz - _delta
+                _frag_mz_high = _frag_mz + _delta
+            else:
+                _frag_mz_low = _frag_mz - _frag_mz * ms2_precision
+                _frag_mz_high = _frag_mz + _frag_mz * ms2_precision
             _frag_mz_query_code = '%f <= mz <= %f and i > %f' % (_frag_mz_low, _frag_mz_high, ms2_threshold)
 
             _frag_df = ms2_df.query(_frag_mz_query_code)
@@ -794,8 +823,29 @@ class ScoreGenerator:
             _frag_class = _frag_se['CLASS']
             _frag_label = _frag_se['LABEL']
 
-            _frag_mz_low = _frag_mz - _frag_mz * ms2_precision
-            _frag_mz_high = _frag_mz + _frag_mz * ms2_precision
+            if vendor == 'thermo':
+                if _frag_mz < 450.0:
+                    seg_shift = 0.0
+                elif 450.0 <= mz_lib < 600.0:
+                    seg_shift = 0.1
+                elif 600.0 <= mz_lib < 750.0:
+                    seg_shift = 0.2
+                elif 750.0 <= mz_lib < 900.0:
+                    seg_shift = 0.3
+                elif 900.0 <= mz_lib < 1200.0:
+                    seg_shift = 0.4
+                elif 1200.0 <= mz_lib:
+                    seg_shift = 0.5
+                else:
+                    seg_shift = 0.0
+
+                _delta = _frag_mz * ms2_precision + seg_shift
+                _frag_mz_low = _frag_mz - _delta
+                _frag_mz_high = _frag_mz + _delta
+
+            else:
+                _frag_mz_low = _frag_mz - _frag_mz * ms2_precision
+                _frag_mz_high = _frag_mz + _frag_mz * ms2_precision
             _frag_mz_query_code = '%f <= mz <= %f and i > %f' % (_frag_mz_low, _frag_mz_high, ms2_threshold)
 
             _frag_df = ms2_df.query(_frag_mz_query_code)
@@ -813,8 +863,30 @@ class ScoreGenerator:
             _nl_class = _nl_se['CLASS']
             _nl_label = _nl_se['LABEL']
 
-            _nl_mz_low = mz_lib - _nl_mz - _nl_mz * ms2_precision
-            _nl_mz_high = mz_lib - _nl_mz + _nl_mz * ms2_precision
+            if vendor == 'thermo':
+                if mz_lib < 450.0:
+                    seg_shift = 0.0
+                elif 450.0 <= mz_lib < 600.0:
+                    seg_shift = 0.1
+                elif 600.0 <= mz_lib < 750.0:
+                    seg_shift = 0.2
+                elif 750.0 <= mz_lib < 900.0:
+                    seg_shift = 0.3
+                elif 900.0 <= mz_lib < 1200.0:
+                    seg_shift = 0.4
+                elif 1200.0 <= mz_lib:
+                    seg_shift = 0.5
+                else:
+                    seg_shift = 0.0
+
+                _delta = (mz_lib - _nl_mz) * ms2_precision * ms2_precision + seg_shift
+                _nl_mz_low = mz_lib - _nl_mz - _delta
+                _nl_mz_high = mz_lib - _nl_mz + _delta
+
+            else:
+                _nl_mz_low = mz_lib - _nl_mz - _nl_mz * ms2_precision
+                _nl_mz_high = mz_lib - _nl_mz + _nl_mz * ms2_precision
+
             _nl_mz_query_code = '%f <= mz <= %f and i > %f' % (_nl_mz_low, _nl_mz_high, ms2_threshold)
 
             _nl_df = ms2_df.query(_nl_mz_query_code)
@@ -832,11 +904,35 @@ class ScoreGenerator:
             _nl_class = _nl_se['CLASS']
             _nl_label = _nl_se['LABEL']
 
-            _nl_mz_low = mz_lib - _nl_mz - _nl_mz * ms2_precision
-            _nl_mz_high = mz_lib - _nl_mz + _nl_mz * ms2_precision
+            if vendor == 'thermo':
+                if mz_lib < 450.0:
+                    seg_shift = 0.0
+                elif 450.0 <= mz_lib < 600.0:
+                    seg_shift = 0.1
+                elif 600.0 <= mz_lib < 750.0:
+                    seg_shift = 0.2
+                elif 750.0 <= mz_lib < 900.0:
+                    seg_shift = 0.3
+                elif 900.0 <= mz_lib < 1200.0:
+                    seg_shift = 0.4
+                elif 1200.0 <= mz_lib:
+                    seg_shift = 0.5
+                else:
+                    seg_shift = 0.0
+
+                _delta = (mz_lib - _nl_mz) * ms2_precision + seg_shift
+                _nl_mz_low = mz_lib - _nl_mz - _delta
+                _nl_mz_high = mz_lib - _nl_mz + _delta
+
+            else:
+                _nl_mz_low = mz_lib - _nl_mz - _nl_mz * ms2_precision
+                _nl_mz_high = mz_lib - _nl_mz + _nl_mz * ms2_precision
+
             _nl_mz_query_code = '%f <= mz <= %f and i > %f' % (_nl_mz_low, _nl_mz_high, ms2_threshold)
 
             _nl_df = ms2_df.query(_nl_mz_query_code)
+            print('_other_nl_df')
+            print(_nl_df)
 
             if _nl_df.shape[0] > 0:
                 _nl_df = _nl_df.sort_values(by='i', ascending=False)
