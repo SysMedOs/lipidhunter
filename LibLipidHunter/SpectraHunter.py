@@ -219,6 +219,10 @@ def huntlipids(param_dct):
                     print('>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
                     print(type(_row_se))
                     _row_se.set_value('MS1_obs_mz', _ms1_pr_mz)
+                    _exact_ppm = 1e6 * (_ms1_pr_mz - _usr_mz_lib) / _usr_mz_lib
+                    print(_row_se)
+                    _row_se.set_value('ppm', _exact_ppm)
+                    _row_se.set_value('abs_ppm', abs(_exact_ppm))
                     print(_row_se)
                     match_info_dct = score_calc.get_match(_usr_abbr_bulk, charge_mode, _ms1_pr_mz, _ms2_df,
                                                           ms2_precision=usr_ms2_precision,
@@ -326,7 +330,7 @@ def huntlipids(param_dct):
                                 _tmp_output_df['Scan#'] = _usr_ms2_scan_id
                                 _tmp_output_df['Specific_peaks'] = target_frag_count + target_nl_count
                                 _tmp_output_df['Contaminated_peaks'] = other_frag_count + other_nl_count
-                                _tmp_output_df['ppm'] = usr_spec_info_dct['ms1_pr_ppm']
+                                _tmp_output_df['ppm'] = _exact_ppm
                                 _tmp_output_df['Isotope_score'] = '%.2f' % isotope_score
 
                                 output_df = output_df.append(_tmp_output_df)

@@ -182,6 +182,8 @@ class ScoreGenerator:
             fa_chk_df['M-(sn-H2O)'] = calc_pr_mz - fa_chk_df['NL-H2O']
             fa_chk_df['Proposed_structures'] = ''
 
+            fa_abbr_lst = fa_chk_df['FA'].tolist()
+
             for _i, _fa_se in fa_chk_df.iterrows():
 
                 _fa_abbr = _fa_se['FA']
@@ -219,23 +221,24 @@ class ScoreGenerator:
                             if _fa_link in lyso_fa_linker_dct.keys():
                                 if bulk_fa_db - _fa_db >= 0:
                                     _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
-                                    _frag_df.loc[:, 'Proposed_structures'] = ('Lyso%s(%s%i:%i) [M-H2O-H]-'
-                                                                              % (pl_typ, _fa_lyso_link,
-                                                                                 bulk_fa_c - _fa_c, bulk_fa_db - _fa_db
-                                                                                 )
-                                                                              )
-                                    lyso_ident_df = lyso_ident_df.append(_frag_df)
+                                    _fa_lyso_str = '%s%i:%i' % (_fa_lyso_link, bulk_fa_c - _fa_c, bulk_fa_db - _fa_db)
+                                    # keep theoretical common Lyso PL only
+                                    if _fa_lyso_str in fa_abbr_lst:
+                                        _frag_df.loc[:, 'Proposed_structures'] = ('Lyso%s(%s) [M-H2O-H]-'
+                                                                                  % (pl_typ, _fa_lyso_str)
+                                                                                  )
+                                        lyso_ident_df = lyso_ident_df.append(_frag_df)
                         elif _frag_type == 'M-(sn-H2O)':
                             if _fa_link in lyso_fa_linker_dct.keys():
                                 if bulk_fa_db - _fa_db >= 0:
                                     _fa_lyso_link = lyso_fa_linker_dct[_fa_link]
-                                    _frag_df.loc[:, 'Proposed_structures'] = 'Lyso%s(%s%i:%i) [M-H]-' % (
-                                        pl_typ, _fa_lyso_link,
-                                        bulk_fa_c - _fa_c,
-                                        bulk_fa_db - _fa_db
-                                    )
-
-                                    lyso_w_ident_df = lyso_w_ident_df.append(_frag_df)
+                                    _fa_lyso_str = '%s%i:%i' % (_fa_lyso_link, bulk_fa_c - _fa_c, bulk_fa_db - _fa_db)
+                                    # keep theoretical common Lyso PL only
+                                    if _fa_lyso_str in fa_abbr_lst:
+                                        _frag_df.loc[:, 'Proposed_structures'] = ('Lyso%s(%s) [M-H]-'
+                                                                                  % (pl_typ, _fa_lyso_str)
+                                                                                  )
+                                        lyso_w_ident_df = lyso_w_ident_df.append(_frag_df)
 
         elif lipid_type == 'GL' and charge_mode == 'POS':
             _fa_combination = []
