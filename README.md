@@ -27,15 +27,15 @@ Please read the following instructions before you start to run LipidHunter.
         
   * Install Canopy
     
-        Canopy is available from the following link:
+      Canopy is available from the following link:
         
-        https://store.enthought.com/downloads/#default
+      https://store.enthought.com/downloads/#default
         
-         ![CanopyWeb](https://bitbucket.org/repo/oGzkj4/images/159508366-01-download_canopy.JPG)
+      ![CanopyWeb](https://bitbucket.org/repo/oGzkj4/images/159508366-01-download_canopy.JPG)
          
-         Download the package that is supported from your computer system and install the program.
+      Download the package that is supported in your computer system and install the program.
             
-         Also, you need to create an account and ask for the Academic License.
+      Also, you need to create an account and ask for the Academic License.
             
 * Install dependencies
     * For professional users. 
@@ -81,6 +81,7 @@ Please read the following instructions before you start to run LipidHunter.
 * Run the test files
         
         Files will be provided in later
+
 * Run your data
 
 * Problems
