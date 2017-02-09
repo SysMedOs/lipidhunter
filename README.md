@@ -19,7 +19,7 @@ Please read the following instructions before you start to run LipidHunter.
           
        https://www.continuum.io/downloads
             
-       ![web-interface](https://bitbucket.org/repo/oGzkj4/images/939759706-01-downloadLink.PNG)
+       ![web-interface](https://bitbucket.org/repo/oGzkj4/images/3053513373-AnacondaLink.PNG)
              
       Download the appropriated packages.
       An .exe file will be downloaded. 
@@ -39,22 +39,25 @@ Please read the following instructions before you start to run LipidHunter.
             
 * Install dependencies
     * For professional users. 
+  
+          Install the following python packages:
        
-       Install the following python packages:
-       
-            - pandas
-            - scipy
-            - matplotlib
-            - pymzml
-            - xlrd
-            - openpyxl
-            - pyside
-            - ipython
+              - pandas
+              - scipy
+              - matplotlib
+              - pymzml
+              - xlrd
+              - openpyxl
+              - pyside
+              - ipython
+
+
     * Use Anaconda (recommended)
         
         The following link contains step by step introduction how to install the different dependencies for Anaconda.
     
           https://bitbucket.org/lpp_team/lipidhunter/wiki/Run%20LipidHuntr%20throw%20Anaconda
+
     * Use Canopy (Academic Version) (recommended for Mac Users)
     
         The following link contains step by step introduction how to install the different dependencies
@@ -80,7 +83,7 @@ Please read the following instructions before you start to run LipidHunter.
 
 * Run the test files
         
-        Files will be provided in later
+        Files will be provided later
 
 * Run your data
 
