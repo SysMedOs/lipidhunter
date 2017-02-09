@@ -46,7 +46,16 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
         # links
         self.ui.logo_lb.setOpenExternalLinks(True)
         self.ui.tab_c_3_lb.setOpenExternalLinks(True)
-        self.ui.tab_c_5_lb.setOpenExternalLinks(True)
+        self.ui.tab_c_taglink_lb.setOpenExternalLinks(True)
+
+        self.ui.tab_c_tag_line.hide()
+        self.ui.tab_c_tag_lb.hide()
+        self.ui.tab_c_taglink_lb.hide()
+
+        self.ui.tab_d_lipidclass_cmb.removeItem(7)
+        self.ui.tab_d_lipidclass_cmb.removeItem(6)
+        self.ui.tab_e_lipidclass_cmb.removeItem(7)
+        self.ui.tab_e_lipidclass_cmb.removeItem(6)
 
         self.d_set_hgfilter()
 
@@ -210,7 +219,7 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
                 _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-4] + 'xlsx'
                 _ms_df = extractor.get_ms_all(_mzml, params_dct=a_extractor_param_dct, vendor=usr_vendor)
                 # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
-                _ms_df.to_excel(_xlsx_path)
+                _ms_df.to_excel(_xlsx_path, index=False)
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Save as: \n%s.xlsx \n' % _mzml[0:-4]))
         self.ui.tab_a_statusextractor_pte.insertPlainText(u'Finished!')
 
@@ -239,13 +248,13 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
         if cm_pkl_df.shape[0] > 500000:
             cm_pkl_df_p1 = cm_pkl_df[:500000, :]
             print(cm_pkl_df_p1.shape)
-            cm_pkl_df_p1.to_csv(''.join([_save_csv_str[0:-4], ['_1.csv']]))
+            cm_pkl_df_p1.to_csv(''.join([_save_csv_str[0:-4], ['_1.csv']]), index=False)
             cm_pkl_df_p2 = cm_pkl_df[500000:, :]
             print(cm_pkl_df_p2.shape)
-            cm_pkl_df_p2.to_csv(''.join([_save_csv_str[0:-4], ['_2.csv']]))
+            cm_pkl_df_p2.to_csv(''.join([_save_csv_str[0:-4], ['_2.csv']]), index=False)
             _save_csv_str = ''.join([_save_csv_str[0:-4], ['_1.csv'], '\n', _save_csv_str[0:-4], ['_2.csv']])
         else:
-            cm_pkl_df.to_csv(_save_csv_str)
+            cm_pkl_df.to_csv(_save_csv_str, index=False)
 
         self.ui.tab_a_statusmerger_pte.insertPlainText(unicode('Merged and saved as %s' % _save_csv_str))
 
@@ -324,15 +333,17 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
                 _mzml_path, _mzml_name = os.path.split(_mzml)
                 self.ui.tab_b_statusrun_pte.insertPlainText(unicode('Start processing...\n%s \n' % _mzml))
 
-                _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_all_scan_info.xlsx'
+                # _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_all_scan_info.xlsx'
                 _xlsx_ms2_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-5] + '_ms2_info.xlsx'
-                _ms_df = extractor.get_scan_events(_mzml, params_dct=b_extractor_param_dct, vendor=usr_vendor)
+                _ms2_df = extractor.get_scan_events(_mzml, params_dct=b_extractor_param_dct, vendor=usr_vendor)
                 # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
-                _ms_df.to_excel(_xlsx_path)
-                _ms_df['function'] = _ms_df['function'].astype(int)
-                _ms2_df = _ms_df[_ms_df['function'] > 1]
-                _ms2_df = _ms2_df.reset_index()
-                _ms2_df.to_excel(_xlsx_ms2_path)
+                # _ms_df.to_excel(_xlsx_path)
+                _ms2_df['DDA_rank'] = _ms2_df['DDA_rank'].astype(int)
+                _ms2_df['scan_number'] = _ms2_df['scan_number'].astype(int)
+                # _ms2_df = _ms_df[_ms_df['DDA_rank'] > 1]
+                # _ms2_df = _ms2_df.reset_index(drop=True)
+                _ms2_df = _ms2_df[['DDA_rank', 'scan_number', 'scan_time', 'MS2_PR_mz']]
+                _ms2_df.to_excel(_xlsx_ms2_path, index=False)
                 self.ui.tab_b_statusrun_pte.insertPlainText(unicode('Save as: \n%s.xlsx \n' % _mzml[0:-4]))
         self.ui.tab_b_statusrun_pte.insertPlainText(u'Finished!')
 
@@ -461,9 +472,9 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             _obs_mz_h = _obs_mz + ms2_delta
 
             if usr_vendor == 'thermo':
-                _query_code = '%f <= mz <= %f' % (_obs_mz, _obs_mz_h)
+                _query_code = '%f <= MS2_PR_mz <= %f' % (_obs_mz, _obs_mz_h)
             else:
-                _query_code = '%f <= mz <= %f' % (_obs_mz_l, _obs_mz_h)
+                _query_code = '%f <= MS2_PR_mz <= %f' % (_obs_mz_l, _obs_mz_h)
 
             _temp_df = ms2_df.query(_query_code)
             if _temp_df.shape[0] > 0:
@@ -496,7 +507,7 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
 
         final_output_df = final_output_df[final_output_df['MS1_obs_mz'] > 0]
         try:
-            final_output_df.to_excel(_output_path_str)
+            final_output_df.to_excel(_output_path_str, index=False)
             self.ui.tab_d_statusrun_pte.insertPlainText(u'Finished!')
         except KeyError:
             self.ui.tab_d_statusrun_pte.insertPlainText(u'Nothing found! Check mzML vendor settings!')
@@ -649,12 +660,12 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             config.write(usr_param_cfg)
 
         print(hunter_param_dct)
-        try:
-            tot_run_time = huntlipids(hunter_param_dct)
-            self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
-            self.ui.tab_e_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
-        except KeyError:
-            self.ui.tab_e_statusrun_pte.insertPlainText('!! Failed read input files, please check vendor settings!!')
+        # try:
+        tot_run_time = huntlipids(hunter_param_dct)
+        self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
+        self.ui.tab_e_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+        # except KeyError:
+        #     self.ui.tab_e_statusrun_pte.insertPlainText('!! Failed read input files, please check vendor settings!!')
 
     def f_set_default_cfg(self):
         config = configparser.ConfigParser()

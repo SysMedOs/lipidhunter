@@ -106,11 +106,14 @@ class LogPageCreator(object):
             pass
 
     def add_info(self, img_name, ident_idx, ident_info_df):
+
+        print('try to add identification to report html')
+
         img_path = img_name[1:]
         ident_idx = str(ident_idx)
 
-        ms2_pr_mz = ident_info_df.get_value(1, 'MS2_PR_MZ')
-        ms2_rt = ident_info_df.get_value(1, 'MS2_rt')
+        ms2_pr_mz = ident_info_df.get_value(1, r'MS2_PR_mz')
+        ms2_rt = ident_info_df.get_value(1, 'MS2_scan_time')
         dda = ident_info_df.get_value(1, 'DDA#')
         ms2_scan_id = ident_info_df.get_value(1, 'Scan#')
         abbr_bulk = ident_info_df.get_value(1, 'Bulk_identification')
@@ -159,6 +162,8 @@ class LogPageCreator(object):
                         '''.format(id=ident_idx, mz='%.4f' % ms2_pr_mz, rt='%.1f' % ms2_rt,
                                    bulk=abbr_bulk, score=score))
             idx_page.write(idx_str)
+
+        print('==> info added to report html -->')
 
     def close_page(self):
         with open(self.main_page, 'a') as _m_page:

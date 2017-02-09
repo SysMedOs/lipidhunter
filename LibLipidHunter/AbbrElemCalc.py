@@ -180,19 +180,25 @@ class BulkAbbrFormula(object):
         else:
             elem_dct = self.get_charged_elem(abbr, charge=charge)
 
-        formula_str = 'C{C}H{H}O{O}'.format(C=elem_dct['C'], H=elem_dct['H'], O=elem_dct['O'])
-
-        if 'P' in elem_dct.keys():
-            if elem_dct['P'] == 1:
-                formula_str += 'P'
-            elif elem_dct['P'] > 1:
-                formula_str += 'P%i' % elem_dct['P']
+        formula_str = 'C{C}H{H}'.format(C=elem_dct['C'], H=elem_dct['H'])
 
         if 'N' in elem_dct.keys():
             if elem_dct['N'] == 1:
                 formula_str += 'N'
             elif elem_dct['N'] > 1:
                 formula_str += 'N%i' % elem_dct['N']
+
+        if 'O' in elem_dct.keys():
+            if elem_dct['O'] == 1:
+                formula_str += 'O'
+            elif elem_dct['O'] > 1:
+                formula_str += 'O%i' % elem_dct['O']
+
+        if 'P' in elem_dct.keys():
+            if elem_dct['P'] == 1:
+                formula_str += 'P'
+            elif elem_dct['P'] > 1:
+                formula_str += 'P%i' % elem_dct['P']
 
         if 'Na' in elem_dct.keys():
             if elem_dct['Na'] == 1:

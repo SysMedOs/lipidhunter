@@ -62,7 +62,7 @@ class Extractor(object):
                 # end hot patch
 
         _usr_spectra = pymzml.run.Reader(usr_mzml)
-        _pre_ms_df = pd.DataFrame(columns=['mz', 'i', 'rt', 'scan_id'])
+        _pre_ms_df = pd.DataFrame(columns=['MS2_PR_mz', 'i', 'scan_time', 'scan_number'])
         _spec_title_obo = 'MS:1000796'
         _spec_level_obo = 'MS:1000511'
         # _thermo_title_obo = 'MS:1000768'
@@ -94,8 +94,8 @@ class Extractor(object):
                                 _toppeaks_lst = _spectrum.peaks
                                 _pre_toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
                                 _toppeaks_df = _pre_toppeaks_df.query('%f <= mz <= %f' % (mz_start, mz_end))
-                                _toppeaks_df['rt'] = _rt
-                                _toppeaks_df['scan_id'] = _spectrum['id']
+                                _toppeaks_df.loc[:, 'scan_time'] = _rt
+                                _toppeaks_df.loc[:, 'scan_number'] = _spectrum['id']
                                 _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
                     else:
                         print('NOT MS level')
@@ -116,8 +116,8 @@ class Extractor(object):
                             _toppeaks_lst = _spectrum.peaks
                             _pre_toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
                             _toppeaks_df = _pre_toppeaks_df.query('%f <= mz <= %f' % (mz_start, mz_end))
-                            _toppeaks_df['rt'] = _rt
-                            _toppeaks_df['scan_id'] = _spectrum['id']
+                            _toppeaks_df.loc[:, 'scan_time'] = _rt
+                            _toppeaks_df.loc[:, 'scan_number'] = _spectrum['id']
                             _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
                         else:
                             print('NOT MS level')
@@ -147,11 +147,11 @@ class Extractor(object):
         mz_start = params_dct['mz_start']
         mz_end = params_dct['mz_end']
         ms1_th = params_dct['ms1_th']
-        ms2_th = params_dct['ms2_th']
+        # ms2_th = params_dct['ms2_th']
         dda_top = params_dct['dda_top']
 
         _usr_spectra = pymzml.run.Reader(usr_mzml)
-        _pre_ms_df = pd.DataFrame(columns=['function', 'scan_id', 'rt', 'mz', 'i'])
+        _pre_ms_df = pd.DataFrame(columns=['DDA_rank', 'scan_number', 'scan_time', 'MS2_PR_mz', 'i'])
 
         # _ms2_function_lst = ['2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
         _ms2_function_lst = [str(i) for i in range(2, dda_top+1)]
@@ -178,32 +178,30 @@ class Extractor(object):
                         _rt = _spectrum['MS:1000016']
                         if rt_start <= float(_rt) <= rt_end:
 
-                            if _function == '1':
-                                print ('Function: %s, Scan_num: %s, Scan_time: %s;' %
-                                       (_function, _scan, _rt))
-                                _toppeaks_lst = _spectrum.peaks
-                                _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
-                                _toppeaks_df['function'] = _function
-                                _toppeaks_df['rt'] = _rt
-                                _toppeaks_df['scan_id'] = _scan
-                                # _toppeaks_df = _toppeaks_df.sort_values(by='mz', ascending=False)
-                                _toppeaks_df = _toppeaks_df[(_toppeaks_df['mz'] >= mz_start) &
-                                                            (_toppeaks_df['mz'] <= mz_end)]
-                                _toppeaks_df = _toppeaks_df[_toppeaks_df['i'] >= ms1_th]
-                                _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
+                            # if _function == '1':
+                            #     print ('Function: %s, Scan_num: %s, Scan_time: %s;' %
+                            #            (_function, _scan, _rt))
+                            #     _toppeaks_lst = _spectrum.peaks
+                            #     _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['MS2_PR_mz', 'i'])
+                            #     _toppeaks_df['DDA_rank'] = _function
+                            #     _toppeaks_df['scan_time'] = _rt
+                            #     _toppeaks_df['scan_number'] = _scan
+                            #     # _toppeaks_df = _toppeaks_df.sort_values(by='mz', ascending=False)
+                            #     _toppeaks_df = _toppeaks_df[(_toppeaks_df['mz'] >= mz_start) &
+                            #                                 (_toppeaks_df['mz'] <= mz_end)]
+                            #     _toppeaks_df = _toppeaks_df[_toppeaks_df['i'] >= ms1_th]
+                            #     _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
 
                             if _function in _ms2_function_lst:
                                 if mz_start <= float(_spectrum[_ms2_pr_obo]) <= mz_end:
                                     print ('Function: %s, Scan_num: %s, Scan_time: %s, PR%s;' %
                                            (_function, _scan, _rt, _spectrum[_ms2_pr_obo]))
                                     _toppeaks_lst = [(_spectrum['MS:1000744'], 0)]
-                                    _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
-                                    _toppeaks_df['function'] = _function
-                                    _toppeaks_df['rt'] = _rt
-                                    _toppeaks_df['scan_id'] = _scan
-                                    # _toppeaks_df = _toppeaks_df.sort_values(by='mz', ascending=False)
-                                    # pr has i == 0
-                                    # _toppeaks_df = _toppeaks_df[_toppeaks_df['i'] >= ms2_th]
+                                    _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['MS2_PR_mz', 'i'])
+                                    # function 1 is MS survey scan
+                                    _toppeaks_df.loc[:, 'DDA_rank'] = int(_function) - 1
+                                    _toppeaks_df.loc[:, 'scan_time'] = _rt
+                                    _toppeaks_df.loc[:, 'scan_number'] = _scan
                                     _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
 
                         else:
@@ -213,7 +211,8 @@ class Extractor(object):
 
         if vendor == 'thermo':
             for _spectrum in _usr_spectra:
-                # _toppeaks_lst = []
+
+                dda_rank_idx = 0
                 if _spec_level_obo in _spectrum.keys():
                     rt = float(_spectrum['MS:1000016'])
                     print(rt)
@@ -223,34 +222,35 @@ class Extractor(object):
                     _rt = _spectrum['MS:1000016']
                     if rt_start <= float(_rt) <= rt_end:
                         if ms_level == 1:
-                            print ('Function: %s, Scan_num: %s, Scan_time: %s;' %
-                                   (ms_level, _spectrum['id'], _rt))
-                            _toppeaks_lst = _spectrum.peaks
-                            _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
-                            _toppeaks_df['function'] = ms_level
-                            _toppeaks_df['rt'] = _rt
-                            _toppeaks_df['scan_id'] = _spectrum['id']
-                            # _toppeaks_df = _toppeaks_df.sort_values(by='mz', ascending=False)
-                            _toppeaks_df = _toppeaks_df[(_toppeaks_df['mz'] >= mz_start) &
-                                                        (_toppeaks_df['mz'] <= mz_end)]
-                            _toppeaks_df = _toppeaks_df[_toppeaks_df['i'] >= ms1_th]
-                            _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
+                            # print ('Function: %s, Scan_num: %s, Scan_time: %s;' %
+                            #        (ms_level, _spectrum['id'], _rt))
+                            # _toppeaks_lst = _spectrum.peaks
+                            # _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['MS2_PR_mz', 'i'])
+                            # _toppeaks_df['DDA_rank'] = ms_level
+                            # _toppeaks_df['scan_time'] = _rt
+                            # _toppeaks_df['scan_number'] = _spectrum['id']
+                            # # _toppeaks_df = _toppeaks_df.sort_values(by='mz', ascending=False)
+                            # _toppeaks_df = _toppeaks_df[(_toppeaks_df['mz'] >= mz_start) &
+                            #                             (_toppeaks_df['mz'] <= mz_end)]
+                            # _toppeaks_df = _toppeaks_df[_toppeaks_df['i'] >= ms1_th]
+                            # _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
+                            dda_rank_idx = 0
 
                         elif ms_level == 2:
+                            dda_rank_idx += 1
                             if mz_start <= float(_spectrum[_ms2_pr_obo]) <= mz_end:
                                 print ('Function: %s, Scan_num: %s, Scan_time: %s, PR%s;' %
                                        (ms_level, _spectrum['id'], _rt, _spectrum[_ms2_pr_obo]))
                                 _toppeaks_lst = [(_spectrum['MS:1000744'], 0)]
-                                _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
-                                _toppeaks_df['function'] = ms_level
-                                _toppeaks_df['rt'] = _rt
-                                _toppeaks_df['scan_id'] = _spectrum['id']
-                                # _toppeaks_df = _toppeaks_df.sort_values(by='mz', ascending=False)
-                                # _toppeaks_df = _toppeaks_df[_toppeaks_df['i'] >= ms2_th]
+                                _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['MS2_PR_mz', 'i'])
+                                _toppeaks_df.loc[:, 'DDA_rank'] = dda_rank_idx
+                                _toppeaks_df.loc[:, 'scan_time'] = _rt
+                                _toppeaks_df.loc[:, 'scan_number'] = _spectrum['id']
                                 _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
 
                     else:
                         print ('NOT in RT range')
+                        dda_rank_idx = 0
 
         print('_ms_df_shape', _pre_ms_df.shape)
         return _pre_ms_df
