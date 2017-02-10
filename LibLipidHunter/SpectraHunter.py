@@ -168,6 +168,8 @@ def huntlipids(param_dct):
     # ms1_pr_mz_lst = []
     target_ident_lst = []
     ident_page_idx = 1
+    print('checked_info_df')
+    print(checked_info_df.shape)
 
     # get spectra of one ABBR and plot
     for _n, _subgroup_df in checked_info_df.groupby(['MS2_PR_mz', 'Lib_mz', 'Formula', 'scan_time', 'Abbreviation']):
@@ -208,10 +210,14 @@ def huntlipids(param_dct):
 
                 print('>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
 
-                isotope_score, isotope_checker_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
-                                                                                      _usr_formula_charged, _ms1_df,
-                                                                                      isotope_number=2,
-                                                                                      only_c=usr_fast_isotope)
+                isotope_score_info_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
+                                                                          _usr_formula_charged, _ms1_df,
+                                                                          isotope_number=2,
+                                                                          only_c=usr_fast_isotope,
+                                                                          score_filter=usr_isotope_score_filter)
+
+                isotope_score = isotope_score_info_dct['isotope_score']
+
                 print('isotope_score: %f' % isotope_score)
                 if isotope_score >= usr_isotope_score_filter:
                     print('>>> isotope_check PASSED! >>> >>> >>>')
@@ -266,7 +272,7 @@ def huntlipids(param_dct):
 
                             isotope_checker, isotope_score = plot_spectra(_row_se, xic_dct, usr_ident_info_dct,
                                                                           usr_spec_info_dct, specific_check_dct,
-                                                                          isotope_checker_dct, isotope_score,
+                                                                          isotope_score_info_dct,
                                                                           _usr_formula_charged, _usr_charge,
                                                                           save_img_as=img_name,
                                                                           ms1_precision=usr_ms1_precision,

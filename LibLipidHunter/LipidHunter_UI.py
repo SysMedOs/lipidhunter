@@ -1108,7 +1108,7 @@ class Ui_MainWindow(object):
         self.label_60.setText(QtGui.QApplication.translate("MainWindow", "1. Select the complete search result table in your web browser and copy", None, QtGui.QApplication.UnicodeUTF8))
         self.label_54.setText(QtGui.QApplication.translate("MainWindow", "2. Paste the table into your spreadsheet software e.g. Microsoft Office Excel or LibreOffice Calc", None, QtGui.QApplication.UnicodeUTF8))
         self.label_62.setText(QtGui.QApplication.translate("MainWindow", "3. Remove repeated table headers and save as .xlsx", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_59.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Online instructions: <a href=\"https://bitbucket.org/lpp_team/lipidhunter/wiki/\"><span style=\" text-decoration: underline; color:#0000ff;\">https://bitbucket.org/lpp_team/lipidhunter/wiki/</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_59.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Online instructions: <a href=\"https://bitbucket.org/SysMedOs/lipidhunter/wiki/\"><span style=\" text-decoration: underline; color:#0000ff;\">https://bitbucket.org/SysMedOs/lipidhunter/wiki/</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.tabframe.setTabText(self.tabframe.indexOf(self.search_tab), QtGui.QApplication.translate("MainWindow", "III. Bulk Search", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_lipidstable_pb.setText(QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_4_lb.setText(QtGui.QApplication.translate("MainWindow", "Input .mzML file:", None, QtGui.QApplication.UnicodeUTF8))
@@ -1198,8 +1198,8 @@ class Ui_MainWindow(object):
         self.label_44.setText(QtGui.QApplication.translate("MainWindow", "       For commercial use please contact the developers:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_27.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Under GPL v2 License: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_45.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>oxlpp@bbz.uni-leipzig.de</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_28.setText(QtGui.QApplication.translate("MainWindow", "Project page: https://bitbucket.org/lpp_team/lipidhunter", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_29.setText(QtGui.QApplication.translate("MainWindow", "Online tutorial: https://bitbucket.org/lpp_team/lipidhunter/wiki/", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_28.setText(QtGui.QApplication.translate("MainWindow", "Project page: https://bitbucket.org/SysMedOs/lipidhunter", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_29.setText(QtGui.QApplication.translate("MainWindow", "Online tutorial: https://bitbucket.org/SysMedOs/lipidhunter/wiki/", None, QtGui.QApplication.UnicodeUTF8))
         self.label_37.setText(QtGui.QApplication.translate("MainWindow", "Please cite our publication:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_30.setText(QtGui.QApplication.translate("MainWindow", "We acknowlege all open source libraries used in LipidHunter:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_31.setText(QtGui.QApplication.translate("MainWindow", "matplotlib", None, QtGui.QApplication.UnicodeUTF8))
@@ -1225,7 +1225,7 @@ class Ui_MainWindow(object):
         self.vendor_thermo_rb.setText(QtGui.QApplication.translate("MainWindow", "Thermo", None, QtGui.QApplication.UnicodeUTF8))
         self.label_24.setText(QtGui.QApplication.translate("MainWindow", "Mode:", None, QtGui.QApplication.UnicodeUTF8))
         self.mode_lcms_rb.setText(QtGui.QApplication.translate("MainWindow", "LC-MS/MS", None, QtGui.QApplication.UnicodeUTF8))
-        self.mode_static_rb.setText(QtGui.QApplication.translate("MainWindow", "Static measurement", None, QtGui.QApplication.UnicodeUTF8))
+        self.mode_static_rb.setText(QtGui.QApplication.translate("MainWindow", "Shotgun", None, QtGui.QApplication.UnicodeUTF8))
         self.logo_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>LipidHunter (C) 2016-2017 | <a href=\"http://www.zv.uni-leipzig.de/\"><span style=\" text-decoration: underline; color:#0000ff;\">University of Leipzig</span></a> | <a href=\"http://research.uni-leipzig.de/bioanalytik/\"><span style=\" text-decoration: underline; color:#0000ff;\">AG Bioanalytik</span></a> | <a href=\"https://home.uni-leipzig.de/fedorova/\"><span style=\" text-decoration: underline; color:#0000ff;\">Fedorova Research Group</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
 
 import LipidHunter_rcc
