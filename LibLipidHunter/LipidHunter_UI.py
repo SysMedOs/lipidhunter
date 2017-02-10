@@ -6,10 +6,10 @@
 #     LPP team oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
-
-# Form implementation generated from reading ui file 'LipidHunter_UI.ui'
 #
-# Created: Thu Feb 09 00:25:10 2017
+# Form implementation generated from reading ui file '.\LipidHunter_UI.ui'
+#
+# Created: Fri Feb 10 16:16:02 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -718,7 +718,7 @@ class Ui_MainWindow(object):
         self.tab_e_hgthreshold_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
         self.tab_e_hgthreshold_spb.setDecimals(0)
         self.tab_e_hgthreshold_spb.setMaximum(999999.0)
-        self.tab_e_hgthreshold_spb.setProperty("value", 100.0)
+        self.tab_e_hgthreshold_spb.setProperty("value", 10.0)
         self.tab_e_hgthreshold_spb.setObjectName("tab_e_hgthreshold_spb")
         self.horizontalLayout_13.addWidget(self.tab_e_hgthreshold_spb)
         self.label_18 = QtGui.QLabel(self.gridLayoutWidget_5)
@@ -734,7 +734,7 @@ class Ui_MainWindow(object):
         self.label_39.setObjectName("label_39")
         self.horizontalLayout_13.addWidget(self.label_39)
         self.tab_e_ms2hginfoth_dspb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
-        self.tab_e_ms2hginfoth_dspb.setProperty("value", 2.0)
+        self.tab_e_ms2hginfoth_dspb.setProperty("value", 0.1)
         self.tab_e_ms2hginfoth_dspb.setObjectName("tab_e_ms2hginfoth_dspb")
         self.horizontalLayout_13.addWidget(self.tab_e_ms2hginfoth_dspb)
         spacerItem28 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -764,7 +764,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_15.addWidget(self.tab_d_ms2threshold_spb_2)
         self.tab_e_ms2threshold_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
         self.tab_e_ms2threshold_spb.setMaximum(999999)
-        self.tab_e_ms2threshold_spb.setProperty("value", 100)
+        self.tab_e_ms2threshold_spb.setProperty("value", 10)
         self.tab_e_ms2threshold_spb.setObjectName("tab_e_ms2threshold_spb")
         self.horizontalLayout_15.addWidget(self.tab_e_ms2threshold_spb)
         self.label_16 = QtGui.QLabel(self.gridLayoutWidget_5)
@@ -779,7 +779,7 @@ class Ui_MainWindow(object):
         self.label_38.setObjectName("label_38")
         self.horizontalLayout_15.addWidget(self.label_38)
         self.tab_e_ms2infoth_dspb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
-        self.tab_e_ms2infoth_dspb.setProperty("value", 2.0)
+        self.tab_e_ms2infoth_dspb.setProperty("value", 0.1)
         self.tab_e_ms2infoth_dspb.setObjectName("tab_e_ms2infoth_dspb")
         self.horizontalLayout_15.addWidget(self.tab_e_ms2infoth_dspb)
         spacerItem30 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -808,7 +808,7 @@ class Ui_MainWindow(object):
         self.tab_e_isotopescore_spb.setMinimumSize(QtCore.QSize(0, 0))
         self.tab_e_isotopescore_spb.setPrefix("")
         self.tab_e_isotopescore_spb.setDecimals(1)
-        self.tab_e_isotopescore_spb.setProperty("value", 85.0)
+        self.tab_e_isotopescore_spb.setProperty("value", 75.0)
         self.tab_e_isotopescore_spb.setObjectName("tab_e_isotopescore_spb")
         self.horizontalLayout_17.addWidget(self.tab_e_isotopescore_spb)
         spacerItem31 = QtGui.QSpacerItem(0, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -1191,15 +1191,15 @@ class Ui_MainWindow(object):
         self.tab_f_hgcfg_pb.setText(QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_f_fawhitelist_pb.setText(QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
         self.tabframe.setTabText(self.tabframe.indexOf(self.cfg_tab), QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_25.setText(QtGui.QApplication.translate("MainWindow", "LipidHunter Beta relased date: 09, Feb, 2017", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_26.setText(QtGui.QApplication.translate("MainWindow", "Developed by: LPPdb team", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_25.setText(QtGui.QApplication.translate("MainWindow", "LipidHunter Beta relased date: 10, Feb, 2017", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_26.setText(QtGui.QApplication.translate("MainWindow", "Developed by: SysMedOs team", None, QtGui.QApplication.UnicodeUTF8))
         self.label_43.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:600;\">LipidHunter is Dual-Licensed:</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_42.setText(QtGui.QApplication.translate("MainWindow", "       For academic & non-commercial use:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_44.setText(QtGui.QApplication.translate("MainWindow", "       For commercial use please contact the developers:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_27.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Under GPL v2 License: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_45.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>oxlpp@bbz.uni-leipzig.de</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_28.setText(QtGui.QApplication.translate("MainWindow", "Project page: https://bitbucket.org/SysMedOs/lipidhunter", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_29.setText(QtGui.QApplication.translate("MainWindow", "Online tutorial: https://bitbucket.org/SysMedOs/lipidhunter/wiki/", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_28.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Project page:<a href=\" https://bitbucket.org/SysMedOs/lipidhunter\"><span style=\" text-decoration: underline; color:#0000ff;\">https://bitbucket.org/SysMedOs/lipidhunter</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_29.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Online tutorial: <a href=\"https://bitbucket.org/SysMedOs/lipidhunter/wiki/\"><span style=\" text-decoration: underline; color:#0000ff;\">https://bitbucket.org/SysMedOs/lipidhunter/wiki/</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_37.setText(QtGui.QApplication.translate("MainWindow", "Please cite our publication:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_30.setText(QtGui.QApplication.translate("MainWindow", "We acknowlege all open source libraries used in LipidHunter:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_31.setText(QtGui.QApplication.translate("MainWindow", "matplotlib", None, QtGui.QApplication.UnicodeUTF8))

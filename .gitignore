@@ -96,3 +96,4 @@ ENV/
 /temp/
 temp/
 /.gitignore
+/ConfigurationFiles/ScoreTG_cfg.xlsx

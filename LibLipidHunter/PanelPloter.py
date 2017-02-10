@@ -114,7 +114,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     ms_zoom_pic.add_patch(m_pre_theo_box)
 
     ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 4.35])
-    ms_zoom_pic.set_ylim([0, max(ms_zoom_df['i'].tolist()) * 1.3])
+    ms_zoom_pic.set_ylim([0, max(ms_zoom_df['i'].tolist()) * 1.1])
     ms_zoom_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0), fontsize=10)
     ms_zoom_pic.ticklabel_format(axis='x', useOffset=False, fontsize=10)
     ms_zoom_pic.set_xlabel('m/z', fontsize=10, labelpad=-1)
@@ -440,7 +440,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
 
     print ('>>> >>> >>> try to plot >>> >>> >>>')
 
-    plt.savefig(save_img_as, dpi=300)
+    plt.savefig(save_img_as, dpi=600)
     print ('=====> Image saved as: %s' % save_img_as)
     plt.close()
     isotope_checker = 0

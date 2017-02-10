@@ -125,15 +125,15 @@ class LogPageCreator(object):
         with open(self.image_lst_page, 'a') as img_page:
             # convert info df to html table code
             if self.lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
-                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_M-sn1', 'i_M-sn2',
-                                'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']
+                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
+                                'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
             elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
                 plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_sn3',
                                 'i_M-sn1', 'i_M-sn2', 'i_M-sn3',
                                 'i_M-(sn1+sn2)', 'i_M-(sn1+sn3)', 'i_M-(sn2+sn3)']
             else:
-                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_M-sn1', 'i_M-sn2',
-                                'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']
+                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
+                                'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
             ident_col = ident_info_df.columns.tolist()
 
             for _col in plot_df_cols:

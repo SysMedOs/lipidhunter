@@ -356,13 +356,13 @@ def huntlipids(param_dct):
                                 'i_M-sn3': 2, 'i_M-(sn1+sn2)': 2, 'i_M-(sn2+sn3)': 2, 'i_M-(sn1+sn3)': 2
                                 }
         else:
-            for _i_check in ['i_sn1', 'i_sn2', 'i_M-sn1', 'i_M-sn2', 'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']:
+            for _i_check in ['i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']:
                 if _i_check not in output_header_lst:
                     output_df[_i_check] = 0.0
 
             output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3,
-                                'i_sn1': 2, 'i_sn2': 2, 'i_M-sn1': 2, 'i_M-sn2': 2,
-                                'i_M-(sn1-H2O)': 2, 'i_M-(sn2-H2O)': 2
+                                'i_sn1': 2, 'i_sn2': 2, 'i_[M-H]-sn1': 2, 'i_[M-H]-sn2': 2,
+                                'i_[M-H]-sn1-H2O': 2, 'i_[M-H]-sn2-H2O': 2
                                 }
         # add intensities of target peaks to round list
         if len(target_ident_lst) > 0:
@@ -384,7 +384,7 @@ def huntlipids(param_dct):
             output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Formula_neutral', 'Formula_ion',
                                  'Charge', 'Lib_mz', 'ppm', 'LipidHunter_Score', 'MS1_obs_mz', 'MS1_obs_i',
                                  'Isotope_score', r'MS2_PR_mz', 'MS2_scan_time', 'DDA#', 'Scan#', 'i_sn1', 'i_sn2',
-                                 'i_M-sn1', 'i_M-sn2', 'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)', '#Specific_peaks']
+                                 'i_[M-H]-sn1', 'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O', '#Specific_peaks']
         output_header_lst += target_ident_lst
         output_header_lst += ['#Unspecific_peaks']
         print(output_df.head())
