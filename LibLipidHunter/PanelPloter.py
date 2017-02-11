@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
-# A suitable license will be chosen before the official release of oxLPPdb.
-# For more info please contact: zhixu.ni@uni-leipzig.de
+# A suitable license will be chosen before the official release of LipidHunter.
+# For more info please contact:
+#     LPP team oxlpp@bbz.uni-leipzig.de
+#     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
+#     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 from __future__ import division
-
 import os
 
+from PySide import QtCore, QtGui
 import matplotlib
 
 matplotlib.use('Qt4Agg')
-matplotlib.rcParams['backend.qt4'] = 'PySide'
-
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
 import matplotlib as mpl
@@ -22,20 +23,25 @@ import pandas as pd
 
 
 def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_dct,
-                 isotope_checker_dct, isotope_score, formula_charged, charge,
+                 isotope_score_info_dct, formula_charged, charge,
                  save_img_as=None, ms1_precision=50e-6, score_mode='Rank mode', isotope_mode=''):
-    ms2_pr_mz = mz_se['mz']
+    ms2_pr_mz = mz_se['MS2_PR_mz']
     ms1_obs = mz_se['MS1_obs_mz']
     lib_mz = mz_se['Lib_mz']
     abbr_id = mz_se['Abbreviation']
-    func_id = mz_se['function']
+    func_id = mz_se['DDA_rank']
     ms1_pr_ppm = mz_se['ppm']
     # _usr_formula = mz_se['Formula']
     # _usr_ms2_function = mz_se['function']
     # _usr_ms2_scan_id = mz_se['scan_id']
     # _usr_rt = mz_se['rt']
     # _usr_abbr_bulk = mz_se['Abbreviation']
-    # _usr_pl_class = mz_se['Class']
+    pl_type = mz_se['Class']
+
+    isotope_score = isotope_score_info_dct['isotope_score']
+    isotope_checker_dct = isotope_score_info_dct['isotope_checker_dct']
+    m2_score = isotope_score_info_dct['m2_score']
+    m2_checker_dct = isotope_score_info_dct['m2_checker_dct']
 
     ms1_delta = lib_mz * ms1_precision
 
@@ -46,7 +52,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     ms1_df = spec_info_dct['ms1_df']
     ms2_df = spec_info_dct['ms2_df']
 
-    ms_zoom_query_str = ' %.2f < mz < %.2f' % (ms1_obs - 2.1, ms1_obs + 2.1)
+    ms_zoom_query_str = ' %.2f < mz < %.2f' % (ms1_obs - 1.5, ms1_obs + 4.55)
     ms_zoom_df = ms1_df.query(ms_zoom_query_str)
 
     print ('Start looking for MS2 PR m/z %f @ MS1 best PR m/z %f with lib m/z %f'
@@ -107,8 +113,11 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                        facecolor=(1.0, 0.0, 0.0, 0.4), edgecolor="none")
     ms_zoom_pic.add_patch(m_pre_theo_box)
 
-    ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 2.35])
-    ms_zoom_pic.set_ylim([0, max(ms_zoom_df['i'].tolist()) * 1.3])
+    ms_zoom_bp_i = max(ms_zoom_df['i'].tolist())
+    ms_zoom_offset_i = ms_zoom_bp_i * 0.1
+
+    ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 4.55])
+    ms_zoom_pic.set_ylim([0, ms_zoom_bp_i * 1.2])
     ms_zoom_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0), fontsize=10)
     ms_zoom_pic.ticklabel_format(axis='x', useOffset=False, fontsize=10)
     ms_zoom_pic.set_xlabel('m/z', fontsize=10, labelpad=-1)
@@ -126,7 +135,8 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     markerline, stemlines, baseline = ms_zoom_pic.stem([lib_mz], [ms1_pr_i], '--', markerfmt='o')
     plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
     plt.setp(stemlines, color='orange', alpha=0.8)
-    ms_zoom_pic.text(lib_mz - 0.7, ms1_pr_i, 'Calc m/z: %.4f' % lib_mz, color='orange', fontsize=6)
+    ms_zoom_pic.text(lib_mz - 0.15, ms1_pr_i + ms_zoom_offset_i, '[M+0]', color='orange', fontsize=6)
+    ms_zoom_pic.text(lib_mz - 0.81, ms1_pr_i, 'Calc: %.4f' % lib_mz, color='orange', fontsize=6)
 
     # isotope region | highlight the 1st isotope
     m1_dct = isotope_checker_dct[1]
@@ -146,45 +156,86 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                                        markerfmt='o')
     plt.setp(stemlines, color='orange', alpha=0.8)
     plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
-    ms_zoom_pic.text(m1_theo_mz - 0.93, m1_theo_i, 'Calc 1st isotope: %.4f' % m1_theo_mz,
+    ms_zoom_pic.text(m1_theo_mz - 0.15, m1_theo_i + ms_zoom_offset_i, '[M+1]', color='orange', fontsize=6)
+    ms_zoom_pic.text(m1_theo_mz - 0.81, m1_theo_i, 'Calc: %.4f' % m1_theo_mz,
                      color='orange', fontsize=6)
-    ms_zoom_pic.text(m1_obs_mz, m1_obs_i, '%.4f' % m1_obs_mz, color='magenta', fontsize=6)
+    ms_zoom_pic.text(m1_obs_mz + 0.05, m1_obs_i, '%.4f' % m1_obs_mz, color='magenta', fontsize=6)
 
     # isotope region | highlight the 2nd isotope
-    m2_dct = isotope_checker_dct[2]
-    m2_theo_mz = m2_dct['theo_mz']
-    m2_theo_i = m2_dct['theo_i']
-    m2_obs_mz = m2_dct['obs_mz']
-    m2_obs_i = m2_dct['obs_i']
-    m2_theo_r = m2_dct['theo_ratio']
-    # m2_obs_r = m2_dct['obs_ratio']
-    m2_theo_box = patches.Rectangle((m2_theo_mz - ms1_delta, 0), 2 * ms1_delta, m2_theo_i,
-                                    facecolor=(0.2, 1.0, 1.0, 0.6), edgecolor="none")
-    ms_zoom_pic.add_patch(m2_theo_box)
-    markerline, stemlines, baseline = ms_zoom_pic.stem([m2_theo_mz], [m2_theo_i], '--',
-                                                       markerfmt='o')
-    plt.setp(stemlines, color='orange', alpha=0.8)
-    plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
-    ms_zoom_pic.text(m2_theo_mz - 0.93, m2_theo_i, 'Calc 2nd isotope: %.4f' % m2_theo_mz,
-                     color='orange', fontsize=6)
-    ms_zoom_pic.text(m2_obs_mz, m2_obs_i, '%.4f' % m2_obs_mz, color='magenta', fontsize=6)
-    ms_zoom_pic.text(m1_theo_mz + 0.8, max(ms_zoom_df['i'].tolist()) * 1.2,
-                     'Isotope score %s = %.1f' % (isotope_mode, isotope_score),
+    if 2 in isotope_checker_dct.keys():
+        m2_dct = isotope_checker_dct[2]
+        m2_theo_mz = m2_dct['theo_mz']
+        m2_theo_i = m2_dct['theo_i']
+        m2_obs_mz = m2_dct['obs_mz']
+        m2_obs_i = m2_dct['obs_i']
+        # m2_theo_r = m2_dct['theo_ratio']
+        # m2_obs_r = m2_dct['obs_ratio']
+        m2_theo_box = patches.Rectangle((m2_theo_mz - ms1_delta, 0), 2 * ms1_delta, m2_theo_i,
+                                        facecolor=(0.2, 1.0, 1.0, 0.6), edgecolor="none")
+        ms_zoom_pic.add_patch(m2_theo_box)
+        markerline, stemlines, baseline = ms_zoom_pic.stem([m2_theo_mz], [m2_theo_i], '--',
+                                                           markerfmt='o')
+        plt.setp(stemlines, color='orange', alpha=0.8)
+        plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
+        ms_zoom_pic.text(m2_theo_mz - 0.15, m2_theo_i + ms_zoom_offset_i, '[M+2]', color='orange', fontsize=6)
+        plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
+        ms_zoom_pic.text(m2_theo_mz - 0.81, m2_theo_i, 'Calc: %.4f' % m2_theo_mz,
+                         color='orange', fontsize=6)
+        ms_zoom_pic.text(m2_obs_mz + 0.05, m2_obs_i, '%.4f' % m2_obs_mz, color='magenta', fontsize=6)
+
+    if len(m2_checker_dct.keys()) > 0:
+        for _mh2 in m2_checker_dct.keys():
+            mh2_dct = m2_checker_dct[_mh2]
+            mh2_theo_mz = mh2_dct['theo_mz']
+            mh2_theo_i = mh2_dct['theo_i']
+            mh2_obs_mz = mh2_dct['obs_mz']
+            mh2_obs_i = mh2_dct['obs_i']
+            # mh2_theo_r = mh2_dct['theo_ratio']
+            # mh2_obs_r = mh2_dct['obs_ratio']
+            mh2_theo_box = patches.Rectangle((mh2_theo_mz - ms1_delta, 0), 2 * ms1_delta, mh2_theo_i,
+                                             facecolor=(1.0, 0.0, 0.0, 0.4), edgecolor="none")
+            ms_zoom_pic.add_patch(mh2_theo_box)
+            markerline, stemlines, baseline = ms_zoom_pic.stem([mh2_theo_mz], [mh2_theo_i], '--',
+                                                               markerfmt='o')
+            plt.setp(stemlines, color='red', alpha=0.8)
+            plt.setp(markerline, markerfacecolor='red', markersize=6, markeredgewidth=0, alpha=0.9)
+            if _mh2 == 0:
+                _mh2_name = ''
+            else:
+                _mh2_name = '+%i' % _mh2
+            ms_zoom_pic.text(mh2_theo_mz - 0.2 - 0.05 * _mh2, mh2_theo_i + 2 * ms_zoom_offset_i, '[M+2H%s]' % _mh2_name,
+                             color='red', fontsize=6)
+            ms_zoom_pic.text(mh2_theo_mz - 0.81, mh2_theo_i, 'Calc: %.4f' % mh2_theo_mz,
+                             color='red', fontsize=6)
+            ms_zoom_pic.text(mh2_obs_mz + 0.05, mh2_obs_i, '%.4f' % mh2_obs_mz, color='red', fontsize=6)
+
+        # plot the M+H2 isotope score
+        ms_zoom_pic.text(m1_theo_mz + 3.1, ms1_pr_i - 2 * ms_zoom_offset_i,
+                         '[M+H2] Isotope score = %.1f' % m2_score,
+                         verticalalignment='top', horizontalalignment='right',
+                         color='red', fontsize=8)
+            
+    # plot the isotope score
+    ms_zoom_pic.text(m1_theo_mz + 1.2, ms_zoom_bp_i + ms_zoom_offset_i,
+                     'Isotope score = %.1f' % isotope_score,
                      verticalalignment='top', horizontalalignment='right',
-                     color='magenta', fontsize=8)
+                     color='magenta', fontsize=10)
 
     # XIC spectrum start
     xic_rt_lst = xic_df['rt'].tolist()
     xic_i_lst = xic_df['i'].tolist()
+    xic_rt_min = min(xic_rt_lst)
+    xic_rt_max = max(xic_rt_lst)
+    xic_rt_label_shift = (xic_rt_max - xic_rt_min) * 0.04
     xic_pic.plot(xic_rt_lst, xic_i_lst, alpha=0.7, color='grey')
     xic_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
     markerline, stemlines, baseline = xic_pic.stem([ms1_rt], [max(xic_i_lst)], markerfmt=' ')
     plt.setp(stemlines, color='magenta', linewidth=3, alpha=0.3)
     markerline, stemlines, baseline = xic_pic.stem([ms2_rt], [max(xic_i_lst)], '--', markerfmt=' ')
     plt.setp(stemlines, color='blue', linewidth=2, alpha=0.3)
-    xic_pic.text(ms1_rt - 0.3, max(xic_i_lst) * 0.98, 'MS', fontsize=8, color='magenta')
+    xic_pic.text(ms1_rt - xic_rt_label_shift, max(xic_i_lst) * 0.98, 'MS', fontsize=8, color='magenta')
     xic_pic.text(ms2_rt, max(xic_i_lst) * 0.98, 'MS/MS', fontsize=8, color='blue')
-    xic_pic.set_xlabel("RT (min)", fontsize=10, labelpad=-1)
+    xic_pic.set_xlabel("Scan time (min)", fontsize=10, labelpad=-1)
     xic_pic.set_ylabel("Intensity", fontsize=10)
 
     # prepare DataFrame for msms zoomed plot
@@ -232,9 +283,14 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         fa_table_vals = map(list, _fa_table_df.values)
         # fa_col_width_lst = [0.025 * len(str(x)) for x in fa_col_labels]
         fa_col_width_lst = [0.3, 0.1, 0.1, 0.1]
-        fa_table = msms_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
-                                  colWidths=fa_col_width_lst, rowColours=fa_row_color_lst,
-                                  colLabels=fa_col_labels, loc='upper center')
+        if pl_type == 'TG':
+            fa_table = msms_low_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
+                                          colWidths=fa_col_width_lst, rowColours=fa_row_color_lst,
+                                          colLabels=fa_col_labels, loc='upper center')
+        else:
+            fa_table = msms_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
+                                      colWidths=fa_col_width_lst, rowColours=fa_row_color_lst,
+                                      colLabels=fa_col_labels, loc='upper center')
         fa_table.set_fontsize(6)
 
     if _lyso_table_df.shape[0] > 0:
@@ -264,9 +320,14 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         # lyso_col_width_lst = [0.01 * len(str(x)) for x in lyso_col_labels]
         lyso_col_width_lst = [0.3, 0.1, 0.1, 0.1]
 
-        lyso_table = msms_high_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
-                                         colWidths=lyso_col_width_lst, rowColours=lyso_row_color_lst,
-                                         colLabels=lyso_col_labels, loc='upper center')
+        if pl_type == 'TG':
+            lyso_table = msms_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
+                                        colWidths=lyso_col_width_lst, rowColours=lyso_row_color_lst,
+                                        colLabels=lyso_col_labels, loc='upper center')
+        else:
+            lyso_table = msms_high_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
+                                             colWidths=lyso_col_width_lst, rowColours=lyso_row_color_lst,
+                                             colLabels=lyso_col_labels, loc='upper center')
         lyso_table.set_fontsize(6)
 
     # msms spectrum zoomed < 350 start
@@ -373,9 +434,9 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
 
     # set title
     xic_title_str = 'XIC of m/z %.4f | %s @ m/z %.4f ppm=%.2f' % (ms1_pr_mz, abbr_id, lib_mz, ms1_pr_ppm)
-    ms_title_str = 'MS @ %.3f min | Score mode: %s' % (ms1_rt, score_mode)
-    ms_zoom_title_str = 'MS zoomed| Theoretical isotope distribution for %s %s' % (formula_charged, charge)
-    msms_title_str = ('MS/MS of m/z %.4f | DDA Top %d @ %.3f min' % (ms2_pr_mz, func_id, ms2_rt))
+    ms_title_str = 'MS @ %.3f min' % ms1_rt
+    ms_zoom_title_str = 'Theoretical isotopic distribution for %s %s' % (formula_charged, charge)
+    msms_title_str = ('MS/MS for m/z %.4f | DDA rank %d @ %.3f min' % (ms2_pr_mz, func_id, ms2_rt))
     msms_low_str = 'MS/MS zoomed below m/z 350'
     msms_high_str = 'MS/MS zoomed above m/z 350'
 
@@ -388,7 +449,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
 
     print ('>>> >>> >>> try to plot >>> >>> >>>')
 
-    plt.savefig(save_img_as, dpi=300)
+    plt.savefig(save_img_as, dpi=600)
     print ('=====> Image saved as: %s' % save_img_as)
     plt.close()
     isotope_checker = 0

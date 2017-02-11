@@ -9,13 +9,9 @@
 
 
 import os
-from PySide import QtGui
 from LibLipidHunter.LipidHunter_Core import LipidHunterCore
-import sys
 
 if __name__ == '__main__':
     usr_cwd = os.getcwd()
-    gui = QtGui.QApplication(sys.argv)
     LipidHunter = LipidHunterCore(cwd=usr_cwd)
     LipidHunter.show()
-    sys.exit(gui.exec_())

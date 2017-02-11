@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
-# A suitable license will be chosen before the official release of oxLPPdb.
-# For more info please contact: zhixu.ni@uni-leipzig.de
+# A suitable license will be chosen before the official release of LipidHunter.
+# For more info please contact:
+#     LPP team oxlpp@bbz.uni-leipzig.de
+#     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
+#     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 from __future__ import print_function
 
@@ -40,15 +43,14 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
     usr_ms2_abs_th = params_dct['MS2_THRESHOLD']
 
     dda_top = params_dct['DDA_TOP']
-    print(dda_top)
-    # from min to sec
+
     rt_start = params_dct['RT_START']
     rt_end = params_dct['RT_END']
     mz_start = params_dct['MZ_START']
     mz_end = params_dct['MZ_END']
 
-    header_basics = ['function', 'scan_id', 'mz', 'rt', 'MS1_obs_mz', 'Lib_mz', 'Abbreviation', 'Formula', 'Ion',
-                     'Class', 'DDA_event']
+    header_basics = ['DDA_rank', 'scan_number', 'MS2_PR_mz', 'scan_time', 'MS1_obs_mz', 'Lib_mz',
+                     'Abbreviation', 'Formula', 'Ion', 'Class', 'DDA_event']
 
     if pl_class == 'PC':
         header = header_basics + ['MZ_NL-60', 'I_NL-60', 'MZ_FRAG-168', 'I_FRAG-168', 'MZ_FRAG-224', 'I_FRAG-224']
@@ -65,48 +67,40 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
 
     print('header', header)
 
-    _pre_ms_df = pd.DataFrame(columns=['function', 'scan_id', 'rt', 'mz', 'i'])
     # Waters spectra function 1 is MS level, function 2-->n-1 are MS2 spectra, function n is lock spray
     _ms2_function_lst = range(2, dda_top + 1)
     _spec_title_obo = 'MS:1000796'
     _spec_level_obo = 'MS:1000511'
 
-    _usr_func_lst = usr_df['function'].tolist()
-    _usr_scanid_lst = usr_df['scan_id'].tolist()
-    _usr_prmz_lst = usr_df['mz'].tolist()
+    _usr_func_lst = usr_df['DDA_rank'].tolist()
+    _usr_scanid_lst = usr_df['scan_number'].tolist()
     _usr_ident_lst = zip(_usr_func_lst, _usr_scanid_lst)
 
     # # set default settings#
     _out_df = pd.DataFrame()
-    _ms1_df = pd.DataFrame()
+    # _ms1_df = pd.DataFrame()
     _DDA_count = 0
     if vendor == 'waters':
         _function_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)(scan=)(\d*)(.*)')
         for _spectrum in _usr_spectra:
-            _toppeaks_lst = []
 
             try:
                 _spectrum_title = _spectrum[_spec_title_obo]
                 _function_checker = _function_re.match(_spectrum_title)
                 if _function_checker:
                     _function = int(_function_checker.groups()[2])
-                    # print(_function)
-                    # _scanid = int(_function_checker.groups()[5])
 
                     if _function == 1:
                         print('MS1 level --->>>')
-                        # if _DDA_count == 0:
-                        #     _DDA_count = 1
-                        # else:
-                        #     pass
+
                         _ms1_rt = _spectrum['MS:1000016']
                         if rt_start <= _ms1_rt <= rt_end:
-                            _tmp_ms1_lst = _spectrum.peaks
-                            _tmp_ms1_df = pd.DataFrame(data=_tmp_ms1_lst, columns=['mz', 'i'])
-                            _tmp_ms1_df = _tmp_ms1_df[_tmp_ms1_df['i'] >= usr_ms_abs_th]
-                            _tmp_ms1_df['DDA_event'] = _DDA_count
-                            _tmp_ms1_df['rt'] = _ms1_rt
-                            _ms1_df = _ms1_df.append(_tmp_ms1_df)
+                            # _tmp_ms1_lst = _spectrum.peaks
+                            # _tmp_ms1_df = pd.DataFrame(data=_tmp_ms1_lst, columns=['mz', 'i'])
+                            # _tmp_ms1_df = _tmp_ms1_df[_tmp_ms1_df['i'] >= usr_ms_abs_th]
+                            # _tmp_ms1_df['DDA_event'] = _DDA_count
+                            # _tmp_ms1_df['scan_time'] = _ms1_rt
+                            # _ms1_df = _ms1_df.append(_tmp_ms1_df)
                             _DDA_count += 1
 
                     if _function in _ms2_function_lst:
@@ -121,13 +115,13 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                                 print('Found scan!')
                                 print('Function: %s, Scan_num: %s, Scan_time: %f, pr_m/z: %f ;' %
                                       (_function, _scanid, _prrt, _prmz))
-                                _toppeaks_lst = _spectrum.peaks
-                                _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
-
-                                _toppeaks_df = _toppeaks_df.query('i > %i' % usr_ms2_abs_th)
-                                _toppeaks_df = _toppeaks_df.query('%f < mz < %f' % (mz_start, mz_end))
-
                                 if hg_filter is True:
+                                    _toppeaks_lst = _spectrum.peaks
+                                    _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
+
+                                    _toppeaks_df = _toppeaks_df.query('i > %i' % usr_ms2_abs_th)
+                                    _toppeaks_df = _toppeaks_df.query('%f < mz < %f' % (mz_start, mz_end))
+
                                     # for PC
                                     if pl_class == 'PC' or pl_class == 'SM':
                                         _tmp_frag168_df = _toppeaks_df.query('168 < mz < 169')
@@ -138,7 +132,9 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                                         if (_tmp_frag168_df.shape[0] > 0 or _tmp_frag224_df.shape[0] > 0 or
                                                 _tmp_nl60_df.shape[0] > 0):
                                             print('------------------>>>>>> found key peaks')
-                                            _usr_df_query_code = 'function == %i & scan_id == %i' % (_function, _scanid)
+                                            # Waters function 1 is MS survey scan
+                                            _usr_df_query_code = 'DDA_rank == %i & scan_number == %i' % (_function - 1,
+                                                                                                     _scanid)
                                             # print _usr_df_query_code
                                             _tmp_usr_df = usr_df.query(_usr_df_query_code)
 
@@ -160,10 +156,7 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                                             else:
                                                 pass
                                             if _tmp_usr_df.shape[0] > 0:
-                                                _tmp_usr_df['rt'] = _prrt
-                                                # _tmp_usr_df['prmz'] = _prmz
-                                                # _tmp_usr_df['f_func'] = _function
-                                                # _tmp_usr_df['f_scan'] = _scanid
+                                                _tmp_usr_df['scan_time'] = _prrt
                                                 _tmp_usr_df['DDA_event'] = _DDA_count
                                             print('_tmp_usr_df', _tmp_usr_df.head())
                                             _out_df = _out_df.append(_tmp_usr_df)
@@ -180,7 +173,9 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
 
                                         if _tmp_frag196_df.shape[0] > 0 or _tmp_pr_df.shape[0] > 0:
                                             print('------------------>>>>>> found key peaks')
-                                            _usr_df_query_code = 'function == %i & scan_id == %i' % (_function, _scanid)
+                                            # Waters function 1 is MS survey scan
+                                            _usr_df_query_code = 'DDA_rank == %i & scan_number == %i' % (_function - 1,
+                                                                                                     _scanid)
                                             # print _usr_df_query_code
                                             _tmp_usr_df = usr_df.query(_usr_df_query_code)
 
@@ -197,10 +192,7 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                                             else:
                                                 pass
                                             if _tmp_usr_df.shape[0] > 0:
-                                                _tmp_usr_df['rt'] = _prrt
-                                                # _tmp_usr_df['prmz'] = _prmz
-                                                # _tmp_usr_df['f_func'] = _function
-                                                # _tmp_usr_df['f_scan'] = _scanid
+                                                _tmp_usr_df['scan_time'] = _prrt
                                                 _tmp_usr_df['DDA_event'] = _DDA_count
                                             _out_df = _out_df.append(_tmp_usr_df)
                                             _DDA_count += 0
@@ -215,7 +207,9 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
 
                                         if _tmp_nl_df.shape[0] > 0:
                                             print('------------------>>>>>> found key peaks')
-                                            _usr_df_query_code = 'function == %i & scan_id == %i' % (_function, _scanid)
+                                            # Waters function 1 is MS survey scan
+                                            _usr_df_query_code = 'DDA_rank == %i & scan_number == %i' % (_function - 1,
+                                                                                                     _scanid)
                                             # print _usr_df_query_code
                                             _tmp_usr_df = usr_df.query(_usr_df_query_code)
 
@@ -227,10 +221,7 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                                             else:
                                                 pass
                                             if _tmp_usr_df.shape[0] > 0:
-                                                _tmp_usr_df['rt'] = _prrt
-                                                # _tmp_usr_df['prmz'] = _prmz
-                                                # _tmp_usr_df['f_func'] = _function
-                                                # _tmp_usr_df['f_scan'] = _scanid
+                                                _tmp_usr_df['scan_time'] = _prrt
                                                 _tmp_usr_df['DDA_event'] = _DDA_count
                                             _out_df = _out_df.append(_tmp_usr_df)
                                             _DDA_count += 0
@@ -242,14 +233,13 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                                     else:
                                         if pl_class in ['PA', 'PG', 'PI', 'PIP', 'TG']:
                                             print('for PA. PG, PIP and TG')
-                                            _usr_df_query_code = 'function == %i & scan_id == %i' % (_function, _scanid)
+                                            # Waters function 1 is MS survey scan
+                                            _usr_df_query_code = 'DDA_rank == %i & scan_number == %i' % (_function - 1,
+                                                                                                     _scanid)
                                             # print _usr_df_query_code
                                             _tmp_usr_df = usr_df.query(_usr_df_query_code)
                                             if _tmp_usr_df.shape[0] > 0:
-                                                _tmp_usr_df['rt'] = _prrt
-                                                # _tmp_usr_df['prmz'] = _prmz
-                                                # _tmp_usr_df['f_func'] = _function
-                                                # _tmp_usr_df['f_scan'] = _scanid
+                                                _tmp_usr_df['scan_time'] = _prrt
                                                 _tmp_usr_df['DDA_event'] = _DDA_count
                                             _out_df = _out_df.append(_tmp_usr_df)
                                             _DDA_count += 0
@@ -257,25 +247,22 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
 
                                 # No hg filter
                                 else:
-                                    _usr_df_query_code = 'function == %i & scan_id == %i' % (_function, _scanid)
+                                    # Waters function 1 is MS survey scan
+                                    _usr_df_query_code = 'DDA_rank == %i & scan_number == %i' % (_function - 1,
+                                                                                             _scanid)
                                     # print _usr_df_query_code
                                     _tmp_usr_df = usr_df.query(_usr_df_query_code)
                                     if _tmp_usr_df.shape[0] > 0:
-                                        _tmp_usr_df['rt'] = _prrt
-                                        # _tmp_usr_df['prmz'] = _prmz
-                                        # _tmp_usr_df['f_func'] = _function
-                                        # _tmp_usr_df['f_scan'] = _scanid
+                                        _tmp_usr_df['scan_time'] = _prrt
                                         _tmp_usr_df['DDA_event'] = _DDA_count
                                     _out_df = _out_df.append(_tmp_usr_df)
                                     _DDA_count += 0
                                     pass
-
                             else:
                                 print('not identified --->>> skip')
                                 _DDA_count += 0
                     else:
                         _DDA_count += 0
-
                 else:
                     print('NOT MS level')
                     _DDA_count += 0
@@ -284,25 +271,21 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
 
     elif vendor == 'thermo':
         for _spectrum in _usr_spectra:
-            _toppeaks_lst = []
+
             try:
                 ms_level = _spectrum[_spec_level_obo]
                 print('ms_level', ms_level, type(ms_level))
                 _spectrum_title = _spectrum[_spec_title_obo]
                 if ms_level == 1:
                     print('MS1 level --->>>')
-                    # if _DDA_count == 0:
-                    #     _DDA_count = 1
-                    # else:
-                    #     pass
                     _ms1_rt = _spectrum['MS:1000016']
                     # if rt_start <= _ms1_rt <= rt_end:
-                    _tmp_ms1_lst = _spectrum.peaks
-                    _tmp_ms1_df = pd.DataFrame(data=_tmp_ms1_lst, columns=['mz', 'i'])
-                    _tmp_ms1_df = _tmp_ms1_df[_tmp_ms1_df['i'] >= usr_ms_abs_th]
-                    _tmp_ms1_df['DDA_event'] = _DDA_count
-                    _tmp_ms1_df['rt'] = _ms1_rt
-                    _ms1_df = _ms1_df.append(_tmp_ms1_df)
+                    # _tmp_ms1_lst = _spectrum.peaks
+                    # _tmp_ms1_df = pd.DataFrame(data=_tmp_ms1_lst, columns=['mz', 'i'])
+                    # _tmp_ms1_df = _tmp_ms1_df[_tmp_ms1_df['i'] >= usr_ms_abs_th]
+                    # _tmp_ms1_df['DDA_event'] = _DDA_count
+                    # _tmp_ms1_df['scan_time'] = _ms1_rt
+                    # _ms1_df = _ms1_df.append(_tmp_ms1_df)
                     _DDA_count += 1
 
                 if ms_level == 2:
@@ -311,22 +294,17 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                     _prmz = float(_spectrum['MS:1000744'])
                     _prrt = float(_spectrum['MS:1000016'])
                     print(ms_level, _scanid, _prmz, _prrt)
-                    # if rt_start <= _prrt <= rt_end:
+
                     if (ms_level, _scanid) in _usr_ident_lst:
                         print('Found scan!')
                         print('Function: %s, Scan_num: %s, Scan_time: %f, pr_m/z: %f ;' %
                               (ms_level, _scanid, _prrt, _prmz))
-                        _toppeaks_lst = _spectrum.peaks
-                        _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['mz', 'i'])
 
-                        _toppeaks_df = _toppeaks_df.query('i > %i' % usr_ms2_abs_th)
-                        _toppeaks_df = _toppeaks_df.query('%f < mz < %f' % (mz_start, mz_end))
-
-                        _usr_df_query_code = 'function == %i & scan_id == %i' % (ms_level, _scanid)
+                        _usr_df_query_code = 'scan_number == %i' % _scanid
                         # print _usr_df_query_code
                         _tmp_usr_df = usr_df.query(_usr_df_query_code)
                         if _tmp_usr_df.shape[0] > 0:
-                            _tmp_usr_df['rt'] = _prrt
+                            _tmp_usr_df['scan_time'] = _prrt
                             _tmp_usr_df['DDA_event'] = _DDA_count
                         _out_df = _out_df.append(_tmp_usr_df)
                         _DDA_count += 0
@@ -342,10 +320,11 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                     print('NOT MS level')
                     _DDA_count += 0
             except KeyError:
+                _toppeaks_lst = []
                 print('Not MS or MS2', _spectrum['id'])
     # _ms_df = _pre_ms_df.sort_values(by='mz')
     print('_out_df_shape', _out_df.shape)
-    print('_ms1_df_shape', _ms1_df.shape)
+    # print('_ms1_df_shape', _ms1_df.shape)
 
     _out_df = _out_df.reset_index(drop=True)
     print('_out_df')

@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 Zhixu Ni, AG Bioanalytik, BBZ, University of Leipzig.
+# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
 # The software is currently  under development and is not ready to be released.
-# A suitable license will be chosen before the official release of oxLPPdb.
-# For more info please contact: zhixu.ni@uni-leipzig.de
+# A suitable license will be chosen before the official release of LipidHunter.
+# For more info please contact:
+#     LPP team oxlpp@bbz.uni-leipzig.de
+#     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
+#     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 import os
 import shutil
@@ -22,6 +25,9 @@ class LogPageCreator(object):
         self.image_lst_page = self.output_img_folder + r'\LipidHunter_Results_Figures_list.html'
         self.params_lst_page = self.output_img_folder + r'\LipidHunter_Params_list.html'
         self.idx_lst_page = self.output_img_folder + r'\LipidHunter_Identification_list.html'
+
+        self.lipid_type = params['lipid_type']
+        hunter_folder = params['hunter_folder']
 
         if params['rank_score'] is True:
             score_mode = '(Rank mode)'
@@ -68,15 +74,15 @@ class LogPageCreator(object):
                                 <h3><img src="LipidHunter.ico" height=30/>  LipidHunter</h3><font size="1">\n
                                 <hr> <h4>Parameters:</h4>\n<ul>\n
                                 <li>Start time: %s</li>\n<li>Mode: %s %s</li>\n
-                                <li>m/z range: %.1f - %.1f</li>\n<li>RT range: %.1f - %.1f min</li>\n
+                                <li><i>m/z</i> range: %.1f - %.1f <i>m/z</i></li>\n<li>RT range: %.1f - %.1f min</li>\n
                                 <li>MS1 Threshold: %i</li>\n<li>MS2 Threshold: %i</li>\n
-                                <li>MS1 ppm %i</li>\n<li>MS2 ppm: %i</li>\n
+                                <li>MS1 ppm: %i</li>\n<li>MS2 ppm: %i</li>\n
                                 <li>LipidHunter score > %.1f %s</li>\n<li>Isotope score > %.1f %s</li>\n
                                 </ul>\n<hr>\n<h4>Lipid identification list:</h4><font size="1">\n<table>\n<thead>\n
                                 <tr style="text-align: center;">\n
                                 <th>id#</th>\n<th> Exact Mass </th>\n<th>RT(min)</th>\n<th>Bulk</th>\n<th>Score</th>\n
                                 </tr>\n</thead>\n</table>\n</body>\n</html>\n
-                                ''' % ('%', params['hunter_start_time'], params['lipid_type'], params['charge_mode'],
+                                ''' % ('%', params['hunter_start_time'], self.lipid_type, params['charge_mode'],
                                        params['mz_start'], params['mz_end'], params['rt_start'], params['rt_end'],
                                        params['ms_th'], params['ms2_th'], params['ms_ppm'], params['ms2_ppm'],
                                        params['score_filter'], score_mode,
@@ -94,15 +100,20 @@ class LogPageCreator(object):
                             a:visited {text-decoration:none; color:black;}\n
                             </style>\n<table>\n<tbody>
                             ''' % '%')
-
-        shutil.copy('LipidHunter.ico', self.output_img_folder)
+        try:
+            shutil.copy('%s\LipidHunter.ico' % hunter_folder, self.output_img_folder)
+        except IOError:
+            pass
 
     def add_info(self, img_name, ident_idx, ident_info_df):
+
+        print('try to add identification to report html')
+
         img_path = img_name[1:]
         ident_idx = str(ident_idx)
 
-        ms2_pr_mz = ident_info_df.get_value(1, 'MS2_PR_MZ')
-        ms2_rt = ident_info_df.get_value(1, 'MS2_rt')
+        ms2_pr_mz = ident_info_df.get_value(1, r'MS2_PR_mz')
+        ms2_rt = ident_info_df.get_value(1, 'MS2_scan_time')
         dda = ident_info_df.get_value(1, 'DDA#')
         ms2_scan_id = ident_info_df.get_value(1, 'Scan#')
         abbr_bulk = ident_info_df.get_value(1, 'Bulk_identification')
@@ -113,9 +124,16 @@ class LogPageCreator(object):
 
         with open(self.image_lst_page, 'a') as img_page:
             # convert info df to html table code
-            plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_M-sn1', 'i_M-sn2',
-                            'i_M-(sn1-H2O)', 'i_M-(sn2-H2O)']
-            # ident_info_df.fillna('', inplace=True)
+            if self.lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
+                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
+                                'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
+            elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
+                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_sn3',
+                                'i_M-sn1', 'i_M-sn2', 'i_M-sn3',
+                                'i_M-(sn1+sn2)', 'i_M-(sn1+sn3)', 'i_M-(sn2+sn3)']
+            else:
+                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
+                                'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
             ident_col = ident_info_df.columns.tolist()
 
             for _col in plot_df_cols:
@@ -133,11 +151,6 @@ class LogPageCreator(object):
 
         with open(self.idx_lst_page, 'a') as idx_page:
 
-            # idx_str = '{mz}_RT{rt}_{bulk}_score{score}'.format(mz=ms2_pr_mz, rt='%.1f' % ms2_rt, bulk=abbr_bulk,
-            #                                                    ident=ident_abbr, score=score)
-            # idx_info_lst = ['<a href ="LipidHunter_Results_Figures_list.html#', ident_idx, '" target ="showframe">',
-            #                 idx_str, '</a>\n']
-            # idx_page.write(''.join(idx_info_lst))
             idx_str = ('''
                         <tr>\n
                         <td><a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{id}</td>\n
@@ -149,6 +162,8 @@ class LogPageCreator(object):
                         '''.format(id=ident_idx, mz='%.4f' % ms2_pr_mz, rt='%.1f' % ms2_rt,
                                    bulk=abbr_bulk, score=score))
             idx_page.write(idx_str)
+
+        print('==> info added to report html -->')
 
     def close_page(self):
         with open(self.main_page, 'a') as _m_page:
