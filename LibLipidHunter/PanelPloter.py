@@ -129,7 +129,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                                        )
     plt.setp(markerline, markerfacecolor='magenta', markeredgecolor='none', markeredgewidth=0,
              markersize=6, alpha=0.8)
-    ms_zoom_pic.text(ms1_pr_mz, ms1_pr_i, '%.4f' % float(ms1_pr_mz),
+    ms_zoom_pic.text(ms1_pr_mz + 0.05, ms1_pr_i, '%.4f' % float(ms1_pr_mz),
                      color='magenta', fontsize=6
                      )
     markerline, stemlines, baseline = ms_zoom_pic.stem([lib_mz], [ms1_pr_i], '--', markerfmt='o')
@@ -177,7 +177,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                                            markerfmt='o')
         plt.setp(stemlines, color='orange', alpha=0.8)
         plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
-        ms_zoom_pic.text(m2_theo_mz - 0.15, m2_theo_i + ms_zoom_offset_i, '[M+2]', color='orange', fontsize=6)
+        ms_zoom_pic.text(m2_theo_mz - 0.15, m2_theo_i + 2 * ms_zoom_offset_i, '[M+2]', color='orange', fontsize=6)
         plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
         ms_zoom_pic.text(m2_theo_mz - 0.81, m2_theo_i, 'Calc: %.4f' % m2_theo_mz,
                          color='orange', fontsize=6)
