@@ -133,7 +133,7 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                                                 _tmp_nl60_df.shape[0] > 0):
                                             print('------------------>>>>>> found key peaks')
                                             # Waters function 1 is MS survey scan
-                                            _usr_df_query_code = 'DDA_rank == %i & scan_id == %i' % (_function - 1,
+                                            _usr_df_query_code = 'DDA_rank == %i & scan_number == %i' % (_function - 1,
                                                                                                      _scanid)
                                             # print _usr_df_query_code
                                             _tmp_usr_df = usr_df.query(_usr_df_query_code)

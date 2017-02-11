@@ -573,6 +573,7 @@ class ScoreGenerator:
 
         match_reporter = 0
         ms2_max_i = ms2_df['i'].max()
+        print('ms2_max_i', ms2_max_i)
 
         fa_ident_df, lyso_ident_df, lyso_w_ident_df = self.get_fa_search(abbr, charge_type, mz_lib, ms2_df,
                                                                          ms2_precision=ms2_precision,
@@ -582,12 +583,15 @@ class ScoreGenerator:
 
         lipid_abbr_df = self.get_structure(abbr)
 
+        print('lyso_ident_df')
+        print(lyso_ident_df)
+
         if abbr[:2] in ['TG']:
             weight_type_lst = ['sn1', 'sn2', 'sn3', 'M-sn1', 'M-sn2', 'M-sn3',
                                'M-(sn1+sn2)', 'M-(sn2+sn3)', 'M-(sn1+sn3)']
         else:
-            weight_type_lst = ['sn1', 'sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
-                                'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
+            weight_type_lst = ['sn1', 'sn2', '[M-H]-sn1', '[M-H]-sn2',
+                               '[M-H]-sn1-H2O', '[M-H]-sn2-H2O']
         weight_dct = {}
         for _type in weight_type_lst:
             lipid_abbr_df[_type] = 0

@@ -330,7 +330,7 @@ def huntlipids(param_dct):
                                 _tmp_output_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
                                 _tmp_output_df['Lib_mz'] = _usr_mz_lib
                                 _tmp_output_df['MS2_scan_time'] = _usr_ms2_rt
-                                _tmp_output_df['DDA#'] = _usr_ms2_dda_rank - 1
+                                _tmp_output_df['DDA#'] = _usr_ms2_dda_rank
                                 _tmp_output_df['MS2_PR_mz'] = _usr_ms2_pr_mz
                                 _tmp_output_df['Scan#'] = _usr_ms2_scan_id
                                 _tmp_output_df['#Specific_peaks'] = target_frag_count + target_nl_count
