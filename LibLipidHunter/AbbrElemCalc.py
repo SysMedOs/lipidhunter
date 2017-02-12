@@ -48,33 +48,33 @@ class BulkAbbrFormula(object):
         lyso_fa_linker_dct = {'sn1': '', 'sn2': ''}
 
         if pl_checker.match(abbr):
-            print ('PL')
+            print('PL')
             pl_re_chk = pl_checker.match(abbr)
             pl_typ_lst = pl_re_chk.groups()
             _pl_typ = pl_typ_lst[0]
             bulk_fa_typ = pl_typ_lst[2]
         if pip_checker.match(abbr):
-            print ('PIP')
+            print('PIP')
             pip_re_chk = pip_checker.match(abbr)
             pip_typ_lst = pip_re_chk.groups()
             _pl_typ = pip_typ_lst[0]
             bulk_fa_typ = pip_typ_lst[2]
         if tg_checker.match(abbr):
-            print ('TG')
+            print('TG')
             tg_re_chk = tg_checker.match(abbr)
             tg_typ_lst = tg_re_chk.groups()
             _pl_typ = tg_typ_lst[0]
             bulk_fa_typ = tg_typ_lst[2]
         if fa_checker.match(abbr):
-            print ('FA')
+            print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
         if fa_o_checker.match(abbr):
-            print ('FA')
+            print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
         if fa_p_checker.match(abbr):
-            print ('FA')
+            print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
 

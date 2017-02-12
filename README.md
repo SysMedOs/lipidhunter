@@ -10,6 +10,10 @@ Please read the following instructions before you start to run LipidHunter.
 
 ### How to install LipidHunter? ###
 
+To run LipidHunter from source code will allow you to see all status of the program while it is running and keep tracking the new features from the latest source code.
+
+However, if you just want to try LipidHunter in an easier way or do not like to run through any command. We also provide pre-combined distribution of LipidHunter for `Windows`. You can find the download link and instructions [here](https://bitbucket.org/SysMedOs/lipidhunterdist).
+
 * Download the source code
     + https://bitbucket.org/SysMedOs/lipidhunter/downloads
 * Install `Anaconda` or `Canopy`
@@ -44,14 +48,16 @@ Please read the following instructions before you start to run LipidHunter.
   
           Install the following python packages:
        
-              - pandas
-              - scipy
-              - matplotlib
-              - pymzml
-              - xlrd
-              - openpyxl
-              - pyside
-              - ipython
+              - numpy = 1.11.3
+              - pandas = 0.19.0
+              - scipy = 0.18.1
+              - pymzml = 0.7.7
+              - xlrd = 1.0.0
+              - openpyxl = 2.4.0
+              - pyside = 1.2.1
+              - matplotlib = 1.5.3
+          
+          we recommend to use pip to install above packages in an virtual enviroment with python 2.7.12 64bit.
 
     * Use `Anaconda`  (Recommended for `Linux` and `Windows`)
         

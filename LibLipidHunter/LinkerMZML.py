@@ -295,10 +295,10 @@ def hunt_link(pl_class, usr_mzml, usr_df, params_dct, vendor='waters', hg_filter
                     _prrt = float(_spectrum['MS:1000016'])
                     print(ms_level, _scanid, _prmz, _prrt)
 
-                    if (ms_level, _scanid) in _usr_ident_lst:
+                    if (ms_level - 1, _scanid) in _usr_ident_lst:
                         print('Found scan!')
                         print('Function: %s, Scan_num: %s, Scan_time: %f, pr_m/z: %f ;' %
-                              (ms_level, _scanid, _prrt, _prmz))
+                              (ms_level - 1, _scanid, _prrt, _prmz))
 
                         _usr_df_query_code = 'scan_number == %i' % _scanid
                         # print _usr_df_query_code

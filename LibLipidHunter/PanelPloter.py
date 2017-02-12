@@ -52,7 +52,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     ms1_df = spec_info_dct['ms1_df']
     ms2_df = spec_info_dct['ms2_df']
 
-    ms_zoom_query_str = ' %.2f < mz < %.2f' % (ms1_obs - 1.5, ms1_obs + 4.55)
+    ms_zoom_query_str = ' %.2f < mz < %.2f' % (ms1_obs - 1.5, ms1_obs + 3.55)
     ms_zoom_df = ms1_df.query(ms_zoom_query_str)
 
     print ('Start looking for MS2 PR m/z %f @ MS1 best PR m/z %f with lib m/z %f'
@@ -116,7 +116,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     ms_zoom_bp_i = max(ms_zoom_df['i'].tolist())
     ms_zoom_offset_i = ms_zoom_bp_i * 0.1
 
-    ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 4.55])
+    ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 3.55])
     ms_zoom_pic.set_ylim([0, ms_zoom_bp_i * 1.2])
     ms_zoom_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0), fontsize=10)
     ms_zoom_pic.ticklabel_format(axis='x', useOffset=False, fontsize=10)
@@ -129,14 +129,14 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                                        )
     plt.setp(markerline, markerfacecolor='magenta', markeredgecolor='none', markeredgewidth=0,
              markersize=6, alpha=0.8)
-    ms_zoom_pic.text(ms1_pr_mz + 0.05, ms1_pr_i, '%.4f' % float(ms1_pr_mz),
+    ms_zoom_pic.text(ms1_pr_mz + 0.06, ms1_pr_i, '%.4f' % float(ms1_pr_mz),
                      color='magenta', fontsize=6
                      )
     markerline, stemlines, baseline = ms_zoom_pic.stem([lib_mz], [ms1_pr_i], '--', markerfmt='o')
     plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
     plt.setp(stemlines, color='orange', alpha=0.8)
     ms_zoom_pic.text(lib_mz - 0.15, ms1_pr_i + ms_zoom_offset_i, '[M+0]', color='orange', fontsize=6)
-    ms_zoom_pic.text(lib_mz - 0.81, ms1_pr_i, 'Calc: %.4f' % lib_mz, color='orange', fontsize=6)
+    ms_zoom_pic.text(lib_mz - 0.71, ms1_pr_i, 'Calc: %.4f' % lib_mz, color='orange', fontsize=6)
 
     # isotope region | highlight the 1st isotope
     m1_dct = isotope_checker_dct[1]
@@ -157,9 +157,9 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     plt.setp(stemlines, color='orange', alpha=0.8)
     plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
     ms_zoom_pic.text(m1_theo_mz - 0.15, m1_theo_i + ms_zoom_offset_i, '[M+1]', color='orange', fontsize=6)
-    ms_zoom_pic.text(m1_theo_mz - 0.81, m1_theo_i, 'Calc: %.4f' % m1_theo_mz,
+    ms_zoom_pic.text(m1_theo_mz - 0.71, m1_theo_i, 'Calc: %.4f' % m1_theo_mz,
                      color='orange', fontsize=6)
-    ms_zoom_pic.text(m1_obs_mz + 0.05, m1_obs_i, '%.4f' % m1_obs_mz, color='magenta', fontsize=6)
+    ms_zoom_pic.text(m1_obs_mz + 0.04, m1_obs_i, '%.4f' % m1_obs_mz, color='magenta', fontsize=6)
 
     # isotope region | highlight the 2nd isotope
     if 2 in isotope_checker_dct.keys():
@@ -177,11 +177,11 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                                            markerfmt='o')
         plt.setp(stemlines, color='orange', alpha=0.8)
         plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
-        ms_zoom_pic.text(m2_theo_mz - 0.15, m2_theo_i + 2 * ms_zoom_offset_i, '[M+2]', color='orange', fontsize=6)
+        ms_zoom_pic.text(m2_theo_mz - 0.15, m2_theo_i + ms_zoom_offset_i, '[M+2]', color='orange', fontsize=6)
         plt.setp(markerline, markerfacecolor='orange', markersize=6, markeredgewidth=0, alpha=0.9)
-        ms_zoom_pic.text(m2_theo_mz - 0.81, m2_theo_i, 'Calc: %.4f' % m2_theo_mz,
+        ms_zoom_pic.text(m2_theo_mz - 0.71, m2_theo_i, 'Calc: %.4f' % m2_theo_mz,
                          color='orange', fontsize=6)
-        ms_zoom_pic.text(m2_obs_mz + 0.05, m2_obs_i, '%.4f' % m2_obs_mz, color='magenta', fontsize=6)
+        ms_zoom_pic.text(m2_obs_mz + 0.04, m2_obs_i, '%.4f' % m2_obs_mz, color='magenta', fontsize=6)
 
     if len(m2_checker_dct.keys()) > 0:
         for _mh2 in m2_checker_dct.keys():
@@ -203,17 +203,18 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                 _mh2_name = ''
             else:
                 _mh2_name = '+%i' % _mh2
-            ms_zoom_pic.text(mh2_theo_mz - 0.2 - 0.05 * _mh2, mh2_theo_i + 2 * ms_zoom_offset_i, '[M+2H%s]' % _mh2_name,
+            ms_zoom_pic.text(mh2_theo_mz - 0.2 - 0.05 * _mh2, mh2_theo_i + ms_zoom_offset_i,
+                             '[M+2H%s]' % _mh2_name, color='red', fontsize=6)
+            ms_zoom_pic.text(mh2_theo_mz - 0.71, mh2_theo_i, 'Calc: %.4f' % mh2_theo_mz,
                              color='red', fontsize=6)
-            ms_zoom_pic.text(mh2_theo_mz - 0.81, mh2_theo_i, 'Calc: %.4f' % mh2_theo_mz,
-                             color='red', fontsize=6)
-            ms_zoom_pic.text(mh2_obs_mz + 0.05, mh2_obs_i, '%.4f' % mh2_obs_mz, color='red', fontsize=6)
+            ms_zoom_pic.text(mh2_obs_mz + 0.04, mh2_obs_i, '%.4f' % mh2_obs_mz, color='red', fontsize=6)
 
         # plot the M+H2 isotope score
-        ms_zoom_pic.text(m1_theo_mz + 3.1, ms1_pr_i - 2 * ms_zoom_offset_i,
+
+        ms_zoom_pic.text(m1_theo_mz + 2.2, max(ms1_pr_i - ms_zoom_offset_i, ms1_pr_i * 0.8),
                          '[M+H2] Isotope score = %.1f' % m2_score,
                          verticalalignment='top', horizontalalignment='right',
-                         color='red', fontsize=8)
+                         color='red', fontsize=7)
             
     # plot the isotope score
     ms_zoom_pic.text(m1_theo_mz + 1.2, ms_zoom_bp_i + ms_zoom_offset_i,

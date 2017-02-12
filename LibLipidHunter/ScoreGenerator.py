@@ -85,33 +85,33 @@ class ScoreGenerator:
         lyso_fa_linker_dct = {'sn1': '', 'sn2': ''}
 
         if pl_checker.match(abbr):
-            print ('PL')
+            print('PL')
             pl_re_chk = pl_checker.match(abbr)
             pl_typ_lst = pl_re_chk.groups()
             _pl_typ = pl_typ_lst[0]
             bulk_fa_typ = pl_typ_lst[2]
         if pip_checker.match(abbr):
-            print ('PIP')
+            print('PIP')
             pip_re_chk = pip_checker.match(abbr)
             pip_typ_lst = pip_re_chk.groups()
             _pl_typ = pip_typ_lst[0]
             bulk_fa_typ = pip_typ_lst[2]
         if tg_checker.match(abbr):
-            print ('TG')
+            print('TG')
             tg_re_chk = tg_checker.match(abbr)
             tg_typ_lst = tg_re_chk.groups()
             _pl_typ = tg_typ_lst[0]
             bulk_fa_typ = tg_typ_lst[2]
         if fa_checker.match(abbr):
-            print ('FA')
+            print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
         if fa_o_checker.match(abbr):
-            print ('FA')
+            print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
         if fa_p_checker.match(abbr):
-            print ('FA')
+            print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
 
@@ -492,7 +492,6 @@ class ScoreGenerator:
 
         elif abbr[:2] in ['TG'] and bulk_fa_linker not in ['O', 'P']:
 
-            # print bulk_fa_linker
             lipid_sn3_lst = []
             db_sn3_lst = []
             _fa_compination_3 = []
@@ -573,7 +572,6 @@ class ScoreGenerator:
 
         match_reporter = 0
         ms2_max_i = ms2_df['i'].max()
-        print('ms2_max_i', ms2_max_i)
 
         fa_ident_df, lyso_ident_df, lyso_w_ident_df = self.get_fa_search(abbr, charge_type, mz_lib, ms2_df,
                                                                          ms2_precision=ms2_precision,
@@ -582,9 +580,6 @@ class ScoreGenerator:
                                                                          )
 
         lipid_abbr_df = self.get_structure(abbr)
-
-        print('lyso_ident_df')
-        print(lyso_ident_df)
 
         if abbr[:2] in ['TG']:
             weight_type_lst = ['sn1', 'sn2', 'sn3', 'M-sn1', 'M-sn2', 'M-sn3',

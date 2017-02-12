@@ -370,8 +370,6 @@ def huntlipids(param_dct):
                 output_round_dct[_t] = 2
         output_df = output_df.round(output_round_dct)
 
-        # output_df['Proposed structures'] = output_df['Lipid_species']
-        print(output_df.head())
         output_df.rename(columns={'Score': 'LipidHunter_Score',
                                   '#Contaminated_peaks': '#Unspecific_peaks'}, inplace=True)
         if usr_lipid_type == 'TG':
@@ -387,8 +385,7 @@ def huntlipids(param_dct):
                                  'i_[M-H]-sn1', 'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O', '#Specific_peaks']
         output_header_lst += target_ident_lst
         output_header_lst += ['#Unspecific_peaks']
-        print(output_df.head())
-        print(output_header_lst)
+
         output_df = output_df[output_header_lst]
         output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_scan_time', 'LipidHunter_Score'],
                                           ascending=[True, True, False])

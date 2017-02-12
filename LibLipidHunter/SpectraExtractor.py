@@ -210,13 +210,11 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
                     ms1_df = ms1_df.sort_values(by='i', ascending=False).reset_index(drop=True)
                     ms1_delta = mz_lib * ms1_precision
                     ms1_pr_query = '%.6f <= mz <= %.6f' % (mz_lib - ms1_delta, mz_lib + ms1_delta)
-                    # print(ms1_pr_query)
+
                     ms1_pr_df = ms1_df.query(ms1_pr_query)
                     if ms1_pr_df.shape[0] > 0:
                         ms1_pr_df = ms1_pr_df.round({'mz': 6})
-                        # print('ms1_pr_df mz')
-                        # print(ms1_pr_df['mz'])
-                        # print('Number of MS1 pr mz in range:', ms1_pr_df.shape[0])
+
                         ms1_pr_df = ms1_pr_df[ms1_pr_df['mz'].isin(ms1_obs_mz_lst)]
                         if ms1_pr_df.shape[0] > 0:
                             print('Number of MS1 pr mz in list:', ms1_pr_df.shape[0])

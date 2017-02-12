@@ -112,7 +112,8 @@ class LogPageCreator(object):
         img_path = img_name[1:]
         ident_idx = str(ident_idx)
 
-        ms2_pr_mz = ident_info_df.get_value(1, r'MS2_PR_mz')
+        ms1_pr_mz = ident_info_df.get_value(1, r'MS1_obs_mz')
+        # ms2_pr_mz = ident_info_df.get_value(1, r'MS2_PR_mz')
         ms2_rt = ident_info_df.get_value(1, 'MS2_scan_time')
         dda = ident_info_df.get_value(1, 'DDA#')
         ms2_scan_id = ident_info_df.get_value(1, 'Scan#')
@@ -141,8 +142,8 @@ class LogPageCreator(object):
                     ident_info_df.loc[:, _col] = ''
             table_buf_code = ident_info_df.to_html(columns=plot_df_cols, float_format='%.1f', border=0)
             table_buf_code = table_buf_code.replace('NaN', '')
-            img_title_str = ('{mz}_RT{rt:.3}_DDAtop{dda}_Scan{scan}_{bulk}_{ident}_{f}_{chg}_score{score}'
-                             .format(mz=ms2_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id, bulk=abbr_bulk,
+            img_title_str = ('{mz}_RT{rt:.3}_DDArank{dda}_Scan{scan}_{bulk}_{ident}_{f}_{chg}_score{score}'
+                             .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id, bulk=abbr_bulk,
                                      ident=ident_abbr, score=score, f=formula_ion, chg=charge))
             img_info_lst = ['<a name="', ident_idx, '"><h3>', '<a href="', img_path, '" target="blank">', img_title_str,
                             '</a></h3></a>', '<a href="', img_path, '" target="blank">',
@@ -159,7 +160,7 @@ class LogPageCreator(object):
                         <td><a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{bulk}</td>\n
                         <td><a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{score}</td>\n
                         </tr>\n
-                        '''.format(id=ident_idx, mz='%.4f' % ms2_pr_mz, rt='%.1f' % ms2_rt,
+                        '''.format(id=ident_idx, mz='%.4f' % ms1_pr_mz, rt='%.1f' % ms2_rt,
                                    bulk=abbr_bulk, score=score))
             idx_page.write(idx_str)
 
