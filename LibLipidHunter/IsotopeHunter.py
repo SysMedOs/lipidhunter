@@ -61,11 +61,13 @@ class IsotopeHunter(object):
 
         return mono_mz
 
-    def get_isotope_mz(self, elem_dct, only_c=False):
+    def get_isotope_mz(self, elem_dct, only_c=False, isotope_number=2):
 
         # calc M+0 --> M+2
-        isotope_number = 2
-        isotope_count_lst = [1, 2]
+        if isotope_number == 2:
+            isotope_count_lst = [1, 2]
+        else:
+            isotope_count_lst = range(1, isotope_number + 1)
 
         mono_mz = self.get_mono_mz(elem_dct)
 
@@ -128,25 +130,34 @@ class IsotopeHunter(object):
         return isotope_distribution_df
 
     @staticmethod
-    def calc_isotope_score(isotope_pattern_df, spec_df, ms1_precision, ms1_pr_i):
+    def calc_isotope_score(isotope_pattern_df, spec_df, ms1_precision, ms1_pr_i, deconv=[]):
 
         isotope_checker_dct = {}
         isotope_score_delta = 0
         isotope_m1_score_delta = 0
         m2_i = 0
+        theo_i_lst = []
 
         isotope_score = 0
         isotope_m1_score = 0
 
         if ms1_pr_i > 0:
             for _i, _se in isotope_pattern_df.iterrows():
-                # [M+0] has _i == 0
 
+                if len(deconv) == 3:
+                    _base_i = deconv[_i]
+                else:
+                    _base_i = 0
+
+                # [M+0] has _i == 0
                 _mz = _se['mz']
                 _ratio = _se['ratio']
                 _mz_delta = _mz * ms1_precision
                 _i_df = spec_df.query('%f <= mz <= %f' % (_mz - _mz_delta, _mz + _mz_delta))
-                theo_i = ms1_pr_i * _ratio
+                if _i < 2:
+                    theo_i = ms1_pr_i * _ratio + _base_i
+                else:
+                    theo_i = ms1_pr_i * _ratio
                 _i_info_dct = {'theo_mz': _mz, 'theo_i': theo_i, 'theo_ratio': _ratio}
                 if _i_df.shape[0] > 0:
                     _i_df = _i_df.sort_values(by='i', ascending=False).head(1)
@@ -158,6 +169,8 @@ class IsotopeHunter(object):
                     _i_max = 0.0
                     _i_info_dct['obs_i'] = 0
                     _i_info_dct['obs_mz'] = 0
+
+                theo_i_lst.append(theo_i)
 
                 _i_r = _i_max / ms1_pr_i
                 _i_info_dct['obs_ratio'] = _i_r
@@ -176,13 +189,71 @@ class IsotopeHunter(object):
             isotope_score = 100 * (1 - isotope_score_delta)
             isotope_m1_score = 100 * (1 - isotope_m1_score_delta)
 
-        return isotope_checker_dct, isotope_score, isotope_m1_score, m2_i
+        isotope_calc_dct = {'isotope_checker_dct': isotope_checker_dct, 'isotope_score': isotope_score,
+                            'isotope_m1_score': isotope_m1_score, 'm2_i': m2_i, 'theo_i_lst': theo_i_lst}
+
+        return isotope_calc_dct
+
+    def get_deconvolution(self, elem_dct, spec_df, mz_delta, base_i, only_c=False):
+
+        base_m1_i = 0
+        base_m2_i = 0
+        base_m3_i = 0
+
+        m_pre1_isotope_pattern_df = self.get_isotope_mz(elem_dct, only_c=only_c, isotope_number=3)
+        m_pre1_mz = m_pre1_isotope_pattern_df.get_value(0, 'mz')
+        pre_i_df = spec_df.query('%f <= mz <= %f' %
+                                 (m_pre1_mz - mz_delta, m_pre1_mz + mz_delta))
+
+        if pre_i_df.shape[0] > 0:
+            max_m_pre1_i = pre_i_df['i'].max()
+            max_m_pre1_i -= base_i
+            if max_m_pre1_i > 0:
+                base_m1_i += max_m_pre1_i * m_pre1_isotope_pattern_df.get_value(1, 'ratio')
+                base_m2_i += max_m_pre1_i * m_pre1_isotope_pattern_df.get_value(2, 'ratio')
+                base_m3_i += max_m_pre1_i * m_pre1_isotope_pattern_df.get_value(3, 'ratio')
+
+        return base_m1_i, base_m2_i, base_m3_i
 
     def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2,
-                          ms1_precision=50e-6, pattern_tolerance=5, only_c=False, score_filter=75):
+                          ms1_precision=50e-6, pattern_tolerance=5, only_c=False, score_filter=75, decon=True):
 
         mz_delta = ms1_pr_mz * ms1_precision
         delta_13c = 1.0033548378
+
+        if decon is True:
+            deconv_elem_dct = self.get_elements(formula)
+            # M-2
+            deconv_elem_dct['H'] += -2
+            base_i = 0
+            pre2_base_m1_i, pre2_base_m2_i, pre2_base_m3_i = self.get_deconvolution(deconv_elem_dct, spec_df,
+                                                                                    mz_delta, base_i, only_c=only_c)
+
+            # M+0
+            # m0_base_abs = pre2_base_m2_i + pre1_base_m1_i
+            m0_base_abs = pre2_base_m2_i
+            base_m1_i, base_m2_i, base_m3_i = self.get_deconvolution(self.get_elements(formula), spec_df, mz_delta,
+                                                                     m0_base_abs, only_c=only_c)
+            # M+1
+            m1_base_abs = pre2_base_m3_i
+
+            # M+2
+            m2_base_abs = base_m2_i
+
+            # M+3
+            m3_base_abs = base_m3_i
+
+            print('Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
+                  % (m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs))
+            deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs]
+        else:
+            m0_base_abs = 0
+            m1_base_abs = 0
+            m2_base_abs = 0
+            m3_base_abs = 0
+
+            deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs]
+
         i_df = spec_df.query('%f <= mz <= %f' % (ms1_pr_mz - delta_13c - mz_delta, ms1_pr_mz - delta_13c + mz_delta))
 
         if i_df.shape[0] > 0:
@@ -193,36 +264,42 @@ class IsotopeHunter(object):
                 if abs((ms1_pr_mz - mono_mz)) <= ms1_precision * ms1_pr_mz:
                     isotope_pattern_df = self.get_isotope_mz(elem_dct, only_c=only_c)
 
-                    isotope_checker_dct, isotope_score, isotope_m1_score, m2_i = self.calc_isotope_score(isotope_pattern_df,
-                                                                                                         spec_df,
-                                                                                                         ms1_precision,
-                                                                                                         ms1_pr_i)
+                    ms1_pr_i -= m0_base_abs
+                    m0_deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs]
+                    isotope_calc_dct = self.calc_isotope_score(isotope_pattern_df, spec_df,
+                                                               ms1_precision, ms1_pr_i, deconv=m0_deconv_lst)
+
+                    isotope_checker_dct = isotope_calc_dct['isotope_checker_dct']
+                    isotope_score = isotope_calc_dct['isotope_score']
+                    isotope_m1_score = isotope_calc_dct['isotope_m1_score']
+                    m2_i = isotope_calc_dct['m2_i']
+
                     m2_checker_dct = {}
                     m2_score = 0
 
                     if isotope_score < score_filter:
                         # check if M+2 is potential M+0 of M+H2
-                        # M+2H elements
-                        m2_checker_dct = {}
+                        # M+H2 elements
+
                         m2_elem_dct = self.get_elements(formula + 'H2')
                         m2_isotope_pattern_df = self.get_isotope_mz(m2_elem_dct, only_c=only_c)
-                        m2_checker_dct, m2_score, m2_m1_score, m2_m2i = self.calc_isotope_score(m2_isotope_pattern_df,
-                                                                                                spec_df, ms1_precision,
-                                                                                                m2_i)
+                        m2_i -= m2_base_abs
+                        m2_deconv_lst = [m2_base_abs, m3_base_abs, 0]
+                        m2_calc_dct = self.calc_isotope_score(m2_isotope_pattern_df, spec_df,
+                                                              ms1_precision, m2_i, deconv=m2_deconv_lst)
 
-                        if m2_m1_score > 0:
-                            pass
-                        else:
-                            m2_m1_score = 0
+                        m2_checker_dct = m2_calc_dct['isotope_checker_dct']
+                        # use M+1 only
+                        m2_score = m2_calc_dct['isotope_m1_score']
+                        m2_m2i = m2_calc_dct['m2_i']
+
                         if m2_score > 0:
                             pass
                         else:
                             m2_score = 0
 
-                        if m2_score <= 60 or m2_score < m2_m1_score:
-                            m2_score = m2_m1_score
-                            if 2 in m2_checker_dct.keys():
-                                del m2_checker_dct[2]
+                        if 2 in m2_checker_dct.keys():
+                            del m2_checker_dct[2]
 
                         print('M+2-> M+4 has isotope score for [M+H2]: %.1f' % m2_score)
                         if m2_score >= 60 and isotope_m1_score >= score_filter:
@@ -250,7 +327,8 @@ class IsotopeHunter(object):
             m2_score = 0
 
         isotope_score_info_dct = {'isotope_score': isotope_score, 'isotope_checker_dct': isotope_checker_dct,
-                                  'm2_score': m2_score, 'm2_checker_dct': m2_checker_dct}
+                                  'm2_score': m2_score, 'm2_checker_dct': m2_checker_dct,
+                                  'deconv_lst': deconv_lst}
 
         return isotope_score_info_dct
 
@@ -279,3 +357,4 @@ if __name__ == '__main__':
         isotope_distribute = iso_hunter.get_isotope_mz(isotope_pattern_dct, only_c=True)
         isotope_distribute = isotope_distribute.head(3)
         print(isotope_distribute)
+        print(isotope_distribute.get_value(0, 'mz'))

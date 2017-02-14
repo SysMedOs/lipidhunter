@@ -169,7 +169,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
 
 def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
-                scan_info_df, spectra_pl, dda_top=12, ms1_precision=50e-6):
+                scan_info_df, spectra_pl, dda_top=12, ms1_precision=50e-6, vendor='waters'):
 
     # ms1_pr_se = pd.Series()
     ms1_df = pd.DataFrame()
@@ -209,18 +209,22 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
                     ms1_df = ms1_df.query('i > 0')
                     ms1_df = ms1_df.sort_values(by='i', ascending=False).reset_index(drop=True)
                     ms1_delta = mz_lib * ms1_precision
-                    ms1_pr_query = '%.6f <= mz <= %.6f' % (mz_lib - ms1_delta, mz_lib + ms1_delta)
+                    if vendor == 'thermo':
+                        ms1_pr_query = '%.7f <= mz <= %.7f' % (mz_lib - ms1_delta, mz_lib + ms1_delta)
+                    else:
+                        ms1_pr_query = '%.6f <= mz <= %.6f' % (mz_lib - ms1_delta, mz_lib + ms1_delta)
 
                     ms1_pr_df = ms1_df.query(ms1_pr_query)
                     if ms1_pr_df.shape[0] > 0:
-                        ms1_pr_df = ms1_pr_df.round({'mz': 6})
-
-                        ms1_pr_df = ms1_pr_df[ms1_pr_df['mz'].isin(ms1_obs_mz_lst)]
+                        ms1_pr_df.loc[:, 'mz_xic'] = ms1_pr_df['mz']
+                        ms1_pr_df = ms1_pr_df.round({'mz': 6, 'mz_xic': 4})
+                        ms1_pr_df = ms1_pr_df[ms1_pr_df['mz_xic'].isin(ms1_obs_mz_lst)]
                         if ms1_pr_df.shape[0] > 0:
                             print('Number of MS1 pr mz in list:', ms1_pr_df.shape[0])
                             ms1_pr_df['ppm'] = abs(1e6 * (ms1_pr_df['mz'] - mz_lib) / mz_lib)
                             # select best intensity in the precursor ppm range. Priority: i > ppm
-                            ms1_pr_df = ms1_pr_df.sort_values(by=['i', 'ppm'], ascending=[False, True])
+                            # ms1_pr_df = ms1_pr_df.sort_values(by=['i', 'ppm'], ascending=[False, True])
+                            ms1_pr_df = ms1_pr_df.sort_values(by='i', ascending=False)
                             print('ms1_pr_df')
                             print(ms1_pr_df)
                             ms1_pr_se = ms1_pr_df.iloc[0]
@@ -347,15 +351,18 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
 
     ms1_obs_df = info_df.query('MS1_obs_mz > 0')
     ms1_obs_lst = ms1_obs_df['MS1_obs_mz'].tolist()
+    ms1_xic_lst = ms1_obs_df['MS1_XIC_mz'].tolist()
+    ms1_xic_lst = sorted(set(ms1_xic_lst))
     ms1_obs_lst = sorted(set(ms1_obs_lst))
-    print('Unique precursor m/z:', len(ms1_obs_lst))
+    # print('Unique precursor m/z:', len(ms1_obs_lst))
+    print('Unique precursor m/z:', len(ms1_xic_lst))
 
     rt_start = rt_range[0]
     rt_end = rt_range[1]
 
     ms1_xic_dct = {}
 
-    for _mz in ms1_obs_lst:
+    for _mz in ms1_xic_lst:
         ms1_xic_dct[_mz] = pd.DataFrame()
     spec_title_obo = 'MS:1000796'
     scan_rt_obo = 'MS:1000016'
@@ -377,27 +384,27 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
                         print('Reading MS survey scan @:', _scan_rt)
                         # slow but more accurate mode. At least 10 time slower
                         # _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
-                        for _ms1_obs in ms1_obs_lst:
+                        for _ms1_xic in ms1_xic_lst:
 
-                            ms1_xic_df = ms1_xic_dct[_ms1_obs]
+                            ms1_xic_df = ms1_xic_dct[_ms1_xic]
                             _tmp_ms1_xic_df = ms1_xic_df.copy()
 
                             # faster mode
-                            _xic_lst = _spectrum.hasPeak(_ms1_obs)
+                            _xic_lst = _spectrum.hasPeak(_ms1_xic)
                             if len(_xic_lst) == 1:
                                 _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
                                 _tmp_mz_df.loc[:, 'rt'] = _scan_rt
-                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
+                                _tmp_mz_df.loc[:, 'mz'] = _ms1_xic
                                 ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df)
-                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
+                                ms1_xic_dct[_ms1_xic] = ms1_xic_df
 
                             if len(_xic_lst) > 1:
                                 _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
                                 _tmp_mz_df.loc[:, 'rt'] = _scan_rt
-                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
+                                _tmp_mz_df.loc[:, 'mz'] = _ms1_xic
                                 ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df.sort_values(by='i',
                                                                                            ascending=False).head(1))
-                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
+                                ms1_xic_dct[_ms1_xic] = ms1_xic_df
 
     elif vendor == 'thermo':
         print('Thermo files')
@@ -413,27 +420,27 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
                         print('Reading MS survey scan @:', _scan_rt)
                         # slow but more accurate mode. At least 10 time slower
                         # _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
-                        for _ms1_obs in ms1_obs_lst:
+                        for _ms1_xic in ms1_xic_lst:
 
-                            ms1_xic_df = ms1_xic_dct[_ms1_obs]
+                            ms1_xic_df = ms1_xic_dct[_ms1_xic]
                             _tmp_ms1_xic_df = ms1_xic_df.copy()
 
                             # faster mode
-                            _xic_lst = _spectrum.hasPeak(_ms1_obs)
+                            _xic_lst = _spectrum.hasPeak(_ms1_xic)
                             if len(_xic_lst) == 1:
                                 _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
                                 _tmp_mz_df.loc[:, 'rt'] = _scan_rt
-                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
+                                _tmp_mz_df.loc[:, 'mz'] = _ms1_xic
                                 ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df)
-                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
+                                ms1_xic_dct[_ms1_xic] = ms1_xic_df
 
                             if len(_xic_lst) > 1:
                                 _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
                                 _tmp_mz_df.loc[:, 'rt'] = _scan_rt
-                                _tmp_mz_df.loc[:, 'mz'] = _ms1_obs
+                                _tmp_mz_df.loc[:, 'mz'] = _ms1_xic
                                 ms1_xic_df = _tmp_ms1_xic_df.append(_tmp_mz_df.sort_values
                                                                     (by='i', ascending=False).head(1))
-                                ms1_xic_dct[_ms1_obs] = ms1_xic_df
+                                ms1_xic_dct[_ms1_xic] = ms1_xic_df
 
     return ms1_xic_dct
 

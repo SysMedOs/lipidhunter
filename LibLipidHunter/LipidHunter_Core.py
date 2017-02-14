@@ -660,12 +660,15 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             config.write(usr_param_cfg)
 
         print(hunter_param_dct)
-        # try:
+
         tot_run_time = huntlipids(hunter_param_dct)
-        self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
-        self.ui.tab_e_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
-        # except KeyError:
-        #     self.ui.tab_e_statusrun_pte.insertPlainText('!! Failed read input files, please check vendor settings!!')
+
+        if isinstance(tot_run_time, float):
+            self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
+            self.ui.tab_e_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+
+        else:
+            self.ui.tab_e_statusrun_pte.insertPlainText('!! Failed read input files, please check vendor settings!!')
 
     def f_set_default_cfg(self):
         config = configparser.ConfigParser()
