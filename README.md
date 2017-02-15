@@ -1,14 +1,12 @@
 # LipidHunter Instructions #
 
-This repository contains the LipidHunter distribution for Windows (7, 8, 10) users and 64 bits system.
+This repository contains the source code of LipidHunter.
 
-Otherwise, you can download directly the source code from: https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code
+There is another repository about the Windows .exe version of LipidHunter at https://bitbucket.org/SysMedOs/lipidhunterdist
 
-The binary files were generated from [LipidHunter project](https://bitbucket.org/SysMedOs/lipidhunter/) using `py2exe` library.
-
-LipidHunter https://bitbucket.org/SysMedOs/lipidhunter/
-
-py2exe http://www.py2exe.org/
+Here we will provide general information how to download the executable version for Windows. 
+The executable version is supported for Windows 7, 8, 10 and for 64 bits system.
+For more experienced users or if you have another operating system ("Linux", "Mac"), there also instructions about downloading and running the source code.
 
 Though we tried our best to keep this distribution up to date. We have no guarantee that this distribution corresponding to the latest version of LipidHunter. Please check out the original LipidHunter repository for latest features and bug fix.
 
@@ -16,14 +14,18 @@ If you have any problems while using LipidHunter, please report your issue here:
 
 Please read the following instructions before you start to run LipidHunter.
 
-
 ### Instructions ###
 
-* [How to install LipidHunter](#markdown-header-how-to-install-lipidhunter)
+* [How to install .exe for Windows](#markdown-header-how-to-install-.exe-for-windows)
+* [How to install the Source Code](#markdown-header-how-to-install-the-source-code)
 * [License](#markdown-header-license)
 * [A step by step tutorial](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Home)
+* [Fundings](#markdown-fundings)
 
-### How to install LipidHunter? ###
+
+
+### How to install .exe for Windows ###
+#### Windows 10 ####
 * Download the LipidHuner as zip file for your system
 
     + [LipidHunter for Windows 10 64bit](https://bitbucket.org/SysMedOs/lipidhunterdist/downloads/LipidHunter_Win10x64.zip)
@@ -54,6 +56,11 @@ Please read the following instructions before you start to run LipidHunter.
         COMDLG32.dll - C:\WINDOWS\system32\COMDLG32.dll
         OPENGL32.dll - C:\WINDOWS\system32\OPENGL32.dll
 
+#### Windows 7 and 8 ####
+* Will be provided soon
+
+After you downloaded the program.
+
 * Start LipidHunter by `LipidHunter.exe`
 
 * Run the test files
@@ -65,6 +72,19 @@ Please read the following instructions before you start to run LipidHunter.
 * Problems
     
     In case, of problems running the program after following the above steps, contact with us.
+
+### How to install the Source Code ###
+* Download the LipidHuner as zip file for your system
+
+    + [LipidHunter source Code](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
+
+* Rename the downloaded file (around 320 MB) to `LipidHunter.zip`
+    
+* Unzip `LipidHunter.zip` file to any folder.
+
+* Follow the link below for more information to run the program.
+
+    + [Lipid Hunter source code User Guide](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
 
 ### License ###
 
@@ -81,3 +101,7 @@ Please read the following instructions before you start to run LipidHunter.
 
 * Read our [wiki](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Home)
 * Report your issue here: [https://bitbucket.org/SysMedOs/lipidhunter/issues](https://bitbucket.org/SysMedOs/lipidhunter/issues)
+
+
+### Fundings ###
+The LipidHunter project is provided by:
