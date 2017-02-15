@@ -1,6 +1,21 @@
 # LipidHunter Instructions #
 
+This repository contains the LipidHunter distribution for Windows (7, 8, 10) users and 64 bits system.
+
+Otherwise, you can download directly the source code from: https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code
+
+The binary files were generated from [LipidHunter project](https://bitbucket.org/SysMedOs/lipidhunter/) using `py2exe` library.
+
+LipidHunter https://bitbucket.org/SysMedOs/lipidhunter/
+
+py2exe http://www.py2exe.org/
+
+Though we tried our best to keep this distribution up to date. We have no guarantee that this distribution corresponding to the latest version of LipidHunter. Please check out the original LipidHunter repository for latest features and bug fix.
+
+If you have any problems while using LipidHunter, please report your issue here: [https://bitbucket.org/SysMedOs/lipidhunter/issues](https://bitbucket.org/SysMedOs/lipidhunter/issues)
+
 Please read the following instructions before you start to run LipidHunter.
+
 
 ### Instructions ###
 
@@ -9,84 +24,37 @@ Please read the following instructions before you start to run LipidHunter.
 * [A step by step tutorial](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Home)
 
 ### How to install LipidHunter? ###
+* Download the LipidHuner as zip file for your system
 
-To run LipidHunter from source code will allow you to see all status of the program while it is running and keep tracking the new features from the latest source code.
-
-However, if you just want to try LipidHunter in an easier way or do not like to run through any command. We also provide pre-combined distribution of LipidHunter for `Windows`. You can find the download link and instructions [here](https://bitbucket.org/SysMedOs/lipidhunterdist).
-
-* Download the source code
-    + https://bitbucket.org/SysMedOs/lipidhunter/downloads
-* Install `Anaconda` or `Canopy`
-
-    + Install `Anaconda` (Recommended for `Linux` and `Windows`)
+    + [LipidHunter for Windows 10 64bit](https://bitbucket.org/SysMedOs/lipidhunterdist/downloads/LipidHunter_Win10x64.zip)
     
-        `Anaconda` has a free version and it is available from the following link:
-        
-        https://www.continuum.io/downloads
-        
-        Download the appropriated packages for your system with `Python 2.7 64bit`.
-
-        Follow the official guide to finish the installation of `Anaconda`.
-
-        You can apply for an `Academic License`, but it is not required by `LipidHunter`.
-        
-    + Install `Canopy` Academic version (Recommended for `macOS`)
+* Rename the downloaded file (around 320 MB) to `LipidHunter.zip`
     
-        `Canopy` is available from the following link:
-        
-        https://store.enthought.com/downloads/#default
-        
-        Download the appropriated packages for your system with `Python 2.7 64bit`. 
+* Unzip `LipidHunter.zip` file to any folder. We recommend to use `7-zip` to unzip this file.
 
-        Follow the official guide to finish the installation of `Canopy`.
-
-        Attention! You need to apply for an `Academic License` to continue the installation of `LipidHunter`.
+    + 7-Zip is open source software. [7-Zip home page](http://www.7-zip.org)
             
-* Install dependencies
+* Copy following `.dll` files from your system to the LipidHunter folder:
 
-    * For professional users. 
-  
-          Install the following python packages:
-       
-              - numpy = 1.11.3
-              - pandas = 0.19.0
-              - scipy = 0.18.1
-              - pymzml = 0.7.7
-              - xlrd = 1.0.0
-              - openpyxl = 2.4.0
-              - pyside = 1.2.1
-              - matplotlib = 1.5.3
-          
-          we recommend to use pip to install above packages in an virtual enviroment with python 2.7.12 64bit.
+        OLEAUT32.dll - C:\WINDOWS\system32\OLEAUT32.dll
+        USER32.dll - C:\WINDOWS\system32\USER32.dll
+        IMM32.dll - C:\WINDOWS\system32\IMM32.dll
+        SHELL32.dll - C:\WINDOWS\system32\SHELL32.dll
+        ole32.dll - C:\WINDOWS\system32\ole32.dll
+        WINMM.dll - C:\WINDOWS\system32\WINMM.dll
+        SHLWAPI.dll - C:\WINDOWS\system32\SHLWAPI.dll
+        ADVAPI32.dll - C:\WINDOWS\system32\ADVAPI32.dll
+        COMCTL32.dll - C:\WINDOWS\system32\COMCTL32.dll
+        WS2_32.dll - C:\WINDOWS\system32\WS2_32.dll
+        WINSPOOL.DRV - C:\WINDOWS\system32\WINSPOOL.DRV
+        GDI32.dll - C:\WINDOWS\system32\GDI32.dll
+        ODBC32.dll - C:\WINDOWS\system32\ODBC32.dll
+        VERSION.dll - C:\WINDOWS\system32\VERSION.dll
+        KERNEL32.dll - C:\WINDOWS\system32\KERNEL32.dll
+        COMDLG32.dll - C:\WINDOWS\system32\COMDLG32.dll
+        OPENGL32.dll - C:\WINDOWS\system32\OPENGL32.dll
 
-    * Use `Anaconda`  (Recommended for `Linux` and `Windows`)
-        
-        The following link contains step by step introduction how to install the different dependencies for `Anaconda`.
-    
-        https://bitbucket.org/SysMedOs/lipidhunter/wiki/Run%20LipidHuntr%20throw%20Anaconda
-
-    * Use `Canopy` (Academic Version) (recommended for `macOS` Users)
-    
-        The following link contains step by step introduction how to install the different dependencies
-    
-        https://bitbucket.org/SysMedOs/lipidhunter/wiki/Run%20LipidHunter%20using%20Canopy
-
-* Configuration
-    * For professional User
-        
-        You need to run the `LipidHunter.py`
-    
-    * Using `Anaconda`
-        
-        The link below shows how to run the `LipidHunter` using `Anaconda`
-            
-        https://bitbucket.org/SysMedOs/lipidhunter/wiki/Run%20LipidHunter%20using%20Anaconda#markdown-header-run-lipidhunter
-         
-    * Using `Canopy`
-    
-        The link below shows how to run the `LipidHunter` using `Canopy`
-    
-        https://bitbucket.org/SysMedOs/lipidhunter/wiki/Run%20LipidHunter%20using%20Canopy#markdown-header-run-canopy
+* Start LipidHunter by `LipidHunter.exe`
 
 * Run the test files
         
