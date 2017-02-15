@@ -259,6 +259,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     xic_pic.text(ms2_rt, max(xic_i_lst) * 0.98, 'MS/MS', fontsize=8, color='blue')
     xic_pic.set_xlabel("Scan time (min)", fontsize=10, labelpad=-1)
     xic_pic.set_ylabel("Intensity", fontsize=10)
+    xic_pic.set_xlim([xic_rt_min, xic_rt_max])
 
     # prepare DataFrame for msms zoomed plot
     # plot color markers for zoomed MS2 first. Then overlay with zoomed spectra. Plot full ms2 in the last step.
