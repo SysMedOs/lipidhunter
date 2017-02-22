@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
-# The software is currently  under development and is not ready to be released.
-# A suitable license will be chosen before the official release of LipidHunter.
+#
+# Copyright (C) 2016-2017  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
+# SysMedOs_team: Zhixu Ni, Georgia Angelidou, Mike Lange, Maria Fedorova
+# LipidHunter is Dual-licensed
+#     For academic and non-commercial use: `GPLv2 License` Please read more information by the following link:
+#         [The GNU General Public License version 2] (https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+#     For commercial use:
+#         please contact the SysMedOs_team by email.
+# Please cite our publication in an appropriate form.
+#
 # For more info please contact:
-#     LPP team oxlpp@bbz.uni-leipzig.de
+#     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
+#
 
 import re
 
@@ -132,18 +140,9 @@ class BulkAbbrFormula(object):
                 return tmp_lipid_elem_dct
 
             elif usr_lipid_type in ['TG']:
-                tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
-                tmp_lipid_elem_dct['O'] += 6
-                tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']
-                tmp_lipid_elem_dct['H'] += (self.glycerol_bone_elem_dct['H'] + usr_lipid_info_dct['C'] * 2
-                                            - usr_lipid_info_dct['DB'] * 2)  # DBE = DB + 2xC=O from FA
-                if usr_lipid_info_dct['LINK'] == 'O-A-':
-                    tmp_lipid_elem_dct['O'] += -1
-                    tmp_lipid_elem_dct['H'] += 2
-                elif usr_lipid_info_dct['LINK'] == 'P-A-':
-                    tmp_lipid_elem_dct['O'] += -1
+                pass
 
-                return tmp_lipid_elem_dct
+                return {}
 
             else:
                 return {'C': 0, 'H': 0, 'O': 0, 'P': 0}
@@ -223,10 +222,8 @@ class BulkAbbrFormula(object):
 
 if __name__ == '__main__':
 
-    # usr_bulk_abbr_lst = ['PC(36:3)', 'PC(O-36:3)', 'PC(P-36:3)']
-    # charge_lst = ['', '[M-H]-', '[M+HCOO]-']
-    usr_bulk_abbr_lst = ['TG(P-48:5)', 'TG(44:0)', 'TG(O-46:5)']
-    charge_lst = ['', '[M+H]+', '[M+NH4]+']
+    usr_bulk_abbr_lst = ['PC(36:3)', 'PC(O-36:3)', 'PC(P-36:3)']
+    charge_lst = ['', '[M-H]-', '[M+HCOO]-']
 
     abbr2formula = BulkAbbrFormula()
 

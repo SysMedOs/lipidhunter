@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
-# The software is currently  under development and is not ready to be released.
-# A suitable license will be chosen before the official release of LipidHunter.
+#
+# Copyright (C) 2016-2017  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
+# SysMedOs_team: Zhixu Ni, Georgia Angelidou, Mike Lange, Maria Fedorova
+# LipidHunter is Dual-licensed
+#     For academic and non-commercial use: `GPLv2 License` Please read more information by the following link:
+#         [The GNU General Public License version 2] (https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+#     For commercial use:
+#         please contact the SysMedOs_team by email.
+# Please cite our publication in an appropriate form.
+#
 # For more info please contact:
-#     LPP team oxlpp@bbz.uni-leipzig.de
+#     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
+#
 
 from __future__ import division
 import os
@@ -307,9 +315,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         # fa_col_width_lst = [0.025 * len(str(x)) for x in fa_col_labels]
         fa_col_width_lst = [0.3, 0.1, 0.1, 0.1]
         if pl_type == 'TG':
-            fa_table = msms_low_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
-                                          colWidths=fa_col_width_lst, rowColours=fa_row_color_lst,
-                                          colLabels=fa_col_labels, loc='upper center')
+            pass
         else:
             fa_table = msms_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
                                       colWidths=fa_col_width_lst, rowColours=fa_row_color_lst,
@@ -344,9 +350,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         lyso_col_width_lst = [0.3, 0.1, 0.1, 0.1]
 
         if pl_type == 'TG':
-            lyso_table = msms_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
-                                        colWidths=lyso_col_width_lst, rowColours=lyso_row_color_lst,
-                                        colLabels=lyso_col_labels, loc='upper center')
+            pass
         else:
             lyso_table = msms_high_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
                                              colWidths=lyso_col_width_lst, rowColours=lyso_row_color_lst,

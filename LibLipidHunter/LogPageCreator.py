@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
-# The software is currently  under development and is not ready to be released.
-# A suitable license will be chosen before the official release of LipidHunter.
+#
+# Copyright (C) 2016-2017  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
+# SysMedOs_team: Zhixu Ni, Georgia Angelidou, Mike Lange, Maria Fedorova
+# LipidHunter is Dual-licensed
+#     For academic and non-commercial use: `GPLv2 License` Please read more information by the following link:
+#         [The GNU General Public License version 2] (https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+#     For commercial use:
+#         please contact the SysMedOs_team by email.
+# Please cite our publication in an appropriate form.
+#
 # For more info please contact:
-#     LPP team oxlpp@bbz.uni-leipzig.de
+#     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
+#
 
 import os
 import shutil
@@ -130,9 +138,7 @@ class LogPageCreator(object):
                 plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
                                 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
             elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
-                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_sn3',
-                                'i_M-sn1', 'i_M-sn2', 'i_M-sn3',
-                                'i_M-(sn1+sn2)', 'i_M-(sn1+sn3)', 'i_M-(sn2+sn3)']
+                pass
             else:
                 plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
                                 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']

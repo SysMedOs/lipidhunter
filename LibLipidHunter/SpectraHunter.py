@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 LPP team, AG Bioanalytik, BBZ, University of Leipzig.
-# The software is currently  under development and is not ready to be released.
-# A suitable license will be chosen before the official release of LipidHunter.
+#
+# Copyright (C) 2016-2017  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
+# SysMedOs_team: Zhixu Ni, Georgia Angelidou, Mike Lange, Maria Fedorova
+# LipidHunter is Dual-licensed
+#     For academic and non-commercial use: `GPLv2 License` Please read more information by the following link:
+#         [The GNU General Public License version 2] (https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+#     For commercial use:
+#         please contact the SysMedOs_team by email.
+# Please cite our publication in an appropriate form.
+#
 # For more info please contact:
-#     LPP team oxlpp@bbz.uni-leipzig.de
+#     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
+#
 
 from __future__ import division
 
@@ -351,14 +359,7 @@ def huntlipids(param_dct):
     if output_df.shape[0] > 0:
         output_header_lst = output_df.columns.tolist()
         if usr_lipid_type == 'TG':
-            for _i_check in ['i_sn1', 'i_sn2', 'i_sn3', 'i_M-sn1', 'i_M-sn2', 'i_M-sn3', 'i_M-(sn1+sn2)',
-                             'i_M-(sn1+sn3)', 'i_M-(sn2+sn3)']:
-                if _i_check not in output_header_lst:
-                    output_df[_i_check] = 0.0
-            output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3,
-                                'i_sn1': 2, 'i_sn2': 2, 'i_sn3': 2, 'i_M-sn1': 2, 'i_M-sn2': 2,
-                                'i_M-sn3': 2, 'i_M-(sn1+sn2)': 2, 'i_M-(sn2+sn3)': 2, 'i_M-(sn1+sn3)': 2
-                                }
+            pass
         else:
             for _i_check in ['i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']:
                 if _i_check not in output_header_lst:
@@ -377,11 +378,7 @@ def huntlipids(param_dct):
         output_df.rename(columns={'Score': 'LipidHunter_Score',
                                   '#Contaminated_peaks': '#Unspecific_peaks'}, inplace=True)
         if usr_lipid_type == 'TG':
-            output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Formula_neutral', 'Formula_ion',
-                                 'Charge', 'Lib_mz', 'ppm', 'LipidHunter_Score', 'MS1_obs_mz', 'MS1_obs_i',
-                                 'Isotope_score', r'MS2_PR_mz', 'MS2_scan_time', 'DDA#', 'Scan#',
-                                 'i_sn1', 'i_sn2', 'i_sn3', 'i_M-sn1', 'i_M-sn2', 'i_M-sn3', 'i_M-(sn1+sn2)',
-                                 'i_M-(sn2+sn3)', 'i_M-(sn1+sn3)', '#Specific_peaks']
+            pass
         else:
             output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Formula_neutral', 'Formula_ion',
                                  'Charge', 'Lib_mz', 'ppm', 'LipidHunter_Score', 'MS1_obs_mz', 'MS1_obs_i',
