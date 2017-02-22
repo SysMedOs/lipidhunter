@@ -78,8 +78,8 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
     spec_dct = {}
 
-    ms2_function_range_lst = range(2, dda_top + 1)
-    function_range_lst = range(1, dda_top + 1)
+    ms2_function_range_lst = range(2, dda_top + 2)
+    function_range_lst = range(1, dda_top + 2)
 
     if vendor == 'waters':
         scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)(scan=)(\d*)(.*)')
