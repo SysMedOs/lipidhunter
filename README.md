@@ -1,13 +1,15 @@
 # LipidHunter Instructions #
 
+![LipidHunter_logo_128.png](https://bitbucket.org/repo/oGzkj4/images/583628216-LipidHunter_logo_128.png)
+
 This repository contains the source code of LipidHunter.
 
-There is another repository about the Windows .exe version of LipidHunter at 
+There is another repository about the Windows .exe executable version of LipidHunter at 
 https://bitbucket.org/SysMedOs/lipidhunterdist
 
-Here we will provide general information how to download the Windows executable version for Windows.
+Here we will provide general information how to download the Windows executable version.
  
-The Windows executable version is supported for 64bit version of Windows 7, 8, 8.1 and 10 only.
+The LipidHunter Windows executable version is provided for `64bit` version of Windows 7, 8, 8.1 and 10 only.
 
 For more experienced users, or if you have another operating system (`Linux`, `macOS`), there are also instructions about downloading and running the source code.
 
@@ -17,23 +19,24 @@ Though we tried our best to keep the Windows executable distribution up to date.
 
 If you have any problems while using LipidHunter, please report your issue here: [https://bitbucket.org/SysMedOs/lipidhunter/issues](https://bitbucket.org/SysMedOs/lipidhunter/issues)
 
-Please read the following instructions before you start to run LipidHunter.
+** Please read the following instructions before you start to run LipidHunter. **
 
 ### Instructions ###
 
-* [How to install .exe for Windows](#markdown-header-how-to-install-.exe-for-windows)
-* [How to install the Source Code](#markdown-header-how-to-install-the-source-code)
+* [How to install Windows executable version of LipidHunter](#markdown-header-how-to-install-windows-executable-version-of-lipidhunter)
+* [How to install the Source Code](#markdown-header-how-to-install-lipidhunter-from-source-code)
 * [License](#markdown-header-license)
 * [A step by step tutorial](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Home)
-* [Fundings](#markdown-fundings)
+* [Q&A](#markdown-header-further-questions)
+* [Fundings](#markdown-header-fundings)
 
 
 
-### How to install .exe for Windows ###
-* Download the LipidHuner as zip file for your system
+### How to install Windows executable version of LipidHunter ###
+* Download the LipidHunter for your system:
 
-    + [LipidHunter for Windows 10 64bit (around 320 MB)](https://bitbucket.org/SysMedOs/lipidhunterdist/downloads/LipidHunter_Win10_64bit.zip)
-    + [LipidHunter for Windows 7,8 and 8.1 64bit (around 230 MB)](https://bitbucket.org/SysMedOs/lipidhunterdist/downloads/LipidHunter_Win7-8_64bit.zip)
+    + [LipidHunter for Windows 10 64bit ( `.zip` file around 320 MB)](https://bitbucket.org/SysMedOs/lipidhunterdist/downloads/LipidHunter_Win10_64bit.zip)
+    + [LipidHunter for Windows 7,8 and 8.1 64bit ( `.zip` file around 230 MB)](https://bitbucket.org/SysMedOs/lipidhunterdist/downloads/LipidHunter_Win7-8_64bit.zip)
     
 * Rename the downloaded file  to `LipidHunter.zip`
     
@@ -84,7 +87,7 @@ Please read the following instructions before you start to run LipidHunter.
     
     In case, of problems running the program after following the above steps, contact with us.
 
-### How to install LipidHunter from the source code ###
+### How to install LipidHunter from source code ###
 * Download the LipidHunter as zip file for your system
 
     + [LipidHunter source Code](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
@@ -115,16 +118,16 @@ Please read the following instructions before you start to run LipidHunter.
 
 
 ### Fundings ###
-The LipidHunter project is funded by:
 We acknowlege all projects that supports the development of LipidHunter:
-BMBF - Federal Ministry of Education and Research Germany:
 
-https://www.bmbf.de/en/
++ BMBF - Federal Ministry of Education and Research Germany:
 
-e:Med Systems Medicine Network:
+    https://www.bmbf.de/en/
 
-http://www.sys-med.de/en/
++ e:Med Systems Medicine Network:
 
-SysMedOS Project : 
+    http://www.sys-med.de/en/
 
-https://home.uni-leipzig.de/fedorova/sysmedos/
++ SysMedOS Project : 
+
+    https://home.uni-leipzig.de/fedorova/sysmedos/
