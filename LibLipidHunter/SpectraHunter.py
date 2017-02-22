@@ -107,6 +107,7 @@ def huntlipids(param_dct):
     for _i, _r in usr_df.iterrows():
         usr_df.set_value(_i, 'MS2_PR_mz', round(_r['MS2_PR_mz'], 6))
         usr_df.set_value(_i, 'MS1_obs_mz', round(_r['MS1_obs_mz'], 6))
+        usr_df.set_value(_i, 'MS1_XIC_mz', round(_r['MS1_obs_mz'], 4))
         usr_df.set_value(_i, 'MS1_precision', (_r['MS1_obs_mz'] - _r['Lib_mz']) / _r['Lib_mz'])
         usr_df.set_value(_i, 'ppm', 1e6 * (_r['MS1_obs_mz'] - _r['Lib_mz']) / _r['Lib_mz'])
         usr_df.set_value(_i, 'abs_ppm', abs(1e6 * (_r['MS1_obs_mz'] - _r['Lib_mz']) / _r['Lib_mz']))
@@ -154,6 +155,9 @@ def huntlipids(param_dct):
     ms1_obs_mz_lst = usr_df['MS1_obs_mz'].tolist()
     ms1_obs_mz_lst = set(ms1_obs_mz_lst)
 
+    ms1_xic_mz_lst = usr_df['MS1_XIC_mz'].tolist()
+    ms1_xic_mz_lst = set(ms1_xic_mz_lst)
+
     print('=== ==> --> Start to extract XIC')
     try:
         xic_dct = get_xic_all(usr_df, usr_mzml, usr_rt_range, ms1_precision=usr_ms1_precision,
@@ -193,8 +197,8 @@ def huntlipids(param_dct):
             print('>>> >>> >>> Processing:', _tmp_chk_df.head())
             print('>>> >>> >>> >>> MS2 PR m/z %f' % _usr_ms2_pr_mz)
             usr_spec_info_dct = get_spectra(_usr_ms2_pr_mz, _usr_mz_lib, _usr_ms2_dda_rank, _usr_ms2_scan_id,
-                                            ms1_obs_mz_lst, usr_scan_info_df, usr_spectra_pl,
-                                            dda_top=usr_dda_top, ms1_precision=usr_ms1_precision
+                                            ms1_xic_mz_lst, usr_scan_info_df, usr_spectra_pl,
+                                            dda_top=usr_dda_top, ms1_precision=usr_ms1_precision, vendor=usr_vendor
                                             )
             _ms1_pr_i = usr_spec_info_dct['ms1_i']
             _ms1_pr_mz = usr_spec_info_dct['ms1_mz']

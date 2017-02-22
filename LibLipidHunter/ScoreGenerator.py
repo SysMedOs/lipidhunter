@@ -167,6 +167,7 @@ class ScoreGenerator:
         ms2_threshold = max(ms2_threshold, ms2_info_i)
 
         calc_pr_mz, charge_mode = self.get_pr_mz(charge_type, mz_lib)
+        calc_pr_mz = mz_lib
 
         if abbr[:2] in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'SM']:
             lipid_type = 'PL'
@@ -184,6 +185,13 @@ class ScoreGenerator:
                 fa_chk_df['[M-H]-sn-H2O'] = calc_pr_mz - fa_chk_df['NL'] - 60.021130  # - CH3COOH for PC
                 fa_chk_df['Proposed_structures'] = ''
                 lyso_hg_mod = '-CH3'
+
+            elif abbr[:2] == 'PS' and charge_type == '[M-H]-':
+                fa_chk_df['[M-H]-sn'] = calc_pr_mz - fa_chk_df['NL-H2O'] - 87.032029  # - C3H5NO2 for PS
+                fa_chk_df['[M-H]-sn-H2O'] = calc_pr_mz - fa_chk_df['NL'] - 87.032029  # - C3H5NO2 for PS
+                fa_chk_df['Proposed_structures'] = ''
+                lyso_hg_mod = '-87(Ser)'
+
             else:
                 # Loss of FA-18, -OH remains on Glycerol back bone
                 fa_chk_df['[M-H]-sn'] = calc_pr_mz - fa_chk_df['NL-H2O']

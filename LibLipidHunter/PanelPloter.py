@@ -27,6 +27,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                  save_img_as=None, ms1_precision=50e-6, score_mode='Rank mode', isotope_mode=''):
     ms2_pr_mz = mz_se['MS2_PR_mz']
     ms1_obs = mz_se['MS1_obs_mz']
+    ms1_xic_mz = mz_se['MS1_XIC_mz']
     lib_mz = mz_se['Lib_mz']
     abbr_id = mz_se['Abbreviation']
     func_id = mz_se['DDA_rank']
@@ -42,6 +43,11 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     isotope_checker_dct = isotope_score_info_dct['isotope_checker_dct']
     m2_score = isotope_score_info_dct['m2_score']
     m2_checker_dct = isotope_score_info_dct['m2_checker_dct']
+    deconv_lst = isotope_score_info_dct['deconv_lst']
+    if len(deconv_lst) == 4:
+        pass
+    else:
+        deconv_lst = [0, 0, 0, 0]
 
     ms1_delta = lib_mz * ms1_precision
 
@@ -58,7 +64,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     print ('Start looking for MS2 PR m/z %f @ MS1 best PR m/z %f with lib m/z %f'
            % (ms2_pr_mz, ms1_obs, lib_mz))
 
-    xic_df = xic_dct[ms1_obs]
+    xic_df = xic_dct[ms1_xic_mz]
 
     # Generate A4 image in landscape
     fig, pic_array = plt.subplots(nrows=3, ncols=2, figsize=(11.692, 8.267), sharex=False,
@@ -102,9 +108,11 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         _ms_pkl_top_peak_y = _ms_pkl_top_peak[1]
         ms_pic.text(_ms_pkl_top_peak[0], _ms_pkl_top_peak_y, _ms_pkl_top_peak_str, fontsize=6)
 
-    m0_theo_box = patches.Rectangle((lib_mz - ms1_delta, 0), 2 * ms1_delta, ms1_pr_i,
+    m0_theo_base_box = patches.Rectangle((lib_mz - ms1_delta, 0), 2 * ms1_delta, deconv_lst[0],
+                                         facecolor=(1.0, 0.0, 0.0, 0.4), edgecolor="none")
+    ms_zoom_pic.add_patch(m0_theo_base_box)
+    m0_theo_box = patches.Rectangle((lib_mz - ms1_delta, deconv_lst[0]), 2 * ms1_delta, ms1_pr_i - deconv_lst[0],
                                     facecolor='cyan', edgecolor="none")
-
     ms_zoom_pic.add_patch(m0_theo_box)
 
     # isotope region | if any peak in M-1.0034
@@ -117,7 +125,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     ms_zoom_offset_i = ms_zoom_bp_i * 0.1
 
     ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 3.55])
-    ms_zoom_pic.set_ylim([0, ms_zoom_bp_i * 1.2])
+    ms_zoom_pic.set_ylim([0, ms_zoom_bp_i * 1.45])
     ms_zoom_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0), fontsize=10)
     ms_zoom_pic.ticklabel_format(axis='x', useOffset=False, fontsize=10)
     ms_zoom_pic.set_xlabel('m/z', fontsize=10, labelpad=-1)
@@ -148,7 +156,11 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     # m1_obs_r = m1_dct['obs_ratio']
 
     # theo range box
-    m1_theo_box = patches.Rectangle((m1_theo_mz - ms1_delta, 0), 2 * ms1_delta, m1_theo_i,
+    m1_theo_base_box = patches.Rectangle((m1_theo_mz - ms1_delta, 0),
+                                         2 * ms1_delta, deconv_lst[1],
+                                         facecolor=(1.0, 0.0, 0.0, 0.4), edgecolor="none")
+    ms_zoom_pic.add_patch(m1_theo_base_box)
+    m1_theo_box = patches.Rectangle((m1_theo_mz - ms1_delta, deconv_lst[1]), 2 * ms1_delta, m1_theo_i - deconv_lst[1],
                                     facecolor=(0.1, 1.0, 1.0, 0.6), edgecolor="none")
     ms_zoom_pic.add_patch(m1_theo_box)
 
@@ -160,6 +172,8 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     ms_zoom_pic.text(m1_theo_mz - 0.71, m1_theo_i, 'Calc: %.4f' % m1_theo_mz,
                      color='orange', fontsize=6)
     ms_zoom_pic.text(m1_obs_mz + 0.04, m1_obs_i, '%.4f' % m1_obs_mz, color='magenta', fontsize=6)
+
+    opt_box_lst = []
 
     # isotope region | highlight the 2nd isotope
     if 2 in isotope_checker_dct.keys():
@@ -173,6 +187,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         m2_theo_box = patches.Rectangle((m2_theo_mz - ms1_delta, 0), 2 * ms1_delta, m2_theo_i,
                                         facecolor=(0.2, 1.0, 1.0, 0.6), edgecolor="none")
         ms_zoom_pic.add_patch(m2_theo_box)
+        opt_box_lst.append(ms_zoom_pic)
         markerline, stemlines, baseline = ms_zoom_pic.stem([m2_theo_mz], [m2_theo_i], '--',
                                                            markerfmt='o')
         plt.setp(stemlines, color='orange', alpha=0.8)
@@ -190,9 +205,15 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
             mh2_theo_i = mh2_dct['theo_i']
             mh2_obs_mz = mh2_dct['obs_mz']
             mh2_obs_i = mh2_dct['obs_i']
+            decon_idx = _mh2 + 2
             # mh2_theo_r = mh2_dct['theo_ratio']
             # mh2_obs_r = mh2_dct['obs_ratio']
-            mh2_theo_box = patches.Rectangle((mh2_theo_mz - ms1_delta, 0), 2 * ms1_delta, mh2_theo_i,
+            mh2_theo_base_box = patches.Rectangle((mh2_theo_mz - ms1_delta, 0), 2 * ms1_delta, deconv_lst[decon_idx],
+                                                  facecolor=(0.2, 1.0, 1.0, 0.6), edgecolor="none")
+            ms_zoom_pic.add_patch(mh2_theo_base_box)
+            opt_box_lst.append(mh2_theo_base_box)
+            mh2_theo_box = patches.Rectangle((mh2_theo_mz - ms1_delta, deconv_lst[decon_idx]),
+                                             2 * ms1_delta, mh2_theo_i - deconv_lst[decon_idx],
                                              facecolor=(1.0, 0.0, 0.0, 0.4), edgecolor="none")
             ms_zoom_pic.add_patch(mh2_theo_box)
             markerline, stemlines, baseline = ms_zoom_pic.stem([mh2_theo_mz], [mh2_theo_i], '--',
@@ -204,20 +225,20 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
             else:
                 _mh2_name = '+%i' % _mh2
             ms_zoom_pic.text(mh2_theo_mz - 0.2 - 0.05 * _mh2, mh2_theo_i + ms_zoom_offset_i,
-                             '[M+2H%s]' % _mh2_name, color='red', fontsize=6)
+                             '[M+H2%s]' % _mh2_name, color='red', fontsize=6)
             ms_zoom_pic.text(mh2_theo_mz - 0.71, mh2_theo_i, 'Calc: %.4f' % mh2_theo_mz,
                              color='red', fontsize=6)
             ms_zoom_pic.text(mh2_obs_mz + 0.04, mh2_obs_i, '%.4f' % mh2_obs_mz, color='red', fontsize=6)
 
         # plot the M+H2 isotope score
 
-        ms_zoom_pic.text(m1_theo_mz + 2.2, max(ms1_pr_i - ms_zoom_offset_i, ms1_pr_i * 0.8),
+        ms_zoom_pic.text(m1_theo_mz + 2.5, max(ms_zoom_bp_i - ms_zoom_offset_i, ms1_pr_i * 0.8),
                          '[M+H2] Isotope score = %.1f' % m2_score,
                          verticalalignment='top', horizontalalignment='right',
                          color='red', fontsize=7)
             
     # plot the isotope score
-    ms_zoom_pic.text(m1_theo_mz + 1.2, ms_zoom_bp_i + ms_zoom_offset_i,
+    ms_zoom_pic.text(m1_theo_mz + 0.2, ms_zoom_bp_i + 3 * ms_zoom_offset_i,
                      'Isotope score = %.1f' % isotope_score,
                      verticalalignment='top', horizontalalignment='right',
                      color='magenta', fontsize=10)
@@ -238,6 +259,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     xic_pic.text(ms2_rt, max(xic_i_lst) * 0.98, 'MS/MS', fontsize=8, color='blue')
     xic_pic.set_xlabel("Scan time (min)", fontsize=10, labelpad=-1)
     xic_pic.set_ylabel("Intensity", fontsize=10)
+    xic_pic.set_xlim([xic_rt_min, xic_rt_max])
 
     # prepare DataFrame for msms zoomed plot
     # plot color markers for zoomed MS2 first. Then overlay with zoomed spectra. Plot full ms2 in the last step.

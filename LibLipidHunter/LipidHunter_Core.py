@@ -219,6 +219,7 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
                 _xlsx_path = _save_xlsx_folder_str + '\\' + _mzml_name[:-4] + 'xlsx'
                 _ms_df = extractor.get_ms_all(_mzml, params_dct=a_extractor_param_dct, vendor=usr_vendor)
                 # _ms_df = _ms_df.drop_duplicates(subset=['mz'], keep='first')
+                _ms_df = _ms_df[['scan_number', 'scan_time', 'mz', 'i']]
                 _ms_df.to_excel(_xlsx_path, index=False)
                 self.ui.tab_a_statusextractor_pte.insertPlainText(unicode('Save as: \n%s.xlsx \n' % _mzml[0:-4]))
         self.ui.tab_a_statusextractor_pte.insertPlainText(u'Finished!')
@@ -479,11 +480,11 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             _temp_df = ms2_df.query(_query_code)
             if _temp_df.shape[0] > 0:
                 print('Found MS2!', _obs_mz)
-                _temp_df['MS1_obs_mz'] = _obs_mz
-                _temp_df['Lib_mz'] = _lib_mz
-                _temp_df['Abbreviation'] = _abbr
-                _temp_df['Formula'] = _formula
-                _temp_df['Ion'] = _ion
+                _temp_df.loc[:, 'MS1_obs_mz'] = _obs_mz
+                _temp_df.loc[:, 'Lib_mz'] = _lib_mz
+                _temp_df.loc[:, 'Abbreviation'] = _abbr
+                _temp_df.loc[:, 'Formula'] = _formula
+                _temp_df.loc[:, 'Ion'] = _ion
                 # print _temp_df
                 step1_df = step1_df.append(_temp_df)
             else:
@@ -660,12 +661,15 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             config.write(usr_param_cfg)
 
         print(hunter_param_dct)
-        # try:
+
         tot_run_time = huntlipids(hunter_param_dct)
-        self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
-        self.ui.tab_e_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
-        # except KeyError:
-        #     self.ui.tab_e_statusrun_pte.insertPlainText('!! Failed read input files, please check vendor settings!!')
+
+        if isinstance(tot_run_time, float):
+            self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
+            self.ui.tab_e_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+
+        else:
+            self.ui.tab_e_statusrun_pte.insertPlainText('!! Failed read input files, please check vendor settings!!')
 
     def f_set_default_cfg(self):
         config = configparser.ConfigParser()

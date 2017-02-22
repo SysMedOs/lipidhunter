@@ -72,15 +72,16 @@ class LogPageCreator(object):
                                 a:link {text-decoration:none} a:hover{text-decoration:underline }\n
                                 ul {font-size:14px; width: 260px;}\n </style>\n
                                 <h3><img src="LipidHunter.ico" height=30/>  LipidHunter</h3><font size="1">\n
-                                <hr> <h4>Parameters:</h4>\n<ul>\n
+                                <hr> <h3>Parameters:</h3>\n<ul>\n
                                 <li>Start time: %s</li>\n<li>Mode: %s %s</li>\n
                                 <li><i>m/z</i> range: %.1f - %.1f <i>m/z</i></li>\n<li>RT range: %.1f - %.1f min</li>\n
                                 <li>MS1 Threshold: %i</li>\n<li>MS2 Threshold: %i</li>\n
                                 <li>MS1 ppm: %i</li>\n<li>MS2 ppm: %i</li>\n
                                 <li>LipidHunter score > %.1f %s</li>\n<li>Isotope score > %.1f %s</li>\n
-                                </ul>\n<hr>\n<h4>Lipid identification list:</h4><font size="1">\n<table>\n<thead>\n
+                                </ul>\n<hr>\n<h3>Lipid identification list:</h3><font size="1">\n<table>\n<thead>\n
                                 <tr style="text-align: center;">\n
-                                <th>id#</th>\n<th> Exact Mass </th>\n<th>RT(min)</th>\n<th>Bulk</th>\n<th>Score</th>\n
+                                <th>ID#</th>\n<th> MS1_obs_mz </th>\n<th>RT(min)</th>\n<th>Discrete</th>\n
+                                <th>Score</th>\n
                                 </tr>\n</thead>\n</table>\n</body>\n</html>\n
                                 ''' % ('%', params['hunter_start_time'], self.lipid_type, params['charge_mode'],
                                        params['mz_start'], params['mz_end'], params['rt_start'], params['rt_end'],
@@ -157,11 +158,11 @@ class LogPageCreator(object):
                         <td><a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{id}</td>\n
                         <td><a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{mz}</td>\n
                         <td><a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{rt}</td>\n
-                        <td><a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{bulk}</td>\n
+                        <td><a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{ident}</td>\n
                         <td><a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{score}</td>\n
                         </tr>\n
                         '''.format(id=ident_idx, mz='%.4f' % ms1_pr_mz, rt='%.1f' % ms2_rt,
-                                   bulk=abbr_bulk, score=score))
+                                   ident=ident_abbr, score=score))
             idx_page.write(idx_str)
 
         print('==> info added to report html -->')
