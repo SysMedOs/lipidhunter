@@ -13,7 +13,7 @@ The LipidHunter Windows executable version is provided for `64bit` version of Wi
 
 For more experienced users, or if you have another operating system (`Linux`, `macOS`), there are also instructions about downloading and running the source code.
 
-LipidHunter requires minimum 2.0 GHz CPU and 4 GB RAM to run, for multiple processes of LipidHunter, 8 GB or 16 GB of RAM are recommended.
+LipidHunter requires minimum 2.0 GHz CPU and 4 GB RAM to run, to analyze multiple files by LipidHunter in parallel, 8 GB or 16 GB of RAM are recommended.
 
 Though we tried our best to keep the Windows executable distribution up to date. We have no guarantee that the Windows executable distribution corresponding to the latest version of LipidHunter source code. Please check out the original LipidHunter repository for latest features and bug fix.
 
@@ -44,7 +44,7 @@ If you have any problems while using LipidHunter, please report your issue here:
 
     + 7-Zip is open source software. [7-Zip home page](http://www.7-zip.org)
             
-* **Optional:** Resolve `.dll` issues. LipidHunter is a free open source software. However, some system files may required to execute the LipidHunter.exe. If you receive .dll error from LipidHunter, try to copy following system files to the LipidHunter folder and try again.
+* **Optional: Resolve `.dll` issues. (You DO NOT need this step if LipidHunter can start normally.)**  LipidHunter is a free open source software. However, some system files may required to execute the LipidHunter.exe. If you receive .dll error from LipidHunter, try to copy following system files to the LipidHunter folder and try again.
     + Copy following `.dll` and `.DRV` files from your system folder: `C:\WINDOWS\system32\` to the LipidHunter folder:
 
         + `.DRV` files:
@@ -75,7 +75,7 @@ If you have any problems while using LipidHunter, please report your issue here:
                 msvcrt.dll - C:\WINDOWS\system32\msvcrt.dll
                 ntdll.dll - C:\WINDOWS\system32\ntdll.dll
 
-* Start LipidHunter by `LipidHunter.exe`
+* Start LipidHunter by `LipidHunter.exe` (The first time to start LipidHunter may take relative long time, please allow the software to run if LipidHunter got blocked by your anti-virus software.)
 
 * Run the test files
         
