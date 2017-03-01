@@ -133,6 +133,8 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                 # _spectrum_title = _spectrum[spec_title_obo]
                 _scan_rt = float(_spectrum[scan_rt_obo])
                 ms_level = _spectrum[_spec_level_obo]
+                if _scan_rt > 60:
+                    _scan_rt /= 60
                 if rt_start <= _scan_rt <= rt_end:
                     _scan_id = _spectrum['id']
                     if ms_level in function_range_lst:
@@ -218,24 +220,32 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
                     ms1_df = ms1_df.sort_values(by='i', ascending=False).reset_index(drop=True)
                     ms1_delta = mz_lib * ms1_precision
                     if vendor == 'thermo':
+                        ms1_delta = 1
                         ms1_pr_query = '%.7f <= mz <= %.7f' % (mz_lib - ms1_delta, mz_lib + ms1_delta)
                     else:
                         ms1_pr_query = '%.6f <= mz <= %.6f' % (mz_lib - ms1_delta, mz_lib + ms1_delta)
-
                     ms1_pr_df = ms1_df.query(ms1_pr_query)
                     if ms1_pr_df.shape[0] > 0:
                         ms1_pr_df.loc[:, 'mz_xic'] = ms1_pr_df['mz']
-                        ms1_pr_df = ms1_pr_df.round({'mz': 6, 'mz_xic': 4})
-                        ms1_pr_df = ms1_pr_df[ms1_pr_df['mz_xic'].isin(ms1_obs_mz_lst)]
+                        if vendor == 'thermo':
+                            ms1_delta = 1
+                            ms1_pr_query = '%.7f <= mz <= %.7f' % (mz_lib - ms1_delta, mz_lib + ms1_delta)
+                            ms1_pr_df = ms1_pr_df.round({'mz': 6, 'mz_xic': 4})
+                            ms1_pr_df = ms1_pr_df.query(ms1_pr_query)
+                        else:
+                            ms1_pr_df = ms1_pr_df.round({'mz': 6, 'mz_xic': 4})
+                            ms1_pr_df = ms1_pr_df[ms1_pr_df['mz_xic'].isin(ms1_obs_mz_lst)]
                         if ms1_pr_df.shape[0] > 0:
                             print('Number of MS1 pr mz in list:', ms1_pr_df.shape[0])
                             ms1_pr_df['ppm'] = abs(1e6 * (ms1_pr_df['mz'] - mz_lib) / mz_lib)
                             # select best intensity in the precursor ppm range. Priority: i > ppm
                             # ms1_pr_df = ms1_pr_df.sort_values(by=['i', 'ppm'], ascending=[False, True])
-                            ms1_pr_df = ms1_pr_df.sort_values(by='i', ascending=False)
-                            print('ms1_pr_df')
-                            print(ms1_pr_df)
-                            ms1_pr_se = ms1_pr_df.iloc[0]
+                            if vendor == 'thermo':
+                                ms1_pr_df = ms1_pr_df.sort_values(by='ppm', ascending=True)
+                                ms1_pr_se = ms1_pr_df.iloc[0]
+                            else:
+                                ms1_pr_df = ms1_pr_df.sort_values(by='i', ascending=False)
+                                ms1_pr_se = ms1_pr_df.iloc[0]
                             ms1_mz = ms1_pr_se['mz']
                             ms1_i = ms1_pr_se['i']
                             ms1_pr_ppm = 1e6 * (ms1_mz - mz_lib) / mz_lib
@@ -249,7 +259,7 @@ def get_spectra(mz, mz_lib, function, ms2_scan_id, ms1_obs_mz_lst,
                         else:
                             print('!!!!!! Precursor m/z in MS1 not in the list >>> >>>')
                     else:
-                        print('!!!!!! Precursor m/z in MS1 not in the list >>> >>>')
+                        print('ms1_pr_df.shape[0] == 0 !!!!!! Precursor m/z in MS1 not in the list >>> >>>')
                 else:
                     print('!!!!!! MS1 spectra not in the list >>> >>>')
 
@@ -330,6 +340,8 @@ def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=
             if spec_level_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
                 _spec_level = _spectrum[spec_level_obo]
                 _scan_rt = float(_spectrum[scan_rt_obo])
+                if _scan_rt > 60:
+                    _scan_rt /= 60
                 if rt_start <= _scan_rt <= rt_end:
                     if _spec_level == 1:
                         _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
@@ -372,6 +384,7 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
 
     for _mz in ms1_xic_lst:
         ms1_xic_dct[_mz] = pd.DataFrame()
+
     spec_title_obo = 'MS:1000796'
     scan_rt_obo = 'MS:1000016'
     spec_level_obo = 'MS:1000511'
@@ -423,6 +436,9 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
                 _spectrum_level = _spectrum[spec_level_obo]
                 _scan_rt = float(_spectrum[scan_rt_obo])
 
+                if _scan_rt > 60:
+                    _scan_rt /= 60
+
                 if rt_start <= _scan_rt <= rt_end:
                     if _spectrum_level == 1:
                         print('Reading MS survey scan @:', _scan_rt)
@@ -436,6 +452,7 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
                             # faster mode
                             _xic_lst = _spectrum.hasPeak(_ms1_xic)
                             if len(_xic_lst) == 1:
+
                                 _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
                                 _tmp_mz_df.loc[:, 'rt'] = _scan_rt
                                 _tmp_mz_df.loc[:, 'mz'] = _ms1_xic
@@ -443,6 +460,7 @@ def get_xic_all(info_df, mzml, rt_range, ms1_precision=50e-6, msn_precision=500e
                                 ms1_xic_dct[_ms1_xic] = ms1_xic_df
 
                             if len(_xic_lst) > 1:
+
                                 _tmp_mz_df = pd.DataFrame(data=_xic_lst, columns=['mz', 'i'])
                                 _tmp_mz_df.loc[:, 'rt'] = _scan_rt
                                 _tmp_mz_df.loc[:, 'mz'] = _ms1_xic

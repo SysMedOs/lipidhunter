@@ -480,7 +480,7 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             _obs_mz_h = _obs_mz + ms2_delta
 
             if usr_vendor == 'thermo':
-                _query_code = '%f <= MS2_PR_mz <= %f' % (_obs_mz, _obs_mz_h)
+                _query_code = '%f <= MS2_PR_mz <= %f' % (_obs_mz_l, _obs_mz_h)
             else:
                 _query_code = '%f <= MS2_PR_mz <= %f' % (_obs_mz_l, _obs_mz_h)
 
@@ -560,7 +560,7 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
         if self.ui.mode_lcms_rb.isChecked():
             usr_exp_mode = 'LC-MS'
         elif self.ui.mode_static_rb.isChecked():
-            usr_exp_mode = 'Static-MS'
+            usr_exp_mode = 'Shotgun'
         else:
             usr_exp_mode = 'LC-MS'
         print('Vendor mode = %s, Experiment mode = %s' % (usr_vendor, usr_exp_mode))

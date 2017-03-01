@@ -223,11 +223,16 @@ class IsotopeHunter(object):
 
         return base_m1_i, base_m2_i, base_m3_i
 
-    def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2,
-                          ms1_precision=50e-6, pattern_tolerance=5, only_c=False, score_filter=75, decon=True):
+    def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2, ms1_precision=50e-6,
+                          pattern_tolerance=5, only_c=False, score_filter=75, decon=True, exp_mode='LC-MS'):
 
         mz_delta = ms1_pr_mz * ms1_precision
         delta_13c = 1.0033548378
+
+        if exp_mode == 'Shotgun':
+            pseudo_pr_check = 0
+        else:
+            pseudo_pr_check = 1
 
         if decon is True:
             deconv_elem_dct = self.get_elements(formula)
@@ -266,7 +271,7 @@ class IsotopeHunter(object):
 
         if i_df.shape[0] > 0:
             max_pre_m_i = i_df['i'].max()
-            if ms1_pr_i > max_pre_m_i:
+            if ms1_pr_i > max_pre_m_i or pseudo_pr_check == 0:
                 elem_dct = self.get_elements(formula)
                 mono_mz = self.get_mono_mz(elem_dct)
                 if abs((ms1_pr_mz - mono_mz)) <= ms1_precision * ms1_pr_mz:

@@ -1198,7 +1198,7 @@ class Ui_MainWindow(object):
         self.tab_f_hgcfg_pb.setText(QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_f_fawhitelist_pb.setText(QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
         self.tabframe.setTabText(self.tabframe.indexOf(self.cfg_tab), QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_25.setText(QtGui.QApplication.translate("MainWindow", "LipidHunter Beta relased date: 14, Feb, 2017", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_25.setText(QtGui.QApplication.translate("MainWindow", "LipidHunter Beta relased date: 24, Feb, 2017", None, QtGui.QApplication.UnicodeUTF8))
         self.label_26.setText(QtGui.QApplication.translate("MainWindow", "Developed by: SysMedOs team", None, QtGui.QApplication.UnicodeUTF8))
         self.label_43.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:600;\">LipidHunter is Dual-Licensed:</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_42.setText(QtGui.QApplication.translate("MainWindow", "       For academic & non-commercial use:", None, QtGui.QApplication.UnicodeUTF8))

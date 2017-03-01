@@ -15,7 +15,7 @@
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 #
 
-from __future__ import print_function
+from __future__ import division
 from __future__ import print_function
 import re
 import pandas as pd
@@ -164,12 +164,17 @@ class Extractor(object):
 
         # _ms2_function_lst = ['2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
         _ms2_function_lst = [str(i) for i in range(2, dda_top + 2)]
+        function_range_lst = range(1, dda_top + 2)
 
-        _spec_title_obo = 'MS:1000796'
+        spec_title_obo = 'MS:1000796'
+        scan_rt_obo = 'MS:1000016'
         _spec_level_obo = 'MS:1000511'
         # _thermo_title_obo = 'MS:1000768'
         # _waters_title_obo = 'MS:1000769'
         _ms2_pr_obo = 'MS:1000744'
+        scan_pr_mz_obo = 'MS:1000744'
+
+        dda_event_idx = 0
 
         # # set default settings#
         if vendor == 'waters':
@@ -179,7 +184,7 @@ class Extractor(object):
                 # _rt_lst = []
                 # _scan_id_lst = []
                 try:
-                    _spectrum_title = _spectrum[_spec_title_obo]
+                    _spectrum_title = _spectrum[spec_title_obo]
                     _function_checker = _function_re.match(_spectrum_title)
                     if _function_checker:
                         _function = _function_checker.groups()[2]
@@ -205,37 +210,67 @@ class Extractor(object):
                 except KeyError:
                     print('Not MS', _spectrum['id'])
 
+        # if vendor == 'thermo':
+        #     dda_rank_idx = 0
+        #     for _spectrum in _usr_spectra:
+        #
+        #         if _spec_level_obo in _spectrum.keys():
+        #             rt = float(_spectrum['MS:1000016'])
+        #             print(rt)
+        #             ms_level = _spectrum[_spec_level_obo]
+        #             print('ms_level', ms_level)
+        #             # _spectrum_title = _spectrum[spec_title_obo]
+        #             _rt = _spectrum['MS:1000016']
+        #             if rt_start <= float(_rt) <= rt_end:
+        #                 if ms_level == 1:
+        #                     dda_rank_idx = 0
+        #
+        #                 elif ms_level in function_range_lst:
+        #                     dda_rank_idx += 1
+        #                     if mz_start <= float(_spectrum[_ms2_pr_obo]) <= mz_end:
+        #                         print('Function: %s, Scan_num: %s, Scan_time: %s, PR%s;' %
+        #                               (ms_level, _spectrum['id'], _rt, _spectrum[_ms2_pr_obo]))
+        #                         _toppeaks_lst = [(_spectrum['MS:1000744'], 0)]
+        #                         _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['MS2_PR_mz', 'i'])
+        #                         if _toppeaks_df.shape[0] > 0:
+        #                             _toppeaks_df.loc[:, 'DDA_rank'] = dda_rank_idx
+        #                             _toppeaks_df.loc[:, 'scan_time'] = _rt
+        #                             _toppeaks_df.loc[:, 'scan_number'] = _spectrum['id']
+        #                             _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
+        #
+        #             else:
+        #                 print('NOT in RT range')
+        #                 dda_rank_idx = 0
+
         if vendor == 'thermo':
+            dda_rank_idx = 0
             for _spectrum in _usr_spectra:
-
-                dda_rank_idx = 0
-                if _spec_level_obo in _spectrum.keys():
-                    rt = float(_spectrum['MS:1000016'])
-                    print(rt)
+                pr_mz = 0
+                if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
+                    # _spectrum_title = _spectrum[spec_title_obo]
+                    _scan_rt = float(_spectrum[scan_rt_obo])
                     ms_level = _spectrum[_spec_level_obo]
-                    print('ms_level', ms_level)
-                    # _spectrum_title = _spectrum[_spec_title_obo]
-                    _rt = _spectrum['MS:1000016']
-                    if rt_start <= float(_rt) <= rt_end:
-                        if ms_level == 1:
-                            dda_rank_idx = 0
+                    if _scan_rt > 60:
+                        _scan_rt /= 60
+                    if rt_start <= _scan_rt <= rt_end:
+                        _scan_id = _spectrum['id']
+                        if ms_level in function_range_lst:
+                            _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
+                            if ms_level == 1:
+                                dda_event_idx += 1
+                                dda_rank_idx = 0
 
-                        elif ms_level == 2:
-                            dda_rank_idx += 1
-                            if mz_start <= float(_spectrum[_ms2_pr_obo]) <= mz_end:
-                                print('Function: %s, Scan_num: %s, Scan_time: %s, PR%s;' %
-                                      (ms_level, _spectrum['id'], _rt, _spectrum[_ms2_pr_obo]))
-                                _toppeaks_lst = [(_spectrum['MS:1000744'], 0)]
-                                _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['MS2_PR_mz', 'i'])
-                                if _toppeaks_df.shape[0] > 0:
-                                    _toppeaks_df.loc[:, 'DDA_rank'] = dda_rank_idx
-                                    _toppeaks_df.loc[:, 'scan_time'] = _rt
-                                    _toppeaks_df.loc[:, 'scan_number'] = _spectrum['id']
-                                    _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
-
-                    else:
-                        print('NOT in RT range')
-                        dda_rank_idx = 0
-
-        print('_ms_df_shape', _pre_ms_df.shape)
+                            if ms_level == 2:
+                                dda_rank_idx += 1
+                                pr_mz = _spectrum[scan_pr_mz_obo]
+                                if mz_start <= float(pr_mz) <= mz_end:
+                                    print('DDA_rank: %i, Scan_num: %s, Scan_time: %f, PR%s;' %
+                                          (dda_rank_idx, _spectrum['id'], _scan_rt, _spectrum[_ms2_pr_obo]))
+                                    _toppeaks_lst = [(_spectrum['MS:1000744'], 0)]
+                                    _toppeaks_df = pd.DataFrame(data=_toppeaks_lst, columns=['MS2_PR_mz', 'i'])
+                                    if _toppeaks_df.shape[0] > 0:
+                                        _toppeaks_df.loc[:, 'DDA_rank'] = dda_rank_idx
+                                        _toppeaks_df.loc[:, 'scan_time'] = _scan_rt
+                                        _toppeaks_df.loc[:, 'scan_number'] = _spectrum['id']
+                                        _pre_ms_df = _pre_ms_df.append(_toppeaks_df)
         return _pre_ms_df
