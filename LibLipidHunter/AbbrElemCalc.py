@@ -163,6 +163,10 @@ class BulkAbbrFormula(object):
             lipid_elem_dct['H'] += 3
             lipid_elem_dct['C'] += 2
             lipid_elem_dct['O'] += 2
+        elif charge == '[M+OAc]-':
+            lipid_elem_dct['H'] += 3
+            lipid_elem_dct['C'] += 2
+            lipid_elem_dct['O'] += 2
         elif charge == '[M+H]+':
             lipid_elem_dct['H'] += 1
         elif charge == '[M+NH4]+':
@@ -223,7 +227,7 @@ class BulkAbbrFormula(object):
 if __name__ == '__main__':
 
     usr_bulk_abbr_lst = ['PC(36:3)', 'PC(O-36:3)', 'PC(P-36:3)']
-    charge_lst = ['', '[M-H]-', '[M+HCOO]-']
+    charge_lst = ['', '[M-H]-', '[M+HCOO]-', '[M+OAc]-']
 
     abbr2formula = BulkAbbrFormula()
 

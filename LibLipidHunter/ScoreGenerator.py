@@ -49,13 +49,13 @@ class ScoreGenerator:
 
         pr_mz = 0.0
 
-        if charge_type in ['[M-H]-', '[M+HCOO]-', '[M+FA-H]-', '[M+CH3COO]-', '[M+OAc-H]-', '[M+AcOH-H]-']:
+        if charge_type in ['[M-H]-', '[M+HCOO]-', '[M+FA-H]-', '[M+CH3COO]-', '[M+OAc]-', '[M+AcOH-H]-']:
             charge_mode = 'NEG'
             if charge_type == '[M-H]-':
                 pr_mz = mz_lib
             elif charge_type in ['[M+HCOO]-', '[M+FA-H]-']:
                 pr_mz = mz_lib - 46.005480  # - HCOOH
-            elif charge_type == '[M+CH3COO]-':
+            elif charge_type in ['[M+CH3COO]-', '[M+OAc]-']:
                 pr_mz = mz_lib - 60.021130  # - CH3COOH
 
         elif charge_type in ['[M+H]+', '[M+Na]+', '[M+NH4]+', '[M+K]+']:
@@ -191,6 +191,11 @@ class ScoreGenerator:
             if abbr[:2] == 'PC' and charge_type == '[M+HCOO]-':
                 fa_chk_df['[M-H]-sn'] = calc_pr_mz - fa_chk_df['NL-H2O'] - 60.021130  # - CH3COOH for PC
                 fa_chk_df['[M-H]-sn-H2O'] = calc_pr_mz - fa_chk_df['NL'] - 60.021130  # - CH3COOH for PC
+                fa_chk_df['Proposed_structures'] = ''
+                lyso_hg_mod = '-CH3'
+            elif abbr[:2] == 'PC' and charge_type == '[M+OAc]-':
+                fa_chk_df['[M-H]-sn'] = calc_pr_mz - fa_chk_df['NL-H2O'] - 74.036780  # - CH3COOCH3 for PC
+                fa_chk_df['[M-H]-sn-H2O'] = calc_pr_mz - fa_chk_df['NL'] - 74.036780  # - CH3COOCH3 for PC
                 fa_chk_df['Proposed_structures'] = ''
                 lyso_hg_mod = '-CH3'
 

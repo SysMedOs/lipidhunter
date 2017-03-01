@@ -133,8 +133,6 @@ def huntlipids(param_dct):
     usr_df = tmp_usr_df.sort_values(by=['scan_time'])
     tmp_usr_df = usr_df.reset_index(drop=True)
     usr_df = tmp_usr_df.copy()
-    print('usr_df')
-    print(usr_df.query('713< MS1_XIC_mz < 719'))
 
     print('=== ==> --> Total precursor number: %i' % usr_df.shape[0])
 

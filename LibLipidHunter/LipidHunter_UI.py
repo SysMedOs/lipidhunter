@@ -1,22 +1,8 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright (C) 2016-2017  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
-# SysMedOs_team: Zhixu Ni, Georgia Angelidou, Mike Lange, Maria Fedorova
-# LipidHunter is Dual-licensed
-#     For academic and non-commercial use: `GPLv2 License` Please read more information by the following link:
-#         [The GNU General Public License version 2] (https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-#     For commercial use:
-#         please contact the SysMedOs_team by email.
-# Please cite our publication in an appropriate form.
-#
-# For more info please contact:
-#     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
-#     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
-#     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
-#
+
 # Form implementation generated from reading ui file '.\LipidHunter_UI.ui'
 #
-# Created: Sat Feb 11 18:08:19 2017
+# Created: Wed Mar 01 04:19:43 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -411,6 +397,7 @@ class Ui_MainWindow(object):
         self.tab_d_lipidclass_cmb.addItem("")
         self.tab_d_lipidclass_cmb.addItem("")
         self.tab_d_lipidclass_cmb.addItem("")
+        self.tab_d_lipidclass_cmb.addItem("")
         self.horizontalLayout_6.addWidget(self.tab_d_lipidclass_cmb)
         spacerItem18 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem18)
@@ -549,11 +536,11 @@ class Ui_MainWindow(object):
         self.tab_d_hgfilter_lb.setObjectName("tab_d_hgfilter_lb")
         self.horizontalLayout_19.addWidget(self.tab_d_hgfilter_lb)
         self.tab_d_hgfilteron_rb = QtGui.QRadioButton(self.gridLayoutWidget_3)
-        self.tab_d_hgfilteron_rb.setChecked(True)
+        self.tab_d_hgfilteron_rb.setChecked(False)
         self.tab_d_hgfilteron_rb.setObjectName("tab_d_hgfilteron_rb")
         self.horizontalLayout_19.addWidget(self.tab_d_hgfilteron_rb)
         self.tab_d_hgfilteroff_rb = QtGui.QRadioButton(self.gridLayoutWidget_3)
-        self.tab_d_hgfilteroff_rb.setChecked(False)
+        self.tab_d_hgfilteroff_rb.setChecked(True)
         self.tab_d_hgfilteroff_rb.setObjectName("tab_d_hgfilteroff_rb")
         self.horizontalLayout_19.addWidget(self.tab_d_hgfilteroff_rb)
         spacerItem22 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -734,7 +721,7 @@ class Ui_MainWindow(object):
         self.tab_e_hgppm_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
         self.tab_e_hgppm_spb.setDecimals(0)
         self.tab_e_hgppm_spb.setMaximum(9999.0)
-        self.tab_e_hgppm_spb.setProperty("value", 200.0)
+        self.tab_e_hgppm_spb.setProperty("value", 100.0)
         self.tab_e_hgppm_spb.setObjectName("tab_e_hgppm_spb")
         self.horizontalLayout_13.addWidget(self.tab_e_hgppm_spb)
         self.label_39 = QtGui.QLabel(self.gridLayoutWidget_5)
@@ -752,6 +739,7 @@ class Ui_MainWindow(object):
         self.tab_e_lipidclass_cmb = QtGui.QComboBox(self.gridLayoutWidget_5)
         self.tab_e_lipidclass_cmb.setMinimumSize(QtCore.QSize(220, 0))
         self.tab_e_lipidclass_cmb.setObjectName("tab_e_lipidclass_cmb")
+        self.tab_e_lipidclass_cmb.addItem("")
         self.tab_e_lipidclass_cmb.addItem("")
         self.tab_e_lipidclass_cmb.addItem("")
         self.tab_e_lipidclass_cmb.addItem("")
@@ -779,7 +767,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_15.addWidget(self.label_16)
         self.tab_e_ms2ppm_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
         self.tab_e_ms2ppm_spb.setMaximum(9999)
-        self.tab_e_ms2ppm_spb.setProperty("value", 200)
+        self.tab_e_ms2ppm_spb.setProperty("value", 100)
         self.tab_e_ms2ppm_spb.setObjectName("tab_e_ms2ppm_spb")
         self.horizontalLayout_15.addWidget(self.tab_e_ms2ppm_spb)
         self.label_38 = QtGui.QLabel(self.gridLayoutWidget_5)
@@ -1063,8 +1051,8 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.tabframe.setCurrentIndex(0)
-        self.tab_d_lipidclass_cmb.setCurrentIndex(2)
-        self.tab_e_lipidclass_cmb.setCurrentIndex(2)
+        self.tab_d_lipidclass_cmb.setCurrentIndex(3)
+        self.tab_e_lipidclass_cmb.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -1121,12 +1109,13 @@ class Ui_MainWindow(object):
         self.tab_d_4_lb.setText(QtGui.QApplication.translate("MainWindow", "Input .mzML file:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_lipidclass_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Phosphatidic acid (PA) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+HCOO]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Phosphatidylethanolamine (PE) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+OAc]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Phosphatidylethanolamine (PE) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_ms2mzml_pb.setText(QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_2_lb.setText(QtGui.QApplication.translate("MainWindow", "Bulk search result:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_runextract_pb.setText(QtGui.QApplication.translate("MainWindow", "Link lipids to scans", None, QtGui.QApplication.UnicodeUTF8))
@@ -1175,12 +1164,13 @@ class Ui_MainWindow(object):
         self.tab_e_ms2hginfoth_dspb.setSuffix(QtGui.QApplication.translate("MainWindow", " %", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_e_lipidclass_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Phosphatidic acid (PA) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_e_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+HCOO]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Phosphatidylethanolamine (PE) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+OAc]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Phosphatidylethanolamine (PE) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_ms2threshold_spb_2.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_16.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level ppm:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_38.setText(QtGui.QApplication.translate("MainWindow", "Min relative intensity for scoring:", None, QtGui.QApplication.UnicodeUTF8))
@@ -1198,7 +1188,7 @@ class Ui_MainWindow(object):
         self.tab_f_hgcfg_pb.setText(QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_f_fawhitelist_pb.setText(QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
         self.tabframe.setTabText(self.tabframe.indexOf(self.cfg_tab), QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_25.setText(QtGui.QApplication.translate("MainWindow", "LipidHunter Beta relased date: 24, Feb, 2017", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_25.setText(QtGui.QApplication.translate("MainWindow", "LipidHunter Beta relased date: 28, Feb, 2017", None, QtGui.QApplication.UnicodeUTF8))
         self.label_26.setText(QtGui.QApplication.translate("MainWindow", "Developed by: SysMedOs team", None, QtGui.QApplication.UnicodeUTF8))
         self.label_43.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:600;\">LipidHunter is Dual-Licensed:</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_42.setText(QtGui.QApplication.translate("MainWindow", "       For academic & non-commercial use:", None, QtGui.QApplication.UnicodeUTF8))
@@ -1212,11 +1202,11 @@ class Ui_MainWindow(object):
         self.label_31.setText(QtGui.QApplication.translate("MainWindow", "matplotlib", None, QtGui.QApplication.UnicodeUTF8))
         self.label_50.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"http://www.matplotlib.org\"><span style=\"  text-decoration: none; color:#FF8C00;\">http://www.matplotlib.org</span></a><br/>John D. Hunter. Matplotlib: A 2D Graphics Environment,<br/>Computing in Science &amp; Engineering, 9, 90-95 (2007), DOI:10.1109/MCSE.2007.55 </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_36.setText(QtGui.QApplication.translate("MainWindow", "numpy & scipy", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_55.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://www.numpy.org\"><span style=\" text-decoration: none; color:#ff8c00;\">https://www.numpy.org</span></a> &amp; <a href=\"https://www.scipy.org\"><span style=\" text-decoration: none; color:#ff8c00;\">https://www.scipy.org</span></a><br/>Stéfan van der Walt, S. Chris Colbert and Gaël Varoquaux. The NumPy Array: A Structure for Efficient Numerical Computation, <br/>Computing in Science &amp; Engineering, 13, 22-30 (2011), DOI:10.1109/MCSE.2011.37 </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_55.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://www.numpy.org\"><span style=\" color:#ff8c00;\">https://www.numpy.org</span></a> &amp; <a href=\"https://www.scipy.org\"><span style=\" text-decoration: underline; color:#ff8c00;\">https://www.scipy.org</span></a><br/>Stéfan van der Walt, S. Chris Colbert and Gaël Varoquaux. The NumPy Array: A Structure for Efficient Numerical Computation, <br/>Computing in Science &amp; Engineering, 13, 22-30 (2011), DOI:10.1109/MCSE.2011.37 </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_32.setText(QtGui.QApplication.translate("MainWindow", "pandas", None, QtGui.QApplication.UnicodeUTF8))
         self.label_48.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"http://pandas.pydata.org\"><span style=\"  text-decoration: none; color:#FF8C00;\">http://pandas.pydata.org</span></a><br/>Wes McKinney. Data Structures for Statistical Computing in Python,<br/>Proceedings of the 9th Python in Science Conference, 51-56 (2010) </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_33.setText(QtGui.QApplication.translate("MainWindow", "pymzML", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_53.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://pymzml.github.io\"><span style=\" text-decoration: none; color:#ff8c00;\">https://pymzml.github.io</span></a><br/>Bald, T., Barth, J., Niehues, A., Specht, M., Hippler, M., and Fufezan, C. (2012) <br/>pymzML - Python module for high throughput bioinformatics on mass spectrometry data,<br/>Bioinformatics, DOI: 10.1093/bioinformatics/bts066 </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_53.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://pymzml.github.io\"><span style=\" color:#ff8c00;\">https://pymzml.github.io</span></a><br/>Bald, T., Barth, J., Niehues, A., Specht, M., Hippler, M., and Fufezan, C. (2012) <br/>pymzML - Python module for high throughput bioinformatics on mass spectrometry data,<br/>Bioinformatics, DOI: 10.1093/bioinformatics/bts066 </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_34.setText(QtGui.QApplication.translate("MainWindow", "pyside", None, QtGui.QApplication.UnicodeUTF8))
         self.label_51.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://wiki.qt.io/PySide\"><span style=\"  text-decoration: none; color:#FF8C00;\">https://wiki.qt.io/PySide</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_46.setText(QtGui.QApplication.translate("MainWindow", "We acknowlege all projects that supports the development of LipidHunter:", None, QtGui.QApplication.UnicodeUTF8))
