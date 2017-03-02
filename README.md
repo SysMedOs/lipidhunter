@@ -1,6 +1,6 @@
 # LipidHunter source code version Instructions #
 
-![LipidHunter_logo_128.png](https://bitbucket.org/repo/oGzkj4/images/583628216-LipidHunter_logo_128.png)
+![crossplatform_screenshot.png](https://bitbucket.org/repo/oGzkj4/images/622833109-crossplatform_screenshot.png)
 
 This repository contains the source code of LipidHunter.
 
