@@ -1,4 +1,4 @@
-# LipidHunter Instructions #
+# LipidHunter source code version Instructions #
 
 ![LipidHunter_logo_128.png](https://bitbucket.org/repo/oGzkj4/images/583628216-LipidHunter_logo_128.png)
 
