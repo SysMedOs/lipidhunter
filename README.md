@@ -33,10 +33,14 @@ https://bitbucket.org/SysMedOs/lipidhunterdist
 
     + [Lipid Hunter source code User Guide](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
 
+* Errors/bugs
+    
+    In case you experienced any problems with running LipidHunter, please contact us 
+
 ### License ###
 
 + LipidHunter is Dual-licensed
-    * For academic and non-commercial use: `GPLv2 License` : 
+    * For academic and non-commercial use: `GPLv2 License`: 
     
         [The GNU General Public License version 2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
@@ -47,11 +51,11 @@ https://bitbucket.org/SysMedOs/lipidhunterdist
 ### Further questions? ###
 
 * Read our [wiki](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Home)
-* Report your issue here: [https://bitbucket.org/SysMedOs/lipidhunter/issues](https://bitbucket.org/SysMedOs/lipidhunter/issues)
+* Report any issues here: [https://bitbucket.org/SysMedOs/lipidhunter/issues](https://bitbucket.org/SysMedOs/lipidhunter/issues)
 
 
 ### Fundings ###
-We acknowlege all projects that supports the development of LipidHunter:
+We acknowledge all projects that supports the development of LipidHunter:
 
 + BMBF - Federal Ministry of Education and Research Germany:
 
