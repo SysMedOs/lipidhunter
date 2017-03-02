@@ -32,6 +32,7 @@ https://bitbucket.org/SysMedOs/lipidhunterdist
 * Follow the link below for more information to run the program.
 
     + [Lipid Hunter source code User Guide](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
+    + LipidHunter test file can be downloaded here: [LipidHunter_Test_mzML_File](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_TestFile.zip)
 
 * Errors/bugs
     
