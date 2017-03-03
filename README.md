@@ -1,11 +1,12 @@
-# LipidHunter source code version Instructions #
+# LipidHunter instructions (source code version)#
 
 ![crossplatform_screenshot.png](https://bitbucket.org/repo/oGzkj4/images/622833109-crossplatform_screenshot.png)
 
 This repository contains the source code of LipidHunter.
 
 LipidHunter Windows .exe executable version can be found here
-https://bitbucket.org/SysMedOs/lipidhunterdist
+
+https://bitbucket.org/SysMedOs/lipidhunter_exe
 
 
 ** Please read the following instructions before you start to run LipidHunter. **
