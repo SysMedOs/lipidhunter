@@ -13,7 +13,7 @@ https://bitbucket.org/SysMedOs/lipidhunter_exe
 
 ### Instructions ###
 
-* [How to install the Source Code](#markdown-header-how-to-install-lipidhunter-from-source-code)
+* [How to install LipidHunter from source code](#markdown-header-how-to-install-lipidhunter-from-source-code)
 * [License](#markdown-header-license)
 * [A step by step tutorial](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Home)
 * [Q&A](#markdown-header-further-questions)
@@ -24,20 +24,22 @@ https://bitbucket.org/SysMedOs/lipidhunter_exe
 ### How to install LipidHunter from source code ###
 * Download the LipidHunter as zip file for your system
 
-    + [LipidHunter source Code](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
+    + [Download LipidHunter source Code](https://bitbucket.org/SysMedOs/lipidhunter/downloads/?tab=tags) Please notice the date and version of LipidHunter source code.
+    + Professional users can use `git` to clone the whole repository, please make sure that you switched to the correct branch.
+
+
 
 * Rename the downloaded file to `LipidHunter.zip`
-    
 * Unzip `LipidHunter.zip` file to any folder.
-
+* Downloaded LipidHunter test spectra files: [LipidHunter_Test_mzML_File](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_TestFile.zip)
 * Follow the link below for more information to run the program.
 
-    + [Lipid Hunter source code User Guide](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
-    + LipidHunter test file can be downloaded here: [LipidHunter_Test_mzML_File](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_TestFile.zip)
+    + [LipidHunter source code guide](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
+
 
 * Errors/bugs
     
-    In case you experienced any problems with running LipidHunter, please contact us 
+    In case you experienced any problems with running LipidHunter, please report an issue in the [issue tracker](https://bitbucket.org/SysMedOs/lipidhunter/issues) or contact us.
 
 ### License ###
 
