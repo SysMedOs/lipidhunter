@@ -32,9 +32,12 @@ https://bitbucket.org/SysMedOs/lipidhunter_exe
 * Rename the downloaded file to `LipidHunter.zip`
 * Unzip `LipidHunter.zip` file to any folder.
 * Downloaded LipidHunter test spectra files: [LipidHunter_Test_mzML_File](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_TestFile.zip)
-* Follow the link below for more information to run the program.
+* Follow the link below for more information to install the program.
 
-    + [LipidHunter source code guide](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
+    + [LipidHunter source code installation instructions](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
+
+* LipidHunter user guide: [Download PDF](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_User_Guide.pdf)
+
 
 
 * Errors/bugs
