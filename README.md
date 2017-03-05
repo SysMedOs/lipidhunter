@@ -36,7 +36,7 @@ https://bitbucket.org/SysMedOs/lipidhunter_exe
 
     + [LipidHunter source code installation instructions](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
 
-* LipidHunter user guide: [Download PDF](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_User_Guide.pdf)
+* LipidHunter user guide: [Download LipidHunter user guide PDF](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_User_Guide.pdf)
 
 
 
