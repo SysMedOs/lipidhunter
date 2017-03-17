@@ -726,7 +726,7 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
                             'ms2_hginfopeak_threshold': hgms2_info_threshold,
                             'rank_score': rank_score, 'fast_isotope': fast_isotope,
                             'hunter_folder': self.lipidhunter_cwd,
-                            'hunter_start_time': start_time_str, 'Experiment_mode': usr_exp_mode}
+                            'hunter_start_time': start_time_str, 'experiment_mode': usr_exp_mode}
 
         param_log_output_path_str = (str(self.ui.tab_e_saveimgfolder_le.text()) +
                                      '/LipidHunter_Params-Log_%s.txt' % start_time_str

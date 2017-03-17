@@ -44,7 +44,7 @@ def huntlipids(param_dct):
     usr_lipid_type = param_dct['lipid_type']
     charge_mode = param_dct['charge_mode']
     usr_vendor = param_dct['vendor']
-    usr_exp_mode = param_dct['Experiment_mode']
+    usr_exp_mode = param_dct['experiment_mode']
     usr_xlsx = param_dct['lipids_info_path_str']
     usr_mzml = param_dct['mzml_path_str']
     output_folder = param_dct['img_output_folder_str']
