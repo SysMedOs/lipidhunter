@@ -24,6 +24,7 @@ import matplotlib
 matplotlib.use('Qt4Agg')
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
+import re
 import matplotlib as mpl
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib._png import read_png
@@ -71,6 +72,10 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
 
     print ('Start looking for MS2 PR m/z %f @ MS1 best PR m/z %f with lib m/z %f'
            % (ms2_pr_mz, ms1_obs, lib_mz))
+    searPat =re.compile('TG')
+    tg_flag=0
+    if re.match(searPat, mz_se['Abbreviation']):
+        tg_flag=1
 
     xic_df = xic_dct[ms1_xic_mz]
 
@@ -280,6 +285,7 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
     _fa_table_df = ident_info_dct['FA_INFO']
     _lyso_table_df = ident_info_dct['LYSO_INFO']
 
+
     if _ident_table_df.shape[0] > 0:
         _ident_table_df = _ident_table_df[['Proposed_structures', 'Score']]
         ident_col_labels = _ident_table_df.columns.values.tolist()
@@ -287,9 +293,14 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         ident_table_vals = map(list, _ident_table_df.values)
         # ident_col_width_lst = [0.03 * len(str(x)) for x in ident_col_labels]
         ident_col_width_lst = [0.3, 0.1]
-        ident_table = ms_pic.table(cellText=ident_table_vals, rowLabels=ident_row_labels,
+        if tg_flag == 1:
+            ident_table = ms_pic.table(cellText=ident_table_vals, rowLabels=ident_row_labels,
                                    colWidths=ident_col_width_lst,
-                                   colLabels=ident_col_labels, loc='upper right')
+                                   colLabels=ident_col_labels, loc='upper left')
+        else:
+            ident_table = ms_pic.table(cellText=ident_table_vals, rowLabels=ident_row_labels,
+                                       colWidths=ident_col_width_lst,
+                                       colLabels=ident_col_labels, loc='upper right')
         ident_table.set_fontsize(6)
 
     if _fa_table_df.shape[0] > 0:
@@ -317,7 +328,9 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         # fa_col_width_lst = [0.025 * len(str(x)) for x in fa_col_labels]
         fa_col_width_lst = [0.3, 0.1, 0.1, 0.1]
         if pl_type == 'TG':
-            pass
+            fa_table = msms_low_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
+                                      colWidths=fa_col_width_lst, rowColours=fa_row_color_lst,
+                                      colLabels=fa_col_labels, loc='upper left')
         else:
             fa_table = msms_pic.table(cellText=fa_table_vals, rowLabels=fa_row_labels,
                                       colWidths=fa_col_width_lst, rowColours=fa_row_color_lst,
@@ -352,7 +365,11 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
         lyso_col_width_lst = [0.3, 0.1, 0.1, 0.1]
 
         if pl_type == 'TG':
-            pass
+            # print "Bob"
+            # exit()
+            lyso_table = msms_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
+                                             colWidths=lyso_col_width_lst, rowColours=lyso_row_color_lst,
+                                             colLabels=lyso_col_labels, loc='upper left')
         else:
             lyso_table = msms_high_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
                                              colWidths=lyso_col_width_lst, rowColours=lyso_row_color_lst,

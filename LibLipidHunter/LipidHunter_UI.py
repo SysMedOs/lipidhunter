@@ -1107,15 +1107,22 @@ class Ui_MainWindow(object):
         self.tabframe.setTabText(self.tabframe.indexOf(self.search_tab), QtGui.QApplication.translate("MainWindow", "III. Bulk Search", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_lipidstable_pb.setText(QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_4_lb.setText(QtGui.QApplication.translate("MainWindow", "Input .mzML file:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Phosphatidic acid (PA) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+HCOO]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+OAc]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Phosphatidylethanolamine (PE) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(0,
+                                              QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+",
+                                                                           None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow",
+                                                                              "Triacylglycerol (TG) [M+NH4]+", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow",
+                                                                              "Triacylglycerol (TG) [M+Na]+", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Phosphatidic acid (PA) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+HCOO]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+OAc]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Phosphatidylethanolamine (PE) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_ms2mzml_pb.setText(QtGui.QApplication.translate("MainWindow", "Select file", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_2_lb.setText(QtGui.QApplication.translate("MainWindow", "Bulk search result:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_runextract_pb.setText(QtGui.QApplication.translate("MainWindow", "Link lipids to scans", None, QtGui.QApplication.UnicodeUTF8))
@@ -1162,15 +1169,22 @@ class Ui_MainWindow(object):
         self.label_18.setText(QtGui.QApplication.translate("MainWindow", "Specific peaks ppm:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_39.setText(QtGui.QApplication.translate("MainWindow", "Min relative intensity for scoring:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_e_ms2hginfoth_dspb.setSuffix(QtGui.QApplication.translate("MainWindow", " %", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Phosphatidic acid (PA) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+HCOO]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+OAc]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Phosphatidylethanolamine (PE) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_e_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(0,
+                                              QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+",
+                                                                           None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow",
+                                                                              "Triacylglycerol (TG) [M+NH4]+", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow",
+                                                                              "Triacylglycerol (TG) [M+Na]+", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Phosphatidic acid (PA) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+HCOO]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+OAc]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Phosphatidylethanolamine (PE) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_e_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_ms2threshold_spb_2.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_16.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level ppm:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_38.setText(QtGui.QApplication.translate("MainWindow", "Min relative intensity for scoring:", None, QtGui.QApplication.UnicodeUTF8))

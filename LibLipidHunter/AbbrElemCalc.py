@@ -87,28 +87,50 @@ class BulkAbbrFormula(object):
             bulk_fa_typ = abbr
 
         print(bulk_fa_typ)
-
-        if fa_checker.match(bulk_fa_typ):
-            bulk_fa_linker = 'A-A-'
-            lyso_fa_linker_dct = {'A': ''}
-            fa_chk = fa_checker.match(bulk_fa_typ)
-            bulk_fa_lst = fa_chk.groups()
-            bulk_fa_c = bulk_fa_lst[0]
-            bulk_fa_db = bulk_fa_lst[2]
-        elif fa_o_checker.match(bulk_fa_typ):
-            bulk_fa_linker = 'O-A-'
-            lyso_fa_linker_dct = {'O': '', 'A': 'O-'}  # link of the other sn after NL of this sn
-            fa_chk = fa_o_checker.match(bulk_fa_typ)
-            bulk_fa_lst = fa_chk.groups()
-            bulk_fa_c = bulk_fa_lst[1]
-            bulk_fa_db = bulk_fa_lst[3]
-        elif fa_p_checker.match(bulk_fa_typ):
-            bulk_fa_linker = 'P-A-'
-            lyso_fa_linker_dct = {'P': '', 'A': 'P-'}  # link of the other sn after NL of this sn
-            fa_chk = fa_p_checker.match(bulk_fa_typ)
-            bulk_fa_lst = fa_chk.groups()
-            bulk_fa_c = bulk_fa_lst[1]
-            bulk_fa_db = bulk_fa_lst[3]
+        if _pl_typ not in ['TG']:
+            if fa_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'A-A-'
+                lyso_fa_linker_dct = {'A': ''}
+                fa_chk = fa_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[0]
+                bulk_fa_db = bulk_fa_lst[2]
+            elif fa_o_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'O-A-'
+                lyso_fa_linker_dct = {'O': '', 'A': 'O-'}  # link of the other sn after NL of this sn
+                fa_chk = fa_o_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[1]
+                bulk_fa_db = bulk_fa_lst[3]
+            elif fa_p_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'P-A-'
+                lyso_fa_linker_dct = {'P': '', 'A': 'P-'}  # link of the other sn after NL of this sn
+                fa_chk = fa_p_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[1]
+                bulk_fa_db = bulk_fa_lst[3]
+        else:
+            if fa_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'A-A-A-'
+                lyso_fa_linker_dct = {'A': ''}
+                fa_chk = fa_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[0]
+                bulk_fa_db = bulk_fa_lst[2]
+            elif fa_o_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'O-A-A-'
+                lyso_fa_linker_dct = {'O': '', 'A': 'O-'}  # link of the other sn after NL of this sn
+                fa_chk = fa_o_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[1]
+                bulk_fa_db = bulk_fa_lst[3]
+            elif fa_p_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'P-A-A-'
+                lyso_fa_linker_dct = {'P': '', 'A': 'P-'}  # link of the other sn after NL of this sn
+                fa_chk = fa_p_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[1]
+                bulk_fa_db = bulk_fa_lst[3]
 
         bulk_fa_c = int(bulk_fa_c)
         bulk_fa_db = int(bulk_fa_db)
@@ -121,7 +143,8 @@ class BulkAbbrFormula(object):
     def get_neutral_elem(self, abbr):
 
         usr_lipid_info_dct = self.decode_abbr(abbr)
-
+        print usr_lipid_info_dct
+        # exit()
         usr_lipid_type = usr_lipid_info_dct['TYPE']
 
         if usr_lipid_type in self.lipid_hg_elem_dct.keys():
@@ -140,9 +163,18 @@ class BulkAbbrFormula(object):
                 return tmp_lipid_elem_dct
 
             elif usr_lipid_type in ['TG']:
-                pass
+                tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
+                tmp_lipid_elem_dct['O'] += 6
+                tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']
+                tmp_lipid_elem_dct['H'] += (self.glycerol_bone_elem_dct['H'] + usr_lipid_info_dct['C'] * 2
+                                            - usr_lipid_info_dct['DB'] * 2)  # DBE = DB + 2xC=O from FA
+                if usr_lipid_info_dct['LINK'] == 'O-A-A-':
+                    tmp_lipid_elem_dct['O'] += -1
+                    tmp_lipid_elem_dct['H'] += 2
+                elif usr_lipid_info_dct['LINK'] == 'P-A-A-':
+                    tmp_lipid_elem_dct['O'] += -1
 
-                return {}
+                return tmp_lipid_elem_dct
 
             else:
                 return {'C': 0, 'H': 0, 'O': 0, 'P': 0}
@@ -152,7 +184,6 @@ class BulkAbbrFormula(object):
     def get_charged_elem(self, abbr, charge='[M-H]-'):
 
         lipid_elem_dct = self.get_neutral_elem(abbr)
-
         if charge == '[M-H]-':
             lipid_elem_dct['H'] += -1
         elif charge == '[M+HCOO]-' or charge == '[M+FA-H]-':
@@ -172,7 +203,10 @@ class BulkAbbrFormula(object):
         elif charge == '[M+NH4]+':
             lipid_elem_dct['N'] += 1
             lipid_elem_dct['H'] += 4
+        elif charge == '[M+Na]+':
+            lipid_elem_dct['Na'] = 1
 
+        # print ('Mouxxaxaxaxaxxaxaxaxa. You just exist the charged Def')
         return lipid_elem_dct
 
     def get_formula(self, abbr, charge=''):
@@ -219,15 +253,17 @@ class BulkAbbrFormula(object):
             pass
         elif charge in ['[M-H]-', '[M+HCOO]-']:
             formula_str += '-'
-        elif charge in ['[M+H]+', '[M+NH4]+']:
+        elif charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
             formula_str += '+'
-
+        # print ('letssee if you manage to get out from this one')
         return formula_str, elem_dct
 
 if __name__ == '__main__':
 
-    usr_bulk_abbr_lst = ['PC(36:3)', 'PC(O-36:3)', 'PC(P-36:3)']
-    charge_lst = ['', '[M-H]-', '[M+HCOO]-', '[M+OAc]-']
+    usr_bulk_abbr_lst = ['TG(P-48:2)', 'PC(O-36:3)', 'PC(P-36:3)']
+    charge_lst = ['[M+NH4]+', '[M-H]-', '[M+HCOO]-', '[M+OAc]-']
+    # usr_bulk_abbr_lst = ['PC(36:3)', 'PC(O-36:3)', 'PC(P-36:3)']
+    # charge_lst = ['', '[M-H]-', '[M+HCOO]-', '[M+OAc]-']
 
     abbr2formula = BulkAbbrFormula()
 
