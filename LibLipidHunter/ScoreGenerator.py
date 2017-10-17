@@ -18,7 +18,7 @@
 from __future__ import division
 
 import re
-
+from LibLipidHunter.AbbrElemCalc import BulkAbbrFormula
 import pandas as pd
 
 
@@ -194,6 +194,7 @@ class ScoreGenerator:
             lipid_type = 'PL'
 
         if lipid_type == 'PL' and charge_mode == 'NEG':
+            print ('negative)')
             fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M-H]-', 'NL-H2O']]
             fa_chk_df = fa_chk_df.rename(columns={'[M-H]-': 'sn', 'mass': 'NL'})
 
@@ -282,7 +283,7 @@ class ScoreGenerator:
 
         elif lipid_type == 'GL' and charge_mode == 'POS':
 
-
+            print ('positive')
             if charge_type == '[M+NH4]+':
                 fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O']]
                 fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL'})
@@ -297,6 +298,8 @@ class ScoreGenerator:
                 fa_chk_df['[M+H]-RCOONa'] = calc_pr_mz - fa_chk_df['NL+Na']
                 fa_chk_df['Proposed_structures'] = ''
                 lyso_hg_mod = ''
+                print ('This is the calculate precursor')
+                print calc_pr_mz
             else:
                 fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O']]
                 fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL'})
@@ -306,14 +309,15 @@ class ScoreGenerator:
                 lyso_hg_mod = ''
 
             fa_abbr_lst = fa_chk_df['FA'].tolist()
-
+            print ('This is the calculate precursor')
+            print (calc_pr_mz)
             for _i, _fa_se in fa_chk_df.iterrows():
 
                 _fa_abbr = _fa_se['FA']
                 _fa_link = _fa_se['Link']
                 _fa_c = _fa_se['C']
                 _fa_db = _fa_se['DB']
-                if charge_type in ['M+H]+', '[M+NH4]+']:
+                if charge_type in ['[M+H]+', '[M+NH4]+']:
                     for _frag_type in ['sn', '[M+H]-sn', '[M+H]-sn-H2O', '[M+H]-2sn-H2O']:
                         if _frag_type is not '[M+H]-2sn-H2O':
                             _frag_mz = _fa_se[_frag_type]
@@ -415,7 +419,7 @@ class ScoreGenerator:
                                                         mg_w_ident_df = mg_w_ident_df.append(_frag_df)
                                                         print mg_w_ident_df
                                                         exit()
-                elif charge_type in ['M+Na]+']:
+                elif charge_type in ['[M+Na]+']:
                     for _frag_type in ['sn', '[M+H]-RCOONa', '[M+Na]-RCOOH', '[M+H]-RCOOH-RCOONa']:
                         if _frag_type is not '[M+H]-RCOOH-RCOONa':
                             _frag_mz = _fa_se[_frag_type]
