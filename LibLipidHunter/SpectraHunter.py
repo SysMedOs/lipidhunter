@@ -190,6 +190,13 @@ def huntlipids(param_dct):
     target_ident_lst = []
     ident_page_idx = 1
 
+    #########################################################################################
+    #
+    #   At this point should have the section about the Prediction of all the possible compinations of TG
+    #
+    #########################################################################################
+    score_calc.Propose_pre_str()
+
     # get spectra of one ABBR and plot
     for _n, _subgroup_df in checked_info_df.groupby(['MS2_PR_mz', 'Lib_mz', 'Formula', 'scan_time', 'Abbreviation']):
         _row_se = _subgroup_df.iloc[0, :].squeeze()
@@ -208,12 +215,8 @@ def huntlipids(param_dct):
         print _usr_abbr_bulk
         print _usr_charge
         _usr_formula_charged, usr_elem_charged_dct = abbr2formula.get_formula(_usr_abbr_bulk, charge=_usr_charge)
-        print _usr_formula_charged
-        print usr_elem_charged_dct
-
 
         _usr_formula, usr_elem_dct = abbr2formula.get_formula(_usr_abbr_bulk, charge='')
-
 
         usr_xic_mz = _row_se['MS1_XIC_mz']
         print('_usr_ms2_pr_mz', _usr_ms2_pr_mz, 'MS1_XIC_mz', usr_xic_mz)
@@ -305,6 +308,7 @@ def huntlipids(param_dct):
                             usr_ident_info_dct = check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df, mg_w_ident_df,
                                                              score_filter=usr_score_filter)
                             score_df = usr_ident_info_dct['SCORE_INFO']
+
                             if score_df.shape[0] > 0 and _ms1_pr_i > 0:
                                 print ('>>> >>> Check now for bulk identification as %s' % _usr_abbr_bulk)
 
@@ -346,6 +350,8 @@ def huntlipids(param_dct):
 
                                 if _ms1_pr_i > 0 and isotope_checker == 0 and isotope_score >= usr_isotope_score_filter:
                                     _tmp_output_df = score_df
+                                    print _tmp_output_df.columns.tolist()
+
                                     if 'OTHER_FRAG' in specific_check_dct.keys():
 
                                         other_frag_df = specific_check_dct['OTHER_FRAG']
@@ -372,6 +378,8 @@ def huntlipids(param_dct):
                                                             target_ident_lst.append(_frag_abbr)
                                     else:
                                         target_frag_count = 0
+                                    print _tmp_output_df.columns.tolist()
+
                                     if 'TARGET_NL' in specific_check_dct.keys():
 
                                         target_nl_df = specific_check_dct['TARGET_NL']
@@ -386,6 +394,7 @@ def huntlipids(param_dct):
                                                             target_ident_lst.append(_nl_abbr)
                                     else:
                                         target_nl_count = 0
+                                    print _tmp_output_df.columns.tolist()
 
                                     _tmp_output_df['Bulk_identification'] = _usr_abbr_bulk
                                     _tmp_output_df['Formula_neutral'] = _usr_formula
@@ -398,14 +407,17 @@ def huntlipids(param_dct):
                                     _tmp_output_df['DDA#'] = _usr_ms2_dda_rank
                                     _tmp_output_df['MS2_PR_mz'] = _usr_ms2_pr_mz
                                     _tmp_output_df['Scan#'] = _usr_ms2_scan_id
+                                    print _tmp_output_df.columns.tolist()
 
                                     #_tmp_output_df['#Specific_peaks'] = target_frag_count + target_nl_count
                                     _tmp_output_df['#Contaminated_peaks'] = other_frag_count + other_nl_count
                                     _tmp_output_df['ppm'] = _exact_ppm
                                     _tmp_output_df['Isotope_score'] = '%.2f' % isotope_score
+                                    print _tmp_output_df.columns.tolist()
 
                                     output_df = output_df.append(_tmp_output_df)
-                                    print output_df
+                                    print output_df.columns.tolist()
+
                                     #########################################################################
                                     #
                                     #   Error: For some reason this is not working for TG
@@ -419,26 +431,33 @@ def huntlipids(param_dct):
                                 pass
         else:
             print('NO XIC found for this m/z')
+    print output_df.columns.tolist()
 
     print('=== ==> --> Generate the output table')
-    # print (output_df.shape[0])
-    # print (output_df)
-    # exit()
+    print (output_df.shape[0])
+    print (output_df)
 
     if output_df.shape[0] > 0:
         output_header_lst = output_df.columns.tolist()
+        print output_header_lst
+        # exit()
+
         if usr_lipid_type == 'TG':
             # output_round_dct = {}
 
-            for _i_check in ['i_sn1', 'i_sn2', 'i_sn3', 'i_[M+H]-sn1', 'i_[M+H]-sn2', 'i_[M+H]-sn3', 'i_[M+H]-sn1-H2O', 'i_[M+H]-sn2-H2O',  'i_[M+H]-sn3-H2O']:
+            for _i_check in ['i_sn1', 'i_sn2', 'i_sn3', 'i_[M+H]-sn1', 'i_[M+H]-sn2', 'i_[M+H]-sn3', 'i_[M+H]-sn1-H2O',
+                             'i_[M+H]-sn2-H2O',  'i_[M+H]-sn3-H2O', 'i_[M+H]-(sn1+sn2)-H2O', 'i_[M+H]-(sn2+sn3)-H2O',
+                             'i_[M+H]-(sn1+sn3)-H2O']:
                 if _i_check not in output_header_lst:
                     output_df[_i_check] = 0.0
 
             output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3,
                                 'i_sn1': 2, 'i_sn2': 2, 'i_sn3': 2, 'i_[M+H]-sn1': 2, 'i_[M+H]-sn2': 2, 'i_[M+H]-sn3': 2,
-                                'i_[M+H]-sn1-H2O': 2, 'i_[M+H]-sn2-H2O': 2, 'i_[M+H]-sn3-H2O': 2
+                                'i_[M+H]-sn1-H2O': 2, 'i_[M+H]-sn2-H2O': 2, 'i_[M+H]-sn3-H2O': 2, 'i_[M+H]-(sn1+sn2)-H2O':2,
+                                'i_[M+H]-(sn2+sn3)-H2O':2, 'i_[M+H]-(sn1+sn3)-H2O':2
                                 }
         else:
+            print ('This is a phospholipid')
             for _i_check in ['i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']:
                 if _i_check not in output_header_lst:
                     output_df[_i_check] = 0.0
@@ -459,22 +478,38 @@ def huntlipids(param_dct):
             output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Formula_neutral', 'Formula_ion',
                                  'Charge', 'Lib_mz', 'ppm', 'LipidHunter_Score', 'MS1_obs_mz', 'MS1_obs_i',
                                  'Isotope_score', r'MS2_PR_mz', 'MS2_scan_time', 'DDA#', 'Scan#', 'i_sn1', 'i_sn2', 'i_sn3',
-                                 'i_[M+H]-sn1', 'i_[M+H]-sn2', 'i_[M+H]-sn3', 'i_[M+H]-sn1-H2O', 'i_[M+H]-sn2-H2O', 'i_[M+H]-sn3-H2O']
+                                 'i_[M+H]-sn1', 'i_[M+H]-sn2', 'i_[M+H]-sn3', 'i_[M+H]-sn1-H2O', 'i_[M+H]-sn2-H2O', 'i_[M+H]-sn3-H2O',
+                                 'i_[M+H]-(sn1+sn2)-H2O', 'i_[M+H]-(sn2+sn3)-H2O', 'i_[M+H]-(sn1+sn3)-H2O']
         else:
+            print ('This is were miracles habben :P')
             output_df.rename(columns={'Score': 'LipidHunter_Score',
                                       '#Contaminated_peaks': '#Unspecific_peaks'}, inplace=True)
+            # output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Formula_neutral', 'Formula_ion',
+            #                      'Charge', 'Lib_mz', 'ppm', 'LipidHunter_Score', 'MS1_obs_mz', 'MS1_obs_i',
+            #                      'Isotope_score', r'MS2_PR_mz', 'MS2_scan_time', 'DDA#', 'Scan#', 'i_sn1', 'i_sn2',
+            #                      'i_[M-H]-sn1', 'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O', '#Specific_peaks']
             output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Formula_neutral', 'Formula_ion',
-                                 'Charge', 'Lib_mz', 'ppm', 'LipidHunter_Score', 'MS1_obs_mz', 'MS1_obs_i',
-                                 'Isotope_score', r'MS2_PR_mz', 'MS2_scan_time', 'DDA#', 'Scan#', 'i_sn1', 'i_sn2',
-                                 'i_[M-H]-sn1', 'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O', '#Specific_peaks']
+                                  'Charge', 'Lib_mz', 'ppm', 'LipidHunter_Score', 'MS1_obs_mz', 'MS1_obs_i',
+                                  'Isotope_score', r'MS2_PR_mz', 'MS2_scan_time', 'DDA#', 'Scan#', 'i_sn1', 'i_sn2',
+                                  'i_[M-H]-sn1', 'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
             output_header_lst += target_ident_lst
+
             output_header_lst += ['#Unspecific_peaks']
 
+        print ('now lets see what oing on around here')
+        print output_df.columns.tolist()
+        print ('This is the manually given headers')
+        print output_header_lst
         output_df = output_df[output_header_lst]
+        print ('oeoeoeoeoeoeoeooeoeoe')
         output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_scan_time', 'LipidHunter_Score'],
                                           ascending=[True, True, False])
+        print ('xmmmmmmmmmmmmmmmmm')
         output_df = output_df.reset_index(drop=True)
+        print ('Allooooooooooooo')
         output_df.index += 1
+        print ('oooo lalallalalalala')
+        print output_sum_xlsx
         output_df.to_excel(output_sum_xlsx, index=False)
         print(output_sum_xlsx)
         print('=== ==> --> saved >>> >>> >>>')

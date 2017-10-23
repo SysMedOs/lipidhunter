@@ -336,17 +336,25 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                       colWidths=fa_col_width_lst, rowColours=fa_row_color_lst,
                                       colLabels=fa_col_labels, loc='upper center')
         fa_table.set_fontsize(6)
-
+    print ('owjwowiborb')
+    print _lyso_table_df
+    _lyso_table_df = _lyso_table_df.head(10)
     if _lyso_table_df.shape[0] > 0:
+        print ('geo')
         lyso_row_color_lst = []
+        print ('olaaaaa')
         for _i_lyso, _lyso_se in _lyso_table_df.iterrows():
+            print _i_lyso
             # color of stemlines is tuple of R, G, B, alpha from 0 to 1
             _rgb_color = ((20 * _i_lyso) / 255, (255 - 5 * _i_lyso) / 255,
                           (255 - 5 * _i_lyso) / 255, 0.6 - 0.02 * _i_lyso
                           )
+            print _rgb_color
+
             markerline, stemlines, baseline = msms_high_pic.stem([_lyso_se['mz']], [_lyso_se['i']],
                                                                  markerfmt="D"
                                                                  )
+
             plt.setp(stemlines, color=_rgb_color, linewidth=3)
             plt.setp(markerline, markerfacecolor=_rgb_color, markersize=5, markeredgewidth=0)
             markerline, stemlines, baseline = msms_pic.stem([_lyso_se['mz']], [_lyso_se['i']], markerfmt="D")
