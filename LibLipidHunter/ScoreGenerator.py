@@ -390,15 +390,15 @@ class ScoreGenerator:
         elif lipid_type == 'GL' and charge_mode == 'POS':
             print ('positive')
             if charge_type == '[M+NH4]+':
-                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O', '[M+H]+73']]
-                fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL', '[M+H]+73': 'snGL'})
+                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O', '[M+H]+74']]
+                fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL', '[M+H]+74': 'snGL'})
                 fa_chk_df['[M+H]-sn'] = calc_pr_mz - fa_chk_df['NL-H2O'] - 17.026549  # - NH3 adduct
                 fa_chk_df['[M+H]-sn-H2O'] = calc_pr_mz - fa_chk_df['NL'] - 17.026549  # - NH3 adduct
                 fa_chk_df['Proposed_structures'] = ''
                 lyso_hg_mod = '-NH3'
             elif charge_type == '[M+Na]+':
-                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O', 'NL+Na','[M+H]+73']]
-                fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL', '[M+H]+73': 'snGL'})
+                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O', 'NL+Na','[M+H]+74']]
+                fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL', '[M+H]+74': 'snGL'})
                 fa_chk_df['[M+Na]-RCOOH'] = calc_pr_mz - fa_chk_df['NL']
                 fa_chk_df['[M+H]-RCOONa'] = calc_pr_mz - fa_chk_df['NL+Na']
                 fa_chk_df['Proposed_structures'] = ''
@@ -406,8 +406,8 @@ class ScoreGenerator:
                 print ('This is the calculate precursor')
                 print calc_pr_mz
             else:
-                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O', '[M+H]+73']]
-                fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL', '[M+H]+73': 'snGL'})
+                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O', '[M+H]+74']]
+                fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL', '[M+H]+74': 'snGL'})
                 fa_chk_df['[M+H]-sn'] = calc_pr_mz - fa_chk_df['NL-H2O']
                 fa_chk_df['[M+H]-sn-H2O'] = calc_pr_mz - fa_chk_df['NL']
                 fa_chk_df['Proposed_structures'] = ''
