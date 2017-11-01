@@ -173,7 +173,6 @@ def huntlipids(param_dct):
 
     ms1_xic_mz_lst = usr_df['MS1_XIC_mz'].tolist()
     ms1_xic_mz_lst = set(ms1_xic_mz_lst)
-    print(ms1_xic_mz_lst)
 
     print('=== ==> --> Start to extract XIC')
     try:
@@ -212,8 +211,7 @@ def huntlipids(param_dct):
         _tmp_chk_df = usr_scan_info_df.query('MS2_PR_mz == %.6f and DDA_rank == %i and scan_number == %i'
                                              % (_usr_ms2_pr_mz, _usr_ms2_dda_rank, _usr_ms2_scan_id))
 
-        print _usr_abbr_bulk
-        print _usr_charge
+
         _usr_formula_charged, usr_elem_charged_dct = abbr2formula.get_formula(_usr_abbr_bulk, charge=_usr_charge)
 
         _usr_formula, usr_elem_dct = abbr2formula.get_formula(_usr_abbr_bulk, charge='')
@@ -350,7 +348,6 @@ def huntlipids(param_dct):
 
                                 if _ms1_pr_i > 0 and isotope_checker == 0 and isotope_score >= usr_isotope_score_filter:
                                     _tmp_output_df = score_df
-                                    print _tmp_output_df.columns.tolist()
 
                                     if 'OTHER_FRAG' in specific_check_dct.keys():
 
@@ -394,7 +391,6 @@ def huntlipids(param_dct):
                                                             target_ident_lst.append(_nl_abbr)
                                     else:
                                         target_nl_count = 0
-                                    print _tmp_output_df.columns.tolist()
 
                                     _tmp_output_df['Bulk_identification'] = _usr_abbr_bulk
                                     _tmp_output_df['Formula_neutral'] = _usr_formula
@@ -407,16 +403,13 @@ def huntlipids(param_dct):
                                     _tmp_output_df['DDA#'] = _usr_ms2_dda_rank
                                     _tmp_output_df['MS2_PR_mz'] = _usr_ms2_pr_mz
                                     _tmp_output_df['Scan#'] = _usr_ms2_scan_id
-                                    print _tmp_output_df.columns.tolist()
 
                                     #_tmp_output_df['#Specific_peaks'] = target_frag_count + target_nl_count
                                     _tmp_output_df['#Contaminated_peaks'] = other_frag_count + other_nl_count
                                     _tmp_output_df['ppm'] = _exact_ppm
                                     _tmp_output_df['Isotope_score'] = '%.2f' % isotope_score
-                                    print _tmp_output_df.columns.tolist()
 
                                     output_df = output_df.append(_tmp_output_df)
-                                    print output_df.columns.tolist()
 
                                     #########################################################################
                                     #
@@ -431,15 +424,11 @@ def huntlipids(param_dct):
                                 pass
         else:
             print('NO XIC found for this m/z')
-    print output_df.columns.tolist()
 
     print('=== ==> --> Generate the output table')
-    print (output_df.shape[0])
-    print (output_df)
 
     if output_df.shape[0] > 0:
         output_header_lst = output_df.columns.tolist()
-        print output_header_lst
         # exit()
 
         if usr_lipid_type == 'TG':
@@ -481,7 +470,6 @@ def huntlipids(param_dct):
                                  'i_[M+H]-sn1', 'i_[M+H]-sn2', 'i_[M+H]-sn3', 'i_[M+H]-sn1-H2O', 'i_[M+H]-sn2-H2O', 'i_[M+H]-sn3-H2O',
                                  'i_[M+H]-(sn1+sn2)-H2O', 'i_[M+H]-(sn2+sn3)-H2O', 'i_[M+H]-(sn1+sn3)-H2O']
         else:
-            print ('This is were miracles habben :P')
             output_df.rename(columns={'Score': 'LipidHunter_Score',
                                       '#Contaminated_peaks': '#Unspecific_peaks'}, inplace=True)
             # output_header_lst = ['Bulk_identification', 'Proposed_structures', 'Formula_neutral', 'Formula_ion',
@@ -496,20 +484,12 @@ def huntlipids(param_dct):
 
             output_header_lst += ['#Unspecific_peaks']
 
-        print ('now lets see what oing on around here')
-        print output_df.columns.tolist()
-        print ('This is the manually given headers')
-        print output_header_lst
+
         output_df = output_df[output_header_lst]
-        print ('oeoeoeoeoeoeoeooeoeoe')
         output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_scan_time', 'LipidHunter_Score'],
                                           ascending=[True, True, False])
-        print ('xmmmmmmmmmmmmmmmmm')
         output_df = output_df.reset_index(drop=True)
-        print ('Allooooooooooooo')
         output_df.index += 1
-        print ('oooo lalallalalalala')
-        print output_sum_xlsx
         output_df.to_excel(output_sum_xlsx, index=False)
         print(output_sum_xlsx)
         print('=== ==> --> saved >>> >>> >>>')

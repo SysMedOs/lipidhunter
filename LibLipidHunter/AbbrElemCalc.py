@@ -77,17 +77,28 @@ class BulkAbbrFormula(object):
             print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
+            fa_chk = fa_checker.match(abbr)
+            bulk_fa_lst = fa_chk.groups()
+            bulk_fa_c = bulk_fa_lst[0]
+            bulk_fa_db = bulk_fa_lst[2]
+            bulk_fa_linker = 'A-'
+            lyso_fa_linker_dct = {'A': ''}
         if fa_o_checker.match(abbr):
             print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
+            fa_chk = fa_checker.match(abbr)
+            bulk_fa_lst = fa_chk.groups()
+            bulk_fa_c = bulk_fa_lst[0]
+            bulk_fa_db = bulk_fa_lst[2]
+            bulk_fa_linker = 'O-'
+            lyso_fa_linker_dct = {'O': ''}
         if fa_p_checker.match(abbr):
             print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
 
-        print(bulk_fa_typ)
-        if _pl_typ not in ['TG']:
+        if _pl_typ not in ['TG', 'FA']:
             if fa_checker.match(bulk_fa_typ):
                 bulk_fa_linker = 'A-A-'
                 lyso_fa_linker_dct = {'A': ''}
@@ -109,7 +120,7 @@ class BulkAbbrFormula(object):
                 bulk_fa_lst = fa_chk.groups()
                 bulk_fa_c = bulk_fa_lst[1]
                 bulk_fa_db = bulk_fa_lst[3]
-        else:
+        elif _pl_typ not in ['FA']:
             if fa_checker.match(bulk_fa_typ):
                 bulk_fa_linker = 'A-A-A-'
                 lyso_fa_linker_dct = {'A': ''}
@@ -143,8 +154,6 @@ class BulkAbbrFormula(object):
     def get_neutral_elem(self, abbr):
 
         usr_lipid_info_dct = self.decode_abbr(abbr)
-        print usr_lipid_info_dct
-        # exit()
         usr_lipid_type = usr_lipid_info_dct['TYPE']
 
         if usr_lipid_type in self.lipid_hg_elem_dct.keys():
@@ -206,7 +215,6 @@ class BulkAbbrFormula(object):
         elif charge == '[M+Na]+':
             lipid_elem_dct['Na'] = 1
 
-        # print ('Mouxxaxaxaxaxxaxaxaxa. You just exist the charged Def')
         return lipid_elem_dct
 
     def get_formula(self, abbr, charge=''):

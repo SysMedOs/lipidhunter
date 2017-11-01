@@ -251,6 +251,12 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             self.ui.tab_a_statusextractor_pte.appendPlainText('!! Sorry, an error has occurred, '
                                                               'please check your settings !!')
 
+    ##############################################################################################
+    #
+    #   This is the section fro the first step of lipihunter
+    #   More specific is the secion where it creates the file that is needed for lipidmaps
+    #
+    ############################################################################################
     def a_run_merger(self):
         self.ui.tab_a_statusmerger_pte.insertPlainText(u'Start to proceed...')
 
