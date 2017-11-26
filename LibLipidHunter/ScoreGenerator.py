@@ -248,8 +248,6 @@ class ScoreGenerator:
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
 
-        print(bulk_fa_typ)
-
         if fa_checker.match(bulk_fa_typ):
             if _pl_typ == "TG":
                 bulk_fa_linker = 'A-A-A-'
@@ -424,8 +422,6 @@ class ScoreGenerator:
                 fa_chk_df['[M+H]-RCOONa'] = calc_pr_mz - fa_chk_df['NL+Na']
                 fa_chk_df['Proposed_structures'] = ''
                 lyso_hg_mod = ''
-                print ('This is the calculate precursor')
-                print calc_pr_mz
             else:
                 fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O', '[M+H]+74']]
                 fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL', '[M+H]+74': 'snGL'})
@@ -550,7 +546,6 @@ class ScoreGenerator:
                                                         _frag_df.loc[:, 'Proposed_structures'] = ('MG%s %s [M%s+H]+' % (pl_typ, _fa_mg_str, lyso_hg_mod))
                                                         mg_w_ident_df = mg_w_ident_df.append(_frag_df)
                                                         print mg_w_ident_df
-                                                        exit()
                 elif charge_type in ['[M+Na]+']:
                     for _frag_type in ['sn', '[M+H]-RCOONa', '[M+Na]-RCOOH', 'snGL']:
                         if _frag_type is not '[M+H]-RCOOH-RCOONa':
@@ -664,7 +659,7 @@ class ScoreGenerator:
                                                         'MG%s %s [M%s+H]+' % (pl_typ, _fa_mg_str, lyso_hg_mod))
                                                         mg_w_ident_df = mg_w_ident_df.append(_frag_df)
                                                         print mg_w_ident_df
-                                                        exit()
+
         # format the output DataFrame
         if fa_ident_df.shape[0] > 0:
             fa_ident_df = fa_ident_df.query('i > %f' % ms2_threshold)
@@ -733,7 +728,6 @@ class ScoreGenerator:
             mg_w_ident_df = mg_w_ident_df.drop_duplicates(['FA'], keep='first')
             mg_w_ident_df = mg_w_ident_df.sort_values(by='i', ascending=False).head(5)
 
-        print ('Values return')
         return fa_ident_df, lyso_ident_df, lyso_w_ident_df, mg_w_ident_df
 
     def get_structure(self, abbr):
@@ -1079,10 +1073,14 @@ class ScoreGenerator:
                     pass
 
 
-            fa_ident_df = combine_all_lst[combine_all_lst['Type']=='FA'].reset_index(drop=True)
-            lyso_ident_df = combine_all_lst[combine_all_lst['Type'] == 'Lyso'].reset_index(drop=True)
-            lyso_w_ident_df = combine_all_lst[combine_all_lst['Type'] == 'LysoW'].reset_index(drop=True)
-            mg_w_ident_df = combine_all_lst[combine_all_lst['Type'] == 'MG'].reset_index(drop=True)
+            fa_ident_df = combine_all_lst[combine_all_lst['Type']=='FA'].sort_values(by='i', ascending=False)
+            fa_ident_df = fa_ident_df.reset_index(drop=True)
+            lyso_ident_df = combine_all_lst[combine_all_lst['Type'] == 'Lyso'].sort_values(by='i', ascending=False)
+            lyso_ident_df = lyso_ident_df.reset_index(drop=True)
+            lyso_w_ident_df = combine_all_lst[combine_all_lst['Type'] == 'LysoW'].sort_values(by='i', ascending=False)
+            lyso_w_ident_df = lyso_w_ident_df.reset_index(drop=True)
+            mg_w_ident_df = combine_all_lst[combine_all_lst['Type'] == 'MG'].sort_values(by='i', ascending=False)
+            mg_w_ident_df = mg_w_ident_df.reset_index(drop=True)
 
             # print lyso_w_ident_df
             self.weight_df['mz'] = 0.0

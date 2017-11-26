@@ -300,128 +300,134 @@ def huntlipids(param_dct):
                         lyso_ident_df = match_info_dct['LYSO_INFO']
                         lyso_w_ident_df = match_info_dct['LYSO_W_INFO']
                         mg_w_ident_df = match_info_dct['MG_W_INFO']
+                        ####################
+                        # Maybe for the phospholipids need to have atleast on identification of the fa_ident_df
+                        # This is not the case for the TG
+                        # Here better programming need to be done
 
-                        if match_factor > 0 and score_df.shape[0] > 0 and fa_ident_df.shape[0] > 0:
+                        if match_factor > 0 and score_df.shape[0] > 0:
+                            if fa_ident_df.shape[0] > 0 or lyso_ident_df.shape[0] > 0 or lyso_w_ident_df.shape[0] > 0 or mg_w_ident_df.shape[0] > 0:
 
-                            usr_ident_info_dct = check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df, mg_w_ident_df,
-                                                             score_filter=usr_score_filter)
-                            score_df = usr_ident_info_dct['SCORE_INFO']
+                                usr_ident_info_dct = check_peaks(score_df, fa_ident_df, lyso_ident_df, lyso_w_ident_df, mg_w_ident_df,
+                                                                 score_filter=usr_score_filter)
+                                score_df = usr_ident_info_dct['SCORE_INFO']
 
-                            if score_df.shape[0] > 0 and _ms1_pr_i > 0:
-                                print ('>>> >>> Check now for bulk identification as %s' % _usr_abbr_bulk)
+                                if score_df.shape[0] > 0 and _ms1_pr_i > 0:
+                                    print ('>>> >>> Check now for bulk identification as %s' % _usr_abbr_bulk)
 
-                                specific_check_dct = score_calc.get_specific_peaks(_usr_mz_lib, _ms2_df,
-                                                                                   ms2_precision=usr_ms2_hg_precision,
-                                                                                   ms2_threshold=usr_ms2_hg_threshold,
-                                                                                   ms2_hginfo_threshold=usr_ms2_hginfo_th,
-                                                                                   vendor=usr_vendor
-                                                                                   )
+                                    specific_check_dct = score_calc.get_specific_peaks(_usr_mz_lib, _ms2_df,
+                                                                                       ms2_precision=usr_ms2_hg_precision,
+                                                                                       ms2_threshold=usr_ms2_hg_threshold,
+                                                                                       ms2_hginfo_threshold=usr_ms2_hginfo_th,
+                                                                                       vendor=usr_vendor
+                                                                                       )
 
-                                # format abbr. for file names
-                                _save_abbr_bulk = _usr_abbr_bulk
-                                _save_abbr_bulk = _save_abbr_bulk.replace('(', '[')
-                                _save_abbr_bulk = _save_abbr_bulk.replace(')', ']')
-                                _save_abbr_bulk = _save_abbr_bulk.replace(':', '-')
-                                _save_abbr_bulk = _save_abbr_bulk.replace('\\', '_')
-                                _save_abbr_bulk = _save_abbr_bulk.replace('/', '_')
+                                    # format abbr. for file names
+                                    _save_abbr_bulk = _usr_abbr_bulk
+                                    _save_abbr_bulk = _save_abbr_bulk.replace('(', '[')
+                                    _save_abbr_bulk = _save_abbr_bulk.replace(')', ']')
+                                    _save_abbr_bulk = _save_abbr_bulk.replace(':', '-')
+                                    _save_abbr_bulk = _save_abbr_bulk.replace('\\', '_')
+                                    _save_abbr_bulk = _save_abbr_bulk.replace('/', '_')
 
-                                img_name_core = ('\%.4f_rt%.3f_DDAtop%.0f_scan%.0f_%s.png'
-                                                 % (_usr_ms2_pr_mz, _usr_ms2_rt, _usr_ms2_dda_rank,
-                                                    _usr_ms2_scan_id, _save_abbr_bulk)
-                                                 )
+                                    img_name_core = ('\%.4f_rt%.3f_DDAtop%.0f_scan%.0f_%s.png'
+                                                     % (_usr_ms2_pr_mz, _usr_ms2_rt, _usr_ms2_dda_rank,
+                                                        _usr_ms2_scan_id, _save_abbr_bulk)
+                                                     )
 
-                                img_name = (output_folder + r'\LipidHunter_Results_Figures_%s' % hunter_start_time_str
-                                            + img_name_core)
+                                    img_name = (output_folder + r'\LipidHunter_Results_Figures_%s' % hunter_start_time_str
+                                                + img_name_core)
 
-                                isotope_checker, isotope_score = plot_spectra(_row_se, xic_dct, usr_ident_info_dct,
-                                                                              usr_spec_info_dct, specific_check_dct,
-                                                                              isotope_score_info_dct,
-                                                                              _usr_formula_charged, _usr_charge,
-                                                                              usr_xic_mz,
-                                                                              save_img_as=img_name,
-                                                                              ms1_precision=usr_ms1_precision,
-                                                                              score_mode=score_mode,
-                                                                              isotope_mode=isotope_score_mode
-                                                                              )
+                                    isotope_checker, isotope_score = plot_spectra(_row_se, xic_dct, usr_ident_info_dct,
+                                                                                  usr_spec_info_dct, specific_check_dct,
+                                                                                  isotope_score_info_dct,
+                                                                                  _usr_formula_charged, _usr_charge,
+                                                                                  usr_xic_mz,
+                                                                                  save_img_as=img_name,
+                                                                                  ms1_precision=usr_ms1_precision,
+                                                                                  score_mode=score_mode,
+                                                                                  isotope_mode=isotope_score_mode
+                                                                                  )
 
-                                print('==> check for output -->', isotope_checker)
+                                    print('==> check for output -->', isotope_checker)
 
-                                if _ms1_pr_i > 0 and isotope_checker == 0 and isotope_score >= usr_isotope_score_filter:
-                                    _tmp_output_df = score_df
+                                    if _ms1_pr_i > 0 and isotope_checker == 0 and isotope_score >= usr_isotope_score_filter:
+                                        _tmp_output_df = score_df
 
-                                    if 'OTHER_FRAG' in specific_check_dct.keys():
+                                        if 'OTHER_FRAG' in specific_check_dct.keys():
 
-                                        other_frag_df = specific_check_dct['OTHER_FRAG']
-                                        other_frag_count = other_frag_df.shape[0]
-                                    else:
-                                        other_frag_count = 0
-                                    if 'OTHER_NL' in specific_check_dct.keys():
+                                            other_frag_df = specific_check_dct['OTHER_FRAG']
+                                            other_frag_count = other_frag_df.shape[0]
+                                        else:
+                                            other_frag_count = 0
+                                        if 'OTHER_NL' in specific_check_dct.keys():
 
-                                        other_nl_df = specific_check_dct['OTHER_NL']
-                                        other_nl_count = other_nl_df.shape[0]
-                                    else:
-                                        other_nl_count = 0
-                                    if 'TARGET_FRAG' in specific_check_dct.keys():
+                                            other_nl_df = specific_check_dct['OTHER_NL']
+                                            other_nl_count = other_nl_df.shape[0]
+                                        else:
+                                            other_nl_count = 0
+                                        if 'TARGET_FRAG' in specific_check_dct.keys():
 
-                                        target_frag_df = specific_check_dct['TARGET_FRAG']
-                                        target_frag_count = target_frag_df.shape[0]
-                                        target_frag_col_lst = target_frag_df.columns.tolist()
-                                        for _frag_abbr in target_frag_col_lst:
-                                            if _frag_abbr not in ['mz', 'i', 'LABEL', 'CLASS']:
-                                                for _i, _f_se in target_frag_df.iterrows():
-                                                    if _f_se['LABEL'] == _frag_abbr:
-                                                        _tmp_output_df[_frag_abbr] = _f_se[_frag_abbr]
-                                                        if _frag_abbr not in target_ident_lst:
-                                                            target_ident_lst.append(_frag_abbr)
-                                    else:
-                                        target_frag_count = 0
-                                    print _tmp_output_df.columns.tolist()
+                                            target_frag_df = specific_check_dct['TARGET_FRAG']
+                                            target_frag_count = target_frag_df.shape[0]
+                                            target_frag_col_lst = target_frag_df.columns.tolist()
+                                            for _frag_abbr in target_frag_col_lst:
+                                                if _frag_abbr not in ['mz', 'i', 'LABEL', 'CLASS']:
+                                                    for _i, _f_se in target_frag_df.iterrows():
+                                                        if _f_se['LABEL'] == _frag_abbr:
+                                                            _tmp_output_df[_frag_abbr] = _f_se[_frag_abbr]
+                                                            if _frag_abbr not in target_ident_lst:
+                                                                target_ident_lst.append(_frag_abbr)
+                                        else:
+                                            target_frag_count = 0
+                                        print _tmp_output_df.columns.tolist()
 
-                                    if 'TARGET_NL' in specific_check_dct.keys():
+                                        if 'TARGET_NL' in specific_check_dct.keys():
 
-                                        target_nl_df = specific_check_dct['TARGET_NL']
-                                        target_nl_count = target_nl_df.shape[0]
-                                        target_nl_col_lst = target_nl_df.columns.tolist()
-                                        for _nl_abbr in target_nl_col_lst:
-                                            if _nl_abbr not in ['mz', 'i', 'LABEL', 'CLASS']:
-                                                for _i, _n_se in target_nl_df.iterrows():
-                                                    if _n_se['LABEL'] == _nl_abbr:
-                                                        _tmp_output_df[_nl_abbr] = _n_se[_nl_abbr]
-                                                        if _nl_abbr not in target_ident_lst:
-                                                            target_ident_lst.append(_nl_abbr)
-                                    else:
-                                        target_nl_count = 0
+                                            target_nl_df = specific_check_dct['TARGET_NL']
+                                            target_nl_count = target_nl_df.shape[0]
+                                            target_nl_col_lst = target_nl_df.columns.tolist()
+                                            for _nl_abbr in target_nl_col_lst:
+                                                if _nl_abbr not in ['mz', 'i', 'LABEL', 'CLASS']:
+                                                    for _i, _n_se in target_nl_df.iterrows():
+                                                        if _n_se['LABEL'] == _nl_abbr:
+                                                            _tmp_output_df[_nl_abbr] = _n_se[_nl_abbr]
+                                                            if _nl_abbr not in target_ident_lst:
+                                                                target_ident_lst.append(_nl_abbr)
+                                        else:
+                                            target_nl_count = 0
 
-                                    _tmp_output_df['Bulk_identification'] = _usr_abbr_bulk
-                                    _tmp_output_df['Formula_neutral'] = _usr_formula
-                                    _tmp_output_df['Formula_ion'] = _usr_formula_charged
-                                    _tmp_output_df['Charge'] = _usr_charge
-                                    _tmp_output_df['MS1_obs_mz'] = _ms1_pr_mz
-                                    _tmp_output_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
-                                    _tmp_output_df['Lib_mz'] = _usr_mz_lib
-                                    _tmp_output_df['MS2_scan_time'] = _usr_ms2_rt
-                                    _tmp_output_df['DDA#'] = _usr_ms2_dda_rank
-                                    _tmp_output_df['MS2_PR_mz'] = _usr_ms2_pr_mz
-                                    _tmp_output_df['Scan#'] = _usr_ms2_scan_id
+                                        _tmp_output_df['Bulk_identification'] = _usr_abbr_bulk
+                                        _tmp_output_df['Formula_neutral'] = _usr_formula
+                                        _tmp_output_df['Formula_ion'] = _usr_formula_charged
+                                        _tmp_output_df['Charge'] = _usr_charge
+                                        _tmp_output_df['MS1_obs_mz'] = _ms1_pr_mz
+                                        _tmp_output_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
+                                        _tmp_output_df['Lib_mz'] = _usr_mz_lib
+                                        _tmp_output_df['MS2_scan_time'] = _usr_ms2_rt
+                                        _tmp_output_df['DDA#'] = _usr_ms2_dda_rank
+                                        _tmp_output_df['MS2_PR_mz'] = _usr_ms2_pr_mz
+                                        _tmp_output_df['Scan#'] = _usr_ms2_scan_id
 
-                                    #_tmp_output_df['#Specific_peaks'] = target_frag_count + target_nl_count
-                                    _tmp_output_df['#Contaminated_peaks'] = other_frag_count + other_nl_count
-                                    _tmp_output_df['ppm'] = _exact_ppm
-                                    _tmp_output_df['Isotope_score'] = '%.2f' % isotope_score
+                                        #_tmp_output_df['#Specific_peaks'] = target_frag_count + target_nl_count
+                                        _tmp_output_df['#Contaminated_peaks'] = other_frag_count + other_nl_count
+                                        _tmp_output_df['ppm'] = _exact_ppm
+                                        _tmp_output_df['Isotope_score'] = '%.2f' % isotope_score
 
-                                    output_df = output_df.append(_tmp_output_df)
+                                        output_df = output_df.append(_tmp_output_df)
 
-                                    #########################################################################
-                                    #
-                                    #   Error: For some reason this is not working for TG
-                                    #
-                                    #########################################################################
-                                    #log_pager.add_info(img_name_core, ident_page_idx, _tmp_output_df)
+                                        #########################################################################
+                                        #
+                                        #   Error: For some reason this is not working for TG
+                                        #
+                                        #########################################################################
+                                        #log_pager.add_info(img_name_core, ident_page_idx, _tmp_output_df)
 
-                                    ident_page_idx += 1
+                                        ident_page_idx += 1
 
-                            else:
-                                pass
+                                else:
+                                    pass
+
         else:
             print('NO XIC found for this m/z')
 

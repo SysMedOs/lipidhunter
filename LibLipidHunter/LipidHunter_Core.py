@@ -55,14 +55,16 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_c_3_lb.setOpenExternalLinks(True)
         self.ui.tab_c_taglink_lb.setOpenExternalLinks(True)
 
-        self.ui.tab_c_tag_line.hide()
-        self.ui.tab_c_tag_lb.hide()
-        self.ui.tab_c_taglink_lb.hide()
+        # self.ui.tab_c_tag_line.hide()
+        # self.ui.tab_c_tag_lb.hide()
+        # self.ui.tab_c_taglink_lb.hide()
 
-        self.ui.tab_d_lipidclass_cmb.removeItem(8)
-        self.ui.tab_d_lipidclass_cmb.removeItem(7)
-        self.ui.tab_e_lipidclass_cmb.removeItem(8)
-        self.ui.tab_e_lipidclass_cmb.removeItem(7)
+
+        ################### deactivate
+        # self.ui.tab_d_lipidclass_cmb.removeItem(8)
+        # self.ui.tab_d_lipidclass_cmb.removeItem(7)
+        # self.ui.tab_e_lipidclass_cmb.removeItem(8)
+        # self.ui.tab_e_lipidclass_cmb.removeItem(7)
 
         self.d_set_hgfilter()
 
