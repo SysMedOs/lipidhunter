@@ -365,15 +365,12 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
             msms_high_pic.text(_lyso_se['mz'], _msms_high_peak_y, _msms_high_peak_str, fontsize=6)
 
             lyso_row_color_lst.append(_rgb_color)
-
         lyso_col_labels = _lyso_table_df.columns.values.tolist()
         lyso_row_labels = _lyso_table_df.index.tolist()
         lyso_table_vals = map(list, _lyso_table_df.values)
         # lyso_col_width_lst = [0.01 * len(str(x)) for x in lyso_col_labels]
         lyso_col_width_lst = [0.3, 0.1, 0.1, 0.1]
-
         if pl_type == 'TG':
-            # print "Bob"
             # exit()
             lyso_table = msms_pic.table(cellText=lyso_table_vals, rowLabels=lyso_row_labels,
                                              colWidths=lyso_col_width_lst, rowColours=lyso_row_color_lst,
@@ -383,7 +380,6 @@ def plot_spectra(mz_se, xic_dct, ident_info_dct, spec_info_dct, specific_check_d
                                              colWidths=lyso_col_width_lst, rowColours=lyso_row_color_lst,
                                              colLabels=lyso_col_labels, loc='upper center')
         lyso_table.set_fontsize(6)
-
     # msms spectrum zoomed < 350 start
     if _msms_low_df.shape[0] > 0:
         msms_low_pic.stem(_msms_low_df['mz'].tolist(),

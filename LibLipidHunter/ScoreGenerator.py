@@ -20,6 +20,7 @@ from __future__ import division
 import re
 from LibLipidHunter.AbbrElemCalc import BulkAbbrFormula
 from LibLipidHunter.IsotopeHunter import IsotopeHunter
+from FAwhiteList import FA_list
 import pandas as pd
 import itertools
 
@@ -38,13 +39,57 @@ class ProposedStructure:
 
 class ScoreGenerator:
     def __init__(self, fa_def_df, weight_df, key_frag_df, lipid_type, ion_charge='[M-H]-'):
+        #####################################################################################
+        #
+        #   Here should get the part where the program calculates all the possible columns for the FA white list
+        #
+        ########################################################################################
         fa_def_df['M+2_i_isomer'] = ''
         for _i, _row in fa_def_df.iterrows():
-            elem_dct = IsotopeHunter().get_elements(_row['elem'])
+            elem_dct, elem_comp = FA_list().elemental_composition(_row['Link'], _row['C'], _row['DB'])
+#            elem_dct = IsotopeHunter().get_elements(_row['elem'])
+            mass_calc = IsotopeHunter().get_mono_mz(elem_dct)
+            print mass_calc
+            print ('kwioowew')
+            fa_def_df.set_value(_i, 'mass', mass_calc)
+            print ('wowowje')
+            print ('daisy')
+            value_dict={}
+            print elem_dct
+            fa_def_df.set_value(_i, 'elem', elem_comp)
+            if ion_charge in ['[M-H]-', '[M+OAc]-', '[M+HCOO]-']:
+                print ('olalala')
+                value_dict = FA_list().negative_column(elem_dct)
+                fa_def_df.set_value(_i, '[M-H]-', value_dict['neg_value'])
+                fa_def_df.set_value(_i, '[M-W-H]-', value_dict['neg_value_w'])
+                fa_def_df.set_value(_i, 'NL-H2O', value_dict['m_water'])
+            elif ion_charge in ['[M+H]+', '[M+NH4]+']:
+                print ('doggy')
+                print elem_dct
+                value_dict = FA_list().pos_geo(elem_dct, ion_charge)
+                fa_def_df.set_value(_i, '[RCO]+', value_dict['pos_value'])
+                fa_def_df.set_value(_i, 'NL-H2O', value_dict['m_water'])
+                fa_def_df.set_value(_i, '[RCO+74]+', value_dict['mg_value'])
+            elif ion_charge in ['[M+Na]+']:
+                value_dict = FA_list().pos_geo(elem_dct, ion_charge)
+                fa_def_df.set_value(_i, '[RCO]+', value_dict['pos_value'])
+                fa_def_df.set_value(_i, 'NL-H2O', value_dict['m_water'])
+                fa_def_df.set_value(_i, '[RCO+74]+', value_dict['mg_value'])
+                fa_def_df.set_value(_i, 'RCOONa', value_dict['m_Na'])
+
             m_pre1_isotope_pattern_df = IsotopeHunter().get_isotope_mz(elem_dct, isotope_number=3)
+            print ('So is this the problem')
             fa_def_df.set_value(_i, 'M+2_i_isomer', m_pre1_isotope_pattern_df.iloc[2]['ratio'])
 
         self.fa_def_df = fa_def_df
+        ##############################
+        #
+        #   Need to be removed
+
+        #
+        #####################################
+        print self.fa_def_df
+
         self.weight_df = weight_df
         self.target_frag_df = key_frag_df.query(r'CLASS == "%s" and TYPE == "FRAG" and PR_CHARGE == "%s"'
                                                 % (lipid_type, ion_charge))
@@ -152,8 +197,13 @@ class ScoreGenerator:
                 _sn1 = _info[0].replace('O-', '').replace('P-', '')
                 _sn2 = _info[1].replace('O-', '').replace('P-', '')
                 _sn3 = _info[2].replace('O-', '').replace('P-', '')
-                _total_c = int(_sn1[0:2]) + int(_sn2[0:2]) + int(_sn3[0:2])
-                _total_db = int(_sn1[3:5]) + int(_sn2[3:5]) + int(_sn3[3:5])
+                _sn1_lst = _sn1.split(':')
+                _sn2_lst = _sn2.split(':')
+                _sn3_lst = _sn3.split(':')
+                # _total_c = int(_sn1[0:2]) + int(_sn2[0:2]) + int(_sn3[0:2])
+                # _total_db = int(_sn1[3:5]) + int(_sn2[3:5]) + int(_sn3[3:5])
+                _total_c = int(_sn1_lst[0]) + int(_sn2_lst[0]) + int(_sn3_lst[0])
+                _total_db = int(_sn1_lst[1]) + int(_sn2_lst[1]) + int(_sn3_lst[1])
                 c_total_lst.append(_total_c)
                 db_total_lst.append(_total_db)
                 link_total_lst.append(_total_link)
@@ -409,22 +459,22 @@ class ScoreGenerator:
         elif lipid_type == 'GL' and charge_mode == 'POS':
             print ('positive')
             if charge_type == '[M+NH4]+':
-                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O', '[M+H]+74']]
-                fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL', '[M+H]+74': 'snGL'})
+                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[RCO]+', 'NL-H2O', '[RCO+74]+']]
+                fa_chk_df = fa_chk_df.rename(columns={'[RCO]+': 'sn', 'mass': 'NL', '[RCO+74]+': 'snGL'})
                 fa_chk_df['[M+H]-sn'] = calc_pr_mz - fa_chk_df['NL-H2O'] - 17.026549  # - NH3 adduct
                 fa_chk_df['[M+H]-sn-H2O'] = calc_pr_mz - fa_chk_df['NL'] - 17.026549  # - NH3 adduct
                 fa_chk_df['Proposed_structures'] = ''
                 lyso_hg_mod = '-NH3'
             elif charge_type == '[M+Na]+':
-                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O', 'NL+Na','[M+H]+74']]
-                fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL', '[M+H]+74': 'snGL'})
+                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[RCO]+', 'NL-H2O', 'RCOONa','[RCO+74]+']]
+                fa_chk_df = fa_chk_df.rename(columns={'[RCO]+': 'sn', 'mass': 'NL', '[RCO+74]+': 'snGL'})
                 fa_chk_df['[M+Na]-RCOOH'] = calc_pr_mz - fa_chk_df['NL']
-                fa_chk_df['[M+H]-RCOONa'] = calc_pr_mz - fa_chk_df['NL+Na']
+                fa_chk_df['[M+H]-RCOONa'] = calc_pr_mz - fa_chk_df['RCOONa']
                 fa_chk_df['Proposed_structures'] = ''
                 lyso_hg_mod = ''
             else:
-                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[M+H]+', 'NL-H2O', '[M+H]+74']]
-                fa_chk_df = fa_chk_df.rename(columns={'[M+H]+': 'sn', 'mass': 'NL', '[M+H]+74': 'snGL'})
+                fa_chk_df = self.fa_def_df[['FA', 'Link', 'C', 'DB', 'mass', '[RCO]+', 'NL-H2O', '[RCO+74]+']]
+                fa_chk_df = fa_chk_df.rename(columns={'[RCO]+': 'sn', 'mass': 'NL', '[RCO+74]+': 'snGL'})
                 fa_chk_df['[M+H]-sn'] = calc_pr_mz - fa_chk_df['NL-H2O']
                 fa_chk_df['[M+H]-sn-H2O'] = calc_pr_mz - fa_chk_df['NL']
                 fa_chk_df['Proposed_structures'] = ''
@@ -465,7 +515,7 @@ class ScoreGenerator:
                                         _frag_df = _frag_i_df.append(_frag_ppm_df)
                                 if _frag_type == 'sn':
                                     if _fa_link != 'O' and _fa_link != 'P':
-                                        _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [M+H]+' % _fa_abbr
+                                        _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [RCO]+' % _fa_abbr
                                         fa_ident_df = fa_ident_df.append(_frag_df)
                                 elif _frag_type == '[M+H]-sn':
                                     if _fa_link in lyso_fa_linker_dct.keys():
@@ -572,7 +622,7 @@ class ScoreGenerator:
                                         _frag_df = _frag_i_df.append(_frag_ppm_df)
                                 if _frag_type == 'sn':
                                     if _fa_link != 'O' and _fa_link != 'P':
-                                        _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [M+H]+' % _fa_abbr
+                                        _frag_df.loc[:, 'Proposed_structures'] = 'FA %s [RCONL+Na]+' % _fa_abbr
                                         fa_ident_df = fa_ident_df.append(_frag_df)
                                 elif _frag_type == '[M+H]-RCOONa':
                                     if _fa_link in lyso_fa_linker_dct.keys():
@@ -956,7 +1006,7 @@ class ScoreGenerator:
 
                             pra_m2_i_ratio = ((100 * base_m2_i)/base_m1_i)/100
                             if pra_m2_i_ratio <= isotope_pa.iloc[2]['ratio'] and pra_m2_i_ratio >= isotope_dha.iloc[2]['ratio']:
-                                isotope_flag = IsotopeHunter().get_isotope_geo(combine_small2.iloc[1]['mz'],
+                                isotope_flag = IsotopeHunter().get_isotope_fragments(combine_small2.iloc[1]['mz'],
                                                                                   combine_small2.iloc[1]['i'], formula_dg,
                                                                                   ms2_df, isotope_number=2,
                                                                                   ms1_precision=ms2_precision)
@@ -992,7 +1042,6 @@ class ScoreGenerator:
                             if pra_m2_i_ratio <= isotope_pa.iloc[2]['ratio'] and pra_m2_i_ratio >= isotope_dha.iloc[2]['ratio']:
                                 print ('Probably is an isotope')
                                 print combine_small2
-                                exit()
                         elif combine_small2.iloc[0]['Type'] == 'Lyso':
                             fa_m1_i = combine_small2.iloc[0]['FA']
                             fa_elem_mass = self.fa_def_df.loc[self.fa_def_df['FA'] == str(fa_m1_i)]['elem']
@@ -1059,7 +1108,7 @@ class ScoreGenerator:
                             pra_m2_i_ratio = ((100 * base_m2_i) / base_m1_i) / 100
                             if pra_m2_i_ratio <= isotope_pa.iloc[2]['ratio'] and pra_m2_i_ratio >= isotope_dha.iloc[2]['ratio']:
                                 print ('Check in case of an isotope')
-                                isotope_flag = IsotopeHunter().get_isotope_geo(combine_small2.iloc[1]['mz'], combine_small2.iloc[1]['i'], formula_dg,
+                                isotope_flag = IsotopeHunter().get_isotope_fragments(combine_small2.iloc[1]['mz'], combine_small2.iloc[1]['i'], formula_dg,
                                                                                ms2_df, isotope_number=2,
                                                                                ms1_precision=ms2_precision)
                                 if isotope_flag == 1:
@@ -1503,10 +1552,10 @@ class ScoreGenerator:
 
 if __name__ == '__main__':
 
-    geo_df = pd.read_csv('C:\Users\UserPc\ProgramsPhD\LipidHunter\ConfigurationFiles\FA_list.csv')
+    geo_df = pd.read_csv('C:\Users\UserPc\ProgramsPhD\LipidHunter\ConfigurationFiles\FA_list2.csv')
     print geo_df
-    ion_charge = '[M+H]+'
+    ion_charge = '[M+NH4]+'
     mode='POS'
     pre_Proposed = ProposedStructure(geo_df, mode, ion_charge)
 
-    pre_Proposed.Propose_pre_str()
+   # pre_Proposed.Propose_pre_str()

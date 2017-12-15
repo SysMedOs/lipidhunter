@@ -285,22 +285,23 @@ class IsotopeHunter(object):
                     ms1_pr_i -= m0_base_abs
                     m0_deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs]
                     isotope_calc_dct = self.calc_isotope_score(isotope_pattern_df, spec_df,
-                                                               ms1_precision, ms1_pr_i, deconv=m0_deconv_lst)
+                                                                   ms1_precision, ms1_pr_i, deconv=m0_deconv_lst)
 
                     isotope_checker_dct = isotope_calc_dct['isotope_checker_dct']
                     isotope_score = isotope_calc_dct['isotope_score']
                     isotope_m1_score = isotope_calc_dct['isotope_m1_score']
                     m2_i = isotope_calc_dct['m2_i']
-
                     m2_checker_dct = {}
                     m2_score = 0
 
                     if isotope_score < score_filter:
+
                         # check if M+2 is potential M+0 of M+H2
                         # M+H2 elements
 
                         m2_elem_dct = self.get_elements(formula + 'H2')
                         m2_isotope_pattern_df = self.get_isotope_mz(m2_elem_dct, only_c=only_c)
+
                         m2_i -= m2_base_abs
                         m2_deconv_lst = [m2_base_abs, m3_base_abs, 0]
                         m2_calc_dct = self.calc_isotope_score(m2_isotope_pattern_df, spec_df,
@@ -348,7 +349,7 @@ class IsotopeHunter(object):
                                   'm2_score': m2_score, 'm2_checker_dct': m2_checker_dct,
                                   'deconv_lst': deconv_lst}
         return isotope_score_info_dct
-    def get_isotope_geo(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2, ms1_precision=50e-6,
+    def get_isotope_fragments(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2, ms1_precision=50e-6,
                           pattern_tolerance=5, only_c=False, score_filter=75, decon=True, exp_mode='LC-MS'):
 
         mz_delta = ms1_pr_mz * ms1_precision
@@ -419,7 +420,8 @@ if __name__ == '__main__':
     #
     #     print(isotope_pattern_dct)
 
-    f = 'C41H71NO7P'  # PE
+    #f = 'C41H71NO7P'  # PE
+    f= 'C51H92O6Na'
     # f_lst = [f, f + 'H+']
     f_lst = [f]
     usr_spec_df = pd.DataFrame()
