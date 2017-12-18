@@ -52,8 +52,8 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
 
         # links
         self.ui.logo_lb.setOpenExternalLinks(True)
-        self.ui.tab_c_3_lb.setOpenExternalLinks(True)
-        self.ui.tab_c_taglink_lb.setOpenExternalLinks(True)
+        # self.ui.tab_c_3_lb.setOpenExternalLinks(True)
+        # self.ui.tab_c_taglink_lb.setOpenExternalLinks(True)
 
         # self.ui.tab_c_tag_line.hide()
         # self.ui.tab_c_tag_lb.hide()
@@ -66,43 +66,43 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
         # self.ui.tab_e_lipidclass_cmb.removeItem(8)
         # self.ui.tab_e_lipidclass_cmb.removeItem(7)
 
-        self.d_set_hgfilter()
+        # self.d_set_hgfilter()
 
         # slots for tab a
-        QtCore.QObject.connect(self.ui.tab_a_addmzml_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzml)
-        QtCore.QObject.connect(self.ui.tab_a_addmzmlfolder_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzmlfolder)
-        QtCore.QObject.connect(self.ui.tab_a_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_a_infiles_pte.clear)
-        QtCore.QObject.connect(self.ui.tab_a_savexlsxfolder_pb, QtCore.SIGNAL("clicked()"), self.a_save_xls2folder)
-        QtCore.QObject.connect(self.ui.tab_a_savecsv_pb, QtCore.SIGNAL("clicked()"), self.a_save_csv2folder)
-        QtCore.QObject.connect(self.ui.tab_a_runextractor_pb, QtCore.SIGNAL("clicked()"), self.a_run_extractor)
-        QtCore.QObject.connect(self.ui.tab_a_runmerge_pb, QtCore.SIGNAL("clicked()"), self.a_run_merger)
-
-        # slots for tab b
-        QtCore.QObject.connect(self.ui.tab_b_addmzml_pb, QtCore.SIGNAL("clicked()"), self.b_load_mzml)
-        QtCore.QObject.connect(self.ui.tab_b_addmzmlfolder_pb, QtCore.SIGNAL("clicked()"), self.b_load_mzmlfolder)
-        QtCore.QObject.connect(self.ui.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_b_infiles_pte.clear)
-        QtCore.QObject.connect(self.ui.tab_b_savexlsxfolder_pb, QtCore.SIGNAL("clicked()"), self.b_save_xls2folder)
-        QtCore.QObject.connect(self.ui.tab_b_runextract_pb, QtCore.SIGNAL("clicked()"), self.b_run_extractor)
-
-        # slots for tab d
-        self.ui.tab_d_lipidclass_cmb.currentIndexChanged.connect(self.d_set_hgfilter)
-        QtCore.QObject.connect(self.ui.tab_d_lipidstable_pb, QtCore.SIGNAL("clicked()"), self.d_load_lipidstable)
-        QtCore.QObject.connect(self.ui.tab_d_ms2info_pb, QtCore.SIGNAL("clicked()"), self.d_load_ms2info)
-        QtCore.QObject.connect(self.ui.tab_d_ms2mzml_pb, QtCore.SIGNAL("clicked()"), self.d_load_mzml)
-        QtCore.QObject.connect(self.ui.tab_d_xlsxpath_pb, QtCore.SIGNAL("clicked()"), self.d_save_output)
-        QtCore.QObject.connect(self.ui.tab_d_runextract_pb, QtCore.SIGNAL("clicked()"), self.d_run_linker)
-
-        # slots for tab e
-        QtCore.QObject.connect(self.ui.tab_e_loadxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.e_load_lipidsinfo)
-        QtCore.QObject.connect(self.ui.tab_e_ms2mzml_pb, QtCore.SIGNAL("clicked()"), self.e_load_mzml)
-        QtCore.QObject.connect(self.ui.tab_e_saveimgfolder_pb, QtCore.SIGNAL("clicked()"), self.e_save_img2folder)
-        QtCore.QObject.connect(self.ui.tab_e_sumxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.e_save_output)
-        QtCore.QObject.connect(self.ui.tab_d_runhunter_pb, QtCore.SIGNAL("clicked()"), self.e_run_hunter)
-        # slots for tab f
-        QtCore.QObject.connect(self.ui.tab_f_fawhitelist_pb, QtCore.SIGNAL("clicked()"), self.f_load_fawhitelist)
-        QtCore.QObject.connect(self.ui.tab_f_hgcfg_pb, QtCore.SIGNAL("clicked()"), self.f_load_hgcfg)
-        QtCore.QObject.connect(self.ui.tab_f_scorecfg_pb, QtCore.SIGNAL("clicked()"), self.f_load_scorecfg)
-        QtCore.QObject.connect(self.ui.tab_f_savesettings_pb, QtCore.SIGNAL("clicked()"), self.f_set_default_cfg)
+        # QtCore.QObject.connect(self.ui.tab_a_addmzml_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzml)
+        # QtCore.QObject.connect(self.ui.tab_a_addmzmlfolder_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzmlfolder)
+        # QtCore.QObject.connect(self.ui.tab_a_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_a_infiles_pte.clear)
+        # QtCore.QObject.connect(self.ui.tab_a_savexlsxfolder_pb, QtCore.SIGNAL("clicked()"), self.a_save_xls2folder)
+        # QtCore.QObject.connect(self.ui.tab_a_savecsv_pb, QtCore.SIGNAL("clicked()"), self.a_save_csv2folder)
+        # QtCore.QObject.connect(self.ui.tab_a_runextractor_pb, QtCore.SIGNAL("clicked()"), self.a_run_extractor)
+        # QtCore.QObject.connect(self.ui.tab_a_runmerge_pb, QtCore.SIGNAL("clicked()"), self.a_run_merger)
+        #
+        # # slots for tab b
+        # QtCore.QObject.connect(self.ui.tab_b_addmzml_pb, QtCore.SIGNAL("clicked()"), self.b_load_mzml)
+        # QtCore.QObject.connect(self.ui.tab_b_addmzmlfolder_pb, QtCore.SIGNAL("clicked()"), self.b_load_mzmlfolder)
+        # QtCore.QObject.connect(self.ui.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_b_infiles_pte.clear)
+        # QtCore.QObject.connect(self.ui.tab_b_savexlsxfolder_pb, QtCore.SIGNAL("clicked()"), self.b_save_xls2folder)
+        # QtCore.QObject.connect(self.ui.tab_b_runextract_pb, QtCore.SIGNAL("clicked()"), self.b_run_extractor)
+        #
+        # # slots for tab d
+        # self.ui.tab_d_lipidclass_cmb.currentIndexChanged.connect(self.d_set_hgfilter)
+        # QtCore.QObject.connect(self.ui.tab_d_lipidstable_pb, QtCore.SIGNAL("clicked()"), self.d_load_lipidstable)
+        # QtCore.QObject.connect(self.ui.tab_d_ms2info_pb, QtCore.SIGNAL("clicked()"), self.d_load_ms2info)
+        # QtCore.QObject.connect(self.ui.tab_d_ms2mzml_pb, QtCore.SIGNAL("clicked()"), self.d_load_mzml)
+        # QtCore.QObject.connect(self.ui.tab_d_xlsxpath_pb, QtCore.SIGNAL("clicked()"), self.d_save_output)
+        # QtCore.QObject.connect(self.ui.tab_d_runextract_pb, QtCore.SIGNAL("clicked()"), self.d_run_linker)
+        #
+        # # slots for tab e
+        # QtCore.QObject.connect(self.ui.tab_e_loadxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.e_load_lipidsinfo)
+        # QtCore.QObject.connect(self.ui.tab_e_ms2mzml_pb, QtCore.SIGNAL("clicked()"), self.e_load_mzml)
+        # QtCore.QObject.connect(self.ui.tab_e_saveimgfolder_pb, QtCore.SIGNAL("clicked()"), self.e_save_img2folder)
+        # QtCore.QObject.connect(self.ui.tab_e_sumxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.e_save_output)
+        # QtCore.QObject.connect(self.ui.tab_d_runhunter_pb, QtCore.SIGNAL("clicked()"), self.e_run_hunter)
+        # # slots for tab f
+        # QtCore.QObject.connect(self.ui.tab_f_fawhitelist_pb, QtCore.SIGNAL("clicked()"), self.f_load_fawhitelist)
+        # QtCore.QObject.connect(self.ui.tab_f_hgcfg_pb, QtCore.SIGNAL("clicked()"), self.f_load_hgcfg)
+        # QtCore.QObject.connect(self.ui.tab_f_scorecfg_pb, QtCore.SIGNAL("clicked()"), self.f_load_scorecfg)
+        # QtCore.QObject.connect(self.ui.tab_f_savesettings_pb, QtCore.SIGNAL("clicked()"), self.f_set_default_cfg)
 
         # load configurations
         config = configparser.ConfigParser()
@@ -428,33 +428,33 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             self.ui.tab_b_statusrun_pte.appendPlainText('!! Sorry, an error has occurred, '
                                                         'please check your settings !!')
 
-    def d_set_hgfilter(self):
-
-        _pl_class_info = str(self.ui.tab_d_lipidclass_cmb.currentText())
-
-        pl_class_checker = re.compile(r'(.*)( [\(])(\w{2,3})([\)] )(.*)')
-
-        pl_class_match = pl_class_checker.match(_pl_class_info)
-
-        if pl_class_match:
-            pl_class_info_lst = pl_class_match.groups()
-            _pl_class = pl_class_info_lst[2]
-        else:
-            _pl_class = 'PC'
-
-        if _pl_class in ['PC', 'PE', 'PS']:
-            self.ui.tab_d_hgfilter_lb.show()
-            self.ui.tab_d_hgfilteron_rb.show()
-            self.ui.tab_d_hgfilteroff_rb.show()
-            self.ui.tab_d_hgfilteron_rb.setChecked(False)
-            self.ui.tab_d_hgfilteroff_rb.setChecked(True)
-
-        else:
-            self.ui.tab_d_hgfilter_lb.hide()
-            self.ui.tab_d_hgfilteron_rb.hide()
-            self.ui.tab_d_hgfilteroff_rb.hide()
-            self.ui.tab_d_hgfilteron_rb.setChecked(False)
-            self.ui.tab_d_hgfilteroff_rb.setChecked(True)
+    # def d_set_hgfilter(self):
+    #
+    #     _pl_class_info = str(self.ui.tab_d_lipidclass_cmb.currentText())
+    #
+    #     pl_class_checker = re.compile(r'(.*)( [\(])(\w{2,3})([\)] )(.*)')
+    #
+    #     pl_class_match = pl_class_checker.match(_pl_class_info)
+    #
+    #     if pl_class_match:
+    #         pl_class_info_lst = pl_class_match.groups()
+    #         _pl_class = pl_class_info_lst[2]
+    #     else:
+    #         _pl_class = 'PC'
+    #
+    #     if _pl_class in ['PC', 'PE', 'PS']:
+    #         self.ui.tab_d_hgfilter_lb.show()
+    #         self.ui.tab_d_hgfilteron_rb.show()
+    #         self.ui.tab_d_hgfilteroff_rb.show()
+    #         self.ui.tab_d_hgfilteron_rb.setChecked(False)
+    #         self.ui.tab_d_hgfilteroff_rb.setChecked(True)
+    #
+    #     else:
+    #         self.ui.tab_d_hgfilter_lb.hide()
+    #         self.ui.tab_d_hgfilteron_rb.hide()
+    #         self.ui.tab_d_hgfilteroff_rb.hide()
+    #         self.ui.tab_d_hgfilteron_rb.setChecked(False)
+    #         self.ui.tab_d_hgfilteroff_rb.setChecked(True)
 
     def d_load_lipidstable(self):
         d_load_lipidstable_dialog = QtGui.QFileDialog(self)
