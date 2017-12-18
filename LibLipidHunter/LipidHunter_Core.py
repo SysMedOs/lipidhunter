@@ -55,14 +55,16 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_c_3_lb.setOpenExternalLinks(True)
         self.ui.tab_c_taglink_lb.setOpenExternalLinks(True)
 
-        self.ui.tab_c_tag_line.hide()
-        self.ui.tab_c_tag_lb.hide()
-        self.ui.tab_c_taglink_lb.hide()
+        # self.ui.tab_c_tag_line.hide()
+        # self.ui.tab_c_tag_lb.hide()
+        # self.ui.tab_c_taglink_lb.hide()
 
-        self.ui.tab_d_lipidclass_cmb.removeItem(8)
-        self.ui.tab_d_lipidclass_cmb.removeItem(7)
-        self.ui.tab_e_lipidclass_cmb.removeItem(8)
-        self.ui.tab_e_lipidclass_cmb.removeItem(7)
+
+        ################### deactivate
+        # self.ui.tab_d_lipidclass_cmb.removeItem(8)
+        # self.ui.tab_d_lipidclass_cmb.removeItem(7)
+        # self.ui.tab_e_lipidclass_cmb.removeItem(8)
+        # self.ui.tab_e_lipidclass_cmb.removeItem(7)
 
         self.d_set_hgfilter()
 
@@ -251,27 +253,44 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             self.ui.tab_a_statusextractor_pte.appendPlainText('!! Sorry, an error has occurred, '
                                                               'please check your settings !!')
 
+    ##############################################################################################
+    #
+    #   This is the section fro the first step of lipihunter
+    #   More specific is the secion where it creates the file that is needed for lipidmaps
+    #
+    ############################################################################################
     def a_run_merger(self):
         self.ui.tab_a_statusmerger_pte.insertPlainText(u'Start to proceed...')
 
         _save_csv_str = str(self.ui.tab_a_csvfolder_le.text())
 
         _save_xlsx_folder_str = str(self.ui.tab_a_xlsxfolder_le.text())
-
+        #
         try:
 
+            # _xlsx_name_lst, _xlsx_path_lst = self.get_same_files(_save_xlsx_folder_str,
+            #                                                      filetype_lst=['*.xlsx', '*.XLSX'])
+
             _xlsx_name_lst, _xlsx_path_lst = self.get_same_files(_save_xlsx_folder_str,
-                                                                 filetype_lst=['*.xlsx', '*.XLSX'])
+                                                                 filetype_lst=['*.csv', '*.CSV'])
+
             cm_pkl_lst = zip(_xlsx_name_lst, _xlsx_path_lst)
 
             cm_pkl_df = pd.DataFrame()
             for _cm in cm_pkl_lst:
+
                 self.ui.tab_a_statusmerger_pte.insertPlainText(unicode('reading --> %s \n' % _cm[0]))
-                _tmp_df = pd.read_excel(_cm[1])
+                try:
+                    # _tmp_df = pd.read_excel(_cm[1])
+                    _tmp_df = pd.read_csv(_cm[1])
+                except AssertionError:
+                    self.ui.tab_a_statusmerger_pte.insertPlainText('Failed to read file. \n'
+                                                                   'Exceed max row number of excel.')
                 _tmp_df['file'] = _cm[0]
                 cm_pkl_df = cm_pkl_df.append(_tmp_df)
 
             cm_pkl_df = cm_pkl_df[['mz', 'i']]
+            cm_pkl_df = cm_pkl_df.round({'mz': 4})
             cm_pkl_df = cm_pkl_df.sort_values(by=['mz', 'i'], ascending=[True, False])
             cm_pkl_df = cm_pkl_df.drop_duplicates(subset=['mz'], keep='first')
             cm_pkl_df = cm_pkl_df.reset_index(drop=True)
@@ -289,7 +308,7 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
                 else:
                     cm_pkl_df.to_csv(_save_csv_str, index=False)
 
-                self.ui.tab_a_statusmerger_pte.insertPlainText('Merged and saved as %s' % _save_csv_str)
+                self.ui.tab_a_statusmerger_pte.appendPlainText('Merged and saved as %s' % _save_csv_str)
             else:
                 self.ui.tab_a_statusmerger_pte.appendPlainText('!! Sorry, an error has occurred, '
                                                                'please check your settings !!')
@@ -574,16 +593,16 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
         link_params_dct = {'MS_THRESHOLD': _ms_th, 'MS2_THRESHOLD': _ms2_th, 'DDA_TOP': _dda_top,
                            'RT_START': _rt_start, 'RT_END': _rt_end, 'MZ_START': _mz_start, 'MZ_END': _mz_end}
 
-        try:
+        # try:
 
-            final_output_df = hunt_link(pl_class=_pl_class, usr_mzml=_mzml_path_str, usr_df=step1_df,
-                                        params_dct=link_params_dct, vendor=usr_vendor, hg_filter=usr_hg_filter)
-            final_output_df = final_output_df[final_output_df['MS1_obs_mz'] > 0]
-            final_output_df.to_excel(_output_path_str, index=False)
-            self.ui.tab_d_statusrun_pte.insertPlainText(u'Finished!')
-        except (KeyError, IOError):
-            self.ui.tab_d_statusrun_pte.appendPlainText('!! Sorry, an error has occurred, '
-                                                        'please check your settings !!')
+        final_output_df = hunt_link(pl_class=_pl_class, usr_mzml=_mzml_path_str, usr_df=step1_df,
+                                    params_dct=link_params_dct, vendor=usr_vendor, hg_filter=usr_hg_filter)
+        final_output_df = final_output_df[final_output_df['MS1_obs_mz'] > 0]
+        final_output_df.to_excel(_output_path_str, index=False)
+        self.ui.tab_d_statusrun_pte.insertPlainText(u'Finished!')
+        # except (KeyError, IOError):
+        #     self.ui.tab_d_statusrun_pte.appendPlainText('!! Sorry, an error has occurred, '
+        #                                                 'please check your settings !!')
 
     def e_load_lipidsinfo(self):
         e_load_lipidstable_dialog = QtGui.QFileDialog(self)
@@ -726,7 +745,7 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
                             'ms2_hginfopeak_threshold': hgms2_info_threshold,
                             'rank_score': rank_score, 'fast_isotope': fast_isotope,
                             'hunter_folder': self.lipidhunter_cwd,
-                            'hunter_start_time': start_time_str, 'Experiment_mode': usr_exp_mode}
+                            'hunter_start_time': start_time_str, 'experiment_mode': usr_exp_mode}
 
         param_log_output_path_str = (str(self.ui.tab_e_saveimgfolder_le.text()) +
                                      '/LipidHunter_Params-Log_%s.txt' % start_time_str
@@ -744,12 +763,16 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
                                                         'please check your settings!!')
 
         print(hunter_param_dct)
+        #print ("hehehehehaldas")
+        #print ('Alloooo')
 
+        # default output code
         try:
             tot_run_time = huntlipids(hunter_param_dct)
 
         except:
-            tot_run_time = '!! Sorry, an error has occurred, please check your settings !!'
+
+            tot_run_time = '!! Sorry, an error has occurred, please check your settings Georgia!!'
 
         if isinstance(tot_run_time, float):
             self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
@@ -762,6 +785,11 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             else:
                 self.ui.tab_e_statusrun_pte.appendPlainText('!! Sorry, an error has occurred, '
                                                             'please check your settings !!')
+
+        # # for debug only
+        # tot_run_time = huntlipids(hunter_param_dct)
+        # self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
+        # self.ui.tab_e_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
 
     def f_set_default_cfg(self):
         config = configparser.ConfigParser()
