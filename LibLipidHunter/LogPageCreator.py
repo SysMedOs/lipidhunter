@@ -138,7 +138,9 @@ class LogPageCreator(object):
                 plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
                                 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
             elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
-                pass
+                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_sn3', 'i_[M+H]-sn1', 'i_[M+H]-sn2',
+                                'i_[M+H]-sn3', 'i_[M+H]-sn1-H2O', 'i_[M+H]-sn2-H2O', 'i_[M+H]-sn3-H2O', 'i_[M+H]-(sn1+sn2)-H2O',
+                                'i_[M+H]-(sn1+sn3)-H2O', 'i_[M+H]-(sn2+sn3)-H2O']
             else:
                 plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
                                 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
