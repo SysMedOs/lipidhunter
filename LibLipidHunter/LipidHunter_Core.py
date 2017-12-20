@@ -8,16 +8,15 @@
 #     For commercial use:
 #         please contact the SysMedOs_team by email.
 # Please cite our publication in an appropriate form.
+# Ni, Zhixu, Georgia Angelidou, Mike Lange, Ralf Hoffmann, and Maria Fedorova.
+# "LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets."
+# Analytical Chemistry (2017).
+# DOI: 10.1021/acs.analchem.7b01126
 #
 # For more info please contact:
 #     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
-#
-# try:  # python3
-#     import configparser
-# except NameError:  # python2
-#     import ConfigParser as configparser
 
 from __future__ import print_function
 import ConfigParser as configparser
@@ -25,12 +24,7 @@ import glob
 import os
 import re
 import time
-
-import pandas as pd
 from PySide import QtCore, QtGui
-
-from LibLipidHunter import ExtractorMZML
-from LibLipidHunter.LinkerMZML import hunt_link
 from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
 from LibLipidHunter.SpectraHunter import huntlipids
 
@@ -167,7 +161,7 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
                 self.ui.lipidgen_tabframe.setCurrentIndex(0)
 
             if 'default_vendor' in options and 0 <= int(config.get(user_cfg, 'default_vendor')) <= 4:
-                    self.ui.vendor_cmb.setCurrentIndex(int(config.get(user_cfg, 'default_vendor')))
+                self.ui.vendor_cmb.setCurrentIndex(int(config.get(user_cfg, 'default_vendor')))
             else:
                 self.ui.vendor_cmb.setCurrentIndex(0)
             if 'default_lipid' in options and 0 <= int(config.get(user_cfg, 'default_lipid')) <= 9:
@@ -264,7 +258,7 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
 
         _pl_class_info = str(self.ui.tab_a_lipidclass_cmb.currentText())
 
-        pl_class_checker = re.compile(r'(.*)( [\(])(\w{2,3})([\)] )(.*)')
+        pl_class_checker = re.compile(r'(.*)( [(])(\w{2,3})([)] )(.*)')
 
         pl_class_match = pl_class_checker.match(_pl_class_info)
 
@@ -366,29 +360,29 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
             error_log_lst.append('!!! Please check your settings !!!')
             self.ui.tab_a_statusrun_pte.appendPlainText('\n'.join(error_log_lst) + '\n')
         else:
-            # default output code
-            try:
-                tot_run_time = huntlipids(hunter_param_dct)
+            # # default output code
+            # try:
+            #     tot_run_time = huntlipids(hunter_param_dct)
+            #
+            # except:
+            #     tot_run_time = '!! Sorry, an error has occurred, please check your settings !!'
+            #
+            # if isinstance(tot_run_time, float):
+            #     self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
+            #     self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+            #
+            # else:
+            #     if isinstance(tot_run_time, str):
+            #         self.ui.tab_a_statusrun_pte.appendPlainText(tot_run_time)
+            #
+            #     else:
+            #         self.ui.tab_a_statusrun_pte.appendPlainText('!! Sorry, an error has occurred, '
+            #                                                     'please check your settings !!')
 
-            except:
-                tot_run_time = '!! Sorry, an error has occurred, please check your settings !!'
-
-            if isinstance(tot_run_time, float):
-                self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
-                self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
-
-            else:
-                if isinstance(tot_run_time, str):
-                    self.ui.tab_a_statusrun_pte.appendPlainText(tot_run_time)
-
-                else:
-                    self.ui.tab_a_statusrun_pte.appendPlainText('!! Sorry, an error has occurred, '
-                                                                'please check your settings !!')
-
-            # # for debug only
-            # tot_run_time = huntlipids(hunter_param_dct)
-            # self.ui.tab_e_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
-            # self.ui.tab_e_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+            # for debug only
+            tot_run_time = huntlipids(hunter_param_dct)
+            self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
+            self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
 
     def c_set_default_cfg(self):
         config = configparser.ConfigParser()

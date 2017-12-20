@@ -8,17 +8,20 @@
 #     For commercial use:
 #         please contact the SysMedOs_team by email.
 # Please cite our publication in an appropriate form.
+# Ni, Zhixu, Georgia Angelidou, Mike Lange, Ralf Hoffmann, and Maria Fedorova.
+# "LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets."
+# Analytical Chemistry (2017).
+# DOI: 10.1021/acs.analchem.7b01126
 #
 # For more info please contact:
 #     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
-#
 
 from __future__ import division
 
 import re
-from LibLipidHunter.AbbrElemCalc import BulkAbbrFormula
+from LibLipidHunter.AbbrElemCalc import ElemCalc
 from LibLipidHunter.IsotopeHunter import IsotopeHunter
 from FAwhiteList import FA_list
 import pandas as pd
@@ -351,7 +354,7 @@ class ScoreGenerator:
         # bulk_fa_linker = lipid_info_dct['LINK']
         lyso_fa_linker_dct = lipid_info_dct['LYSO_LINK']
 
-        # _usr_formula_charged, usr_elem_charged_dct = BulkAbbrFormula().get_formula(abbr, charge=charge_type)
+        # _usr_formula_charged, usr_elem_charged_dct = ElemCalc().get_formula(abbr, charge=charge_type)
 
         # use the max threshold from abs & relative intensity settings
         ms2_basepeak_i = ms2_df['i'].max()
@@ -864,7 +867,7 @@ class ScoreGenerator:
 
         match_reporter = 0
         ms2_max_i = ms2_df['i'].max()
-        formula, formula_dct = BulkAbbrFormula().get_formula(abbr, charge=charge_type)
+        formula, formula_dct = ElemCalc().get_formula(abbr, charge=charge_type)
 
         fa_ident_df, lyso_ident_df, lyso_w_ident_df, mg_w_ident_df = self.get_fa_search(abbr, charge_type, mz_lib, ms2_df,
                                                                          ms2_precision=ms2_precision,

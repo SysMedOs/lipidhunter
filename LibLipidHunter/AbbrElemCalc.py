@@ -8,17 +8,20 @@
 #     For commercial use:
 #         please contact the SysMedOs_team by email.
 # Please cite our publication in an appropriate form.
+# Ni, Zhixu, Georgia Angelidou, Mike Lange, Ralf Hoffmann, and Maria Fedorova.
+# "LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets."
+# Analytical Chemistry (2017).
+# DOI: 10.1021/acs.analchem.7b01126
 #
 # For more info please contact:
 #     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
-#
 
 import re
 
 
-class BulkAbbrFormula(object):
+class ElemCalc:
     def __init__(self):
 
         pa_hg_elem = {'C': 0, 'H': 3, 'O': 4, 'P': 1, 'N': 0}
@@ -36,6 +39,18 @@ class BulkAbbrFormula(object):
         self.glycerol_bone_elem_dct = {'C': 3, 'H': 2}
         self.link_o_elem_dct = {'O': -1, 'H': 2}
         self.link_p_elem_dct = {'O': -1}
+
+        self.periodic_table_dct = {'H': [(1.0078250321, 0.999885), (2.0141017780, 0.0001157)],
+                                   'D': [(2.0141017780, 0.0001157)],
+                                   'C': [(12.0, 0.9893), (13.0033548378, 0.0107)],
+                                   'N': [(14.0030740052, 0.99632), (15.0001088984, 0.00368)],
+                                   'O': [(15.9949146221, 0.99757), (16.99913150, 0.00038), (17.9991604, 0.00205)],
+                                   'Na': [(22.98976967, 1.0)],
+                                   'P': [(30.97376151, 1.0)],
+                                   'S': [(31.97207069, 0.9493), (32.97145850, 0.0076),
+                                         (33.96786683, 0.0429), (35.96708088, 0.0002)],
+                                   'K': [(38.9637069, 0.932581), (39.96399867, 0.000117), (40.96182597, 0.067302)],
+                                   }
 
     @staticmethod
     def decode_abbr(abbr):
@@ -56,25 +71,25 @@ class BulkAbbrFormula(object):
         lyso_fa_linker_dct = {'sn1': '', 'sn2': ''}
 
         if pl_checker.match(abbr):
-            print('PL')
+            # print('PL')
             pl_re_chk = pl_checker.match(abbr)
             pl_typ_lst = pl_re_chk.groups()
             _pl_typ = pl_typ_lst[0]
             bulk_fa_typ = pl_typ_lst[2]
         if pip_checker.match(abbr):
-            print('PIP')
+            # print('PIP')
             pip_re_chk = pip_checker.match(abbr)
             pip_typ_lst = pip_re_chk.groups()
             _pl_typ = pip_typ_lst[0]
             bulk_fa_typ = pip_typ_lst[2]
         if tg_checker.match(abbr):
-            print('TG')
+            # print('TG')
             tg_re_chk = tg_checker.match(abbr)
             tg_typ_lst = tg_re_chk.groups()
             _pl_typ = tg_typ_lst[0]
             bulk_fa_typ = tg_typ_lst[2]
         if fa_checker.match(abbr):
-            print('FA')
+            # print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
             fa_chk = fa_checker.match(abbr)
@@ -84,7 +99,7 @@ class BulkAbbrFormula(object):
             bulk_fa_linker = 'A-'
             lyso_fa_linker_dct = {'A': ''}
         if fa_o_checker.match(abbr):
-            print('FA')
+            # print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
             fa_chk = fa_checker.match(abbr)
@@ -94,7 +109,7 @@ class BulkAbbrFormula(object):
             bulk_fa_linker = 'O-'
             lyso_fa_linker_dct = {'O': ''}
         if fa_p_checker.match(abbr):
-            print('FA')
+            # print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
 
@@ -225,7 +240,7 @@ class BulkAbbrFormula(object):
         else:
             elem_dct = self.get_charged_elem(abbr, charge=charge)
 
-        formula_str = 'C{C}H{H}'.format(C=elem_dct['C'], H=elem_dct['H'])
+        formula_str = 'C{c}H{h}'.format(c=elem_dct['C'], h=elem_dct['H'])
 
         if 'N' in elem_dct.keys():
             if elem_dct['N'] == 1:
@@ -266,6 +281,15 @@ class BulkAbbrFormula(object):
         # print ('letssee if you manage to get out from this one')
         return formula_str, elem_dct
 
+    def get_exactmass(self, elem_dct):
+
+        mono_mz = 0.0
+        for _elem in elem_dct.keys():
+            mono_mz += elem_dct[_elem] * self.periodic_table_dct[_elem][0][0]
+
+        return round(mono_mz, 6)
+
+
 if __name__ == '__main__':
 
     usr_bulk_abbr_lst = ['TG(P-48:2)', 'PC(O-36:3)', 'PC(P-36:3)']
@@ -273,7 +297,7 @@ if __name__ == '__main__':
     # usr_bulk_abbr_lst = ['PC(36:3)', 'PC(O-36:3)', 'PC(P-36:3)']
     # charge_lst = ['', '[M-H]-', '[M+HCOO]-', '[M+OAc]-']
 
-    abbr2formula = BulkAbbrFormula()
+    abbr2formula = ElemCalc()
 
     for usr_abbr in usr_bulk_abbr_lst:
         for _charge in charge_lst:
