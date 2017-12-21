@@ -19,9 +19,9 @@
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 import os
-from LibLipidHunter.LipidHunter_Core import LipidHunterCore
+from LibLipidHunter.LipidHunter_Main import LipidHunterMain
 
 if __name__ == '__main__':
     usr_cwd = os.getcwd()
-    LipidHunter = LipidHunterCore(cwd=usr_cwd)
+    LipidHunter = LipidHunterMain(cwd=usr_cwd)
     LipidHunter.show()

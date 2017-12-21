@@ -26,10 +26,10 @@ import re
 import time
 from PySide import QtCore, QtGui
 from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
-from LibLipidHunter.SpectraHunter import huntlipids
+from LibLipidHunter.Hunter_Core import huntlipids
 
 
-class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
+class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, cwd=None):
         QtGui.QMainWindow.__init__(self, parent)
         self.ui = Ui_MainWindow()
@@ -276,6 +276,8 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
         img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text())
         xlsx_output_path_str = str(self.ui.tab_a_savexlsxpath_le.text())
 
+        pr_window = 'pr_window'
+
         rt_start = self.ui.tab_a_rtstart_dspb.value()
         rt_end = self.ui.tab_a_rtend_dspb.value()
         mz_start = self.ui.tab_a_mzstart_dspb.value()
@@ -295,6 +297,11 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
         fa_white_list_cfg = self.ui.tab_c_fawhitelist_le.text()
         lipid_specific_cfg = self.ui.tab_c_hgcfg_le.text()
         score_cfg = self.ui.tab_c_scorecfg_le.text()
+
+        core_num = self.ui.tab_c_cores_spb.value()
+        max_ram = self.ui.tab_c_ram_spb.value()
+        img_typ = self.ui.tab_c_imagetype_cmb.currentText()[1:]
+        img_dpi = self.ui.tab_c_dpi_spb.value()
 
         print('Vendor mode = %s, Experiment mode = %s' % (usr_vendor, usr_exp_mode))
         print('Hunter started!')
@@ -335,7 +342,9 @@ class LipidHunterCore(QtGui.QMainWindow, Ui_MainWindow):
                             'ms2_hginfopeak_threshold': hgms2_info_threshold,
                             'rank_score': rank_score, 'fast_isotope': fast_isotope,
                             'hunter_folder': self.lipidhunter_cwd,
-                            'hunter_start_time': start_time_str, 'experiment_mode': usr_exp_mode}
+                            'hunter_start_time': start_time_str, 'experiment_mode': usr_exp_mode,
+                            'core_number': core_num, 'max_ram': max_ram,
+                            'img_type': img_typ, 'img_dpi': img_dpi, 'pr_window': 0.75}
 
         param_log_output_path_str = (str(self.ui.tab_a_saveimgfolder_le.text()) +
                                      '/LipidHunter_Params-Log_%s.txt' % start_time_str
@@ -448,6 +457,6 @@ if __name__ == '__main__':
     import sys
 
     app = QtGui.QApplication(sys.argv)
-    window = LipidHunterCore()
+    window = LipidHunterMain()
     window.show()
     sys.exit(app.exec_())

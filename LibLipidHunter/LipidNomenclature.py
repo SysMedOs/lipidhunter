@@ -10,7 +10,7 @@
 import re
 
 
-class AbbrParser:
+class NameParserFA:
 
     def __init__(self):
         self.elem_dct = {'H': [1.0078250321, 0.999885],
@@ -100,7 +100,7 @@ class AbbrParser:
 
 if __name__ == '__main__':
 
-    abbr_decoder = AbbrParser()
+    abbr_decoder = NameParserFA()
 
     abbr_lst = ['FA16:0','FA18:0',  'FA18:1', 'O-16:0', 'P-18:0']
     for abbr in abbr_lst:

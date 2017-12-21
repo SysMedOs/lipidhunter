@@ -30,7 +30,7 @@ from LibLipidHunter.SpectraExtractor import extract_mzml
 from LibLipidHunter.SpectraExtractor import get_spectra
 from LibLipidHunter.SpectraExtractor import get_xic_all
 from LibLipidHunter.ScoreGenerator import ScoreGenerator
-from LibLipidHunter.PanelPloter import plot_spectra
+from LibLipidHunter.PanelPlotter import plot_spectra
 from LibLipidHunter.ScoreFilter import check_peaks
 from LibLipidHunter.IsotopeHunter import IsotopeHunter
 from LibLipidHunter.AbbrElemCalc import ElemCalc

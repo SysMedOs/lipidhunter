@@ -11,7 +11,7 @@ import itertools
 
 import pandas as pd
 
-from AbbrParser import AbbrParser
+from LipidNomenclature import NameParserFA
 from AbbrElemCalc import ElemCalc
 
 
@@ -35,8 +35,18 @@ class LipidComposer:
         self.glycerol_bone_elem_dct = {'C': 3, 'H': 2}
         self.link_o_elem_dct = {'O': -1, 'H': 2}
         self.link_p_elem_dct = {'O': -1}
+        self.elem_dct = {'H': [1.0078250321, 0.999885],
+                         'D': [2.0141017780, 0.0001157],
+                         'C': [12.0, 0.9893],
+                         'N': [14.0030740052, 0.99632],
+                         'O': [15.9949146221, 0.99757],
+                         'Na': [22.98976967, 1.0],
+                         'P': [30.97376151, 1.0],
+                         'S': [31.97207069, 0.9493],
+                         'K': [38.9637069, 0.932581]}
 
-    def calc_fa_df(self, lipid_class, usr_fa_df):
+    @staticmethod
+    def calc_fa_df(lipid_class, usr_fa_df):
 
         sn_units_lst = []
 
@@ -80,12 +90,12 @@ class LipidComposer:
 
         return sn_units_lst
 
-    def gen_all_comb(self, lipid_class, usr_fa_df):
+    def gen_all_comb(self, lipid_class, usr_fa_df, position=False):
         sn_units_lst = self.calc_fa_df(lipid_class, usr_fa_df)
 
         if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(sn_units_lst) == 2:
             sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1]))
-            lipid_template = '{}'
+            # lipid_template = '{}'
         elif lipid_class == 'TG' and len(sn_units_lst) == 3:
             sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2]))
         elif lipid_class == 'CL' and len(sn_units_lst) == 4:
@@ -96,12 +106,17 @@ class LipidComposer:
         sn_comb_lite_lst = []
         sn_comb_rm_lst = []
 
-        for _comb in sn_comb_lst:
-            _rev_comb = tuple(reversed(list(_comb)))
-            if _comb not in sn_comb_lite_lst and _rev_comb not in sn_comb_lite_lst:
-                sn_comb_lite_lst.append(_comb)
-            else:
-                sn_comb_rm_lst.append(_comb)
+        if position is False:
+
+            for _comb in sn_comb_lst:
+                _rev_comb = tuple(sorted(list(_comb)))
+                if _comb not in sn_comb_lite_lst and _rev_comb not in sn_comb_lite_lst:
+                    sn_comb_lite_lst.append(_comb)
+                else:
+                    sn_comb_rm_lst.append(_comb)
+                    # sn_comb_rm_lst.append(_rev_comb)
+        else:
+            sn_comb_lite_lst = sn_comb_lst
 
         lipid_comb_dct = {}
 
@@ -119,22 +134,62 @@ class LipidComposer:
         # print(len(sn_comb_lite_lst))
         # print(sn_comb_lite_lst)
         # print(len(sn_comb_rm_lst))
-        # print(sn_comb_rm_lst)
+        # print(sorted(sn_comb_rm_lst))
         # print(len(lipid_comb_dct.keys()))
         # print(lipid_comb_dct)
 
         return lipid_comb_dct
 
+    @staticmethod
+    def calc_fragments(lipid_dct):
+
+        # m_formula = lipid_dct['FORMULA']
+        m_exactmass = lipid_dct['EXACTMASS']
+        m_class = lipid_dct['CLASS']
+        h_exactmass = 1.0078250321
+        nl_water = 2 * 1.0078250321 + 15.9949146221
+        if m_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS']:
+            sn1_abbr = lipid_dct['SN1'].strip('FA')
+            sn2_abbr = lipid_dct['SN2'].strip('FA')
+
+            sn1_exactmass = lipid_dct['SN1_EXACTMASS']
+            sn2_exactmass = lipid_dct['SN2_EXACTMASS']
+
+            lyso_str = 'L' + m_class
+
+            lipid_dct['[LPL(sn1)-H]-_ABBR'] = '[%s(%s)-H]-' % (lyso_str, sn1_abbr)
+            lipid_dct['[LPL(sn2)-H]-_ABBR'] = '[%s(%s)-H]-' % (lyso_str, sn2_abbr)
+            lipid_dct['[LPL(sn1)-H2O-H]-_ABBR'] = '[%s(%s)-H2O-H]-' % (lyso_str, sn1_abbr)
+            lipid_dct['[LPL(sn2)-H2O-H]-_ABBR'] = '[%s(%s)-H2O-H]-' % (lyso_str, sn2_abbr)
+
+            lipid_dct['[LPL(sn1)-H]-_MZ'] = round(m_exactmass - (sn2_exactmass - nl_water) - h_exactmass, 6)
+            lipid_dct['[LPL(sn2)-H]-_MZ'] = round(m_exactmass - (sn1_exactmass - nl_water) - h_exactmass, 6)
+            lipid_dct['[LPL(sn1)-H2O-H]-_MZ'] = round(m_exactmass - sn2_exactmass - h_exactmass, 6)
+            lipid_dct['[LPL(sn2)-H2O-H]-_MZ'] = round(m_exactmass - sn1_exactmass - h_exactmass, 6)
+
+        else:
+            pass
+
+        return lipid_dct
+
     def compose_lipid(self, param_dct):
 
         lipid_class = param_dct['lipid_type']
         lipid_charge = param_dct['charge_mode']
+        if param_dct['exact_position'] == 'TRUE':
+            position_set = True
+        else:
+            position_set = False
+
         usr_fa_df = pd.read_excel(param_dct['fa_whitelist'])
         usr_fa_df = usr_fa_df.fillna(value='F')
-        print(usr_fa_df)
-        lipid_comb_dct = self.gen_all_comb(lipid_class, usr_fa_df)
+        print('=== ==> --> FA white list loaded >>>')
+        # print(usr_fa_df)
+        lipid_comb_dct = self.gen_all_comb(lipid_class, usr_fa_df, position=position_set)
 
-        abbr_parser = AbbrParser()
+        lipid_info_dct = {}
+
+        abbr_parser = NameParserFA()
         elem_calc = ElemCalc()
         for _lipid in lipid_comb_dct.keys():
             _lipid_dct = lipid_comb_dct[_lipid]
@@ -144,12 +199,12 @@ class LipidComposer:
             _sn2_info_dct = abbr_parser.get_fa_info(_sn2_abbr)
 
             for _sn1_k in _sn1_info_dct.keys():
-                lipid_comb_dct[_lipid]['SN1_' + _sn1_k] = _sn1_info_dct[_sn1_k]
+                _lipid_dct['SN1_' + _sn1_k] = _sn1_info_dct[_sn1_k]
 
             for _sn2_k in _sn1_info_dct.keys():
-                lipid_comb_dct[_lipid]['SN2_' + _sn2_k] = _sn2_info_dct[_sn2_k]
+                _lipid_dct['SN2_' + _sn2_k] = _sn2_info_dct[_sn2_k]
 
-            lipid_comb_dct[_lipid]['M_DB'] = _sn1_info_dct['DB'] + _sn2_info_dct['DB']
+            _lipid_dct['M_DB'] = _sn1_info_dct['DB'] + _sn2_info_dct['DB']
             if _sn1_info_dct['LINK'] in ['FA', 'A']:
                 lipid_bulk_str = '{pl}({c}:{db})'.format(pl=lipid_class,
                                                          c=_sn1_info_dct['C'] + _sn2_info_dct['C'],
@@ -159,18 +214,25 @@ class LipidComposer:
                                                              c=_sn1_info_dct['C'] + _sn2_info_dct['C'],
                                                              db=lipid_comb_dct[_lipid]['M_DB'])
 
-            lipid_comb_dct[_lipid]['Bulk_ABBR'] = lipid_bulk_str
+            _lipid_dct['Bulk_ABBR'] = lipid_bulk_str
 
             _lipid_formula, _lipid_elem_dct = elem_calc.get_formula(lipid_bulk_str)
-            lipid_comb_dct[_lipid]['FORMULA'] = _lipid_formula
-            lipid_comb_dct[_lipid]['EXACTMASS'] = elem_calc.get_exactmass(_lipid_elem_dct)
+            _lipid_dct['FORMULA'] = _lipid_formula
+            _lipid_dct['EXACTMASS'] = elem_calc.get_exactmass(_lipid_elem_dct)
             for _elem_k in _lipid_elem_dct.keys():
-                lipid_comb_dct[_lipid]['M_' + _elem_k] = _lipid_elem_dct[_elem_k]
+                _lipid_dct['M_' + _elem_k] = _lipid_elem_dct[_elem_k]
 
             # charged
             _chg_lipid_formula, _chg_lipid_elem_dct = elem_calc.get_formula(lipid_bulk_str, charge=lipid_charge)
-            lipid_comb_dct[_lipid][lipid_charge + '_FORMULA'] = _chg_lipid_formula
-            lipid_comb_dct[_lipid][lipid_charge + '_MZ'] = elem_calc.get_exactmass(_lipid_elem_dct)
+            _lipid_dct[lipid_charge + '_FORMULA'] = _chg_lipid_formula
+            _lipid_dct[lipid_charge + '_MZ'] = elem_calc.get_exactmass(_lipid_elem_dct)
+
+            # fragments
+
+            _lipid_dct = self.calc_fragments(_lipid_dct)
+
+            lipid_info_dct[_lipid] = _lipid_dct
+            del _lipid_dct
 
         lipid_master_df = pd.DataFrame(lipid_comb_dct).T
 
@@ -180,14 +242,15 @@ class LipidComposer:
 if __name__ == '__main__':
     fa_lst_file = r'../ConfigurationFiles/FA_Whitelist.xlsx'
 
-    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'PE', 'charge_mode': '[M-H]-'}
+    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'PE', 'charge_mode': '[M-H]-',
+                     'exact_position': 'FALSE'}
 
     composer = LipidComposer()
     usr_lipid_master_df = composer.compose_lipid(param_dct=usr_param_dct)
 
-    print(usr_lipid_master_df.shape)
-    print(usr_lipid_master_df.head())
-    print(usr_lipid_master_df.tail())
+    # print(usr_lipid_master_df.shape)
+    # print(usr_lipid_master_df.head())
+    # print(usr_lipid_master_df.tail())
 
     master_xlsx = r'../Temp/LipidMaster_Whitelist.xlsx'
 
