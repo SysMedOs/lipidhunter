@@ -27,8 +27,10 @@ from FAwhiteList import FA_list
 import pandas as pd
 import itertools
 
-#### All the class ProposedStructure can be remove.
+# All the class ProposedStructure can be remove.
 # This part know is include in the ScoreGenerator Class
+
+
 class ProposedStructure:
     def __init__(self, fa_def_df, lipid_type, ion_charge= '[M+H]+'):
         self.fa_def_df = fa_def_df
@@ -36,72 +38,72 @@ class ProposedStructure:
             charge_mode = 'POS'
         elif ion_charge in ['[M-H]-', '[M+HCOO]-']:
             charge_mode = 'NEG'
+        else:
+            charge_mode = 'NEG'
         self.charge_mode = charge_mode
 
 
-
 class ScoreGenerator:
-    def __init__(self, fa_def_df, weight_df, key_frag_df, lipid_type, ion_charge='[M-H]-', ms2_ppm=200):
+    def __init__(self, param_dct, weight_df, key_frag_df, lipid_type, checked_info_df, ion_charge='[M-H]-', ms2_ppm=200):
 
         # new params
-
         self.weight_dct = weight_df.to_dict()
         self.weight_type_lst = self.weight_dct.keys()
 
         # end new params
-
-        #####################################################################################
-        #
-        #   Here should get the part where the program calculates all the possible columns for the FA white list
-        #
-        ########################################################################################
-        fa_def_df['M+2_i_isomer'] = ''
-        for _i, _row in fa_def_df.iterrows():
-            elem_dct, elem_comp = FA_list().elemental_composition(_row['Link'], _row['C'], _row['DB'])
-#            elem_dct = IsotopeHunter().get_elements(_row['elem'])
-            mass_calc = IsotopeHunter().get_mono_mz(elem_dct)
-            print mass_calc
-            print ('kwioowew')
-            fa_def_df.set_value(_i, 'mass', mass_calc)
-            print ('wowowje')
-            print ('daisy')
-            value_dict={}
-            print elem_dct
-            fa_def_df.set_value(_i, 'elem', elem_comp)
-            if ion_charge in ['[M-H]-', '[M+OAc]-', '[M+HCOO]-']:
-                print ('olalala')
-                value_dict = FA_list().negative_column(elem_dct)
-                fa_def_df.set_value(_i, '[M-H]-', value_dict['neg_value'])
-                fa_def_df.set_value(_i, '[M-W-H]-', value_dict['neg_value_w'])
-                fa_def_df.set_value(_i, 'NL-H2O', value_dict['m_water'])
-            elif ion_charge in ['[M+H]+', '[M+NH4]+']:
-                print ('doggy')
-                print elem_dct
-                value_dict = FA_list().pos_geo(elem_dct, ion_charge)
-                fa_def_df.set_value(_i, '[RCO]+', value_dict['pos_value'])
-                fa_def_df.set_value(_i, 'NL-H2O', value_dict['m_water'])
-                fa_def_df.set_value(_i, '[RCO+74]+', value_dict['mg_value'])
-            elif ion_charge in ['[M+Na]+']:
-                value_dict = FA_list().pos_geo(elem_dct, ion_charge)
-                fa_def_df.set_value(_i, '[RCO]+', value_dict['pos_value'])
-                fa_def_df.set_value(_i, 'NL-H2O', value_dict['m_water'])
-                fa_def_df.set_value(_i, '[RCO+74]+', value_dict['mg_value'])
-                fa_def_df.set_value(_i, 'RCOONa', value_dict['m_Na'])
-
-            m_pre1_isotope_pattern_df = IsotopeHunter().get_isotope_mz(elem_dct, isotope_number=3)
-            print ('So is this the problem')
-            fa_def_df.set_value(_i, 'M+2_i_isomer', m_pre1_isotope_pattern_df.iloc[2]['ratio'])
-
-        self.fa_def_df = fa_def_df
-        ##############################
-        #
-        #   Need to be removed
-
-        #
-        #####################################
-        print self.fa_def_df
-
-        self.weight_df = weight_df
+#
+#         #####################################################################################
+#         #
+#         #   Here should get the part where the program calculates all the possible columns for the FA white list
+#         #
+#         ########################################################################################
+# #         fa_def_df['M+2_i_isomer'] = ''
+# #         for _i, _row in fa_def_df.iterrows():
+# #             elem_dct, elem_comp = FA_list().elemental_composition(_row['Link'], _row['C'], _row['DB'])
+# # #            elem_dct = IsotopeHunter().get_elements(_row['elem'])
+# #             mass_calc = IsotopeHunter().get_mono_mz(elem_dct)
+# #             print mass_calc
+# #             print ('kwioowew')
+# #             fa_def_df.set_value(_i, 'mass', mass_calc)
+# #             print ('wowowje')
+# #             print ('daisy')
+# #             value_dict={}
+# #             print elem_dct
+# #             fa_def_df.set_value(_i, 'elem', elem_comp)
+# #             if ion_charge in ['[M-H]-', '[M+OAc]-', '[M+HCOO]-']:
+# #                 print ('olalala')
+# #                 value_dict = FA_list().negative_column(elem_dct)
+# #                 fa_def_df.set_value(_i, '[M-H]-', value_dict['neg_value'])
+# #                 fa_def_df.set_value(_i, '[M-W-H]-', value_dict['neg_value_w'])
+# #                 fa_def_df.set_value(_i, 'NL-H2O', value_dict['m_water'])
+# #             elif ion_charge in ['[M+H]+', '[M+NH4]+']:
+# #                 print ('doggy')
+# #                 print elem_dct
+# #                 value_dict = FA_list().pos_geo(elem_dct, ion_charge)
+# #                 fa_def_df.set_value(_i, '[RCO]+', value_dict['pos_value'])
+# #                 fa_def_df.set_value(_i, 'NL-H2O', value_dict['m_water'])
+# #                 fa_def_df.set_value(_i, '[RCO+74]+', value_dict['mg_value'])
+# #             elif ion_charge in ['[M+Na]+']:
+# #                 value_dict = FA_list().pos_geo(elem_dct, ion_charge)
+# #                 fa_def_df.set_value(_i, '[RCO]+', value_dict['pos_value'])
+# #                 fa_def_df.set_value(_i, 'NL-H2O', value_dict['m_water'])
+# #                 fa_def_df.set_value(_i, '[RCO+74]+', value_dict['mg_value'])
+# #                 fa_def_df.set_value(_i, 'RCOONa', value_dict['m_Na'])
+# #
+# #             m_pre1_isotope_pattern_df = IsotopeHunter().get_isotope_mz(elem_dct, isotope_number=3)
+# #             print ('So is this the problem')
+# #             fa_def_df.set_value(_i, 'M+2_i_isomer', m_pre1_isotope_pattern_df.iloc[2]['ratio'])
+# #
+# #         self.fa_def_df = fa_def_df
+#         ##############################
+#         #
+#         #   Need to be removed
+#
+#         #
+#         #####################################
+#         print self.fa_def_df
+#
+#         self.weight_df = weight_df
         self.target_frag_df = key_frag_df.query(r'CLASS == "%s" and TYPE == "FRAG" and PR_CHARGE == "%s"'
                                                 % (lipid_type, ion_charge))
         self.target_nl_df = key_frag_df.query(r'CLASS == "%s" and TYPE == "NL" and PR_CHARGE == "%s"'
@@ -123,7 +125,8 @@ class ScoreGenerator:
     ############################################################################
     #   New way to predict the TG structures base on the white list.
     #   For now support only TG but can be change for PL also
-    #   This new function creates all the possible structures from the beggining and it just find all the possible matches at once and it doesnt need to run for each precursor
+    #   This new function creates all the possible structures from the beggining and it just find all the possible
+    #   matches at once and it doesnt need to run for each precursor
     #   This way the speed of the program is update
     ###########################################################################
     def Propose_pre_str(self):
@@ -799,8 +802,8 @@ class ScoreGenerator:
         db_sn1_lst = []
         db_sn2_lst = []
         db_sn3_lst = []
-        #abbr='TG(46:3)'
-        #abbr = 'TG(O-58:8)'
+        # abbr='TG(46:3)'
+        # abbr = 'TG(O-58:8)'
         print(abbr)
         lipid_info_dct = self.decode_abbr(abbr)
         pl_typ = lipid_info_dct['TYPE']

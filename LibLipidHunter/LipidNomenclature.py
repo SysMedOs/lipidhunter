@@ -38,11 +38,17 @@ class NameParserFA:
 
         exactmass = self.calc_fa_mass(fa_info_dct)
         fa_info_dct['EXACTMASS'] = exactmass
-        fa_info_dct['[FA-H]-'] = round(exactmass - self.elem_dct['H'][0], 6)
-        fa_info_dct['[FA-H2O-H]-'] = round(exactmass - 3 * self.elem_dct['H'][0] - self.elem_dct['O'][0], 6)
-        fa_info_dct['[FA-H2O]'] = round(exactmass - 2 * self.elem_dct['H'][0] - self.elem_dct['O'][0], 6)
-        fa_info_dct['[FA-H2O+H]+'] = round(exactmass - self.elem_dct['H'][0] - self.elem_dct['O'][0], 6)
-        fa_info_dct['[FA-H+Na]'] = round(exactmass - self.elem_dct['H'][0] + self.elem_dct['Na'][0], 6)
+        fa_info_dct['[FA-H]-_MZ'] = round(exactmass - self.elem_dct['H'][0], 6)
+        fa_info_dct['[FA-H2O-H]-_MZ'] = round(exactmass - 3 * self.elem_dct['H'][0] - self.elem_dct['O'][0], 6)
+        fa_info_dct['[FA-H2O]_MZ'] = round(exactmass - 2 * self.elem_dct['H'][0] - self.elem_dct['O'][0], 6)
+        fa_info_dct['[FA-H2O+H]+_MZ'] = round(exactmass - self.elem_dct['H'][0] - self.elem_dct['O'][0], 6)
+        fa_info_dct['[FA-H+Na]_MZ'] = round(exactmass - self.elem_dct['H'][0] + self.elem_dct['Na'][0], 6)
+
+        fa_info_dct['[FA-H]-_ABBR'] = '[{fa}-H]-'.format(fa=fa_info_dct['ABBR'])
+        fa_info_dct['[FA-H2O-H]-_ABBR'] = '[{fa}-H2O-H]-'.format(fa=fa_info_dct['ABBR'])
+        fa_info_dct['[FA-H2O]_ABBR'] = '[{fa}-H2O]'.format(fa=fa_info_dct['ABBR'])
+        fa_info_dct['[FA-H2O+H]+_ABBR'] = '[{fa}-H2O+H]+'.format(fa=fa_info_dct['ABBR'])
+        fa_info_dct['[FA-H+Na]_ABBR'] = '[{fa}-H+Na]'.format(fa=fa_info_dct['ABBR'])
 
         return fa_info_dct
 
@@ -63,7 +69,7 @@ class NameParserFA:
         fa_info_dct = {}
         fa_info_lst = self.decode_fa(fa_str)
         if fa_info_lst[0] == 'FA':
-            # fa_info_dct['ABBR'] = fa_str
+            fa_info_dct['ABBR'] = fa_str
             fa_info_dct['LINK'] = 'FA'
             fa_info_dct['C'] = int(fa_info_lst[1])
             fa_info_dct['H'] = 2 * int(fa_info_lst[1]) - 2 * int(fa_info_lst[3])
@@ -72,7 +78,7 @@ class NameParserFA:
             fa_info_dct['FORMULA'] = 'C{num_c}H{num_h}O{num_o}'.format(num_c=fa_info_dct['C'], num_h=fa_info_dct['H'],
                                                                        num_o=fa_info_dct['O'])
         elif fa_info_lst[0] == 'O-':
-            # fa_info_dct['ABBR'] = fa_str
+            fa_info_dct['ABBR'] = fa_str
             fa_info_dct['LINK'] = 'O-'
             fa_info_dct['C'] = int(fa_info_lst[1])
             fa_info_dct['H'] = 2 * int(fa_info_lst[1]) + 2 - 2 * int(fa_info_lst[3])
@@ -80,7 +86,7 @@ class NameParserFA:
             fa_info_dct['DB'] = int(fa_info_lst[3])
             fa_info_dct['FORMULA'] = 'C{num_c}H{num_h}O'.format(num_c=fa_info_dct['C'], num_h=fa_info_dct['H'])
         elif fa_info_lst[0] == 'P-':
-            # fa_info_dct['ABBR'] = fa_str
+            fa_info_dct['ABBR'] = fa_str
             fa_info_dct['LINK'] = 'P-'
             fa_info_dct['C'] = int(fa_info_lst[1])
             fa_info_dct['H'] = 2 * int(fa_info_lst[1]) - 2 * int(fa_info_lst[3])
@@ -102,7 +108,7 @@ if __name__ == '__main__':
 
     abbr_decoder = NameParserFA()
 
-    abbr_lst = ['FA16:0','FA18:0',  'FA18:1', 'O-16:0', 'P-18:0']
+    abbr_lst = ['FA16:0', 'FA18:0',  'FA18:1', 'O-16:0', 'P-18:0']
     for abbr in abbr_lst:
         x = abbr_decoder.get_fa_info(abbr)
         print(x)

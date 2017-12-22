@@ -40,6 +40,7 @@ from LibLipidHunter.IsotopeHunter import IsotopeHunter
 from LibLipidHunter.LogPageCreator import LogPageCreator
 from LibLipidHunter.PrecursorHunter import PrecursorHunter
 from LibLipidHunter.ScoreHunter import get_lipid_info
+from LibLipidHunter.ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
 
 
 def huntlipids(param_dct):
@@ -95,6 +96,8 @@ def huntlipids(param_dct):
     usr_ms1_max = param_dct['ms_max']
     usr_ms2_threshold = param_dct['ms2_th']
     usr_ms2_hg_threshold = param_dct['hg_th']
+    usr_ms1_ppm = param_dct['ms_ppm']
+    usr_ms2_ppm = param_dct['ms2_ppm']
     usr_ms1_precision = param_dct['ms_ppm'] * 1e-6
     usr_ms2_precision = param_dct['ms2_ppm'] * 1e-6
     usr_ms2_hg_precision = param_dct['hg_ppm'] * 1e-6
@@ -391,6 +394,34 @@ def huntlipids(param_dct):
     part_tot = len(lpp_part_key_lst)
     part_counter = 1
 
+    # calc all frag ranges
+    if usr_lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
+
+        frag_lst = {'SN1_[FA-H]-_ABBR': ['SN1_[FA-H]-_MZ', 'SN1_[FA-H]-_MZ_LOW', 'SN1_[FA-H]-_MZ_HIGH'],
+                    'SN2_[FA-H]-_ABBR': ['SN2_[FA-H]-_MZ', 'SN2_[FA-H]-_MZ_LOW', 'SN2_[FA-H]-_MZ_HIGH'],
+                    '[LPL(SN1)-H2O-H]-_ABBR':
+                        ['[LPL(SN1)-H2O-H]-_MZ', '[LPL(SN1)-H2O-H]-_MZ_LOW', '[LPL(SN1)-H2O-H]-_MZ_HIGH'],
+                    '[LPL(SN2)-H2O-H]-_ABBR':
+                        ['[LPL(SN2)-H2O-H]-_MZ', '[LPL(SN2)-H2O-H]-_MZ_LOW', '[LPL(SN2)-H2O-H]-_MZ_HIGH'],
+                    '[LPL(SN1)-H]-_ABBR': ['[LPL(SN1)-H]-_MZ', '[LPL(SN1)-H]-_MZ_LOW', '[LPL(SN1)-H]-_MZ_HIGH'],
+                    '[LPL(SN2)-H]-_ABBR': ['[LPL(SN2)-H]-_MZ', '[LPL(SN2)-H]-_MZ_LOW', '[LPL(SN2)-H]-_MZ_HIGH']}
+
+        for _frag in frag_lst:
+            _frag_dct = frag_lst[_frag]
+            _frag_mz_header = _frag_dct[0]
+            checked_info_df.loc[:, _frag_dct[1]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
+                                                                   -1 * usr_ms2_ppm)
+            checked_info_df.loc[:, _frag_dct[2]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
+                                                                   usr_ms2_ppm)
+            checked_info_df[_frag[:-4] + 'Q'] = (checked_info_df[_frag_dct[1]].astype(str) + ' <= mz <='
+                                                 + checked_info_df[_frag_dct[1]].astype(str))
+
+    else:
+        pass
+
+    print(checked_info_df.shape)
+    print(checked_info_df)
+
     for lpp_sub_key_lst in lpp_part_key_lst:
 
         if part_tot == 1:
@@ -414,7 +445,7 @@ def huntlipids(param_dct):
                     print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
                     lpp_info_result = parallel_pool.apply_async(get_lipid_info, args=(param_dct, checked_info_df,
                                                                                       checked_info_groups, lpp_sub_lst,
-                                                                                      usr_fa_def_df, usr_weight_df,
+                                                                                      usr_weight_df,
                                                                                       usr_key_frag_df,
                                                                                       usr_scan_info_df, ms1_xic_mz_lst,
                                                                                       lpp_sub_dct, xic_dct,
@@ -451,7 +482,7 @@ def huntlipids(param_dct):
                     lpp_sub_dct = {k: lpp_spec_dct[k] for k in lpp_sub_lst}
                     print('>>> >>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
                     tmp_lpp_info_df = get_lipid_info(param_dct, checked_info_df, checked_info_groups, lpp_sub_lst,
-                                                     usr_fa_def_df, usr_weight_df, usr_key_frag_df, usr_scan_info_df,
+                                                     usr_weight_df, usr_key_frag_df, usr_scan_info_df,
                                                      ms1_xic_mz_lst, lpp_sub_dct, xic_dct, target_ident_lst)
                     core_worker_count += 1
                     if isinstance(tmp_lpp_info_df, str):

@@ -157,15 +157,15 @@ class LipidComposer:
 
             lyso_str = 'L' + m_class
 
-            lipid_dct['[LPL(sn1)-H]-_ABBR'] = '[%s(%s)-H]-' % (lyso_str, sn1_abbr)
-            lipid_dct['[LPL(sn2)-H]-_ABBR'] = '[%s(%s)-H]-' % (lyso_str, sn2_abbr)
-            lipid_dct['[LPL(sn1)-H2O-H]-_ABBR'] = '[%s(%s)-H2O-H]-' % (lyso_str, sn1_abbr)
-            lipid_dct['[LPL(sn2)-H2O-H]-_ABBR'] = '[%s(%s)-H2O-H]-' % (lyso_str, sn2_abbr)
+            lipid_dct['[LPL(SN1)-H]-_ABBR'] = '[%s(%s)-H]-' % (lyso_str, sn1_abbr)
+            lipid_dct['[LPL(SN2)-H]-_ABBR'] = '[%s(%s)-H]-' % (lyso_str, sn2_abbr)
+            lipid_dct['[LPL(SN1)-H2O-H]-_ABBR'] = '[%s(%s)-H2O-H]-' % (lyso_str, sn1_abbr)
+            lipid_dct['[LPL(SN2)-H2O-H]-_ABBR'] = '[%s(%s)-H2O-H]-' % (lyso_str, sn2_abbr)
 
-            lipid_dct['[LPL(sn1)-H]-_MZ'] = round(m_exactmass - (sn2_exactmass - nl_water) - h_exactmass, 6)
-            lipid_dct['[LPL(sn2)-H]-_MZ'] = round(m_exactmass - (sn1_exactmass - nl_water) - h_exactmass, 6)
-            lipid_dct['[LPL(sn1)-H2O-H]-_MZ'] = round(m_exactmass - sn2_exactmass - h_exactmass, 6)
-            lipid_dct['[LPL(sn2)-H2O-H]-_MZ'] = round(m_exactmass - sn1_exactmass - h_exactmass, 6)
+            lipid_dct['[LPL(SN1)-H]-_MZ'] = round(m_exactmass - (sn2_exactmass - nl_water) - h_exactmass, 6)
+            lipid_dct['[LPL(SN2)-H]-_MZ'] = round(m_exactmass - (sn1_exactmass - nl_water) - h_exactmass, 6)
+            lipid_dct['[LPL(SN1)-H2O-H]-_MZ'] = round(m_exactmass - sn2_exactmass - h_exactmass, 6)
+            lipid_dct['[LPL(SN2)-H2O-H]-_MZ'] = round(m_exactmass - sn1_exactmass - h_exactmass, 6)
 
         else:
             pass

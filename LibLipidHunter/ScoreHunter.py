@@ -25,12 +25,13 @@ import math
 
 import pandas as pd
 
+from LibLipidHunter.ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
+from LibLipidHunter.IsotopeHunter import IsotopeHunter
 from LibLipidHunter.ScoreGenerator import ScoreGenerator
 from LibLipidHunter.PanelPlotter import plot_spectra
-from LibLipidHunter.IsotopeHunter import IsotopeHunter
 
 
-def get_lipid_info(param_dct, checked_info_df, checked_info_groups, core_list, usr_fa_def_df, usr_weight_df,
+def get_lipid_info(param_dct, checked_info_df, checked_info_groups, core_list, usr_weight_df,
                    usr_key_frag_df, usr_scan_info_df, ms1_xic_mz_lst, core_spec_dct, xic_dct, target_ident_lst):
     tmp_idx = 1
     tmp_df = pd.DataFrame()
@@ -81,7 +82,7 @@ def get_lipid_info(param_dct, checked_info_df, checked_info_groups, core_list, u
     hunter_start_time_str = param_dct['hunter_start_time']
     isotope_hunter = IsotopeHunter()
 
-    score_calc = ScoreGenerator(param_dct, usr_fa_def_df, usr_weight_df, usr_key_frag_df, usr_lipid_type,
+    score_calc = ScoreGenerator(param_dct, usr_weight_df, usr_key_frag_df, usr_lipid_type,
                                 checked_info_df, ion_charge=charge_mode, ms2_ppm=param_dct['ms2_ppm'])
 
     for group_key in core_list:
