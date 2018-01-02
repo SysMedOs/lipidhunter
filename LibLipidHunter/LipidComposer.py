@@ -225,7 +225,7 @@ class LipidComposer:
             # charged
             _chg_lipid_formula, _chg_lipid_elem_dct = elem_calc.get_formula(lipid_bulk_str, charge=lipid_charge)
             _lipid_dct[lipid_charge + '_FORMULA'] = _chg_lipid_formula
-            _lipid_dct[lipid_charge + '_MZ'] = elem_calc.get_exactmass(_lipid_elem_dct)
+            _lipid_dct[lipid_charge + '_MZ'] = elem_calc.get_exactmass(_chg_lipid_elem_dct)
 
             # fragments
 

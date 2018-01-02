@@ -289,7 +289,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         ms2_ppm = self.ui.tab_a_ms2ppm_spb.value()
         hg_th = self.ui.tab_a_hgthreshold_spb.value()
         hg_ppm = self.ui.tab_a_hgppm_spb.value()
-        score_filter = self.ui.tab_a_score_spb.value()
+        rank_score_filter = self.ui.tab_a_score_spb.value()
         isotope_score_filter = self.ui.tab_a_isotopescore_spb.value()
         ms2_info_threshold = self.ui.tab_a_ms2infoth_dspb.value() * 0.01
         hgms2_info_threshold = self.ui.tab_a_ms2hginfoth_dspb.value() * 0.01
@@ -330,12 +330,15 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
 
+        score_filter = rank_score_filter
+
         hunter_param_dct = {'fawhitelist_path_str': fawhitelist_path_str, 'mzml_path_str': mzml_path_str,
                             'img_output_folder_str': img_output_folder_str,
                             'xlsx_output_path_str': xlsx_output_path_str, 'rt_start': rt_start, 'rt_end': rt_end,
                             'mz_start': mz_start, 'mz_end': mz_end, 'dda_top': dda_top, 'ms_th': ms_th,
                             'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm, 'hg_th': hg_th, 'hg_ppm': hg_ppm,
-                            'score_filter': score_filter, 'isotope_score_filter': isotope_score_filter,
+                            'rank_score_filter': rank_score_filter, 'isotope_score_filter': isotope_score_filter,
+                            'score_filter': score_filter,
                             'lipid_type': _pl_class, 'charge_mode': _pl_charge, 'fa_white_list_cfg': fa_white_list_cfg,
                             'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor,
                             'ms2_infopeak_threshold': ms2_info_threshold,
