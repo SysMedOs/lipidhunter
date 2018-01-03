@@ -32,9 +32,11 @@ class ElemCalc:
         pip_hg_elem = {'C': 6, 'H': 14, 'O': 12, 'P': 2, 'N': 0}
         ps_hg_elem = {'C': 3, 'H': 8, 'O': 6, 'P': 1, 'N': 1}
         tg_hg_elem = {'C': 0, 'H': 0, 'O': 0, 'P': 0, 'N': 0}
+        fa_hg_elem = {'C': 0, 'H': 0, 'O': 0, 'P': 0, 'N': 0}
 
         self.lipid_hg_elem_dct = {'PA': pa_hg_elem, 'PC': pc_hg_elem, 'PE': pe_hg_elem, 'PG': pg_hg_elem,
-                                  'PI': pi_hg_elem, 'PS': ps_hg_elem, 'PIP': pip_hg_elem, 'TG': tg_hg_elem}
+                                  'PI': pi_hg_elem, 'PS': ps_hg_elem, 'PIP': pip_hg_elem, 'TG': tg_hg_elem,
+                                  'FA': fa_hg_elem}
 
         self.glycerol_bone_elem_dct = {'C': 3, 'H': 2}
         self.link_o_elem_dct = {'O': -1, 'H': 2}
@@ -58,7 +60,7 @@ class ElemCalc:
         pl_checker = re.compile(r'(P[ACEGSI])([(])(.*)([)])')
         pip_checker = re.compile(r'(PIP)([(])(.*)([)])')
         tg_checker = re.compile(r'(TG)([(])(.*)([)])')
-        fa_checker = re.compile(r'(\d{1,2})([:])(\d{1,2})')
+        fa_checker = re.compile(r'(FA)(\d{1,2})([:])(\d{1,2})')
         fa_o_checker = re.compile(r'(O-)(\d{1,2})([:])(\d)')
         fa_p_checker = re.compile(r'(P-)(\d{1,2})([:])(\d)')
 
@@ -94,24 +96,30 @@ class ElemCalc:
             bulk_fa_typ = abbr
             fa_chk = fa_checker.match(abbr)
             bulk_fa_lst = fa_chk.groups()
-            bulk_fa_c = bulk_fa_lst[0]
-            bulk_fa_db = bulk_fa_lst[2]
+            bulk_fa_c = bulk_fa_lst[1]
+            bulk_fa_db = bulk_fa_lst[3]
             bulk_fa_linker = 'A-'
             lyso_fa_linker_dct = {'A': ''}
         if fa_o_checker.match(abbr):
             # print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
-            fa_chk = fa_checker.match(abbr)
+            fa_chk = fa_o_checker.match(abbr)
             bulk_fa_lst = fa_chk.groups()
-            bulk_fa_c = bulk_fa_lst[0]
-            bulk_fa_db = bulk_fa_lst[2]
+            bulk_fa_c = bulk_fa_lst[1]
+            bulk_fa_db = bulk_fa_lst[3]
             bulk_fa_linker = 'O-'
             lyso_fa_linker_dct = {'O': ''}
         if fa_p_checker.match(abbr):
             # print('FA')
             _pl_typ = 'FA'
             bulk_fa_typ = abbr
+            fa_chk = fa_p_checker.match(abbr)
+            bulk_fa_lst = fa_chk.groups()
+            bulk_fa_c = bulk_fa_lst[1]
+            bulk_fa_db = bulk_fa_lst[3]
+            bulk_fa_linker = 'P-'
+            lyso_fa_linker_dct = {'P': ''}
 
         if _pl_typ not in ['TG', 'FA']:
             if fa_checker.match(bulk_fa_typ):
@@ -169,10 +177,27 @@ class ElemCalc:
     def get_neutral_elem(self, abbr):
 
         usr_lipid_info_dct = self.decode_abbr(abbr)
-        usr_lipid_type = usr_lipid_info_dct['TYPE']
 
-        if usr_lipid_type in self.lipid_hg_elem_dct.keys():
-            if usr_lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
+        lipid_type = usr_lipid_info_dct['TYPE']
+
+        if lipid_type in self.lipid_hg_elem_dct.keys():
+            if lipid_type in ['FA']:
+                print(abbr)
+                tmp_lipid_elem_dct = {'C': usr_lipid_info_dct['C'], 'O': 2,
+                                      'H': (usr_lipid_info_dct['C'] * 2 - usr_lipid_info_dct['DB'] * 2)}
+                if usr_lipid_info_dct['LINK'] == '':
+                    pass
+                elif usr_lipid_info_dct['LINK'] == 'O-':
+                    tmp_lipid_elem_dct['O'] += -1
+                    tmp_lipid_elem_dct['H'] += 2
+                elif usr_lipid_info_dct['LINK'] == 'P-':
+                    tmp_lipid_elem_dct['O'] += -1
+                else:
+                    pass
+
+                return tmp_lipid_elem_dct
+
+            if lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
                 tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
                 tmp_lipid_elem_dct['O'] += 4
                 tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']
@@ -186,7 +211,7 @@ class ElemCalc:
 
                 return tmp_lipid_elem_dct
 
-            elif usr_lipid_type in ['TG']:
+            elif lipid_type in ['TG']:
                 tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
                 tmp_lipid_elem_dct['O'] += 6
                 tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']

@@ -46,16 +46,16 @@ class LipidComposer:
                          'K': [38.9637069, 0.932581]}
 
     @staticmethod
-    def calc_fa_df(lipid_class, usr_fa_df):
+    def calc_fa_df(lipid_class, fa_df):
 
         sn_units_lst = []
 
-        header_lst = usr_fa_df.columns.values.tolist()
+        header_lst = fa_df.columns.values.tolist()
 
         if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
             if 'PL' in header_lst and 'FattyAcid' in header_lst:
-                pl_sn1_df = usr_fa_df.query('PL == "T" and sn1 == "T"')
-                pl_sn2_df = usr_fa_df.query('PL == "T" and sn2 == "T"')
+                pl_sn1_df = fa_df.query('PL == "T" and sn1 == "T"')
+                pl_sn2_df = fa_df.query('PL == "T" and sn2 == "T"')
 
                 pl_sn1_lst = pl_sn1_df['FattyAcid'].tolist()
                 pl_sn2_lst = pl_sn2_df['FattyAcid'].tolist()
@@ -64,9 +64,9 @@ class LipidComposer:
 
         elif lipid_class in ['TG']:
             if 'TG' in header_lst and 'FattyAcid' in header_lst:
-                tg_sn1_df = usr_fa_df.query('TG == "T" and sn1 == "T"')
-                tg_sn2_df = usr_fa_df.query('TG == "T" and sn2 == "T"')
-                tg_sn3_df = usr_fa_df.query('TG == "T" and sn3 == "T"')
+                tg_sn1_df = fa_df.query('TG == "T" and sn1 == "T"')
+                tg_sn2_df = fa_df.query('TG == "T" and sn2 == "T"')
+                tg_sn3_df = fa_df.query('TG == "T" and sn3 == "T"')
 
                 tg_sn1_lst = tg_sn1_df['FattyAcid'].tolist()
                 tg_sn2_lst = tg_sn2_df['FattyAcid'].tolist()
@@ -76,10 +76,10 @@ class LipidComposer:
 
         elif lipid_class in ['CL']:
             if 'CL' in header_lst and 'FattyAcid' in header_lst:
-                cl_sn1_df = usr_fa_df.query('CL == "T" and sn1 == "T"')
-                cl_sn2_df = usr_fa_df.query('CL == "T" and sn2 == "T"')
-                cl_sn3_df = usr_fa_df.query('CL == "T" and sn3 == "T"')
-                cl_sn4_df = usr_fa_df.query('CL == "T" and sn4 == "T"')
+                cl_sn1_df = fa_df.query('CL == "T" and sn1 == "T"')
+                cl_sn2_df = fa_df.query('CL == "T" and sn2 == "T"')
+                cl_sn3_df = fa_df.query('CL == "T" and sn3 == "T"')
+                cl_sn4_df = fa_df.query('CL == "T" and sn4 == "T"')
 
                 cl_sn1_lst = cl_sn1_df['FattyAcid'].tolist()
                 cl_sn2_lst = cl_sn2_df['FattyAcid'].tolist()
@@ -89,6 +89,48 @@ class LipidComposer:
                 sn_units_lst = [cl_sn1_lst, cl_sn2_lst, cl_sn3_lst, cl_sn4_lst]
 
         return sn_units_lst
+
+    def calc_fa_query(self, lipid_class, fa_whitelist):
+
+        usr_fa_df = pd.read_excel(fa_whitelist)
+        usr_fa_df = usr_fa_df.fillna(value='F')
+
+        sn_units_lst = self.calc_fa_df(lipid_class, usr_fa_df)
+        fa_abbr_lst = []
+        for _s in sn_units_lst:
+            fa_abbr_lst.extend(_s)
+        fa_abbr_lst = sorted(list(set(fa_abbr_lst)))
+
+        abbr_parser = NameParserFA()
+        elem_calc = ElemCalc()
+        for _fa_abbr in fa_abbr_lst:
+            _fa_info_dct = abbr_parser.get_fa_info(_fa_abbr)
+            _lipid_formula, _lipid_elem_dct = elem_calc.get_formula(_fa_abbr)
+            _fa_info_dct['FORMULA'] = _lipid_formula
+            _fa_info_dct['EXACTMASS'] = elem_calc.get_exactmass(_lipid_elem_dct)
+            print(_fa_info_dct)
+
+
+
+
+        # # calc all FA residues
+        # if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
+        #
+        #     fa_lst = {'FattyAcid': ['SN1_[FA-H]-_MZ', 'SN1_[FA-H]-_MZ_LOW', 'SN1_[FA-H]-_MZ_HIGH'],
+        #               'SN2_[FA-H]-_ABBR': ['SN2_[FA-H]-_MZ', 'SN2_[FA-H]-_MZ_LOW', 'SN2_[FA-H]-_MZ_HIGH']}
+        #
+        #     for _frag in frag_lst:
+        #         _frag_dct = frag_lst[_frag]
+        #         _frag_mz_header = _frag_dct[0]
+        #         checked_info_df.loc[:, _frag_dct[1]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
+        #                                                                -1 * usr_ms2_ppm)
+        #         checked_info_df.loc[:, _frag_dct[2]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
+        #                                                                usr_ms2_ppm)
+        #         checked_info_df[_frag[:-4] + 'Q'] = (checked_info_df[_frag_dct[1]].astype(str) + ' <= mz <='
+        #                                              + checked_info_df[_frag_dct[2]].astype(str))
+        #
+        # else:
+        #     pass
 
     def gen_all_comb(self, lipid_class, usr_fa_df, position=False):
         sn_units_lst = self.calc_fa_df(lipid_class, usr_fa_df)
@@ -254,4 +296,5 @@ if __name__ == '__main__':
 
     master_xlsx = r'../Temp/LipidMaster_Whitelist.xlsx'
 
+    composer.calc_fa_query('PE', r'../ConfigurationFiles/FA_Whitelist.xlsx')
     usr_lipid_master_df.to_excel(master_xlsx)

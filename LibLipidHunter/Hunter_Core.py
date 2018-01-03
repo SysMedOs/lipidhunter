@@ -78,7 +78,7 @@ def huntlipids(param_dct):
     charge_mode = param_dct['charge_mode']
     usr_vendor = param_dct['vendor']
     usr_exp_mode = param_dct['experiment_mode']
-    usr_xlsx = param_dct['fawhitelist_path_str']
+    usr_fa_xlsx = param_dct['fawhitelist_path_str']
     usr_mzml = param_dct['mzml_path_str']
     output_folder = param_dct['img_output_folder_str']
     output_sum_xlsx = param_dct['xlsx_output_path_str']
@@ -143,7 +143,7 @@ def huntlipids(param_dct):
     print('=== ==> --> Start to process >>>')
     print('=== ==> --> Phospholipid class: %s >>>' % usr_lipid_type)
 
-    composer_param_dct = {'fa_whitelist': usr_xlsx, 'lipid_type': usr_lipid_type,
+    composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_type': usr_lipid_type,
                           'charge_mode': charge_mode, 'exact_position': 'FALSE'}
     usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct)
 
@@ -395,30 +395,30 @@ def huntlipids(param_dct):
     part_tot = len(lpp_part_key_lst)
     part_counter = 1
 
-    # calc all frag ranges
-    if usr_lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
-
-        frag_lst = {'SN1_[FA-H]-_ABBR': ['SN1_[FA-H]-_MZ', 'SN1_[FA-H]-_MZ_LOW', 'SN1_[FA-H]-_MZ_HIGH'],
-                    'SN2_[FA-H]-_ABBR': ['SN2_[FA-H]-_MZ', 'SN2_[FA-H]-_MZ_LOW', 'SN2_[FA-H]-_MZ_HIGH'],
-                    '[LPL(SN1)-H2O-H]-_ABBR':
-                        ['[LPL(SN1)-H2O-H]-_MZ', '[LPL(SN1)-H2O-H]-_MZ_LOW', '[LPL(SN1)-H2O-H]-_MZ_HIGH'],
-                    '[LPL(SN2)-H2O-H]-_ABBR':
-                        ['[LPL(SN2)-H2O-H]-_MZ', '[LPL(SN2)-H2O-H]-_MZ_LOW', '[LPL(SN2)-H2O-H]-_MZ_HIGH'],
-                    '[LPL(SN1)-H]-_ABBR': ['[LPL(SN1)-H]-_MZ', '[LPL(SN1)-H]-_MZ_LOW', '[LPL(SN1)-H]-_MZ_HIGH'],
-                    '[LPL(SN2)-H]-_ABBR': ['[LPL(SN2)-H]-_MZ', '[LPL(SN2)-H]-_MZ_LOW', '[LPL(SN2)-H]-_MZ_HIGH']}
-
-        for _frag in frag_lst:
-            _frag_dct = frag_lst[_frag]
-            _frag_mz_header = _frag_dct[0]
-            checked_info_df.loc[:, _frag_dct[1]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
-                                                                   -1 * usr_ms2_ppm)
-            checked_info_df.loc[:, _frag_dct[2]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
-                                                                   usr_ms2_ppm)
-            checked_info_df[_frag[:-4] + 'Q'] = (checked_info_df[_frag_dct[1]].astype(str) + ' <= mz <='
-                                                 + checked_info_df[_frag_dct[2]].astype(str))
-
-    else:
-        pass
+    # # calc all frag ranges
+    # if usr_lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
+    #
+    #     frag_lst = {'SN1_[FA-H]-_ABBR': ['SN1_[FA-H]-_MZ', 'SN1_[FA-H]-_MZ_LOW', 'SN1_[FA-H]-_MZ_HIGH'],
+    #                 'SN2_[FA-H]-_ABBR': ['SN2_[FA-H]-_MZ', 'SN2_[FA-H]-_MZ_LOW', 'SN2_[FA-H]-_MZ_HIGH'],
+    #                 '[LPL(SN1)-H2O-H]-_ABBR':
+    #                     ['[LPL(SN1)-H2O-H]-_MZ', '[LPL(SN1)-H2O-H]-_MZ_LOW', '[LPL(SN1)-H2O-H]-_MZ_HIGH'],
+    #                 '[LPL(SN2)-H2O-H]-_ABBR':
+    #                     ['[LPL(SN2)-H2O-H]-_MZ', '[LPL(SN2)-H2O-H]-_MZ_LOW', '[LPL(SN2)-H2O-H]-_MZ_HIGH'],
+    #                 '[LPL(SN1)-H]-_ABBR': ['[LPL(SN1)-H]-_MZ', '[LPL(SN1)-H]-_MZ_LOW', '[LPL(SN1)-H]-_MZ_HIGH'],
+    #                 '[LPL(SN2)-H]-_ABBR': ['[LPL(SN2)-H]-_MZ', '[LPL(SN2)-H]-_MZ_LOW', '[LPL(SN2)-H]-_MZ_HIGH']}
+    #
+    #     for _frag in frag_lst:
+    #         _frag_dct = frag_lst[_frag]
+    #         _frag_mz_header = _frag_dct[0]
+    #         checked_info_df.loc[:, _frag_dct[1]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
+    #                                                                -1 * usr_ms2_ppm)
+    #         checked_info_df.loc[:, _frag_dct[2]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
+    #                                                                usr_ms2_ppm)
+    #         checked_info_df[_frag[:-4] + 'Q'] = (checked_info_df[_frag_dct[1]].astype(str) + ' <= mz <='
+    #                                              + checked_info_df[_frag_dct[2]].astype(str))
+    #
+    # else:
+    #     pass
 
     print(checked_info_df.shape)
     print(sorted(checked_info_df.columns.values.tolist()))
