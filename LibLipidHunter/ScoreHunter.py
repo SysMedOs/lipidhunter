@@ -31,7 +31,7 @@ from LibLipidHunter.ScoreGenerator import ScoreGenerator
 from LibLipidHunter.PanelPlotter import plot_spectra
 
 
-def get_lipid_info(param_dct, checked_info_df, checked_info_groups, core_list, usr_weight_df,
+def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_list, usr_weight_df,
                    usr_key_frag_df, usr_scan_info_df, ms1_xic_mz_lst, core_spec_dct, xic_dct, target_ident_lst):
     tmp_idx = 1
     tmp_df = pd.DataFrame()
@@ -127,7 +127,7 @@ def get_lipid_info(param_dct, checked_info_df, checked_info_groups, core_list, u
                     _usr_abbr_bulk = _r_abbr['Bulk_ABBR']
                     print('Check_proposed_structure:', _usr_abbr_bulk)
 
-                    match_info_dct, matched_checker = score_calc.get_rankscore(checked_info_df, _usr_abbr_bulk,
+                    match_info_dct, matched_checker = score_calc.get_rankscore(fa_df, checked_info_df, _usr_abbr_bulk,
                                                                                charge_mode, _usr_mz_lib, _score_ms2_df,
                                                                                usr_lipid_type)
 

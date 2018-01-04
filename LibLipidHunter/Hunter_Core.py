@@ -146,6 +146,7 @@ def huntlipids(param_dct):
     composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_type': usr_lipid_type,
                           'charge_mode': charge_mode, 'exact_position': 'FALSE'}
     usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct)
+    usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_type, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
 
     print('=== ==> --> Lipid Master table generated >>>', usr_lipid_master_df.shape)
     # print(usr_lipid_master_df.head())
@@ -431,17 +432,17 @@ def huntlipids(param_dct):
             print('>>> Start multiprocessing ==> Part %i / %i --> Max Number of Cores: %i' %
                   (part_counter, part_tot, usr_core_num))
         part_counter += 1
-        for lpp_sub_lst in lpp_sub_key_lst:
+        for lipid_sub_lst in lpp_sub_key_lst:
 
-            if isinstance(lpp_sub_lst, tuple) or isinstance(lpp_sub_lst, list):
-                if None in lpp_sub_lst:
-                    lpp_sub_lst = filter(lambda x: x is not None, lpp_sub_lst)
+            if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
+                if None in lipid_sub_lst:
+                    lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
                 else:
                     pass
-                lpp_sub_dct = {k: lpp_spec_dct[k] for k in lpp_sub_lst}
+                lpp_sub_dct = {k: lpp_spec_dct[k] for k in lipid_sub_lst}
                 print('>>> >>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
-                tmp_lpp_info_df = get_lipid_info(param_dct, checked_info_df, checked_info_groups, lpp_sub_lst,
-                                                 usr_weight_df, usr_key_frag_df, usr_scan_info_df,
+                tmp_lpp_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
+                                                 lipid_sub_lst, usr_weight_df, usr_key_frag_df, usr_scan_info_df,
                                                  ms1_xic_mz_lst, lpp_sub_dct, xic_dct, target_ident_lst)
                 core_worker_count += 1
                 if isinstance(tmp_lpp_info_df, str):
@@ -454,16 +455,16 @@ def huntlipids(param_dct):
         #     parallel_pool = Pool(usr_core_num)
         #     lpp_info_results_lst = []
         #     core_worker_count = 1
-        #     for lpp_sub_lst in lpp_sub_key_lst:
-        #         if isinstance(lpp_sub_lst, tuple) or isinstance(lpp_sub_lst, list):
-        #             if None in lpp_sub_lst:
-        #                 lpp_sub_lst = filter(lambda x: x is not None, lpp_sub_lst)
+        #     for lipid_sub_lst in lpp_sub_key_lst:
+        #         if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
+        #             if None in lipid_sub_lst:
+        #                 lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
         #             else:
         #                 pass
-        #             lpp_sub_dct = {k: lpp_spec_dct[k] for k in lpp_sub_lst}
+        #             lpp_sub_dct = {k: lpp_spec_dct[k] for k in lipid_sub_lst}
         #             print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
         #             lpp_info_result = parallel_pool.apply_async(get_lipid_info, args=(param_dct, checked_info_df,
-        #                                                                               checked_info_groups, lpp_sub_lst,
+        #                                                                               checked_info_groups, lipid_sub_lst,
         #                                                                               usr_weight_df,
         #                                                                               usr_key_frag_df,
         #                                                                               usr_scan_info_df, ms1_xic_mz_lst,
@@ -492,16 +493,16 @@ def huntlipids(param_dct):
         # else:
         #     print('Using single core mode...')
         #     core_worker_count = 1
-        #     for lpp_sub_lst in lpp_sub_key_lst:
+        #     for lipid_sub_lst in lpp_sub_key_lst:
         #
-        #         if isinstance(lpp_sub_lst, tuple) or isinstance(lpp_sub_lst, list):
-        #             if None in lpp_sub_lst:
-        #                 lpp_sub_lst = filter(lambda x: x is not None, lpp_sub_lst)
+        #         if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
+        #             if None in lipid_sub_lst:
+        #                 lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
         #             else:
         #                 pass
-        #             lpp_sub_dct = {k: lpp_spec_dct[k] for k in lpp_sub_lst}
+        #             lpp_sub_dct = {k: lpp_spec_dct[k] for k in lipid_sub_lst}
         #             print('>>> >>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
-        #             tmp_lpp_info_df = get_lipid_info(param_dct, checked_info_df, checked_info_groups, lpp_sub_lst,
+        #             tmp_lpp_info_df = get_lipid_info(param_dct, checked_info_df, checked_info_groups, lipid_sub_lst,
         #                                              usr_weight_df, usr_key_frag_df, usr_scan_info_df,
         #                                              ms1_xic_mz_lst, lpp_sub_dct, xic_dct, target_ident_lst)
         #             core_worker_count += 1

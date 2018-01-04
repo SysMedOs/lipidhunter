@@ -182,7 +182,7 @@ class ElemCalc:
 
         if lipid_type in self.lipid_hg_elem_dct.keys():
             if lipid_type in ['FA']:
-                print(abbr)
+                # print(abbr)
                 tmp_lipid_elem_dct = {'C': usr_lipid_info_dct['C'], 'O': 2,
                                       'H': (usr_lipid_info_dct['C'] * 2 - usr_lipid_info_dct['DB'] * 2)}
                 if usr_lipid_info_dct['LINK'] == '':

@@ -314,7 +314,8 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
                     else:
                         ms1_pr_query = '%.6f <= mz <= %.6f' % (mz_lib - ms1_delta, mz_lib + ms1_delta)
 
-                    ms1_pr_df = ms1_df.query(ms1_pr_query)
+                    ms1_pr_df = ms1_df.query(ms1_pr_query).copy()
+                    ms1_pr_df.is_copy = False
                     if ms1_pr_df.shape[0] > 0:
                         ms1_pr_df.loc[:, 'mz_xic'] = ms1_pr_df['mz']
                         ms1_pr_df = ms1_pr_df.round({'mz': 6, 'mz_xic': 4})
@@ -381,7 +382,8 @@ def get_xic_from_pl(xic_ms1_lst, ms1_xic_df, xic_ppm):
         if _xic_mz > 0:
             ms1_query = '%f <= mz <= %f' % (ms1_low, ms1_high)
             # print(ms1_query)
-            _found_ms1_df = ms1_xic_df.query(ms1_query)
+            _found_ms1_df = ms1_xic_df.query(ms1_query).copy()
+            _found_ms1_df.is_copy = False
             _found_ms1_df.loc[:, 'ppm'] = 1e6 * (_found_ms1_df['mz'] - _xic_mz) / _xic_mz
             _found_ms1_df.loc[:, 'ppm'] = _found_ms1_df['ppm'].abs()
             _found_ms1_df.loc[:, 'mz'] = _xic_mz

@@ -11,8 +11,9 @@ import itertools
 
 import pandas as pd
 
-from LipidNomenclature import NameParserFA
-from AbbrElemCalc import ElemCalc
+from LibLipidHunter.LipidNomenclature import NameParserFA
+from LibLipidHunter.AbbrElemCalc import ElemCalc
+from LibLipidHunter.ParallelFunc import ppm_window_para
 
 
 class LipidComposer:
@@ -90,7 +91,7 @@ class LipidComposer:
 
         return sn_units_lst
 
-    def calc_fa_query(self, lipid_class, fa_whitelist):
+    def calc_fa_query(self, lipid_class, fa_whitelist, ms2_ppm=100):
 
         usr_fa_df = pd.read_excel(fa_whitelist)
         usr_fa_df = usr_fa_df.fillna(value='F')
@@ -103,34 +104,26 @@ class LipidComposer:
 
         abbr_parser = NameParserFA()
         elem_calc = ElemCalc()
+        usr_fa_dct = {}
         for _fa_abbr in fa_abbr_lst:
             _fa_info_dct = abbr_parser.get_fa_info(_fa_abbr)
             _lipid_formula, _lipid_elem_dct = elem_calc.get_formula(_fa_abbr)
+            _fa_info_dct['ABBR'] = _fa_abbr
             _fa_info_dct['FORMULA'] = _lipid_formula
             _fa_info_dct['EXACTMASS'] = elem_calc.get_exactmass(_lipid_elem_dct)
-            print(_fa_info_dct)
+            usr_fa_dct[_fa_abbr] = _fa_info_dct
 
+        usr_fa_df = pd.DataFrame(usr_fa_dct).T.copy()
+        usr_fa_df.is_copy = False
 
+        for _fa_ion in ['[FA-H]-', '[FA-H2O-H]-', '[FA-H2O+H]+']:
+            usr_fa_df['%s_MZ_LOW' % _fa_ion] = ppm_window_para(usr_fa_df['%s_MZ' % _fa_ion].values.tolist(),
+                                                               ms2_ppm * -1)
+            usr_fa_df['%s_MZ_HIGH' % _fa_ion] = ppm_window_para(usr_fa_df['%s_MZ' % _fa_ion].values.tolist(), ms2_ppm)
+            usr_fa_df['%s_Q' % _fa_ion] = (usr_fa_df['%s_MZ_LOW' % _fa_ion].astype(str) + ' <= mz <= '
+                                           + usr_fa_df['%s_MZ_HIGH' % _fa_ion].astype(str))
 
-
-        # # calc all FA residues
-        # if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
-        #
-        #     fa_lst = {'FattyAcid': ['SN1_[FA-H]-_MZ', 'SN1_[FA-H]-_MZ_LOW', 'SN1_[FA-H]-_MZ_HIGH'],
-        #               'SN2_[FA-H]-_ABBR': ['SN2_[FA-H]-_MZ', 'SN2_[FA-H]-_MZ_LOW', 'SN2_[FA-H]-_MZ_HIGH']}
-        #
-        #     for _frag in frag_lst:
-        #         _frag_dct = frag_lst[_frag]
-        #         _frag_mz_header = _frag_dct[0]
-        #         checked_info_df.loc[:, _frag_dct[1]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
-        #                                                                -1 * usr_ms2_ppm)
-        #         checked_info_df.loc[:, _frag_dct[2]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
-        #                                                                usr_ms2_ppm)
-        #         checked_info_df[_frag[:-4] + 'Q'] = (checked_info_df[_frag_dct[1]].astype(str) + ' <= mz <='
-        #                                              + checked_info_df[_frag_dct[2]].astype(str))
-        #
-        # else:
-        #     pass
+        return usr_fa_df
 
     def gen_all_comb(self, lipid_class, usr_fa_df, position=False):
         sn_units_lst = self.calc_fa_df(lipid_class, usr_fa_df)
@@ -296,5 +289,7 @@ if __name__ == '__main__':
 
     master_xlsx = r'../Temp/LipidMaster_Whitelist.xlsx'
 
-    composer.calc_fa_query('PE', r'../ConfigurationFiles/FA_Whitelist.xlsx')
+    calc_fa_df = composer.calc_fa_query('PE', r'../ConfigurationFiles/FA_Whitelist.xlsx', ms2_ppm=50)
+
+    print(calc_fa_df)
     usr_lipid_master_df.to_excel(master_xlsx)

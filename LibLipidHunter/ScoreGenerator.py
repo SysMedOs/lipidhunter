@@ -1713,7 +1713,7 @@ class ScoreGenerator:
     #
     #     return ident_df_dct, ident_checker
 
-    def get_rankscore(self, master_info_df, abbr_bulk, charge, mz_lib, ms2_df, lipid_type):
+    def get_rankscore(self, fa_df, master_info_df, abbr_bulk, charge, mz_lib, ms2_df, lipid_type):
 
         lite_info_df = master_info_df.query('Bulk_ABBR == "%s"' % abbr_bulk)
 
@@ -1721,40 +1721,55 @@ class ScoreGenerator:
 
         if charge == '[M-H]-':
             if lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS']:
-                query_type_lst = ['SN1_[FA-H]-', 'SN2_[FA-H]-', '[LPL(SN1)-H2O-H]-', '[LPL(SN1)-H]-',
-                                  '[LPL(SN2)-H2O-H]-', '[LPL(SN2)-H]-']
+                query_type_lst = ['[LPL(SN1)-H2O-H]-', '[LPL(SN1)-H]-', '[LPL(SN2)-H2O-H]-', '[LPL(SN2)-H]-']
 
         q_results_df = pd.DataFrame()
 
-        for _idx, _info_se in lite_info_df.iterrows():
-            for _q in query_type_lst:
-                if _q in self.weight_type_lst:
-                    _q_str = _info_se[_q + '_Q']
-                    print(_info_se[_q + '_ABBR'], _q, _q_str)
-                    _q_tmp_df = ms2_df.query(_q_str)
-                    if _q_tmp_df.shape[1] > 0:
-                        _q_tmp_df['lib_mz'] = _info_se[_q + '_MZ']
-                        _q_tmp_df['obs_ppm'] = 1e6 * (_q_tmp_df['mz'] - _q_tmp_df['lib_mz']) / _q_tmp_df['lib_mz']
-                        _q_tmp_df['obs_ppm'] = _q_tmp_df['obs_ppm'].astype(int)
-                        _q_tmp_df['obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
-                        _q_tmp_df['obs_abbr'] = _info_se[_q + '_ABBR']
-                        _q_tmp_df['obs_type'] = _q
-                        _q_tmp_df['score_group'] = self.weight_dct[_q]['Group']
-                        q_results_df = q_results_df.append(_q_tmp_df)
+        # find all possible FA
+        for _idx, _fa_se in fa_df.iterrows():
+            # print(_fa_se)
+            _q_str = _fa_se['[FA-H]-_Q']
+            _q_tmp_df = ms2_df.query(_q_str).copy()
+            _q_tmp_df.is_copy = False
+            if _q_tmp_df.shape[0] > 0:
+                _q_tmp_df.loc[:, 'lib_mz'] = _fa_se['[FA-H]-_MZ']
+                _q_tmp_df.loc[:, 'obs_ppm'] = 1e6 * (_q_tmp_df['mz'] - _q_tmp_df['lib_mz']) / _q_tmp_df['lib_mz']
+                _q_tmp_df.loc[:, 'obs_ppm'] = _q_tmp_df['obs_ppm'].astype(int)
+                _q_tmp_df.loc[:, 'obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
+                _q_tmp_df.loc[:, 'obs_abbr'] = _fa_se['[FA-H]-_ABBR']
+                q_results_df = q_results_df.append(_q_tmp_df)
+        #
+        # for _idx, _info_se in lite_info_df.iterrows():
+        #     for _q in query_type_lst:
+        #         if _q in self.weight_type_lst:
+        #             _q_str = _info_se[_q + '_Q']
+        #             print(_info_se[_q + '_ABBR'], _q, _q_str)
+        #             _q_tmp_df = ms2_df.query(_q_str)
+        #             if _q_tmp_df.shape[1] > 0:
+        #                 _q_tmp_df['lib_mz'] = _info_se[_q + '_MZ']
+        #                 _q_tmp_df['obs_ppm'] = 1e6 * (_q_tmp_df['mz'] - _q_tmp_df['lib_mz']) / _q_tmp_df['lib_mz']
+        #                 _q_tmp_df['obs_ppm'] = _q_tmp_df['obs_ppm'].astype(int)
+        #                 _q_tmp_df['obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
+        #                 _q_tmp_df['obs_abbr'] = _info_se[_q + '_ABBR']
+        #                 _q_tmp_df['obs_type'] = _q
+        #                 _q_tmp_df['score_group'] = self.weight_dct[_q]['Group']
+        #                 q_results_df = q_results_df.append(_q_tmp_df)
 
         # print(query_results_dct)
-        q_results_df = q_results_df.sort_values(by=['obs_type', 'obs_ppm_abs', 'i'],
-                                                ascending=[True, True, False])
+        q_results_df.sort_values(by=['obs_abbr', 'i', 'obs_ppm_abs'], ascending=[False, False, True], inplace=True)
+        q_results_df.drop_duplicates(subset=['obs_abbr'], keep='first', inplace=True)
+        q_results_df.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
+        q_results_df.reset_index(inplace=True, drop=True)
         print(q_results_df)
 
-        if len(self.weight_group_lst) > 1:
-            for _g in self.weight_group_lst:
-                _sub_query_results_df = q_results_df[q_results_df['score_group'] == _g]
-                _sub_query_results_df = _sub_query_results_df.sort_values(by=['obs_ppm_abs', 'i'],
-                                                                          ascending=[True, False])
-                _sub_query_results_df = _sub_query_results_df.drop_duplicates(subset=['obs_abbr', 'obs_type'],
-                                                                              keep='first')
-                print(_sub_query_results_df)
+        # if len(self.weight_group_lst) > 1:
+        #     for _g in self.weight_group_lst:
+        #         _sub_query_results_df = q_results_df[q_results_df['score_group'] == _g]
+        #         _sub_query_results_df = _sub_query_results_df.sort_values(by=['obs_ppm_abs', 'i'],
+        #                                                                   ascending=[True, False])
+        #         _sub_query_results_df = _sub_query_results_df.drop_duplicates(subset=['obs_abbr', 'obs_type'],
+        #                                                                       keep='first')
+        #         print(_sub_query_results_df)
 
         #         else:
         #             print('!! No structure related signals found !!')

@@ -33,7 +33,8 @@ from ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
 def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max):
     core_results_df = pd.DataFrame()
     for group_key in sub_group_list:
-        subgroup_df = lpp_info_groups.get_group(group_key)
+        subgroup_df = lpp_info_groups.get_group(group_key).copy()
+        subgroup_df.is_copy = False
 
         same_mz_se = subgroup_df.iloc[0, :].squeeze()
         _pr_code = '%f<= MS2_PR_mz <= %f' % (same_mz_se['PR_MZ_LOW'], same_mz_se['PR_MZ_HIGH'])
@@ -67,6 +68,8 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
                             pr_ms1_df = ms1_df.query('%f <= i and %f <= mz <= %f' % (ms1_th,
                                                                                      same_mz_se['MS1_MZ_LOW'],
                                                                                      same_mz_se['MS1_MZ_HIGH']))
+
+                        pr_ms1_df.is_copy = False
 
                         if pr_ms1_df.shape[0] > 0:
 
@@ -110,7 +113,8 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
 
 class PrecursorHunter(object):
     def __init__(self, lpp_info_df, param_dct):
-        self.lpp_info_df = lpp_info_df
+        self.lpp_info_df = lpp_info_df.copy()
+        self.lpp_info_df.is_copy = False
         self.param_dct = param_dct
 
     def get_matched_pr(self, scan_info_df, spectra_pl, ms1_max=0, core_num=4, max_ram=8):
@@ -126,6 +130,7 @@ class PrecursorHunter(object):
         charge_mode = self.param_dct['charge_mode']
 
         ms1_obs_pr_df = pd.DataFrame()
+        print('ms1_obs_pr_df')
 
         if pl_class == 'PC' and charge_mode == '[M+HCOO]-':
 
