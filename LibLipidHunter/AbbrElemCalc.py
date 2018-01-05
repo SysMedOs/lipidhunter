@@ -61,6 +61,7 @@ class ElemCalc:
         pip_checker = re.compile(r'(PIP)([(])(.*)([)])')
         tg_checker = re.compile(r'(TG)([(])(.*)([)])')
         fa_checker = re.compile(r'(FA)(\d{1,2})([:])(\d{1,2})')
+        fa_short_checker = re.compile(r'(\d{1,2})([:])(\d{1,2})')
         fa_o_checker = re.compile(r'(O-)(\d{1,2})([:])(\d)')
         fa_p_checker = re.compile(r'(P-)(\d{1,2})([:])(\d)')
 
@@ -100,6 +101,16 @@ class ElemCalc:
             bulk_fa_db = bulk_fa_lst[3]
             bulk_fa_linker = 'A-'
             lyso_fa_linker_dct = {'A': ''}
+        if fa_short_checker.match(abbr):
+            # print('FA')
+            _pl_typ = 'FA'
+            bulk_fa_typ = abbr
+            fa_chk = fa_checker.match(abbr)
+            bulk_fa_lst = fa_chk.groups()
+            bulk_fa_c = bulk_fa_lst[0]
+            bulk_fa_db = bulk_fa_lst[2]
+            bulk_fa_linker = 'A-'
+            lyso_fa_linker_dct = {'A': ''}
         if fa_o_checker.match(abbr):
             # print('FA')
             _pl_typ = 'FA'
@@ -121,11 +132,18 @@ class ElemCalc:
             bulk_fa_linker = 'P-'
             lyso_fa_linker_dct = {'P': ''}
 
-        if _pl_typ not in ['TG', 'FA']:
-            if fa_checker.match(bulk_fa_typ):
+        if _pl_typ in ['PL', 'PA', 'PC', 'PE', 'PG', 'PI', 'PS']:
+            if fa_short_checker.match(bulk_fa_typ):
                 bulk_fa_linker = 'A-A-'
                 lyso_fa_linker_dct = {'A': ''}
-                fa_chk = fa_checker.match(bulk_fa_typ)
+                fa_chk = fa_short_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[0]
+                bulk_fa_db = bulk_fa_lst[2]
+            elif fa_short_checker.match(bulk_fa_typ):
+                bulk_fa_linker = ''
+                lyso_fa_linker_dct = {'A': ''}
+                fa_chk = fa_short_checker.match(bulk_fa_typ)
                 bulk_fa_lst = fa_chk.groups()
                 bulk_fa_c = bulk_fa_lst[0]
                 bulk_fa_db = bulk_fa_lst[2]
@@ -143,7 +161,7 @@ class ElemCalc:
                 bulk_fa_lst = fa_chk.groups()
                 bulk_fa_c = bulk_fa_lst[1]
                 bulk_fa_db = bulk_fa_lst[3]
-        elif _pl_typ not in ['FA']:
+        elif _pl_typ in ['TG']:
             if fa_checker.match(bulk_fa_typ):
                 bulk_fa_linker = 'A-A-A-'
                 lyso_fa_linker_dct = {'A': ''}
@@ -208,6 +226,8 @@ class ElemCalc:
                     tmp_lipid_elem_dct['H'] += 2
                 elif usr_lipid_info_dct['LINK'] == 'P-A-':
                     tmp_lipid_elem_dct['O'] += -1
+                else:
+                    pass
 
                 return tmp_lipid_elem_dct
 
@@ -317,7 +337,7 @@ class ElemCalc:
 
 if __name__ == '__main__':
 
-    usr_bulk_abbr_lst = ['TG(P-48:2)', 'PC(O-36:3)', 'PC(P-36:3)']
+    usr_bulk_abbr_lst = ['TG(P-48:2)', 'PC(O-36:3)', 'PC(P-36:3)', 'PC(36:3)']
     charge_lst = ['[M+NH4]+', '[M-H]-', '[M+HCOO]-', '[M+OAc]-']
     # usr_bulk_abbr_lst = ['PC(36:3)', 'PC(O-36:3)', 'PC(P-36:3)']
     # charge_lst = ['', '[M-H]-', '[M+HCOO]-', '[M+OAc]-']

@@ -423,6 +423,7 @@ def huntlipids(param_dct):
 
     print(checked_info_df.shape)
     print(sorted(checked_info_df.columns.values.tolist()))
+    print(checked_info_df['Bulk_ABBR'])
 
     for lpp_sub_key_lst in lpp_part_key_lst:
 
@@ -585,7 +586,7 @@ if __name__ == '__main__':
                'img_dpi': 300, 'mz_start': 700.0, 'rank_score_filter': 27.5, 'score_filter': 27.5, 'mz_end': 800.0,
                'ms2_infopeak_threshold': 0.001, 'lipid_type': 'PE', 'ms2_th': 10, 'core_number': 3,
                'isotope_score_filter': 75.0, 'hunter_start_time': '2017-12-21_15-27-49', 'vendor': 'waters',
-               'ms_th': 1000, 'rt_start': 10.0, 'hg_ppm': 100.0, 'experiment_mode': 'LC-MS', 'rank_score': True,
+               'ms_th': 1000, 'rt_start': 15.0, 'hg_ppm': 100.0, 'experiment_mode': 'LC-MS', 'rank_score': True,
                'score_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\Score_cfg.xlsx',
                'charge_mode': '[M-H]-',
                'fa_white_list_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\FA_Whitelist.xlsx',

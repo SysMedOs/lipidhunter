@@ -1762,6 +1762,16 @@ class ScoreGenerator:
         q_results_df.reset_index(inplace=True, drop=True)
         print(q_results_df)
 
+        for _idx, _lite_se in lite_info_df.iterrows():
+            _sn1_abbr = _lite_se['SN1_[FA-H]-_ABBR']
+            _sn2_abbr = _lite_se['SN2_[FA-H]-_ABBR']
+            print(_sn1_abbr, _sn2_abbr)
+            if _sn1_abbr in q_results_df['obs_abbr'].values:
+                print('SN1', _sn1_abbr)
+            if _sn2_abbr in q_results_df['obs_abbr'].values:
+                print('SN2', _sn2_abbr)
+
+
         # if len(self.weight_group_lst) > 1:
         #     for _g in self.weight_group_lst:
         #         _sub_query_results_df = q_results_df[q_results_df['score_group'] == _g]
