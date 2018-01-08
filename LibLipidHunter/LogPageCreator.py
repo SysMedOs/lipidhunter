@@ -185,34 +185,38 @@ class LogPageCreator(object):
             with open(self.idx_lst_page, 'a') as idx_page:
 
                 for _idx, _row_se in ident_info_df.iterrows():
-                    img_path = _row_se['img_name']
+                    img_path = str(_row_se['img_name'])
                     ms1_pr_mz = _row_se['MS1_obs_mz']
                     ms2_rt = _row_se['MS2_scan_time']
                     dda = _row_se['DDA#']
                     ms2_scan_id = _row_se['Scan#']
-                    ident_abbr = _row_se['Proposed_structures']
-                    ident_abbr = ident_abbr.replace('<', '&lt;')
-                    ident_abbr = ident_abbr.replace('>', '&gt;')
-                    score = _row_se['Overall_score']
+                    ident_abbr = str(_row_se['Proposed_structures'])
+                    try:
+                        ident_abbr = ident_abbr.replace('<', '&lt;')
+                        ident_abbr = ident_abbr.replace('>', '&gt;')
+                    except AttributeError:
+                        pass
+                    score = _row_se['RANK_SCORE']
                     formula_ion = _row_se['Formula_ion']
                     charge = _row_se['Charge']
                     # ident_idx = str(_idx)
 
                     ident_info_df = pd.DataFrame()
                     ident_info_df = ident_info_df.append(_row_se, ignore_index=True)
+                    plot_df_cols = []
 
                     # convert info df to html table code
                     if self.lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
-                        plot_df_cols = ['Proposed_structures', 'Overall_score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1',
-                                        'i_[M-H]-sn2',
-                                        'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O', 'SN_ratio']
+                        plot_df_cols = ['Proposed_structures', 'RANK_SCORE', 'SN1_[FA-H]-_i', 'SN2_[FA-H]-_i',
+                                        '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
+                                        '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
                     elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
-                        plot_df_cols = ['Proposed_structures', 'Overall_score', 'i_sn1', 'i_sn2', 'i_sn3',
-                                        'i_M-sn1', 'i_M-sn2', 'i_M-sn3',
-                                        'i_M-(sn1+sn2)', 'i_M-(sn1+sn3)', 'i_M-(sn2+sn3)', 'SN_ratio']
+                        pass
+                        # TODO(zhixu.ni@uni-leipzig.de): @Georgia add TG here please :)
                     else:
-                        plot_df_cols = ['Proposed_structures', 'Overall_score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1',
-                                        'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O', 'SN_ratio']
+                        plot_df_cols = ['Proposed_structures', 'RANK_SCORE', 'SN1_[FA-H]-_i', 'SN2_[FA-H]-_i',
+                                        '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
+                                        '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
 
                     ident_info_df = pd.DataFrame(ident_info_df, columns=plot_df_cols)
                     ident_col = ident_info_df.columns.tolist()

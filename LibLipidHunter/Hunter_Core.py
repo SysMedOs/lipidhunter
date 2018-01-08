@@ -237,9 +237,9 @@ def huntlipids(param_dct):
         core_key_list = map(None, *(iter(ms1_xic_mz_lst),) * sub_len)
     else:
         core_key_list = [ms1_xic_mz_lst]
-    # print(core_key_list)
-    # Start multiprocessing
-    print('!!!!!! Start multiprocessing ==> ==> ==> Number of Cores: %i' % usr_core_num)
+
+    # Start multiprocessing to get XIC
+    print('!!!!!! Start multiprocessing to get XIC ==> ==> ==> Number of Cores: %i' % usr_core_num)
     xic_dct = {}
 
     # if usr_core_num >= 8:
@@ -259,9 +259,6 @@ def huntlipids(param_dct):
                     pass
                 print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
                 print(core_list)
-                # xic_result = parallel_pool.apply_async(get_xic_all, args=(core_list, usr_mzml, usr_rt_range,
-                #                                                           usr_ms1_precision, usr_ms2_precision,
-                #                                                           usr_vendor,))
                 xic_result = parallel_pool.apply_async(get_xic_from_pl, args=(core_list, ms1_xic_df, 500))
                 core_worker_count += 1
                 xic_results_lst.append(xic_result)
@@ -396,138 +393,112 @@ def huntlipids(param_dct):
     part_tot = len(lpp_part_key_lst)
     part_counter = 1
 
-    # # calc all frag ranges
-    # if usr_lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
-    #
-    #     frag_lst = {'SN1_[FA-H]-_ABBR': ['SN1_[FA-H]-_MZ', 'SN1_[FA-H]-_MZ_LOW', 'SN1_[FA-H]-_MZ_HIGH'],
-    #                 'SN2_[FA-H]-_ABBR': ['SN2_[FA-H]-_MZ', 'SN2_[FA-H]-_MZ_LOW', 'SN2_[FA-H]-_MZ_HIGH'],
-    #                 '[LPL(SN1)-H2O-H]-_ABBR':
-    #                     ['[LPL(SN1)-H2O-H]-_MZ', '[LPL(SN1)-H2O-H]-_MZ_LOW', '[LPL(SN1)-H2O-H]-_MZ_HIGH'],
-    #                 '[LPL(SN2)-H2O-H]-_ABBR':
-    #                     ['[LPL(SN2)-H2O-H]-_MZ', '[LPL(SN2)-H2O-H]-_MZ_LOW', '[LPL(SN2)-H2O-H]-_MZ_HIGH'],
-    #                 '[LPL(SN1)-H]-_ABBR': ['[LPL(SN1)-H]-_MZ', '[LPL(SN1)-H]-_MZ_LOW', '[LPL(SN1)-H]-_MZ_HIGH'],
-    #                 '[LPL(SN2)-H]-_ABBR': ['[LPL(SN2)-H]-_MZ', '[LPL(SN2)-H]-_MZ_LOW', '[LPL(SN2)-H]-_MZ_HIGH']}
-    #
-    #     for _frag in frag_lst:
-    #         _frag_dct = frag_lst[_frag]
-    #         _frag_mz_header = _frag_dct[0]
-    #         checked_info_df.loc[:, _frag_dct[1]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
-    #                                                                -1 * usr_ms2_ppm)
-    #         checked_info_df.loc[:, _frag_dct[2]] = ppm_window_para(checked_info_df[_frag_mz_header].values.tolist(),
-    #                                                                usr_ms2_ppm)
-    #         checked_info_df[_frag[:-4] + 'Q'] = (checked_info_df[_frag_dct[1]].astype(str) + ' <= mz <='
-    #                                              + checked_info_df[_frag_dct[2]].astype(str))
-    #
-    # else:
-    #     pass
-
-    print(checked_info_df.shape)
-    print(sorted(checked_info_df.columns.values.tolist()))
-    print(checked_info_df['Bulk_ABBR'])
-
     for lpp_sub_key_lst in lpp_part_key_lst:
 
         if part_tot == 1:
-            print('>>> Start multiprocessing ==> Max Number of Cores: %i' % usr_core_num)
+            print('>>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
         else:
-            print('>>> Start multiprocessing ==> Part %i / %i --> Max Number of Cores: %i' %
+            print('>>> Start multiprocessing to get Score ==> Part %i / %i --> Max Number of Cores: %i' %
                   (part_counter, part_tot, usr_core_num))
         part_counter += 1
-        for lipid_sub_lst in lpp_sub_key_lst:
 
-            if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
-                if None in lipid_sub_lst:
-                    lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
-                else:
-                    pass
-                lpp_sub_dct = {k: lpp_spec_dct[k] for k in lipid_sub_lst}
-                print('>>> >>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
-                tmp_lpp_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
-                                                 lipid_sub_lst, usr_weight_df, usr_key_frag_df, usr_scan_info_df,
-                                                 ms1_xic_mz_lst, lpp_sub_dct, xic_dct, target_ident_lst)
-                core_worker_count += 1
-                if isinstance(tmp_lpp_info_df, str):
-                    pass
-                else:
-                    if tmp_lpp_info_df.shape[0] > 0:
-                        output_df = output_df.append(tmp_lpp_info_df)
-        # # Start multiprocessing
-        # if usr_core_num > 1:
-        #     parallel_pool = Pool(usr_core_num)
-        #     lpp_info_results_lst = []
-        #     core_worker_count = 1
-        #     for lipid_sub_lst in lpp_sub_key_lst:
-        #         if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
-        #             if None in lipid_sub_lst:
-        #                 lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
-        #             else:
-        #                 pass
-        #             lpp_sub_dct = {k: lpp_spec_dct[k] for k in lipid_sub_lst}
-        #             print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-        #             lpp_info_result = parallel_pool.apply_async(get_lipid_info, args=(param_dct, checked_info_df,
-        #                                                                               checked_info_groups, lipid_sub_lst,
-        #                                                                               usr_weight_df,
-        #                                                                               usr_key_frag_df,
-        #                                                                               usr_scan_info_df, ms1_xic_mz_lst,
-        #                                                                               lpp_sub_dct, xic_dct,
-        #                                                                               target_ident_lst))
-        #             # ('>>> >>> Get lpp_info_result of this worker-->', <class 'multiprocessing.pool.ApplyResult'>)
-        #             lpp_info_results_lst.append(lpp_info_result)
-        #             core_worker_count += 1
+        # for lipid_sub_lst in lpp_sub_key_lst:
         #
-        #     parallel_pool.close()
-        #     parallel_pool.join()
-        #
-        #     for lpp_info_result in lpp_info_results_lst:
-        #         tmp_lpp_info_df = lpp_info_result.get()
-        #         # try:
-        #         #     tmp_lpp_info_df = lpp_info_result.get()
-        #         # except (KeyError, SystemError, ValueError):
-        #         #     tmp_lpp_info_df = 'error'
-        #         #     print('!!error!!--> This segment receive no Lipid identified.')
+        #     if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
+        #         if None in lipid_sub_lst:
+        #             lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
+        #         else:
+        #             pass
+        #         lpp_sub_dct = {k: lpp_spec_dct[k] for k in lipid_sub_lst}
+        #         print('>>> >>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
+        #         tmp_lpp_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
+        #                                          lipid_sub_lst, usr_weight_df, usr_key_frag_df, usr_scan_info_df,
+        #                                          ms1_xic_mz_lst, lpp_sub_dct, xic_dct, target_ident_lst)
+        #         core_worker_count += 1
         #         if isinstance(tmp_lpp_info_df, str):
         #             pass
         #         else:
-        #             if isinstance(tmp_lpp_info_df, pd.DataFrame):
-        #                 if tmp_lpp_info_df.shape[0] > 0:
-        #                     output_df = output_df.append(tmp_lpp_info_df)
-        # else:
-        #     print('Using single core mode...')
-        #     core_worker_count = 1
-        #     for lipid_sub_lst in lpp_sub_key_lst:
-        #
-        #         if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
-        #             if None in lipid_sub_lst:
-        #                 lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
-        #             else:
-        #                 pass
-        #             lpp_sub_dct = {k: lpp_spec_dct[k] for k in lipid_sub_lst}
-        #             print('>>> >>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
-        #             tmp_lpp_info_df = get_lipid_info(param_dct, checked_info_df, checked_info_groups, lipid_sub_lst,
-        #                                              usr_weight_df, usr_key_frag_df, usr_scan_info_df,
-        #                                              ms1_xic_mz_lst, lpp_sub_dct, xic_dct, target_ident_lst)
-        #             core_worker_count += 1
-        #             if isinstance(tmp_lpp_info_df, str):
-        #                 pass
-        #             else:
-        #                 if tmp_lpp_info_df.shape[0] > 0:
-        #                     output_df = output_df.append(tmp_lpp_info_df)
+        #             if tmp_lpp_info_df.shape[0] > 0:
+        #                 output_df = output_df.append(tmp_lpp_info_df)
+
+        # Start multiprocessing to get rank score
+        usr_core_num = 1
+        if usr_core_num > 1:
+            parallel_pool = Pool(usr_core_num)
+            lpp_info_results_lst = []
+            core_worker_count = 1
+            for lipid_sub_lst in lpp_sub_key_lst:
+                if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
+                    if None in lipid_sub_lst:
+                        lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
+                    else:
+                        pass
+                    lpp_sub_dct = {k: lpp_spec_dct[k] for k in lipid_sub_lst}
+                    print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
+                    lpp_info_result = parallel_pool.apply_async(get_lipid_info,
+                                                                args=(param_dct, usr_fa_df, checked_info_df,
+                                                                      checked_info_groups, lipid_sub_lst,
+                                                                      usr_weight_df, usr_key_frag_df,
+                                                                      lpp_sub_dct, xic_dct))
+                    # ('>>> >>> Get lpp_info_result of this worker-->', <class 'multiprocessing.pool.ApplyResult'>)
+                    lpp_info_results_lst.append(lpp_info_result)
+                    core_worker_count += 1
+
+            parallel_pool.close()
+            parallel_pool.join()
+
+            for lpp_info_result in lpp_info_results_lst:
+                try:
+                    tmp_lpp_info_df = lpp_info_result.get()
+                except (KeyError, SystemError, ValueError):
+                    tmp_lpp_info_df = 'error'
+                    print('!!error!!--> This segment receive no Lipid identified.')
+                if isinstance(tmp_lpp_info_df, str):
+                    pass
+                else:
+                    if isinstance(tmp_lpp_info_df, pd.DataFrame):
+                        if tmp_lpp_info_df.shape[0] > 0:
+                            output_df = output_df.append(tmp_lpp_info_df)
+        else:
+            print('Using single core mode...')
+            core_worker_count = 1
+            for lipid_sub_lst in lpp_sub_key_lst:
+
+                if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
+                    if None in lipid_sub_lst:
+                        lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
+                    else:
+                        pass
+                    lpp_sub_dct = {k: lpp_spec_dct[k] for k in lipid_sub_lst}
+                    print('>>> >>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
+                    tmp_lpp_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
+                                                     lipid_sub_lst, usr_weight_df, usr_key_frag_df, lpp_sub_dct,
+                                                     xic_dct)
+
+                    core_worker_count += 1
+                    if isinstance(tmp_lpp_info_df, str):
+                        pass
+                    else:
+                        if tmp_lpp_info_df.shape[0] > 0:
+                            output_df = output_df.append(tmp_lpp_info_df)
 
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
         try:
-            output_df = output_df.sort_values(by=['Lib_mz', 'Proposed_structures', 'MS2_scan_time', 'Overall_score'])
+            output_df = output_df.sort_values(by=['Lib_mz', 'Proposed_structures', 'MS2_scan_time', 'RANK_SCORE'])
         except KeyError:
             pass
         output_df.reset_index(drop=True, inplace=True)
         output_df.index += 1
-        # print('output_df')
-        # print(output_df.head(5))
-        # print(output_df.columns.tolist())
+        print('output_df')
+        print(output_df.head(5))
+        print(output_df.columns.tolist())
+        print(output_df['img_name'])
         output_df.drop_duplicates(keep='first', inplace=True)
         log_pager.add_all_info(output_df)
         output_header_lst = output_df.columns.tolist()
-        for _i_check in ['i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']:
+        for _i_check in ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
+                         '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']:
             if _i_check not in output_header_lst:
                 output_df[_i_check] = 0.0
 
@@ -543,17 +514,13 @@ def huntlipids(param_dct):
 
         output_df.rename(columns={'#Contaminated_peaks': '#Unspecific_peaks'}, inplace=True)
 
-        output_header_lst = ['Proposed_structures', 'Formula_neutral', 'Formula_ion',
-                             'Charge', 'Lib_mz', 'ppm', 'SN_ratio', 'Overall_score',
-                             'Rank_score', 'Cosine_score', 'Fingerprint', 'SNR_score', 'Isotope_score',
-                             'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                             'DDA#', 'Scan#', 'i_sn1', 'i_sn2',
-                             'i_[M-H]-sn1', 'i_[M-H]-sn2', 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O', '#Specific_peaks']
-        output_header_lst += target_ident_lst
-        output_header_lst += ['#Unspecific_peaks']
+        output_short_lst = ['Proposed_structures', 'Formula_neutral', 'Formula_ion', 'Charge', 'Lib_mz', 'ppm',
+                            'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                            'DDA#', 'Scan#', 'SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
+                            '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
 
-        output_df = output_df[output_header_lst]
-        output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_scan_time', 'Rank_score'],
+        output_df = output_df[output_short_lst]
+        output_df = output_df.sort_values(by=['MS1_obs_mz', 'MS2_scan_time', 'RANK_SCORE'],
                                           ascending=[True, True, False])
         output_df = output_df.reset_index(drop=True)
         output_df.index += 1
@@ -586,7 +553,7 @@ if __name__ == '__main__':
                'img_dpi': 300, 'mz_start': 700.0, 'rank_score_filter': 27.5, 'score_filter': 27.5, 'mz_end': 800.0,
                'ms2_infopeak_threshold': 0.001, 'lipid_type': 'PE', 'ms2_th': 10, 'core_number': 3,
                'isotope_score_filter': 75.0, 'hunter_start_time': '2017-12-21_15-27-49', 'vendor': 'waters',
-               'ms_th': 1000, 'rt_start': 15.0, 'hg_ppm': 100.0, 'experiment_mode': 'LC-MS', 'rank_score': True,
+               'ms_th': 1000, 'rt_start': 22.0, 'hg_ppm': 100.0, 'experiment_mode': 'LC-MS', 'rank_score': True,
                'score_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\Score_cfg.xlsx',
                'charge_mode': '[M-H]-',
                'fa_white_list_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\FA_Whitelist.xlsx',

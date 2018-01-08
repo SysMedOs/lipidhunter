@@ -91,12 +91,12 @@ class LipidComposer:
 
         return sn_units_lst
 
-    def calc_fa_query(self, lipid_class, fa_whitelist, ms2_ppm=100):
+    def calc_fa_query(self, lipid_type, fa_whitelist, ms2_ppm=100):
 
         usr_fa_df = pd.read_excel(fa_whitelist)
         usr_fa_df = usr_fa_df.fillna(value='F')
 
-        sn_units_lst = self.calc_fa_df(lipid_class, usr_fa_df)
+        sn_units_lst = self.calc_fa_df(lipid_type, usr_fa_df)
         fa_abbr_lst = []
         for _s in sn_units_lst:
             fa_abbr_lst.extend(_s)
@@ -122,6 +122,38 @@ class LipidComposer:
             usr_fa_df['%s_MZ_HIGH' % _fa_ion] = ppm_window_para(usr_fa_df['%s_MZ' % _fa_ion].values.tolist(), ms2_ppm)
             usr_fa_df['%s_Q' % _fa_ion] = (usr_fa_df['%s_MZ_LOW' % _fa_ion].astype(str) + ' <= mz <= '
                                            + usr_fa_df['%s_MZ_HIGH' % _fa_ion].astype(str))
+
+        if lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'PIP']:
+
+            lyso_type_dct = {'[L%s-H]-' % lipid_type: 'EXACTMASS', '[L%s-H2O-H]-' % lipid_type: '[FA-H2O]_MZ'}
+
+            lyso_base_elem_dct = self.lipid_hg_elem_dct[lipid_type]
+            for _e in self.glycerol_bone_elem_dct.keys():
+                lyso_base_elem_dct[_e] += self.glycerol_bone_elem_dct[_e]
+
+            # the element here is with no Hydroxyl on sn1 and sn2, here a [M-H]- is already considered
+            lyso_base_mz = elem_calc.get_exactmass(lyso_base_elem_dct) + 1.0078250321 + 15.9949146221
+
+            if lipid_type in ['PC', 'SM']:
+                lyso_base_mz -= (12.0 + 2 * 1.0078250321)  # LPC loss one -CH3 from HG (one H already remove above)
+
+            for _lyso_ion in lyso_type_dct.keys():
+                if lyso_type_dct[_lyso_ion] == 'EXACTMASS':
+                    usr_fa_df['%s_ABBR' % _lyso_ion] = ('[L' + lipid_type + '(' + usr_fa_df['ABBR'].str.strip('FA') +
+                                                        ')-H]-')
+                elif lyso_type_dct[_lyso_ion] == '[FA-H2O]_MZ':
+                    usr_fa_df['%s_ABBR' % _lyso_ion] = ('[L' + lipid_type + '(' + usr_fa_df['ABBR'].str.strip('FA') +
+                                                        '-H2O)-H]-')
+                else:
+                    usr_fa_df['%s_ABBR' % _lyso_ion] = 'ERROR'
+
+                usr_fa_df['%s_MZ' % _lyso_ion] = lyso_base_mz + usr_fa_df[lyso_type_dct[_lyso_ion]]
+                usr_fa_df['%s_MZ_LOW' % _lyso_ion] = ppm_window_para(usr_fa_df['%s_MZ' % _lyso_ion].values.tolist(),
+                                                                     ms2_ppm * -1)
+                usr_fa_df['%s_MZ_HIGH' % _lyso_ion] = ppm_window_para(usr_fa_df['%s_MZ' % _lyso_ion].values.tolist(),
+                                                                      ms2_ppm)
+                usr_fa_df['%s_Q' % _lyso_ion] = (usr_fa_df['%s_MZ_LOW' % _lyso_ion].astype(str) + ' <= mz <= '
+                                                 + usr_fa_df['%s_MZ_HIGH' % _lyso_ion].astype(str))
 
         return usr_fa_df
 
@@ -159,7 +191,8 @@ class LipidComposer:
             for _comb_lite in sn_comb_lite_lst:
                 _lipid_abbr = '{pl}({sn1}_{sn2})'.format(pl=lipid_class, sn1=_comb_lite[0].strip('FA'),
                                                          sn2=_comb_lite[1].strip('FA'))
-                lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'SN1': _comb_lite[0], 'SN2': _comb_lite[1]}
+                lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'SN1': _comb_lite[0], 'SN2': _comb_lite[1],
+                                               'DISCRETE_ABBR': _lipid_abbr}
         else:
             pass
 
@@ -249,7 +282,7 @@ class LipidComposer:
                                                              c=_sn1_info_dct['C'] + _sn2_info_dct['C'],
                                                              db=lipid_comb_dct[_lipid]['M_DB'])
 
-            _lipid_dct['Bulk_ABBR'] = lipid_bulk_str
+            _lipid_dct['BULK_ABBR'] = lipid_bulk_str
 
             _lipid_formula, _lipid_elem_dct = elem_calc.get_formula(lipid_bulk_str)
             _lipid_dct['FORMULA'] = _lipid_formula
@@ -270,6 +303,7 @@ class LipidComposer:
             del _lipid_dct
 
         lipid_master_df = pd.DataFrame(lipid_comb_dct).T
+        lipid_master_df.reset_index(drop=True, inplace=True)
 
         return lipid_master_df
 
@@ -288,8 +322,10 @@ if __name__ == '__main__':
     # print(usr_lipid_master_df.tail())
 
     master_xlsx = r'../Temp/LipidMaster_Whitelist.xlsx'
+    fa_xlsx = r'../Temp/LipidMaster_FAlist.xlsx'
 
-    calc_fa_df = composer.calc_fa_query('PE', r'../ConfigurationFiles/FA_Whitelist.xlsx', ms2_ppm=50)
+    calc_fa_df = composer.calc_fa_query('PC', r'../ConfigurationFiles/FA_Whitelist.xlsx', ms2_ppm=50)
 
     print(calc_fa_df)
     usr_lipid_master_df.to_excel(master_xlsx)
+    calc_fa_df.to_excel(fa_xlsx)
