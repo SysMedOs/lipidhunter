@@ -149,25 +149,19 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                                     r'/LipidHunter_Results_Figures_%s'
                                     % hunter_start_time_str + img_name_core)
 
-                        isotope_checker, isotope_score, img_n = plot_spectra(_usr_abbr_bulk,
-                                                                             _samemz_se,
-                                                                             xic_dct,
-                                                                             obs_info_dct,
-                                                                             usr_spec_info_dct,
+                        isotope_checker, isotope_score, img_n = plot_spectra(_usr_abbr_bulk, _samemz_se, xic_dct,
+                                                                             obs_info_dct, usr_spec_info_dct,
                                                                              isotope_score_info_dct,
-                                                                             _usr_formula_charged,
-                                                                             _usr_charge,
-                                                                             save_img_as=img_name,
-                                                                             img_type=img_typ,
+                                                                             _usr_formula_charged, _usr_charge,
+                                                                             save_img_as=img_name, img_type=img_typ,
                                                                              dpi=img_dpi,
-                                                                             ms1_precision=
-                                                                             usr_ms1_precision
-                                                                             )
+                                                                             ms1_precision=usr_ms1_precision)
 
                         print('==> check for output -->')
 
                         obs_info_df['Proposed_structures'] = _usr_abbr_bulk
                         obs_info_df['Bulk_identification'] = _usr_abbr_bulk
+                        # obs_info_df['Discrete_identification'] = _usr_abbr_bulk
                         obs_info_df['Formula_neutral'] = _usr_formula
                         obs_info_df['Formula_ion'] = _usr_formula_charged
                         obs_info_df['Charge'] = _usr_charge

@@ -51,6 +51,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     obs_info_df = ident_info_dct['INFO']
     obs_fa_df = ident_info_dct['OBS_FA']
     obs_lyso_df = ident_info_dct['OBS_LYSO']
+    obs_ident_df = ident_info_dct['IDENT']
+    print('obs_ident_df')
+    print(obs_ident_df)
 
     isotope_score = isotope_score_info_dct['isotope_score']
     isotope_checker_dct = isotope_score_info_dct['isotope_checker_dct']
@@ -144,7 +147,6 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_high_pic.tick_params(axis='both', which='major', labelsize=10)
 
         # ms spectrum start
-        # ms_pic.stem(ms1_df['mz'].tolist(), ms1_df['i'].tolist(), 'grey', markerfmt=' ')
         ms_pic.plot(ms1_df['mz'].tolist(), ms1_df['i'].tolist(), 'grey')
 
         markerline, stemlines, baseline = ms_pic.stem([ms1_pr_mz], dash_i, markerfmt=' ')
@@ -207,8 +209,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         # isotope region | highlight the 1st isotope
 
         # theo range box
-        m1_theo_base_box = patches.Rectangle((m1_theo_mz - ms1_delta, 0),
-                                             2 * ms1_delta, deconv_lst[1],
+        m1_theo_base_box = patches.Rectangle((m1_theo_mz - ms1_delta, 0), 2 * ms1_delta, deconv_lst[1],
                                              facecolor=(1.0, 0.0, 0.0, 0.6), edgecolor='none', zorder=1)
         ms_zoom_pic.add_patch(m1_theo_base_box)
 
@@ -264,9 +265,6 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                                       facecolor=(0, 0.8, 1.0, 0.6), edgecolor='none', zorder=1)
                 ms_zoom_pic.add_patch(mh2_theo_base_box)
                 # opt_box_lst.append(mh2_theo_base_box)
-                # mh2_theo_box = patches.Rectangle((mh2_theo_mz - ms1_delta, deconv_lst[decon_idx]),
-                #                                  2 * ms1_delta, mh2_theo_i - deconv_lst[decon_idx],
-                #                                  facecolor=(1.0, 0.0, 0.0, 0.4), edgecolor='none', zorder=12)
                 mh2_theo_box = patches.Rectangle((mh2_theo_mz - ms1_delta, deconv_lst[decon_idx]),
                                                  2 * ms1_delta, mh2_theo_i - deconv_lst[decon_idx],
                                                  facecolor=(1.0, 0.0, 0.0, 0.6), edgecolor='none', zorder=1)
@@ -318,88 +316,19 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         # plot color markers for zoomed MS2 first. Then overlay with zoomed spectra. Plot full ms2 in the last step.
 
         _msms_max = ms2_df['i'].max()
-        _msms_low_delta = _msms_low_df['i'].max() * 0.06
-        _msms_high_delta = _msms_high_df['i'].max() * 0.06
 
-        # _matched_fa_df = ident_info_dct['MATCHED_FA_INFO']
-        # _matched_lyso_df = ident_info_dct['MATCHED_LYSO_INFO']
-        # _other_signals_df = ident_info_dct['OTHER_SIGNALS_INFO']
-
-        overall_score = obs_info_df['RANK_SCORE'].tolist()[0]
-        discrete_abbr = obs_info_df['DISCRETE_ABBR'].tolist()[0]
+        overall_score = obs_info_df['RANK_SCORE'].tolist()
+        discrete_abbr = obs_info_df['DISCRETE_ABBR'].tolist()
 
         ident_col_labels = ('Proposed_structure', 'Score')
-        _ident_table_df = pd.DataFrame(data={'Proposed_structure': discrete_abbr, 'Score': overall_score}, index=[0])
+        _ident_table_df = pd.DataFrame(data={'Proposed_structure': discrete_abbr, 'Score': overall_score})
+        _ident_table_df.sort_values(by=['Score'], ascending=False, inplace=True)
+        _ident_table_df.drop_duplicates(subset=['Proposed_structure', 'Score'], keep='first', inplace=True)
         ident_table_vals = map(list, _ident_table_df.values)
         ident_col_width_lst = [0.6, 0.15]
         ident_table = msms_pic.table(cellText=ident_table_vals, colWidths=ident_col_width_lst,
                                      colLabels=ident_col_labels, loc='upper center', cellLoc='center')
         ident_table.set_fontsize(8)
-
-        # if _matched_fa_df.shape[0] > 0:
-        #     matched_fa_mz_lst = _matched_fa_df['mz'].tolist()
-        #     for _i_fa, _fa_se in _matched_fa_df.iterrows():
-        #
-        #         markerline, stemlines, baseline = msms_pic.stem([_fa_se['mz']], [_fa_se['i']], markerfmt=' ')
-        #         plt.setp(stemlines, color='#00ccff', linewidth=3)
-        #         if _fa_se['mz'] <= 400:
-        #             markerline, stemlines, baseline = msms_low_pic.stem([_fa_se['mz']], [_fa_se['i']], markerfmt=' ')
-        #             plt.setp(stemlines, color='#00ccff', linewidth=3)
-        #             _msms_low_peak_y = float(_fa_se['i'])
-        #             _msms_low_peak_str = '%.4f' % _fa_se['mz']
-        #             msms_low_pic.text(_fa_se['mz'], _msms_low_peak_y, _msms_low_peak_str, fontsize=6, color='#00ccff')
-        #             msms_low_pic.text(_fa_se['mz'], _msms_low_peak_y + _msms_low_delta, _fa_se['Proposed_structures'],
-        #                               color='#00ccff', fontsize=8)
-        #         else:
-        #             markerline, stemlines, baseline = msms_high_pic.stem([_fa_se['mz']], [_fa_se['i']], markerfmt=' ')
-        #             plt.setp(stemlines, color='#00ccff', linewidth=3)
-        #             _msms_high_peak_y = float(_fa_se['i'])
-        #             _msms_high_peak_str = '%.4f' % _fa_se['mz']
-        #             msms_high_pic.text(_fa_se['mz'], _msms_high_peak_y, _msms_high_peak_str, fontsize=6, color='#00ccff')
-        #             msms_high_pic.text(_fa_se['mz'], _msms_high_peak_y + _msms_high_delta, _fa_se['Proposed_structures'],
-        #                                color='#00ccff', fontsize=8)
-        # else:
-        #     matched_fa_mz_lst = []
-        #
-        # if _matched_lyso_df.shape[0] > 0:
-        #     matched_lyso_mz_lst = _matched_lyso_df['mz'].tolist()
-        #     for _i_lyso, _lyso_se in _matched_lyso_df.iterrows():
-        #         markerline, stemlines, baseline = msms_pic.stem([_lyso_se['mz']], [_lyso_se['i']], markerfmt=' ')
-        #         plt.setp(stemlines, color='#00ccff', linewidth=3)
-        #         markerline, stemlines, baseline = msms_high_pic.stem([_lyso_se['mz']], [_lyso_se['i']], markerfmt=' ')
-        #         plt.setp(stemlines, color='#00ccff', linewidth=3)
-        #         _msms_high_peak_y = float(_lyso_se['i'])
-        #         _msms_high_peak_str = '%.4f' % _lyso_se['mz']
-        #         msms_high_pic.text(_lyso_se['mz'], _msms_high_peak_y, _msms_high_peak_str, fontsize=6, color='#00ccff')
-        #         msms_high_pic.text(_lyso_se['mz'], _msms_high_peak_y + _msms_high_delta, _lyso_se['Proposed_structures'],
-        #                            color='#00ccff', fontsize=8)
-        # else:
-        #     matched_lyso_mz_lst = []
-        #
-        # if _other_signals_df.shape[0] > 0:
-        #     for _i_other_sig, _other_sig_se in _other_signals_df.iterrows():
-        #         if _other_sig_se['mz'] in matched_lyso_mz_lst or _other_sig_se['mz'] in matched_fa_mz_lst:
-        #             pass
-        #         else:
-        #             markerline, stemlines, baseline = msms_pic.stem([_other_sig_se['mz']], [_other_sig_se['i']],
-        #                                                             markerfmt=' ')
-        #             plt.setp(stemlines, color='red', linewidth=3, alpha=0.5)
-        #             if _other_sig_se['mz'] <= 400:
-        #                 markerline, stemlines, baseline = msms_low_pic.stem([_other_sig_se['mz']], [_other_sig_se['i']],
-        #                                                                     markerfmt=' ')
-        #                 plt.setp(stemlines, color='red', linewidth=3, alpha=0.5)
-        #                 _msms_low_peak_str = '%.4f' % _other_sig_se['mz']
-        #                 _msms_low_peak_y = float(_other_sig_se['i'])
-        #                 msms_low_pic.text(_other_sig_se['mz'], _msms_low_peak_y, _msms_low_peak_str, fontsize=6,
-        #                                   color='red')
-        #             else:
-        #                 markerline, stemlines, baseline = msms_high_pic.stem([_other_sig_se['mz']], [_other_sig_se['i']],
-        #                                                                      markerfmt=' ')
-        #                 plt.setp(stemlines, color='red', linewidth=3, alpha=0.5)
-        #                 _msms_high_peak_str = '%.4f' % _other_sig_se['mz']
-        #                 _msms_high_peak_y = float(_other_sig_se['i'])
-        #                 msms_high_pic.text(_other_sig_se['mz'], _msms_high_peak_y, _msms_high_peak_str,
-        #                                    fontsize=6, color='red')
 
         # msms spectrum zoomed < 400 start
         if _msms_low_df.shape[0] > 0:
@@ -438,60 +367,58 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         # add specific ion info
+        txt_props = {'ha': 'left', 'va': 'bottom'}
 
-        # print all FA FRAG
+        # plot all FA FRAG
         for _idx, _frag_se in obs_fa_df.iterrows():
             _frag_mz = _frag_se['mz']
             _frag_i = _frag_se['i']
-            _frag_class = _frag_se['obs_label']
-            _frag_i_x = min([_frag_i * 5, 0.3 * max(_msms_low_df['i'].tolist())])
-            _frag_i_r = sorted([max(_msms_low_df['i'].tolist()) * 1.1, _frag_i * 1.1, _frag_i_x])[1]
+            # _frag_i_x = min([_frag_i * 5, 0.3 * max(_msms_low_df['i'].tolist())])
+            # _frag_i_r = sorted([max(_msms_low_df['i'].tolist()) * 1.1, _frag_i * 1.1, _frag_i_x])[1]
+            _frag_i_r = _frag_i * 1.025
             markerline, stemlines, baseline = msms_low_pic.stem([_frag_mz], [_frag_i_r], markerfmt=' ')
-            plt.setp(stemlines, color='red', linewidth=3, alpha=0.5)
+            plt.setp(stemlines, color=(1.0, 0.0, 0.0, 0.3), linewidth=3, alpha=0.4)
             markerline, stemlines, baseline = msms_pic.stem([_frag_mz], [_frag_i], markerfmt=' ')
-            plt.setp(stemlines, color='red', linewidth=3, alpha=0.5)
-            msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, fontsize=8, color='red')
+            plt.setp(stemlines, color=(1.0, 0.0, 0.0, 0.3), linewidth=3, alpha=0.4)
+            _frag_class = _frag_se['obs_label']
+            msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, txt_props, fontsize=5, color=(1.0, 0.0, 0.0, 0.6),
+                              rotation=25)
 
-        # print all FA NL
+        # plot all Lyso
         for _idx, _nl_se in obs_lyso_df.iterrows():
             _nl_mz = _nl_se['mz']
             _nl_i = _nl_se['i']
-            _nl_class = _nl_se['obs_label']
-            _nl_i_x = min([_nl_i * 5, 0.3 * max(_msms_high_df['i'].tolist())])
-            _nl_i_r = sorted([max(_msms_high_df['i'].tolist()) * 1.1, _nl_i * 1.1, _nl_i_x])[1]
+            # _nl_i_x = min([_nl_i * 5, 0.3 * max(_msms_high_df['i'].tolist())])
+            # _nl_i_r = sorted([max(_msms_high_df['i'].tolist()) * 1.1, _nl_i * 1.1, _nl_i_x])[1]
+            _nl_i_r = _nl_i * 1.5
             markerline, stemlines, baseline = msms_high_pic.stem([_nl_mz], [_nl_i_r], markerfmt=' ')
-            plt.setp(stemlines, color='red', linewidth=3, alpha=0.5)
+            plt.setp(stemlines, color=(1.0, 0.0, 0.0, 0.3), linewidth=3, alpha=0.4)
             markerline, stemlines, baseline = msms_pic.stem([_nl_mz], [_nl_i], markerfmt=' ')
-            plt.setp(stemlines, color='red', linewidth=3, alpha=0.5)
-            msms_high_pic.text(_nl_mz, _nl_i_r, _nl_class, fontsize=8, color='red')
+            plt.setp(stemlines, color=(1.0, 0.0, 0.0, 0.3), linewidth=3, alpha=0.4)
+            _nl_class = _nl_se['obs_label']
+            msms_high_pic.text(_nl_mz, _nl_i_r, _nl_class, txt_props, fontsize=5, color=(1.0, 0.0, 0.0, 0.6),
+                               rotation=60)
 
-        # if 'TARGET_FRAG' in specific_check_dct.keys():
-        #     target_frag_df = specific_check_dct['TARGET_FRAG']
-        #     for _idx, _frag_se in target_frag_df.iterrows():
-        #         _frag_mz = _frag_se['mz']
-        #         _frag_i = _frag_se['i']
-        #         _frag_class = _frag_se['LABEL']
-        #         _frag_i_x = min([_frag_i * 5, 0.5 * max(_msms_low_df['i'].tolist())])
-        #         _frag_i_r = sorted([max(_msms_low_df['i'].tolist()) * 1.1, _frag_i * 1.1, _frag_i_x])[1]
-        #         markerline, stemlines, baseline = msms_low_pic.stem([_frag_mz], [_frag_i_r], markerfmt=' ')
-        #         plt.setp(stemlines, color='#00ccff', linewidth=3, alpha=0.5)
-        #         markerline, stemlines, baseline = msms_pic.stem([_frag_mz], [_frag_i], markerfmt=' ')
-        #         plt.setp(stemlines, color='#00ccff', linewidth=3, alpha=0.5)
-        #         msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, fontsize=8, color='#00ccff')
-        #
-        # if 'TARGET_NL' in specific_check_dct.keys():
-        #     target_nl_df = specific_check_dct['TARGET_NL']
-        #     for _idx, _nl_se in target_nl_df.iterrows():
-        #         _nl_mz = _nl_se['mz']
-        #         _nl_i = _nl_se['i']
-        #         _nl_class = _nl_se['LABEL']
-        #         _nl_i_x = min([_nl_i * 5, 0.3 * max(_msms_low_df['i'].tolist())])
-        #         _nl_i_r = sorted([max(_msms_high_df['i'].tolist()) * 1.1, _nl_i * 1.1, _nl_i_x])[1]
-        #         markerline, stemlines, baseline = msms_high_pic.stem([_nl_mz], [_nl_i_r], markerfmt=' ')
-        #         plt.setp(stemlines, color='#00ccff', linewidth=3, alpha=0.5)
-        #         markerline, stemlines, baseline = msms_pic.stem([_nl_mz], [_nl_i], markerfmt=' ')
-        #         plt.setp(stemlines, color='#00ccff', linewidth=3, alpha=0.5)
-        #         msms_high_pic.text(_nl_mz, _nl_i_r, _nl_class, fontsize=8, color='#00ccff')
+        # plot all identified peaks
+        for _idx, _ident_se in obs_ident_df.iterrows():
+            _ident_mz = _ident_se['mz']
+            _ident_i = _ident_se['i']
+
+            if _ident_mz <= 400:
+                _sub_plot = msms_low_pic
+                _ident_i_r = _ident_i * 1.025
+                _rad = 25
+            else:
+                _sub_plot = msms_high_pic
+                _ident_i_r = _ident_i * 1.5
+                _rad = 60
+            markerline, stemlines, baseline = _sub_plot.stem([_ident_mz], [_ident_i_r], markerfmt=' ')
+            plt.setp(stemlines, color=(0, 0.8, 1.0, 0.6), linewidth=3)
+            markerline, stemlines, baseline = msms_pic.stem([_ident_mz], [_ident_i], markerfmt=' ')
+            plt.setp(stemlines, color=(0, 0.8, 1.0, 0.6), linewidth=3)
+            _ident_class = _ident_se['obs_label']
+            _sub_plot.text(_ident_mz, _ident_i_r, _ident_class, txt_props,
+                           fontsize=7, color=(0, 0.8, 1.0, 1.0), rotation=_rad, weight='bold')
 
         # msms spectrum start
 
@@ -500,7 +427,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
         msms_pic.set_ylabel("Intensity", fontsize=10)
         msms_pic.set_xlim([min(ms2_df['mz'].tolist()) - 1, ms2_pr_mz + 5])
-        msms_pic.set_ylim([0, _msms_max * 1.6])
+        msms_pic.set_ylim([0, _msms_max * 1.75])
+        msms_high_pic.set_ylim([0, _msms_max * 1.85])
 
         # set title
         xic_title_str = 'XIC of m/z %.4f | @ m/z %.4f ppm=%.2f' % (ms1_pr_mz, lib_mz, ms1_pr_ppm)

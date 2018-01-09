@@ -493,7 +493,7 @@ def huntlipids(param_dct):
         print('output_df')
         print(output_df.head(5))
         print(output_df.columns.tolist())
-        print(output_df['img_name'])
+        print(output_df[['Proposed_structures', 'DISCRETE_ABBR', 'MS2_scan_time', 'img_name']])
         output_df.drop_duplicates(keep='first', inplace=True)
         log_pager.add_all_info(output_df)
         output_header_lst = output_df.columns.tolist()
@@ -514,8 +514,8 @@ def huntlipids(param_dct):
 
         output_df.rename(columns={'#Contaminated_peaks': '#Unspecific_peaks'}, inplace=True)
 
-        output_short_lst = ['Proposed_structures', 'Formula_neutral', 'Formula_ion', 'Charge', 'Lib_mz', 'ppm',
-                            'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+        output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
+                            'Lib_mz', 'ppm','RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                             'DDA#', 'Scan#', 'SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
                             '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
 
