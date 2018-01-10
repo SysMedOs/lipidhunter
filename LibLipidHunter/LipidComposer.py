@@ -143,7 +143,7 @@ class LipidComposer:
                                                         ')-H]-')
                 elif lyso_type_dct[_lyso_ion] == '[FA-H2O]_MZ':
                     usr_fa_df['%s_ABBR' % _lyso_ion] = ('[L' + lipid_type + '(' + usr_fa_df['ABBR'].str.strip('FA') +
-                                                        '-H2O)-H]-')
+                                                        ')-H2O-H]-')
                 else:
                     usr_fa_df['%s_ABBR' % _lyso_ion] = 'ERROR'
 

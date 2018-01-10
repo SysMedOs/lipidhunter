@@ -36,7 +36,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'19, December, 2017'
+        version_date = r'10, January, 2018'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
                         r'LipidHunter Beta released date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
@@ -53,14 +53,18 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             self.lipidhunter_cwd = auto_cwd
 
         self.load_cfg()
+        self.a_max_ms()
 
         # slots for tab a
         QtCore.QObject.connect(self.ui.tab_a_loadxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.a_load_xlsx)
         QtCore.QObject.connect(self.ui.tab_a_launchgen_pb, QtCore.SIGNAL("clicked()"), self.a_go_generator)
         QtCore.QObject.connect(self.ui.tab_a_mzml_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzml)
         QtCore.QObject.connect(self.ui.tab_a_saveimgfolder_pb, QtCore.SIGNAL("clicked()"), self.a_save_img2folder)
+        QtCore.QObject.connect(self.ui.tab_a_msmax_chb, QtCore.SIGNAL("clicked()"), self.a_max_ms)
         QtCore.QObject.connect(self.ui.tab_a_sumxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.a_save_output)
         QtCore.QObject.connect(self.ui.tab_a_runhunter_pb, QtCore.SIGNAL("clicked()"), self.a_run_hunter)
+        QtCore.QObject.connect(self.ui.tab_a_cfgpath_pb, QtCore.SIGNAL("clicked()"), self.a_save_cfg)
+        QtCore.QObject.connect(self.ui.tab_a_gencfg_pb, QtCore.SIGNAL("clicked()"), self.a_create_cfg)
         # # slots for tab c
         QtCore.QObject.connect(self.ui.tab_c_fawhitelist_pb, QtCore.SIGNAL("clicked()"), self.c_load_fawhitelist)
         QtCore.QObject.connect(self.ui.tab_c_hgcfg_pb, QtCore.SIGNAL("clicked()"), self.c_load_hgcfg)
@@ -91,6 +95,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         if len(user_cfg) > 2:
             options = config.options(user_cfg)
             if 'fa_white_list_cfg' in options:
+                self.ui.tab_a_loadxlsxpath_le.setText(config.get(user_cfg, 'fa_white_list_cfg'))
                 self.ui.tab_c_fawhitelist_le.setText(config.get(user_cfg, 'fa_white_list_cfg'))
             if 'lipid_specific_cfg' in options:
                 self.ui.tab_c_hgcfg_le.setText(config.get(user_cfg, 'lipid_specific_cfg'))
@@ -237,7 +242,15 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         a_save_output_str = os.path.abspath(a_save_output_path[0])
         self.ui.tab_a_savexlsxpath_le.setText(a_save_output_str)
 
-    def a_run_hunter(self):
+    def a_max_ms(self):
+        if self.ui.tab_a_msmax_chb.isChecked():
+            self.ui.tab_a_msmax_spb.show()
+            self.ui.tab_a_msmax_spb.setValue(100 * self.ui.tab_a_msthreshold_spb.value())
+        else:
+            self.ui.tab_a_msmax_spb.hide()
+            self.ui.tab_a_msmax_spb.setValue(0)
+
+    def a_get_params(self):
 
         error_log_lst = []
 
@@ -276,23 +289,26 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text())
         xlsx_output_path_str = str(self.ui.tab_a_savexlsxpath_le.text())
 
-        pr_window = 'pr_window'
-
         rt_start = self.ui.tab_a_rtstart_dspb.value()
         rt_end = self.ui.tab_a_rtend_dspb.value()
         mz_start = self.ui.tab_a_mzstart_dspb.value()
         mz_end = self.ui.tab_a_mzend_dspb.value()
         dda_top = self.ui.tab_a_dda_spb.value()
+        pr_window = self.ui.tab_a_prwindow_spb.value()
+        isotope_score_filter = self.ui.tab_a_isotopescore_spb.value()
+        rank_score_filter = self.ui.tab_a_score_spb.value()
         ms_th = self.ui.tab_a_msthreshold_spb.value()
         ms2_th = self.ui.tab_a_ms2threshold_spb.value()
         ms_ppm = self.ui.tab_a_msppm_spb.value()
         ms2_ppm = self.ui.tab_a_ms2ppm_spb.value()
         hg_th = self.ui.tab_a_hgthreshold_spb.value()
         hg_ppm = self.ui.tab_a_hgppm_spb.value()
-        rank_score_filter = self.ui.tab_a_score_spb.value()
-        isotope_score_filter = self.ui.tab_a_isotopescore_spb.value()
         ms2_info_threshold = self.ui.tab_a_ms2infoth_dspb.value() * 0.01
         hgms2_info_threshold = self.ui.tab_a_ms2hginfoth_dspb.value() * 0.01
+
+        ms_max = 0
+        if self.ui.tab_a_msmax_chb.isChecked() and self.ui.tab_a_msmax_spb.value() > ms_th + 1:
+            ms_max = self.ui.tab_a_msmax_spb.value()
 
         fa_white_list_cfg = self.ui.tab_c_fawhitelist_le.text()
         lipid_specific_cfg = self.ui.tab_c_hgcfg_le.text()
@@ -303,9 +319,6 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         img_typ = self.ui.tab_c_imagetype_cmb.currentText()[1:]
         img_dpi = self.ui.tab_c_dpi_spb.value()
 
-        print('Vendor mode = %s, Experiment mode = %s' % (usr_vendor, usr_exp_mode))
-        print('Hunter started!')
-
         error_log_lst.append(self.check_path(fawhitelist_path_str, 'FA whitelist'))
         error_log_lst.append(self.check_path(mzml_path_str, 'mzML spectra'))
         error_log_lst.append(self.check_path(fa_white_list_cfg, 'FA whitelist'))
@@ -314,18 +327,14 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         usr_score_mode = self.ui.tab_c_scoremode_cmb.currentIndex()
         if usr_score_mode == 0:
-            print(self.ui.tab_c_scoremode_cmb.currentText())
             rank_score = True
         else:
-            print(self.ui.tab_c_scoremode_cmb.currentText())
             rank_score = False
 
         usr_isotope_score_mode = self.ui.tab_c_isotopescoremode_cmb.currentIndex()
         if usr_isotope_score_mode == 0:
-            print(self.ui.tab_c_isotopescoremode_cmb.currentText())
             fast_isotope = False
         else:
-            print(self.ui.tab_c_isotopescoremode_cmb.currentText())
             fast_isotope = True
 
         start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
@@ -347,10 +356,25 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                             'hunter_folder': self.lipidhunter_cwd,
                             'hunter_start_time': start_time_str, 'experiment_mode': usr_exp_mode,
                             'core_number': core_num, 'max_ram': max_ram,
-                            'img_type': img_typ, 'img_dpi': img_dpi, 'pr_window': 0.75}
+                            'img_type': img_typ, 'img_dpi': img_dpi, 'ms_max': ms_max, 'pr_window': pr_window}
+
+        return hunter_param_dct, error_log_lst
+
+    def a_run_hunter(self):
+
+        self.ui.tab_a_statusrun_pte.clear()
+        self.ui.tab_a_statusrun_pte.setPlainText('')
+
+        hunter_param_dct, error_log_lst = self.a_get_params()
+
+        print('Vendor mode = %s, Experiment mode = %s' % (hunter_param_dct['vendor'],
+                                                          hunter_param_dct['experiment_mode']))
+        print('Isotope score mode = %s' % (hunter_param_dct['fast_isotope']))
+        print('Rankscore mode = %s' % (hunter_param_dct['rank_score']))
+        print('Hunter started!')
 
         param_log_output_path_str = (str(self.ui.tab_a_saveimgfolder_le.text()) +
-                                     '/LipidHunter_Params-Log_%s.txt' % start_time_str
+                                     '/LipidHunter_Params-Log_%s.txt' % hunter_param_dct['hunter_start_time']
                                      )
 
         try:
@@ -372,29 +396,54 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             error_log_lst.append('!!! Please check your settings !!!')
             self.ui.tab_a_statusrun_pte.appendPlainText('\n'.join(error_log_lst) + '\n')
         else:
-            # # default output code
-            # try:
-            #     tot_run_time = huntlipids(hunter_param_dct)
-            #
-            # except:
-            #     tot_run_time = '!! Sorry, an error has occurred, please check your settings !!'
-            #
-            # if isinstance(tot_run_time, float):
-            #     self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
-            #     self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
-            #
-            # else:
-            #     if isinstance(tot_run_time, str):
-            #         self.ui.tab_a_statusrun_pte.appendPlainText(tot_run_time)
-            #
-            #     else:
-            #         self.ui.tab_a_statusrun_pte.appendPlainText('!! Sorry, an error has occurred, '
-            #                                                     'please check your settings !!')
 
-            # for debug only
-            tot_run_time = huntlipids(hunter_param_dct)
-            self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
-            self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+            # # for debug only
+            # tot_run_time = huntlipids(hunter_param_dct)
+            # self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
+            # self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+
+            # default output code
+            try:
+                tot_run_time = huntlipids(hunter_param_dct)
+
+            except:
+                tot_run_time = '!! Sorry, an error has occurred, please check your settings !!'
+
+            if isinstance(tot_run_time, float):
+                self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % tot_run_time)
+                self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+
+            else:
+                if isinstance(tot_run_time, str):
+                    self.ui.tab_a_statusrun_pte.appendPlainText(tot_run_time)
+
+                else:
+                    self.ui.tab_a_statusrun_pte.appendPlainText('!! Sorry, an error has occurred, '
+                                                                'please check your settings !!')
+
+    def a_save_cfg(self):
+        a_save_cfg_path = QtGui.QFileDialog.getSaveFileName(caption=u'Save file', filter=u'.txt')
+        self.ui.tab_a_cfgpath_le.clear()
+        a_save_cfg_str = os.path.abspath(a_save_cfg_path[0])
+        self.ui.tab_a_cfgpath_le.setText(a_save_cfg_str)
+
+    def a_create_cfg(self):
+        hunter_param_dct, error_log_lst = self.a_get_params()
+        error_log_lst = filter(None, error_log_lst)
+        print(error_log_lst)
+
+        if len(error_log_lst) > 0:
+            error_log_lst.append('!!! Please check your settings !!!')
+            self.ui.tab_a_gencfg_pte.appendPlainText('\n'.join(error_log_lst) + '\n')
+        else:
+            param_cfg_path_str = str(self.ui.tab_a_cfgpath_le.text())
+            config = configparser.ConfigParser()
+            with open(param_cfg_path_str, 'w') as usr_param_cfg:
+                config.add_section('parameters')
+                for param in hunter_param_dct.keys():
+                    config.set('parameters', param, str(hunter_param_dct[param]))
+                config.write(usr_param_cfg)
+                self.ui.tab_a_gencfg_pte.insertPlainText('>>> >>> >>> SAVED <<< <<< <<<')
 
     def c_set_default_cfg(self):
         config = configparser.ConfigParser()

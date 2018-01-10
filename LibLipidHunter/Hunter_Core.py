@@ -77,35 +77,34 @@ def huntlipids(param_dct):
     usr_lipid_type = param_dct['lipid_type']
     charge_mode = param_dct['charge_mode']
     usr_vendor = param_dct['vendor']
-    usr_exp_mode = param_dct['experiment_mode']
+    # usr_exp_mode = param_dct['experiment_mode']
     usr_fa_xlsx = param_dct['fawhitelist_path_str']
     usr_mzml = param_dct['mzml_path_str']
     output_folder = param_dct['img_output_folder_str']
     output_sum_xlsx = param_dct['xlsx_output_path_str']
-    fa_list_xlsx = param_dct['fa_white_list_cfg']
 
     key_frag_cfg = param_dct['lipid_specific_cfg']
     score_cfg = param_dct['score_cfg']
 
     usr_rt_range = [param_dct['rt_start'], param_dct['rt_end']]
-    usr_pr_mz_range = [param_dct['mz_start'], param_dct['mz_end']]
+    # usr_pr_mz_range = [param_dct['mz_start'], param_dct['mz_end']]
     mz_start = param_dct['mz_start']
     mz_end = param_dct['mz_end']
     usr_dda_top = param_dct['dda_top']
     usr_ms1_threshold = param_dct['ms_th']
     usr_ms1_max = param_dct['ms_max']
     usr_ms2_threshold = param_dct['ms2_th']
-    usr_ms2_hg_threshold = param_dct['hg_th']
+    # usr_ms2_hg_threshold = param_dct['hg_th']
     usr_ms1_ppm = param_dct['ms_ppm']
     usr_ms2_ppm = param_dct['ms2_ppm']
-    usr_ms1_precision = param_dct['ms_ppm'] * 1e-6
-    usr_ms2_precision = param_dct['ms2_ppm'] * 1e-6
-    usr_ms2_hg_precision = param_dct['hg_ppm'] * 1e-6
-    usr_rank_score_filter = param_dct['rank_score_filter']
-    usr_score_filter = param_dct['score_filter']
-    usr_isotope_score_filter = param_dct['isotope_score_filter']
-    usr_ms2_info_th = param_dct['ms2_infopeak_threshold']
-    usr_ms2_hginfo_th = param_dct['ms2_hginfopeak_threshold']
+    usr_ms1_precision = usr_ms1_ppm * 1e-6
+    usr_ms2_precision = usr_ms2_ppm * 1e-6
+    # usr_ms2_hg_precision = param_dct['hg_ppm'] * 1e-6
+    # usr_rank_score_filter = param_dct['rank_score_filter']
+    # usr_score_filter = param_dct['score_filter']
+    # usr_isotope_score_filter = param_dct['isotope_score_filter']
+    # usr_ms2_info_th = param_dct['ms2_infopeak_threshold']
+    # usr_ms2_hginfo_th = param_dct['ms2_hginfopeak_threshold']
     usr_rank_mode = param_dct['rank_score']
     usr_fast_isotope = param_dct['fast_isotope']
 
@@ -402,25 +401,6 @@ def huntlipids(param_dct):
                   (part_counter, part_tot, usr_core_num))
         part_counter += 1
 
-        # for lipid_sub_lst in lpp_sub_key_lst:
-        #
-        #     if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
-        #         if None in lipid_sub_lst:
-        #             lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
-        #         else:
-        #             pass
-        #         lpp_sub_dct = {k: lpp_spec_dct[k] for k in lipid_sub_lst}
-        #         print('>>> >>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
-        #         tmp_lpp_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
-        #                                          lipid_sub_lst, usr_weight_df, usr_key_frag_df, usr_scan_info_df,
-        #                                          ms1_xic_mz_lst, lpp_sub_dct, xic_dct, target_ident_lst)
-        #         core_worker_count += 1
-        #         if isinstance(tmp_lpp_info_df, str):
-        #             pass
-        #         else:
-        #             if tmp_lpp_info_df.shape[0] > 0:
-        #                 output_df = output_df.append(tmp_lpp_info_df)
-
         # Start multiprocessing to get rank score
         usr_core_num = 1
         if usr_core_num > 1:
@@ -515,7 +495,7 @@ def huntlipids(param_dct):
         output_df.rename(columns={'#Contaminated_peaks': '#Unspecific_peaks'}, inplace=True)
 
         output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                            'Lib_mz', 'ppm','RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                            'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                             'DDA#', 'Scan#', 'SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
                             '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
 
@@ -550,7 +530,7 @@ if __name__ == '__main__':
                'xlsx_output_path_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test1\t1.xlsx',
                'img_type': u'png',
                'lipid_specific_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
-               'img_dpi': 300, 'mz_start': 700.0, 'rank_score_filter': 27.5, 'score_filter': 27.5, 'mz_end': 800.0,
+               'img_dpi': 300, 'mz_start': 700.0, 'mz_end': 800.0, 'rank_score_filter': 27.5, 'score_filter': 27.5,
                'ms2_infopeak_threshold': 0.001, 'lipid_type': 'PE', 'ms2_th': 10, 'core_number': 3,
                'isotope_score_filter': 75.0, 'hunter_start_time': '2017-12-21_15-27-49', 'vendor': 'waters',
                'ms_th': 1000, 'rt_start': 22.0, 'hg_ppm': 100.0, 'experiment_mode': 'LC-MS', 'rank_score': True,
@@ -559,7 +539,7 @@ if __name__ == '__main__':
                'fa_white_list_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\FA_Whitelist.xlsx',
                'ms2_hginfopeak_threshold': 0.001, 'rt_end': 25.0,
                'hunter_folder': 'D:\\project_lipidhunter\\lipidhunterdev', 'dda_top': 6, 'fast_isotope': False,
-               'ms_ppm': 50, 'hg_th': 10.0, 'max_ram': 5, 'ms2_ppm': 100, 'ms_max': 0, 'pr_window': 0.75}
+               'ms_ppm': 20, 'hg_th': 10.0, 'max_ram': 5, 'ms2_ppm': 50, 'ms_max': 0, 'pr_window': 0.75}
 
     t = huntlipids(usr_dct)
     print(t)

@@ -1719,6 +1719,7 @@ class ScoreGenerator:
     def get_all_fa_frag(fa_df, ms2_df):
 
         obs_peaks_df = pd.DataFrame()
+        bp_i = ms2_df['i'].max()
 
         # find all possible FA
         for _idx, _fa_se in fa_df.iterrows():
@@ -1728,18 +1729,22 @@ class ScoreGenerator:
             _q_tmp_df.is_copy = False
             if _q_tmp_df.shape[0] > 0:
                 _q_tmp_df.loc[:, 'lib_mz'] = _fa_se['[FA-H]-_MZ']
+                _q_tmp_df.loc[:, 'obs_mz'] = _q_tmp_df['mz'].round(4)
+                _q_tmp_df.loc[:, 'obs_i_r'] = 100 * _q_tmp_df['i'] / bp_i
+                _q_tmp_df.loc[:, 'obs_i_r'] = _q_tmp_df['obs_i_r'].round(1)
                 _q_tmp_df.loc[:, 'obs_ppm'] = 1e6 * (_q_tmp_df['mz'] - _q_tmp_df['lib_mz']) / _q_tmp_df['lib_mz']
                 _q_tmp_df.loc[:, 'obs_ppm'] = _q_tmp_df['obs_ppm'].astype(int)
                 _q_tmp_df.loc[:, 'obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
                 _q_tmp_df.loc[:, 'obs_abbr'] = _fa_se['[FA-H]-_ABBR']
                 _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['lib_mz'].round(2)
-                _q_tmp_df.loc[:, 'obs_label'] = (_q_tmp_df['obs_label'].astype(str) + ' ' + _q_tmp_df['obs_abbr'])
+                _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_label'].astype(str)
                 obs_peaks_df = obs_peaks_df.append(_q_tmp_df)
 
         obs_peaks_df.sort_values(by=['obs_abbr', 'i', 'obs_ppm_abs'], ascending=[False, False, True], inplace=True)
         obs_peaks_df.drop_duplicates(subset=['obs_abbr'], keep='first', inplace=True)
         obs_peaks_df.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
         obs_peaks_df.reset_index(inplace=True, drop=True)
+        obs_peaks_df['obs_rank'] = obs_peaks_df.index + 1
 
         return obs_peaks_df.head(10)
 
@@ -1747,8 +1752,8 @@ class ScoreGenerator:
     def get_all_fa_nl(fa_df, ms2_df, mz_lib, lipid_type='LPL', ms2_ppm=100):
 
         lyso_type_lst = ['[L%s-H]-' % lipid_type, '[L%s-H2O-H]-' % lipid_type]
-
         obs_peaks_df = pd.DataFrame()
+        bp_i = ms2_df['i'].max()
 
         # find all possible FA
         for _idx, _fa_se in fa_df.iterrows():
@@ -1758,18 +1763,22 @@ class ScoreGenerator:
                 _q_tmp_df.is_copy = False
                 if _q_tmp_df.shape[0] > 0:
                     _q_tmp_df.loc[:, 'lib_mz'] = _fa_se['%s_MZ' % lyso_typ]
+                    _q_tmp_df.loc[:, 'obs_mz'] = _q_tmp_df['mz'].round(4)
+                    _q_tmp_df.loc[:, 'obs_i_r'] = 100 * _q_tmp_df['i'] / bp_i
+                    _q_tmp_df.loc[:, 'obs_i_r'] = _q_tmp_df['obs_i_r'].round(1)
                     _q_tmp_df.loc[:, 'obs_ppm'] = 1e6 * (_q_tmp_df['mz'] - _q_tmp_df['lib_mz']) / _q_tmp_df['lib_mz']
                     _q_tmp_df.loc[:, 'obs_ppm'] = _q_tmp_df['obs_ppm'].astype(int)
                     _q_tmp_df.loc[:, 'obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
                     _q_tmp_df.loc[:, 'obs_abbr'] = _fa_se['%s_ABBR' % lyso_typ]
                     _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['lib_mz'].round(2)
-                    _q_tmp_df.loc[:, 'obs_label'] = (_q_tmp_df['obs_label'].astype(str) + ' ' + _q_tmp_df['obs_abbr'])
+                    _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_label'].astype(str)
                     obs_peaks_df = obs_peaks_df.append(_q_tmp_df)
 
         obs_peaks_df.sort_values(by=['obs_abbr', 'i', 'obs_ppm_abs'], ascending=[False, False, True], inplace=True)
         obs_peaks_df.drop_duplicates(subset=['obs_abbr'], keep='first', inplace=True)
         obs_peaks_df.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
         obs_peaks_df.reset_index(inplace=True, drop=True)
+        obs_peaks_df['obs_rank'] = obs_peaks_df.index + 1
 
         return obs_peaks_df.head(10)
 
@@ -1779,7 +1788,8 @@ class ScoreGenerator:
         lite_info_df = master_info_df.query('BULK_ABBR == "%s"' % abbr_bulk)
         lite_info_df.is_copy = False
         lite_info_df['RANK_SCORE'] = 0
-        ident_peak_dct ={}
+
+        ident_peak_dct = {}
 
         obs_fa_frag_df = self.get_all_fa_frag(fa_df, ms2_df)
         obs_fa_nl_df = self.get_all_fa_nl(fa_df, ms2_df, mz_lib, lipid_type, ms2_ppm)
@@ -1828,9 +1838,9 @@ class ScoreGenerator:
                         if _rank_idx < 10 and _i > 0:
                             lite_info_df.set_value(_idx, '%s_RANK' % _obs, _rank_idx)
                             lite_info_df.set_value(_idx, '%s_i' % _obs, _i)
-                            # print(_abbr, _rank_idx, _i)
-                            ident_peak_dct[_abbr] = {'discrete_abbr': _lipid_abbr, 'obs_label': _label,
-                                                     'obs_abbr': _abbr, 'i': _i, 'mz': _mz}
+                            print(_abbr, _rank_idx, _i)
+                            ident_peak_dct[_abbr] = {'discrete_abbr': _lipid_abbr, 'obs_label': _label, 'i': _i,
+                                                     'mz': _mz, 'obs_abbr': _abbr, 'obs_rank': '%s_RANK' % _obs}
                             _obs_drop_idx.append(_rank_idx)
                         else:
                             print(_obs, _abbr, 'Not Found!')
@@ -1846,24 +1856,14 @@ class ScoreGenerator:
         lite_info_df.reset_index(drop=True, inplace=True)
 
         ident_peak_df = pd.DataFrame(ident_peak_dct).T
-        ident_peak_df.sort_values(by='mz', inplace=True)
-        ident_peak_df.reset_index(drop=True, inplace=True)
-
-        # remove identified FA
-        ident_peak_lst = ident_peak_df['obs_abbr'].tolist()
-        frag_idx_lst = []
-        nl_idx_lst = []
-        for _idx, _ion_se in obs_fa_frag_df.iterrows():
-            if _ion_se['obs_abbr'] in ident_peak_lst:
-                frag_idx_lst.append(_idx)
-        obs_fa_frag_df = obs_fa_frag_df.drop(frag_idx_lst)
-        for _idx, _ion_se in obs_fa_nl_df.iterrows():
-            if _ion_se['obs_abbr'] in ident_peak_lst:
-                nl_idx_lst.append(_idx)
-        obs_fa_nl_df = obs_fa_nl_df.drop(nl_idx_lst)
 
         if lite_info_df.shape[0] > 0 and ident_peak_df.shape[0] > 0:
             matched_checker = 1
+
+            checked_abbr_lst = lite_info_df['DISCRETE_ABBR'].tolist()
+            ident_peak_df = ident_peak_df[ident_peak_df['discrete_abbr'].isin(checked_abbr_lst)]
+            ident_peak_df.sort_values(by='mz', inplace=True)
+            ident_peak_df.reset_index(drop=True, inplace=True)
         else:
             matched_checker = 0
 

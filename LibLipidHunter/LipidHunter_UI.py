@@ -2,13 +2,12 @@
 
 # Form implementation generated from reading ui file '.\LipidHunter2_UI.ui'
 #
-# Created: Tue Dec 19 15:29:28 2017
+# Created: Wed Jan 10 15:07:22 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -30,58 +29,12 @@ class Ui_MainWindow(object):
         self.gridLayout_5 = QtGui.QGridLayout(self.gridLayoutWidget_5)
         self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_5.setObjectName("gridLayout_5")
-        self.label_5 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.label_5.setObjectName("label_5")
-        self.gridLayout_5.addWidget(self.label_5, 1, 0, 1, 1)
-        self.tab_a_saveimgfolder_pb = QtGui.QPushButton(self.gridLayoutWidget_5)
-        self.tab_a_saveimgfolder_pb.setObjectName("tab_a_saveimgfolder_pb")
-        self.gridLayout_5.addWidget(self.tab_a_saveimgfolder_pb, 5, 2, 1, 1)
         self.tab_a_mzml_pb = QtGui.QPushButton(self.gridLayoutWidget_5)
         self.tab_a_mzml_pb.setObjectName("tab_a_mzml_pb")
         self.gridLayout_5.addWidget(self.tab_a_mzml_pb, 3, 2, 1, 1)
-        self.label_3 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.label_3.setObjectName("label_3")
-        self.gridLayout_5.addWidget(self.label_3, 0, 0, 1, 1)
-        self.tab_a_mzml_le = QtGui.QLineEdit(self.gridLayoutWidget_5)
-        self.tab_a_mzml_le.setObjectName("tab_a_mzml_le")
-        self.gridLayout_5.addWidget(self.tab_a_mzml_le, 3, 1, 1, 1)
         self.tab_a_sumxlsxpath_pb = QtGui.QPushButton(self.gridLayoutWidget_5)
         self.tab_a_sumxlsxpath_pb.setObjectName("tab_a_sumxlsxpath_pb")
         self.gridLayout_5.addWidget(self.tab_a_sumxlsxpath_pb, 6, 2, 1, 1)
-        self.label_7 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.label_7.setObjectName("label_7")
-        self.gridLayout_5.addWidget(self.label_7, 5, 0, 1, 1)
-        self.horizontalLayout_12 = QtGui.QHBoxLayout()
-        self.horizontalLayout_12.setObjectName("horizontalLayout_12")
-        self.label_13 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.label_13.setObjectName("label_13")
-        self.horizontalLayout_12.addWidget(self.label_13)
-        self.tab_a_msthreshold_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
-        self.tab_a_msthreshold_spb.setMaximum(999999)
-        self.tab_a_msthreshold_spb.setProperty("value", 1000)
-        self.tab_a_msthreshold_spb.setObjectName("tab_a_msthreshold_spb")
-        self.horizontalLayout_12.addWidget(self.tab_a_msthreshold_spb)
-        self.label_15 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.label_15.setObjectName("label_15")
-        self.horizontalLayout_12.addWidget(self.label_15)
-        self.tab_a_msppm_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
-        self.tab_a_msppm_spb.setMaximum(9999)
-        self.tab_a_msppm_spb.setProperty("value", 50)
-        self.tab_a_msppm_spb.setObjectName("tab_a_msppm_spb")
-        self.horizontalLayout_12.addWidget(self.tab_a_msppm_spb)
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_12.addItem(spacerItem)
-        self.x = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.x.setObjectName("x")
-        self.horizontalLayout_12.addWidget(self.x)
-        self.tab_a_dda_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
-        self.tab_a_dda_spb.setMaximum(20)
-        self.tab_a_dda_spb.setProperty("value", 6)
-        self.tab_a_dda_spb.setObjectName("tab_a_dda_spb")
-        self.horizontalLayout_12.addWidget(self.tab_a_dda_spb)
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_12.addItem(spacerItem1)
-        self.gridLayout_5.addLayout(self.horizontalLayout_12, 9, 1, 1, 1)
         self.horizontalLayout_11 = QtGui.QHBoxLayout()
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
         self.label_4 = QtGui.QLabel(self.gridLayoutWidget_5)
@@ -98,8 +51,8 @@ class Ui_MainWindow(object):
         self.tab_a_rtend_dspb.setProperty("value", 25.0)
         self.tab_a_rtend_dspb.setObjectName("tab_a_rtend_dspb")
         self.horizontalLayout_11.addWidget(self.tab_a_rtend_dspb)
-        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_11.addItem(spacerItem2)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_11.addItem(spacerItem)
         self.label_10 = QtGui.QLabel(self.gridLayoutWidget_5)
         self.label_10.setObjectName("label_10")
         self.horizontalLayout_11.addWidget(self.label_10)
@@ -118,56 +71,113 @@ class Ui_MainWindow(object):
         self.tab_a_mzend_dspb.setProperty("value", 1000.0)
         self.tab_a_mzend_dspb.setObjectName("tab_a_mzend_dspb")
         self.horizontalLayout_11.addWidget(self.tab_a_mzend_dspb)
-        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_11.addItem(spacerItem3)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_11.addItem(spacerItem1)
         self.gridLayout_5.addLayout(self.horizontalLayout_11, 8, 1, 1, 1)
+        self.tab_a_mzml_le = QtGui.QLineEdit(self.gridLayoutWidget_5)
+        self.tab_a_mzml_le.setObjectName("tab_a_mzml_le")
+        self.gridLayout_5.addWidget(self.tab_a_mzml_le, 3, 1, 1, 1)
         self.tab_a_saveimgfolder_le = QtGui.QLineEdit(self.gridLayoutWidget_5)
         self.tab_a_saveimgfolder_le.setObjectName("tab_a_saveimgfolder_le")
         self.gridLayout_5.addWidget(self.tab_a_saveimgfolder_le, 5, 1, 1, 1)
+        self.label_7 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_7.setObjectName("label_7")
+        self.gridLayout_5.addWidget(self.label_7, 5, 0, 1, 1)
         self.tab_a_savexlsxpath_le = QtGui.QLineEdit(self.gridLayoutWidget_5)
         self.tab_a_savexlsxpath_le.setObjectName("tab_a_savexlsxpath_le")
         self.gridLayout_5.addWidget(self.tab_a_savexlsxpath_le, 6, 1, 1, 1)
+        self.horizontalLayout_12 = QtGui.QHBoxLayout()
+        self.horizontalLayout_12.setObjectName("horizontalLayout_12")
+        self.label_15 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_15.setObjectName("label_15")
+        self.horizontalLayout_12.addWidget(self.label_15)
+        self.tab_a_msppm_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_msppm_spb.setMaximum(9999)
+        self.tab_a_msppm_spb.setProperty("value", 50)
+        self.tab_a_msppm_spb.setObjectName("tab_a_msppm_spb")
+        self.horizontalLayout_12.addWidget(self.tab_a_msppm_spb)
+        self.label_13 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_13.setObjectName("label_13")
+        self.horizontalLayout_12.addWidget(self.label_13)
+        self.tab_a_msthreshold_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_msthreshold_spb.setMaximum(999999)
+        self.tab_a_msthreshold_spb.setProperty("value", 1000)
+        self.tab_a_msthreshold_spb.setObjectName("tab_a_msthreshold_spb")
+        self.horizontalLayout_12.addWidget(self.tab_a_msthreshold_spb)
+        self.tab_a_msmax_chb = QtGui.QCheckBox(self.gridLayoutWidget_5)
+        self.tab_a_msmax_chb.setObjectName("tab_a_msmax_chb")
+        self.horizontalLayout_12.addWidget(self.tab_a_msmax_chb)
+        self.tab_a_msmax_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_msmax_spb.setMaximum(999999)
+        self.tab_a_msmax_spb.setProperty("value", 1000)
+        self.tab_a_msmax_spb.setObjectName("tab_a_msmax_spb")
+        self.horizontalLayout_12.addWidget(self.tab_a_msmax_spb)
+        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_12.addItem(spacerItem2)
+        self.x = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.x.setObjectName("x")
+        self.horizontalLayout_12.addWidget(self.x)
+        self.tab_a_dda_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_dda_spb.setMaximum(20)
+        self.tab_a_dda_spb.setProperty("value", 6)
+        self.tab_a_dda_spb.setObjectName("tab_a_dda_spb")
+        self.horizontalLayout_12.addWidget(self.tab_a_dda_spb)
+        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_12.addItem(spacerItem3)
+        self.gridLayout_5.addLayout(self.horizontalLayout_12, 9, 1, 1, 1)
+        self.label_5 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_5.setObjectName("label_5")
+        self.gridLayout_5.addWidget(self.label_5, 1, 0, 1, 1)
+        self.label_3 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_3.setObjectName("label_3")
+        self.gridLayout_5.addWidget(self.label_3, 0, 0, 1, 1)
+        self.tab_a_saveimgfolder_pb = QtGui.QPushButton(self.gridLayoutWidget_5)
+        self.tab_a_saveimgfolder_pb.setObjectName("tab_a_saveimgfolder_pb")
+        self.gridLayout_5.addWidget(self.tab_a_saveimgfolder_pb, 5, 2, 1, 1)
         self.label_6 = QtGui.QLabel(self.gridLayoutWidget_5)
         self.label_6.setObjectName("label_6")
         self.gridLayout_5.addWidget(self.label_6, 3, 0, 1, 1)
+        self.tab_a_loadxlsxpath_pb = QtGui.QPushButton(self.gridLayoutWidget_5)
+        self.tab_a_loadxlsxpath_pb.setObjectName("tab_a_loadxlsxpath_pb")
+        self.gridLayout_5.addWidget(self.tab_a_loadxlsxpath_pb, 1, 2, 1, 1)
         self.label_8 = QtGui.QLabel(self.gridLayoutWidget_5)
         self.label_8.setObjectName("label_8")
         self.gridLayout_5.addWidget(self.label_8, 6, 0, 1, 1)
-        self.line_5 = QtGui.QFrame(self.gridLayoutWidget_5)
-        self.line_5.setFrameShape(QtGui.QFrame.HLine)
-        self.line_5.setFrameShadow(QtGui.QFrame.Sunken)
-        self.line_5.setObjectName("line_5")
-        self.gridLayout_5.addWidget(self.line_5, 4, 1, 1, 1)
         self.line_6 = QtGui.QFrame(self.gridLayoutWidget_5)
         self.line_6.setFrameShape(QtGui.QFrame.HLine)
         self.line_6.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_6.setObjectName("line_6")
         self.gridLayout_5.addWidget(self.line_6, 7, 1, 1, 1)
-        self.horizontalLayout_16 = QtGui.QHBoxLayout()
-        self.horizontalLayout_16.setObjectName("horizontalLayout_16")
-        self.label_20 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.label_20.setObjectName("label_20")
-        self.horizontalLayout_16.addWidget(self.label_20)
-        self.tab_a_score_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
-        self.tab_a_score_spb.setMinimumSize(QtCore.QSize(0, 0))
-        self.tab_a_score_spb.setPrefix("")
-        self.tab_a_score_spb.setDecimals(1)
-        self.tab_a_score_spb.setProperty("value", 27.5)
-        self.tab_a_score_spb.setObjectName("tab_a_score_spb")
-        self.horizontalLayout_16.addWidget(self.tab_a_score_spb)
-        self.label_19 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.label_19.setObjectName("label_19")
-        self.horizontalLayout_16.addWidget(self.label_19)
-        self.tab_a_isotopescore_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
-        self.tab_a_isotopescore_spb.setMinimumSize(QtCore.QSize(0, 0))
-        self.tab_a_isotopescore_spb.setPrefix("")
-        self.tab_a_isotopescore_spb.setDecimals(1)
-        self.tab_a_isotopescore_spb.setProperty("value", 75.0)
-        self.tab_a_isotopescore_spb.setObjectName("tab_a_isotopescore_spb")
-        self.horizontalLayout_16.addWidget(self.tab_a_isotopescore_spb)
+        self.horizontalLayout_13 = QtGui.QHBoxLayout()
+        self.horizontalLayout_13.setObjectName("horizontalLayout_13")
+        self.label_18 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_18.setObjectName("label_18")
+        self.horizontalLayout_13.addWidget(self.label_18)
+        self.tab_a_hgppm_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_hgppm_spb.setDecimals(0)
+        self.tab_a_hgppm_spb.setMaximum(9999.0)
+        self.tab_a_hgppm_spb.setProperty("value", 100.0)
+        self.tab_a_hgppm_spb.setObjectName("tab_a_hgppm_spb")
+        self.horizontalLayout_13.addWidget(self.tab_a_hgppm_spb)
+        self.label_17 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_17.setObjectName("label_17")
+        self.horizontalLayout_13.addWidget(self.label_17)
+        self.tab_a_hgthreshold_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_hgthreshold_spb.setDecimals(0)
+        self.tab_a_hgthreshold_spb.setMaximum(999999.0)
+        self.tab_a_hgthreshold_spb.setProperty("value", 10.0)
+        self.tab_a_hgthreshold_spb.setObjectName("tab_a_hgthreshold_spb")
+        self.horizontalLayout_13.addWidget(self.tab_a_hgthreshold_spb)
+        self.label_39 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_39.setObjectName("label_39")
+        self.horizontalLayout_13.addWidget(self.label_39)
+        self.tab_a_ms2hginfoth_dspb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_ms2hginfoth_dspb.setProperty("value", 0.1)
+        self.tab_a_ms2hginfoth_dspb.setObjectName("tab_a_ms2hginfoth_dspb")
+        self.horizontalLayout_13.addWidget(self.tab_a_ms2hginfoth_dspb)
         spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_16.addItem(spacerItem4)
-        self.gridLayout_5.addLayout(self.horizontalLayout_16, 12, 1, 1, 1)
+        self.horizontalLayout_13.addItem(spacerItem4)
+        self.gridLayout_5.addLayout(self.horizontalLayout_13, 12, 1, 1, 1)
         self.horizontalLayout_7 = QtGui.QHBoxLayout()
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
         self.tab_a_lipidclass_cmb = QtGui.QComboBox(self.gridLayoutWidget_5)
@@ -187,16 +197,19 @@ class Ui_MainWindow(object):
         spacerItem5 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_7.addItem(spacerItem5)
         self.gridLayout_5.addLayout(self.horizontalLayout_7, 0, 1, 1, 1)
+        self.line_5 = QtGui.QFrame(self.gridLayoutWidget_5)
+        self.line_5.setFrameShape(QtGui.QFrame.HLine)
+        self.line_5.setFrameShadow(QtGui.QFrame.Sunken)
+        self.line_5.setObjectName("line_5")
+        self.gridLayout_5.addWidget(self.line_5, 4, 1, 1, 1)
+        self.horizontalLayout_28 = QtGui.QHBoxLayout()
+        self.horizontalLayout_28.setObjectName("horizontalLayout_28")
+        self.tab_a_loadxlsxpath_le = QtGui.QLineEdit(self.gridLayoutWidget_5)
+        self.tab_a_loadxlsxpath_le.setObjectName("tab_a_loadxlsxpath_le")
+        self.horizontalLayout_28.addWidget(self.tab_a_loadxlsxpath_le)
+        self.gridLayout_5.addLayout(self.horizontalLayout_28, 1, 1, 1, 1)
         self.horizontalLayout_15 = QtGui.QHBoxLayout()
         self.horizontalLayout_15.setObjectName("horizontalLayout_15")
-        self.tab_d_ms2threshold_spb_2 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.tab_d_ms2threshold_spb_2.setObjectName("tab_d_ms2threshold_spb_2")
-        self.horizontalLayout_15.addWidget(self.tab_d_ms2threshold_spb_2)
-        self.tab_a_ms2threshold_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
-        self.tab_a_ms2threshold_spb.setMaximum(999999)
-        self.tab_a_ms2threshold_spb.setProperty("value", 10)
-        self.tab_a_ms2threshold_spb.setObjectName("tab_a_ms2threshold_spb")
-        self.horizontalLayout_15.addWidget(self.tab_a_ms2threshold_spb)
         self.label_16 = QtGui.QLabel(self.gridLayoutWidget_5)
         self.label_16.setObjectName("label_16")
         self.horizontalLayout_15.addWidget(self.label_16)
@@ -205,6 +218,14 @@ class Ui_MainWindow(object):
         self.tab_a_ms2ppm_spb.setProperty("value", 100)
         self.tab_a_ms2ppm_spb.setObjectName("tab_a_ms2ppm_spb")
         self.horizontalLayout_15.addWidget(self.tab_a_ms2ppm_spb)
+        self.tab_d_ms2threshold_spb_2 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.tab_d_ms2threshold_spb_2.setObjectName("tab_d_ms2threshold_spb_2")
+        self.horizontalLayout_15.addWidget(self.tab_d_ms2threshold_spb_2)
+        self.tab_a_ms2threshold_spb = QtGui.QSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_ms2threshold_spb.setMaximum(999999)
+        self.tab_a_ms2threshold_spb.setProperty("value", 10)
+        self.tab_a_ms2threshold_spb.setObjectName("tab_a_ms2threshold_spb")
+        self.horizontalLayout_15.addWidget(self.tab_a_ms2threshold_spb)
         self.label_38 = QtGui.QLabel(self.gridLayoutWidget_5)
         self.label_38.setObjectName("label_38")
         self.horizontalLayout_15.addWidget(self.label_38)
@@ -214,43 +235,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_15.addWidget(self.tab_a_ms2infoth_dspb)
         spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_15.addItem(spacerItem6)
-        self.gridLayout_5.addLayout(self.horizontalLayout_15, 10, 1, 1, 1)
-        self.horizontalLayout_13 = QtGui.QHBoxLayout()
-        self.horizontalLayout_13.setObjectName("horizontalLayout_13")
-        self.label_17 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.label_17.setObjectName("label_17")
-        self.horizontalLayout_13.addWidget(self.label_17)
-        self.tab_a_hgthreshold_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
-        self.tab_a_hgthreshold_spb.setDecimals(0)
-        self.tab_a_hgthreshold_spb.setMaximum(999999.0)
-        self.tab_a_hgthreshold_spb.setProperty("value", 10.0)
-        self.tab_a_hgthreshold_spb.setObjectName("tab_a_hgthreshold_spb")
-        self.horizontalLayout_13.addWidget(self.tab_a_hgthreshold_spb)
-        self.label_18 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.label_18.setObjectName("label_18")
-        self.horizontalLayout_13.addWidget(self.label_18)
-        self.tab_a_hgppm_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
-        self.tab_a_hgppm_spb.setDecimals(0)
-        self.tab_a_hgppm_spb.setMaximum(9999.0)
-        self.tab_a_hgppm_spb.setProperty("value", 100.0)
-        self.tab_a_hgppm_spb.setObjectName("tab_a_hgppm_spb")
-        self.horizontalLayout_13.addWidget(self.tab_a_hgppm_spb)
-        self.label_39 = QtGui.QLabel(self.gridLayoutWidget_5)
-        self.label_39.setObjectName("label_39")
-        self.horizontalLayout_13.addWidget(self.label_39)
-        self.tab_a_ms2hginfoth_dspb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
-        self.tab_a_ms2hginfoth_dspb.setProperty("value", 0.1)
-        self.tab_a_ms2hginfoth_dspb.setObjectName("tab_a_ms2hginfoth_dspb")
-        self.horizontalLayout_13.addWidget(self.tab_a_ms2hginfoth_dspb)
-        spacerItem7 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_13.addItem(spacerItem7)
-        self.gridLayout_5.addLayout(self.horizontalLayout_13, 11, 1, 1, 1)
-        self.horizontalLayout_28 = QtGui.QHBoxLayout()
-        self.horizontalLayout_28.setObjectName("horizontalLayout_28")
-        self.tab_a_loadxlsxpath_le = QtGui.QLineEdit(self.gridLayoutWidget_5)
-        self.tab_a_loadxlsxpath_le.setObjectName("tab_a_loadxlsxpath_le")
-        self.horizontalLayout_28.addWidget(self.tab_a_loadxlsxpath_le)
-        self.gridLayout_5.addLayout(self.horizontalLayout_28, 1, 1, 1, 1)
+        self.gridLayout_5.addLayout(self.horizontalLayout_15, 11, 1, 1, 1)
         self.horizontalLayout_17 = QtGui.QHBoxLayout()
         self.horizontalLayout_17.setObjectName("horizontalLayout_17")
         self.label_65 = QtGui.QLabel(self.gridLayoutWidget_5)
@@ -259,12 +244,44 @@ class Ui_MainWindow(object):
         self.tab_a_launchgen_pb = QtGui.QPushButton(self.gridLayoutWidget_5)
         self.tab_a_launchgen_pb.setObjectName("tab_a_launchgen_pb")
         self.horizontalLayout_17.addWidget(self.tab_a_launchgen_pb)
-        spacerItem8 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_17.addItem(spacerItem8)
+        spacerItem7 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_17.addItem(spacerItem7)
         self.gridLayout_5.addLayout(self.horizontalLayout_17, 2, 1, 1, 1)
-        self.tab_a_loadxlsxpath_pb = QtGui.QPushButton(self.gridLayoutWidget_5)
-        self.tab_a_loadxlsxpath_pb.setObjectName("tab_a_loadxlsxpath_pb")
-        self.gridLayout_5.addWidget(self.tab_a_loadxlsxpath_pb, 1, 2, 1, 1)
+        self.horizontalLayout_16 = QtGui.QHBoxLayout()
+        self.horizontalLayout_16.setObjectName("horizontalLayout_16")
+        self.label_25 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_25.setObjectName("label_25")
+        self.horizontalLayout_16.addWidget(self.label_25)
+        self.tab_a_prwindow_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_prwindow_spb.setMinimumSize(QtCore.QSize(70, 0))
+        self.tab_a_prwindow_spb.setMaximum(2.0)
+        self.tab_a_prwindow_spb.setSingleStep(0.01)
+        self.tab_a_prwindow_spb.setProperty("value", 0.75)
+        self.tab_a_prwindow_spb.setObjectName("tab_a_prwindow_spb")
+        self.horizontalLayout_16.addWidget(self.tab_a_prwindow_spb)
+        self.label_19 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_19.setObjectName("label_19")
+        self.horizontalLayout_16.addWidget(self.label_19)
+        self.tab_a_isotopescore_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_isotopescore_spb.setMinimumSize(QtCore.QSize(0, 0))
+        self.tab_a_isotopescore_spb.setPrefix("")
+        self.tab_a_isotopescore_spb.setDecimals(1)
+        self.tab_a_isotopescore_spb.setProperty("value", 75.0)
+        self.tab_a_isotopescore_spb.setObjectName("tab_a_isotopescore_spb")
+        self.horizontalLayout_16.addWidget(self.tab_a_isotopescore_spb)
+        self.label_20 = QtGui.QLabel(self.gridLayoutWidget_5)
+        self.label_20.setObjectName("label_20")
+        self.horizontalLayout_16.addWidget(self.label_20)
+        self.tab_a_score_spb = QtGui.QDoubleSpinBox(self.gridLayoutWidget_5)
+        self.tab_a_score_spb.setMinimumSize(QtCore.QSize(0, 0))
+        self.tab_a_score_spb.setPrefix("")
+        self.tab_a_score_spb.setDecimals(1)
+        self.tab_a_score_spb.setProperty("value", 27.5)
+        self.tab_a_score_spb.setObjectName("tab_a_score_spb")
+        self.horizontalLayout_16.addWidget(self.tab_a_score_spb)
+        spacerItem8 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(spacerItem8)
+        self.gridLayout_5.addLayout(self.horizontalLayout_16, 10, 1, 1, 1)
         self.runhunter_tabframe = QtGui.QTabWidget(self.hunter_tab)
         self.runhunter_tabframe.setGeometry(QtCore.QRect(10, 430, 901, 171))
         self.runhunter_tabframe.setObjectName("runhunter_tabframe")
@@ -622,7 +639,7 @@ class Ui_MainWindow(object):
         spacerItem21 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem21)
         self.horizontalLayoutWidget_9 = QtGui.QWidget(self.lipidgen_tab1)
-        self.horizontalLayoutWidget_9.setGeometry(QtCore.QRect(20, 510, 861, 31))
+        self.horizontalLayoutWidget_9.setGeometry(QtCore.QRect(20, 520, 861, 31))
         self.horizontalLayoutWidget_9.setObjectName("horizontalLayoutWidget_9")
         self.horizontalLayout_8 = QtGui.QHBoxLayout(self.horizontalLayoutWidget_9)
         self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
@@ -637,7 +654,7 @@ class Ui_MainWindow(object):
         self.lipidgen_tab1_savelist_pb.setObjectName("lipidgen_tab1_savelist_pb")
         self.horizontalLayout_8.addWidget(self.lipidgen_tab1_savelist_pb)
         self.verticalLayoutWidget_3 = QtGui.QWidget(self.lipidgen_tab1)
-        self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(20, 40, 861, 127))
+        self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(20, 40, 861, 146))
         self.verticalLayoutWidget_3.setObjectName("verticalLayoutWidget_3")
         self.lipidgen_tab1_sn1_verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget_3)
         self.lipidgen_tab1_sn1_verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -739,8 +756,11 @@ class Ui_MainWindow(object):
         self.sn1_otherfa_lb.setObjectName("sn1_otherfa_lb")
         self.horizontalLayout_10.addWidget(self.sn1_otherfa_lb)
         self.lipidgen_tab1_sn1_verticalLayout.addLayout(self.horizontalLayout_10)
+        self.label_62 = QtGui.QLabel(self.verticalLayoutWidget_3)
+        self.label_62.setObjectName("label_62")
+        self.lipidgen_tab1_sn1_verticalLayout.addWidget(self.label_62)
         self.verticalLayoutWidget_4 = QtGui.QWidget(self.lipidgen_tab1)
-        self.verticalLayoutWidget_4.setGeometry(QtCore.QRect(20, 180, 861, 100))
+        self.verticalLayoutWidget_4.setGeometry(QtCore.QRect(20, 190, 861, 100))
         self.verticalLayoutWidget_4.setObjectName("verticalLayoutWidget_4")
         self.lipidgen_tab1_sn2_verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget_4)
         self.lipidgen_tab1_sn2_verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -822,7 +842,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_32.addWidget(self.sn2_otherfa_lb)
         self.lipidgen_tab1_sn2_verticalLayout.addLayout(self.horizontalLayout_32)
         self.verticalLayoutWidget_5 = QtGui.QWidget(self.lipidgen_tab1)
-        self.verticalLayoutWidget_5.setGeometry(QtCore.QRect(20, 290, 861, 101))
+        self.verticalLayoutWidget_5.setGeometry(QtCore.QRect(20, 300, 861, 101))
         self.verticalLayoutWidget_5.setObjectName("verticalLayoutWidget_5")
         self.lipidgen_tab1_sn3_verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget_5)
         self.lipidgen_tab1_sn3_verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -905,12 +925,12 @@ class Ui_MainWindow(object):
         self.horizontalLayout_33.addWidget(self.sn3_otherfa_lb)
         self.lipidgen_tab1_sn3_verticalLayout.addLayout(self.horizontalLayout_33)
         self.line_2 = QtGui.QFrame(self.lipidgen_tab1)
-        self.line_2.setGeometry(QtCore.QRect(20, 280, 861, 16))
+        self.line_2.setGeometry(QtCore.QRect(20, 290, 861, 16))
         self.line_2.setFrameShape(QtGui.QFrame.HLine)
         self.line_2.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_2.setObjectName("line_2")
         self.line_3 = QtGui.QFrame(self.lipidgen_tab1)
-        self.line_3.setGeometry(QtCore.QRect(20, 170, 861, 16))
+        self.line_3.setGeometry(QtCore.QRect(20, 180, 861, 16))
         self.line_3.setFrameShape(QtGui.QFrame.HLine)
         self.line_3.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_3.setObjectName("line_3")
@@ -919,11 +939,8 @@ class Ui_MainWindow(object):
         self.line_4.setFrameShape(QtGui.QFrame.HLine)
         self.line_4.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_4.setObjectName("line_4")
-        self.label_62 = QtGui.QLabel(self.lipidgen_tab1)
-        self.label_62.setGeometry(QtCore.QRect(20, 540, 661, 16))
-        self.label_62.setObjectName("label_62")
         self.verticalLayoutWidget_6 = QtGui.QWidget(self.lipidgen_tab1)
-        self.verticalLayoutWidget_6.setGeometry(QtCore.QRect(20, 400, 859, 100))
+        self.verticalLayoutWidget_6.setGeometry(QtCore.QRect(20, 410, 859, 100))
         self.verticalLayoutWidget_6.setObjectName("verticalLayoutWidget_6")
         self.lipidgen_tab1_sn4_verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget_6)
         self.lipidgen_tab1_sn4_verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -1006,12 +1023,12 @@ class Ui_MainWindow(object):
         self.horizontalLayout_35.addWidget(self.sn4_otherfa_lb)
         self.lipidgen_tab1_sn4_verticalLayout.addLayout(self.horizontalLayout_35)
         self.line_7 = QtGui.QFrame(self.lipidgen_tab1)
-        self.line_7.setGeometry(QtCore.QRect(20, 390, 861, 16))
+        self.line_7.setGeometry(QtCore.QRect(20, 400, 861, 16))
         self.line_7.setFrameShape(QtGui.QFrame.HLine)
         self.line_7.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_7.setObjectName("line_7")
         self.line_11 = QtGui.QFrame(self.lipidgen_tab1)
-        self.line_11.setGeometry(QtCore.QRect(20, 500, 861, 16))
+        self.line_11.setGeometry(QtCore.QRect(20, 510, 861, 16))
         self.line_11.setFrameShape(QtGui.QFrame.HLine)
         self.line_11.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_11.setObjectName("line_11")
@@ -1110,7 +1127,7 @@ class Ui_MainWindow(object):
         self.formLayoutWidget_3.setObjectName("formLayoutWidget_3")
         self.formLayout_3 = QtGui.QFormLayout(self.formLayoutWidget_3)
         self.formLayout_3.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
-        self.formLayout_3.setFormAlignment(QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        self.formLayout_3.setFormAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.formLayout_3.setContentsMargins(0, 0, 0, 0)
         self.formLayout_3.setObjectName("formLayout_3")
         self.label_31 = QtGui.QLabel(self.formLayoutWidget_3)
@@ -1163,14 +1180,14 @@ class Ui_MainWindow(object):
         self.formLayoutWidget_2.setGeometry(QtCore.QRect(20, 530, 881, 71))
         self.formLayoutWidget_2.setObjectName("formLayoutWidget_2")
         self.formLayout_2 = QtGui.QFormLayout(self.formLayoutWidget_2)
-        self.formLayout_2.setFormAlignment(QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        self.formLayout_2.setFormAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.formLayout_2.setContentsMargins(0, 0, 0, 0)
         self.formLayout_2.setObjectName("formLayout_2")
         self.label_47 = QtGui.QLabel(self.formLayoutWidget_2)
         self.label_47.setObjectName("label_47")
         self.formLayout_2.setWidget(0, QtGui.QFormLayout.LabelRole, self.label_47)
         self.label_49 = QtGui.QLabel(self.formLayoutWidget_2)
-        self.label_49.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
+        self.label_49.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label_49.setObjectName("label_49")
         self.formLayout_2.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_49)
         self.link_bmbf_lb = QtGui.QLabel(self.formLayoutWidget_2)
@@ -1188,7 +1205,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_58.sizePolicy().hasHeightForWidth())
         self.label_58.setSizePolicy(sizePolicy)
-        self.label_58.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
+        self.label_58.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label_58.setObjectName("label_58")
         self.formLayout_2.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_58)
         self.tabframe.addTab(self.tab, "")
@@ -1213,504 +1230,227 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(
-            QtGui.QApplication.translate("MainWindow", "LipidHunter (beta) | University of Leipzig ", None,
-                                         QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(
-            QtGui.QApplication.translate("MainWindow", "FA white list", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_saveimgfolder_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Save as", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_mzml_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(
-            QtGui.QApplication.translate("MainWindow", "Select lipid class:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_sumxlsxpath_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Save as", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_7.setText(QtGui.QApplication.translate("MainWindow", "Save LipidHunter report to folder:", None,
-                                                          QtGui.QApplication.UnicodeUTF8))
-        self.label_13.setText(
-            QtGui.QApplication.translate("MainWindow", "MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_15.setText(
-            QtGui.QApplication.translate("MainWindow", "MS level ppm:", None, QtGui.QApplication.UnicodeUTF8))
-        self.x.setText(QtGui.QApplication.translate("MainWindow", "DDA Top:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(
-            QtGui.QApplication.translate("MainWindow", "Scan time range (min):", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "LipidHunter (beta) | University of Leipzig ", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_mzml_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_sumxlsxpath_pb.setText(QtGui.QApplication.translate("MainWindow", "Save as", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setText(QtGui.QApplication.translate("MainWindow", "Scan time range (min):", None, QtGui.QApplication.UnicodeUTF8))
         self.label_9.setText(QtGui.QApplication.translate("MainWindow", "to", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_10.setText(QtGui.QApplication.translate("MainWindow",
-                                                           "<html><head/><body><p><span style=\" font-style:italic;\">m/z</span> range:</p></body></html>",
-                                                           None, QtGui.QApplication.UnicodeUTF8))
+        self.label_10.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-style:italic;\">m/z</span>&nbsp; range:</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_11.setText(QtGui.QApplication.translate("MainWindow", "to", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_6.setText(
-            QtGui.QApplication.translate("MainWindow", "Input .mzML file:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_8.setText(QtGui.QApplication.translate("MainWindow", "Export summary .xlsx table:", None,
-                                                          QtGui.QApplication.UnicodeUTF8))
-        self.label_20.setText(
-            QtGui.QApplication.translate("MainWindow", "Score filter:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_19.setText(
-            QtGui.QApplication.translate("MainWindow", "Isotope score filter:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(0,
-                                              QtGui.QApplication.translate("MainWindow", "--- Please select ---", None,
-                                                                           QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow",
-                                                                              "Phosphatidic acid (PA) [M-H]-", None,
-                                                                              QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow",
-                                                                              "Phosphatidylcholine (PC) [M+HCOO]-",
-                                                                              None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow",
-                                                                              "Phosphatidylcholine (PC) [M+OAc]-", None,
-                                                                              QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow",
-                                                                              "Phosphatidylethanolamine (PE) [M-H]-",
-                                                                              None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow",
-                                                                              "Phosphatidylglycerol (PG) [M-H]-", None,
-                                                                              QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow",
-                                                                              "Phosphatidylinositol (PI) [M-H]-", None,
-                                                                              QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow",
-                                                                              "Phosphatidylserine (PS) [M-H]-", None,
-                                                                              QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(8,
-                                              QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+Na]+",
-                                                                           None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow",
-                                                                              "Triacylglycerol (TG) [M+NH4]+", None,
-                                                                              QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_ms2threshold_spb_2.setText(
-            QtGui.QApplication.translate("MainWindow", "MS/MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_16.setText(
-            QtGui.QApplication.translate("MainWindow", "MS/MS level ppm:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_38.setText(QtGui.QApplication.translate("MainWindow", "Min relative intensity for scoring:", None,
-                                                           QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_ms2infoth_dspb.setSuffix(
-            QtGui.QApplication.translate("MainWindow", " %", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_17.setText(QtGui.QApplication.translate("MainWindow", "Specific peaks threshold:", None,
-                                                           QtGui.QApplication.UnicodeUTF8))
-        self.label_18.setText(
-            QtGui.QApplication.translate("MainWindow", "Specific peaks ppm:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_39.setText(QtGui.QApplication.translate("MainWindow", "Min relative intensity for scoring:", None,
-                                                           QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_ms2hginfoth_dspb.setSuffix(
-            QtGui.QApplication.translate("MainWindow", " %", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_65.setText(
-            QtGui.QApplication.translate("MainWindow", "Create new FA whilte list / check exsisting FA whilte list -->",
-                                         None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_launchgen_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Go to Lipid Generator", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_loadxlsxpath_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_runhunter_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Hunt for Lipids !", None, QtGui.QApplication.UnicodeUTF8))
-        self.runhunter_tabframe.setTabText(self.runhunter_tabframe.indexOf(self.singlerun_tab),
-                                           QtGui.QApplication.translate("MainWindow",
-                                                                        "Run LipidHunter identification directly", None,
-                                                                        QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(
-            QtGui.QApplication.translate("MainWindow", "Save config file as:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_cfgpath_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Save As", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_gencfg_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Generate config file for Batch Mode >>>", None,
-                                         QtGui.QApplication.UnicodeUTF8))
-        self.runhunter_tabframe.setTabText(self.runhunter_tabframe.indexOf(self.savecfg_tab),
-                                           QtGui.QApplication.translate("MainWindow", "Save parameters for Batch Mode",
-                                                                        None, QtGui.QApplication.UnicodeUTF8))
-        self.label_23.setText(
-            QtGui.QApplication.translate("MainWindow", "Instrument vendor:", None, QtGui.QApplication.UnicodeUTF8))
-        self.vendor_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "--- Please select ---", None,
-                                                                    QtGui.QApplication.UnicodeUTF8))
-        self.vendor_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Thermo", None,
-                                                                    QtGui.QApplication.UnicodeUTF8))
-        self.vendor_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Waters", None,
-                                                                    QtGui.QApplication.UnicodeUTF8))
-        self.vendor_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "SCIEX (experimental support)", None,
-                                                                    QtGui.QApplication.UnicodeUTF8))
-        self.vendor_cmb.setItemText(4,
-                                    QtGui.QApplication.translate("MainWindow", "Agilent (experimental support)", None,
-                                                                 QtGui.QApplication.UnicodeUTF8))
+        self.label_7.setText(QtGui.QApplication.translate("MainWindow", "Save LipidHunter report to folder:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_15.setText(QtGui.QApplication.translate("MainWindow", "MS level ppm:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_13.setText(QtGui.QApplication.translate("MainWindow", "MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_msmax_chb.setText(QtGui.QApplication.translate("MainWindow", "Set MS max inetnsity:", None, QtGui.QApplication.UnicodeUTF8))
+        self.x.setText(QtGui.QApplication.translate("MainWindow", "DDA Top:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_5.setText(QtGui.QApplication.translate("MainWindow", "FA white list", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Select lipid class:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_saveimgfolder_pb.setText(QtGui.QApplication.translate("MainWindow", "Save as", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setText(QtGui.QApplication.translate("MainWindow", "Input .mzML file:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_loadxlsxpath_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_8.setText(QtGui.QApplication.translate("MainWindow", "Export summary .xlsx table:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_18.setText(QtGui.QApplication.translate("MainWindow", "Specific peaks ppm:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_17.setText(QtGui.QApplication.translate("MainWindow", "Specific peaks threshold:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_39.setText(QtGui.QApplication.translate("MainWindow", "Min relative intensity for scoring:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_ms2hginfoth_dspb.setSuffix(QtGui.QApplication.translate("MainWindow", " %", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "--- Please select ---", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Phosphatidic acid (PA) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+HCOO]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Phosphatidylcholine (PC) [M+OAc]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Phosphatidylethanolamine (PE) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+Na]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_16.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level ppm:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_ms2threshold_spb_2.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_38.setText(QtGui.QApplication.translate("MainWindow", "Min relative intensity for scoring:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_ms2infoth_dspb.setSuffix(QtGui.QApplication.translate("MainWindow", " %", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_65.setText(QtGui.QApplication.translate("MainWindow", "Create new FA whilte list / check exsisting FA whilte list -->", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_launchgen_pb.setText(QtGui.QApplication.translate("MainWindow", "Go to Lipid Generator", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_25.setText(QtGui.QApplication.translate("MainWindow", "Precursor window:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_prwindow_spb.setPrefix(QtGui.QApplication.translate("MainWindow", "+/- ", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_19.setText(QtGui.QApplication.translate("MainWindow", "Isotope score filter:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_20.setText(QtGui.QApplication.translate("MainWindow", "Rank score filter:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_runhunter_pb.setText(QtGui.QApplication.translate("MainWindow", "Hunt for Lipids !", None, QtGui.QApplication.UnicodeUTF8))
+        self.runhunter_tabframe.setTabText(self.runhunter_tabframe.indexOf(self.singlerun_tab), QtGui.QApplication.translate("MainWindow", "Run LipidHunter identification directly", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("MainWindow", "Save config file as:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_cfgpath_pb.setText(QtGui.QApplication.translate("MainWindow", "Save As", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_gencfg_pb.setText(QtGui.QApplication.translate("MainWindow", "Generate config file for Batch Mode >>>", None, QtGui.QApplication.UnicodeUTF8))
+        self.runhunter_tabframe.setTabText(self.runhunter_tabframe.indexOf(self.savecfg_tab), QtGui.QApplication.translate("MainWindow", "Save parameters for Batch Mode", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_23.setText(QtGui.QApplication.translate("MainWindow", "Instrument vendor:", None, QtGui.QApplication.UnicodeUTF8))
+        self.vendor_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "--- Please select ---", None, QtGui.QApplication.UnicodeUTF8))
+        self.vendor_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Thermo", None, QtGui.QApplication.UnicodeUTF8))
+        self.vendor_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Waters", None, QtGui.QApplication.UnicodeUTF8))
+        self.vendor_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "SCIEX (experimental support)", None, QtGui.QApplication.UnicodeUTF8))
+        self.vendor_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Agilent (experimental support)", None, QtGui.QApplication.UnicodeUTF8))
         self.label_24.setText(QtGui.QApplication.translate("MainWindow", "Mode:", None, QtGui.QApplication.UnicodeUTF8))
-        self.mode_lcms_rb.setText(
-            QtGui.QApplication.translate("MainWindow", "LC-MS/MS", None, QtGui.QApplication.UnicodeUTF8))
-        self.mode_static_rb.setText(
-            QtGui.QApplication.translate("MainWindow", "Shotgun", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabframe.setTabText(self.tabframe.indexOf(self.hunter_tab),
-                                 QtGui.QApplication.translate("MainWindow", "Hunt for Lipids", None,
-                                                              QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_clearall_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Clear all", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_maxbatch_lb.setText(
-            QtGui.QApplication.translate("MainWindow", "Max number of files in parallel:", None,
-                                         QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_maxsubcore_lb.setText(QtGui.QApplication.translate("MainWindow", "Max cores for each file:", None,
-                                                                      QtGui.QApplication.UnicodeUTF8))
-        self.tab_d_maxsubram_lb.setText(
-            QtGui.QApplication.translate("MainWindow", "Max RAM for each file:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_maxsubram_spb.setSuffix(
-            QtGui.QApplication.translate("MainWindow", " GB", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_runbatch_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Run batch mode identification >>>", None,
-                                         QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_1_lb.setText(QtGui.QApplication.translate("MainWindow", "Input batch settings file:", None,
-                                                             QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_addcfg_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Add a single file", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_2_lb.setText(QtGui.QApplication.translate("MainWindow", "Add all batch settings in a folder:", None,
-                                                             QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_addcfgfolder_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Select a folder", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_98.setText(
-            QtGui.QApplication.translate("MainWindow", "Load batch configureation files (.txt):", None,
-                                         QtGui.QApplication.UnicodeUTF8))
-        self.label_99.setText(
-            QtGui.QApplication.translate("MainWindow", "Batch mode settings:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_mutlimode_cmb.setItemText(0,
-                                             QtGui.QApplication.translate("MainWindow", "Process as a sequence", None,
-                                                                          QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_mutlimode_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow",
-                                                                             "Process multiple files in parallel", None,
-                                                                             QtGui.QApplication.UnicodeUTF8))
-        self.tabframe.setTabText(self.tabframe.indexOf(self.batch_tab),
-                                 QtGui.QApplication.translate("MainWindow", "Batch Mode", None,
-                                                              QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_hgcfg_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_14.setText(QtGui.QApplication.translate("MainWindow", "Lipid specific FRAG & NL list:", None,
-                                                           QtGui.QApplication.UnicodeUTF8))
-        self.label_12.setText(
-            QtGui.QApplication.translate("MainWindow", "Fatty acid white list:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_21.setText(QtGui.QApplication.translate("MainWindow",
-                                                           "<html><head/><body><p>Score weight &quot;<span style=\" font-size:9pt;\">W</span><span style=\" font-size:11pt; vertical-align:sub;\">frag</span>&quot; settings:</p></body></html>",
-                                                           None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_savesettings_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Save above settings as defaullt", None,
-                                         QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_scorecfg_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_fawhitelist_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_93.setText(
-            QtGui.QApplication.translate("MainWindow", "Image format:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_imagetype_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", ".png", None,
-                                                                             QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_imagetype_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", ".svg", None,
-                                                                             QtGui.QApplication.UnicodeUTF8))
+        self.mode_lcms_rb.setText(QtGui.QApplication.translate("MainWindow", "LC-MS/MS", None, QtGui.QApplication.UnicodeUTF8))
+        self.mode_static_rb.setText(QtGui.QApplication.translate("MainWindow", "Shotgun", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabframe.setTabText(self.tabframe.indexOf(self.hunter_tab), QtGui.QApplication.translate("MainWindow", "Hunt for Lipids", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_clearall_pb.setText(QtGui.QApplication.translate("MainWindow", "Clear all", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_maxbatch_lb.setText(QtGui.QApplication.translate("MainWindow", "Max number of files in parallel:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_maxsubcore_lb.setText(QtGui.QApplication.translate("MainWindow", "Max cores for each file:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_d_maxsubram_lb.setText(QtGui.QApplication.translate("MainWindow", "Max RAM for each file:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_maxsubram_spb.setSuffix(QtGui.QApplication.translate("MainWindow", " GB", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_runbatch_pb.setText(QtGui.QApplication.translate("MainWindow", "Run batch mode identification >>>", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_1_lb.setText(QtGui.QApplication.translate("MainWindow", "Input batch settings file:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_addcfg_pb.setText(QtGui.QApplication.translate("MainWindow", "Add a single file", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_2_lb.setText(QtGui.QApplication.translate("MainWindow", "Add all batch settings in a folder:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_addcfgfolder_pb.setText(QtGui.QApplication.translate("MainWindow", "Select a folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_98.setText(QtGui.QApplication.translate("MainWindow", "Load batch configureation files (.txt):", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_99.setText(QtGui.QApplication.translate("MainWindow", "Batch mode settings:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_mutlimode_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Process as a sequence", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_mutlimode_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Process multiple files in parallel", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabframe.setTabText(self.tabframe.indexOf(self.batch_tab), QtGui.QApplication.translate("MainWindow", "Batch Mode", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_hgcfg_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_14.setText(QtGui.QApplication.translate("MainWindow", "Lipid specific FRAG & NL list:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_12.setText(QtGui.QApplication.translate("MainWindow", "Default Fatty acid white list:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_21.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Score weight &quot;<span style=\" font-size:9pt;\">W</span><span style=\" font-size:11pt; vertical-align:sub;\">frag</span>&quot; settings:</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_savesettings_pb.setText(QtGui.QApplication.translate("MainWindow", "Save above settings as defaullt", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_scorecfg_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_fawhitelist_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_93.setText(QtGui.QApplication.translate("MainWindow", "Image format:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_imagetype_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", ".png", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_imagetype_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", ".svg", None, QtGui.QApplication.UnicodeUTF8))
         self.label_94.setText(QtGui.QApplication.translate("MainWindow", "dpi:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_isotopescoremode_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "All elements", None,
-                                                                                    QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_isotopescoremode_cmb.setItemText(1,
-                                                    QtGui.QApplication.translate("MainWindow", "Fast (only 13C)", None,
-                                                                                 QtGui.QApplication.UnicodeUTF8))
-        self.label_95.setText(
-            QtGui.QApplication.translate("MainWindow", "Isotope Score mode:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_54.setText(
-            QtGui.QApplication.translate("MainWindow", "Other settings:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_35.setText(QtGui.QApplication.translate("MainWindow", "Prarallel processing settings:", None,
-                                                           QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_parallization_cmb.setItemText(0,
-                                                 QtGui.QApplication.translate("MainWindow", "CPU prarallization mode",
-                                                                              None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_parallization_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow",
-                                                                                 "CPU +GPU mode (experimental)", None,
-                                                                                 QtGui.QApplication.UnicodeUTF8))
-        self.label_63.setText(
-            QtGui.QApplication.translate("MainWindow", "Max CPU cores to use:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_64.setText(
-            QtGui.QApplication.translate("MainWindow", "Max RAM to use:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_ram_spb.setSuffix(
-            QtGui.QApplication.translate("MainWindow", " GB", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_40.setText(
-            QtGui.QApplication.translate("MainWindow", "Score mode:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_scoremode_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Signal rank mode", None,
-                                                                             QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_scoremode_cmb.setItemText(1,
-                                             QtGui.QApplication.translate("MainWindow", "Relative Intensity mode", None,
-                                                                          QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_tag_all_fa_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "Favoured for TAG with all three residues identified", None,
-                                         QtGui.QApplication.UnicodeUTF8))
-        self.tabframe.setTabText(self.tabframe.indexOf(self.cfg_tab),
-                                 QtGui.QApplication.translate("MainWindow", "Settings", None,
-                                                              QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(
-            QtGui.QApplication.translate("MainWindow", "Lipid Class", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_lipidclass_cmb.setItemText(0,
-                                                      QtGui.QApplication.translate("MainWindow", "Phospholipid", None,
-                                                                                   QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Triacylglycerol",
-                                                                                      None,
-                                                                                      QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_lipidclass_cmb.setItemText(2,
-                                                      QtGui.QApplication.translate("MainWindow", "Sphingolipid", None,
-                                                                                   QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Ceramide", None,
-                                                                                      QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Cardiolipin", None,
-                                                                                      QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_lipidclass_cmb.setItemText(5,
-                                                      QtGui.QApplication.translate("MainWindow", "Diacylglycerol", None,
-                                                                                   QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_all_sn_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "Apply settings to all sn positions", None,
-                                         QtGui.QApplication.UnicodeUTF8))
-        self.label_59.setText(QtGui.QApplication.translate("MainWindow", "Save FA white list as .xlsx:", None,
-                                                           QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_savelist_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Save as", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_sn1_lb.setText(
-            QtGui.QApplication.translate("MainWindow", "sn1", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_sn1allfa_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "Select all", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa12x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA12:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa22x5_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:5", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa18x2_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:2", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa18x1_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:1", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa22x4_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:4", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa20x5_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:5", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa18x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa22x6_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:6", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa16x1_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA16:1", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa14x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA14:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa20x3_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:3", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa16x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA16:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa18x3_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:3", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_fa20x4_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:4", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_showop_chb.setText(QtGui.QApplication.translate("MainWindow", "Consider O- & P- (PC,PE only)", None,
-                                                                 QtGui.QApplication.UnicodeUTF8))
-        self.sn1_o16x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "O-16:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_o18x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "O-18:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_o20x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "O-20:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_p16x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "P-16:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_p18x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "P-18:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn1_p20x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "P-20:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_22.setText(
-            QtGui.QApplication.translate("MainWindow", "Other residues*:", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_sn2_lb.setText(
-            QtGui.QApplication.translate("MainWindow", "sn2", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_sn2allfa_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "Select all", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa22x5_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:5", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa22x4_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:4", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa20x5_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:5", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa22x6_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:6", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa18x1_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:1", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa14x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA14:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa16x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA16:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa18x3_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:3", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa18x2_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:2", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa18x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa16x1_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA16:1", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa20x4_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:4", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa20x3_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:3", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn2_fa12x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA12:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_41.setText(
-            QtGui.QApplication.translate("MainWindow", "Other residues*:", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_sn3_lb.setText(
-            QtGui.QApplication.translate("MainWindow", "sn3", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_sn3allfa_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "Select all", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa14x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA14:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa22x4_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:4", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa18x1_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:1", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa22x5_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:5", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa22x6_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:6", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa18x3_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:3", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa16x1_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA16:1", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa20x4_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:4", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa18x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa20x5_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:5", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa18x2_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:2", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa16x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA16:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa12x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA12:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn3_fa20x3_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:3", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_61.setText(
-            QtGui.QApplication.translate("MainWindow", "Other residues*:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_62.setText(QtGui.QApplication.translate("MainWindow",
-                                                           "*: Add additional FA residue(s) using corresponging abbreviation(s) and put \", \" in between e.g. FA17:0, FA14:1",
-                                                           None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_sn4_lb.setText(
-            QtGui.QApplication.translate("MainWindow", "sn4", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab1_sn3allfa_chb_2.setText(
-            QtGui.QApplication.translate("MainWindow", "Select all", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa22x6_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:6", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa22x5_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:5", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa22x4_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA22:4", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa20x5_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:5", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa20x4_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:4", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa20x3_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA20:3", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa18x3_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:3", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa18x2_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:2", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa18x1_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:1", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa18x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA18:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa16x1_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA16:1", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa16x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA16:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa14x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA14:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.sn4_fa12x0_chb.setText(
-            QtGui.QApplication.translate("MainWindow", "FA12:0", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_66.setText(
-            QtGui.QApplication.translate("MainWindow", "Other residues*:", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tabframe.setTabText(self.lipidgen_tabframe.indexOf(self.lipidgen_tab1),
-                                          QtGui.QApplication.translate("MainWindow", "Lipid Generator Wizard", None,
-                                                                       QtGui.QApplication.UnicodeUTF8))
-        self.label_60.setText(QtGui.QApplication.translate("MainWindow", "Load FA white list from .xlsx:", None,
-                                                           QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab2_loadlist_pb.setText(
-            QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tab2_loadlist_lb.setText(
-            QtGui.QApplication.translate("MainWindow", "Sucessfully loaded!", None, QtGui.QApplication.UnicodeUTF8))
-        self.lipidgen_tabframe.setTabText(self.lipidgen_tabframe.indexOf(self.lipidgen_tab2),
-                                          QtGui.QApplication.translate("MainWindow", "Check FA white list", None,
-                                                                       QtGui.QApplication.UnicodeUTF8))
-        self.tabframe.setTabText(self.tabframe.indexOf(self.generator_tab),
-                                 QtGui.QApplication.translate("MainWindow", "FA White List Generator", None,
-                                                              QtGui.QApplication.UnicodeUTF8))
-        self.version_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                             "<html><head/><body><p><span style=\" font-weight:600;\">LipidHunter Beta relased date: 18, December, 2017</span></p></body></html>",
-                                                             None, QtGui.QApplication.UnicodeUTF8))
-        self.label_26.setText(QtGui.QApplication.translate("MainWindow", "Developed by: SysMedOs team", None,
-                                                           QtGui.QApplication.UnicodeUTF8))
-        self.label_43.setText(QtGui.QApplication.translate("MainWindow",
-                                                           "<html><head/><body><p><span style=\" font-weight:600;\">LipidHunter is Dual-Licensed:</span></p></body></html>",
-                                                           None, QtGui.QApplication.UnicodeUTF8))
-        self.label_42.setText(
-            QtGui.QApplication.translate("MainWindow", "       For academic & non-commercial use:", None,
-                                         QtGui.QApplication.UnicodeUTF8))
-        self.label_44.setText(
-            QtGui.QApplication.translate("MainWindow", "       For commercial use please contact the developers:", None,
-                                         QtGui.QApplication.UnicodeUTF8))
-        self.link_gplv2_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                "<html><head/><body><p>Under GPL v2 License: <a href=\" https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html\"><span style=\" text-decoration: none; color:    #FF8C00;\">https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html</span></a></p></body></html>",
-                                                                None, QtGui.QApplication.UnicodeUTF8))
-        self.label_45.setText(QtGui.QApplication.translate("MainWindow",
-                                                           "<html><head/><body><p>oxlpp@bbz.uni-leipzig.de</p></body></html>",
-                                                           None, QtGui.QApplication.UnicodeUTF8))
-        self.link_source_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                 "<html><head/><body><p>Project page: <a href=\" https://bitbucket.org/SysMedOs/lipidhunter\"><span style=\" text-decoration: none; color:#ff8c00;\">https://bitbucket.org/SysMedOs/lipidhunter</span></a></p></body></html>",
-                                                                 None, QtGui.QApplication.UnicodeUTF8))
-        self.link_tutorial_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                   "<html><head/><body><p>Online tutorial: <a href=\"https://bitbucket.org/SysMedOs/lipidhunter/wiki/\"><span style=\" text-decoration: none; color:#FF8C00;\">https://bitbucket.org/SysMedOs/lipidhunter/wiki/</span></a></p></body></html>",
-                                                                   None, QtGui.QApplication.UnicodeUTF8))
-        self.link_paper_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                "<html><head/><body><p>Please cite our publication: <a href=\"http://pubs.acs.org/doi/abs/10.1021/acs.analchem.7b01126\"><span style=\" text-decoration: none; color:#FF8C00;\">Ni, Z., Angelidou, G., Lange, M., Hoffmann, R., &amp; Fedorova, M. (2017). LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets. Analytical chemistry, 89(17), 8800-8807.</span></a></p></body></html>",
-                                                                None, QtGui.QApplication.UnicodeUTF8))
-        self.link_otherprojects_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                        "<html><head/><body><p>Other SysMedOs software Projects: <a href=\"https://home.uni-leipzig.de/fedorova/software/\"><span style=\" text-decoration: none; color:#ff8c00;\">https://home.uni-leipzig.de/fedorova/software/</span></a></p></body></html>",
-                                                                        None, QtGui.QApplication.UnicodeUTF8))
-        self.label_30.setText(
-            QtGui.QApplication.translate("MainWindow", "We acknowlege all open source libraries used in LipidHunter:",
-                                         None, QtGui.QApplication.UnicodeUTF8))
-        self.label_31.setText(
-            QtGui.QApplication.translate("MainWindow", "matplotlib", None, QtGui.QApplication.UnicodeUTF8))
-        self.link_matplotlib_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                     "<html><head/><body><p><a href=\"http://www.matplotlib.org\"><span style=\"  text-decoration: none; color:#FF8C00;\">http://www.matplotlib.org</span></a><br/>John D. Hunter. Matplotlib: A 2D Graphics Environment,<br/>Computing in Science &amp; Engineering, 9, 90-95 (2007), DOI:10.1109/MCSE.2007.55 </p></body></html>",
-                                                                     None, QtGui.QApplication.UnicodeUTF8))
-        self.label_36.setText(
-            QtGui.QApplication.translate("MainWindow", "numpy & scipy", None, QtGui.QApplication.UnicodeUTF8))
-        self.link_numpy_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                "<html><head/><body><p><a href=\"https://www.numpy.org\"><span style=\" color:#ff8c00;\">https://www.numpy.org</span></a> &amp; <a href=\"https://www.scipy.org\"><span style=\" color:#ff8c00;\">https://www.scipy.org</span></a><br/>Stéfan van der Walt, S. Chris Colbert and Gaël Varoquaux. The NumPy Array: A Structure for Efficient Numerical Computation, <br/>Computing in Science &amp; Engineering, 13, 22-30 (2011), DOI:10.1109/MCSE.2011.37 </p></body></html>",
-                                                                None, QtGui.QApplication.UnicodeUTF8))
-        self.label_32.setText(
-            QtGui.QApplication.translate("MainWindow", "pandas", None, QtGui.QApplication.UnicodeUTF8))
-        self.link_pandas_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                 "<html><head/><body><p><a href=\"http://pandas.pydata.org\"><span style=\"  text-decoration: none; color:#FF8C00;\">http://pandas.pydata.org</span></a><br/>Wes McKinney. Data Structures for Statistical Computing in Python,<br/>Proceedings of the 9th Python in Science Conference, 51-56 (2010) </p></body></html>",
-                                                                 None, QtGui.QApplication.UnicodeUTF8))
-        self.label_33.setText(
-            QtGui.QApplication.translate("MainWindow", "pymzML", None, QtGui.QApplication.UnicodeUTF8))
-        self.link_pymzml_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                 "<html><head/><body><p><a href=\"https://pymzml.github.io\"><span style=\" color:#ff8c00;\">https://pymzml.github.io</span></a><br/>Bald, T., Barth, J., Niehues, A., Specht, M., Hippler, M., and Fufezan, C. (2012) <br/>pymzML - Python module for high throughput bioinformatics on mass spectrometry data,<br/>Bioinformatics, DOI: 10.1093/bioinformatics/bts066 </p></body></html>",
-                                                                 None, QtGui.QApplication.UnicodeUTF8))
-        self.label_34.setText(
-            QtGui.QApplication.translate("MainWindow", "pyside", None, QtGui.QApplication.UnicodeUTF8))
-        self.link_pyside_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                 "<html><head/><body><p><a href=\"https://wiki.qt.io/PySide\"><span style=\"  text-decoration: none; color:#FF8C00;\">https://wiki.qt.io/PySide</span></a></p></body></html>",
-                                                                 None, QtGui.QApplication.UnicodeUTF8))
-        self.label_46.setText(QtGui.QApplication.translate("MainWindow",
-                                                           "We acknowlege all projects that supports the development of LipidHunter:",
-                                                           None, QtGui.QApplication.UnicodeUTF8))
-        self.label_47.setText(
-            QtGui.QApplication.translate("MainWindow", "BMBF - Federal Ministry of Education and Research Germany:",
-                                         None, QtGui.QApplication.UnicodeUTF8))
-        self.label_49.setText(QtGui.QApplication.translate("MainWindow", "e:Med Systems Medicine Network:", None,
-                                                           QtGui.QApplication.UnicodeUTF8))
-        self.link_bmbf_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                               "<html><head/><body><p><a href=\"https://www.bmbf.de/en/\"><span style=\"  text-decoration: none; color:#FF8C00;\">https://www.bmbf.de/en/</span></a></p></body></html>",
-                                                               None, QtGui.QApplication.UnicodeUTF8))
-        self.link_emed_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                               "<html><head/><body><p><a href=\"http://www.sys-med.de/en/\"><span style=\"   text-decoration: none; color:#FF8C00;\">http://www.sys-med.de/en/</span></a></p></body></html>",
-                                                               None, QtGui.QApplication.UnicodeUTF8))
-        self.link_sysmedos_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                                   "<html><head/><body><p><a href=\"https://home.uni-leipzig.de/fedorova/sysmedos/\"><span style=\"   text-decoration: none; color:#FF8C00;\">https://home.uni-leipzig.de/fedorova/sysmedos/</span></a></p></body></html>",
-                                                                   None, QtGui.QApplication.UnicodeUTF8))
-        self.label_58.setText(
-            QtGui.QApplication.translate("MainWindow", "SysMedOS Project : ", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabframe.setTabText(self.tabframe.indexOf(self.tab),
-                                 QtGui.QApplication.translate("MainWindow", "About LipidHunter", None,
-                                                              QtGui.QApplication.UnicodeUTF8))
-        self.link_uni_lb.setText(QtGui.QApplication.translate("MainWindow",
-                                                              "<html><head/><body><p>LipidHunter (C) 2016-2018 | <a href=\"http://www.zv.uni-leipzig.de/\"><span style=\" color:#ff8c00;\">University of Leipzig</span></a> | <a href=\"http://research.uni-leipzig.de/bioanalytik/\"><span style=\" color:#ff8c00;\">AG Bioanalytik</span></a> | <a href=\"https://home.uni-leipzig.de/fedorova/\"><span style=\" color:#ff8c00;\">Fedorova Research Group</span></a></p></body></html>",
-                                                              None, QtGui.QApplication.UnicodeUTF8))
-
+        self.tab_c_isotopescoremode_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "All elements", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_isotopescoremode_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Fast (only 13C)", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_95.setText(QtGui.QApplication.translate("MainWindow", "Isotope Score mode:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_54.setText(QtGui.QApplication.translate("MainWindow", "Other settings:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_35.setText(QtGui.QApplication.translate("MainWindow", "Prarallel processing settings:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_parallization_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "CPU prarallization mode", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_parallization_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "CPU +GPU mode (experimental)", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_63.setText(QtGui.QApplication.translate("MainWindow", "Max CPU cores to use:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_64.setText(QtGui.QApplication.translate("MainWindow", "Max RAM to use:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_ram_spb.setSuffix(QtGui.QApplication.translate("MainWindow", " GB", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_40.setText(QtGui.QApplication.translate("MainWindow", "Score mode:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_scoremode_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Signal rank mode", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_scoremode_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Relative Intensity mode", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_tag_all_fa_chb.setText(QtGui.QApplication.translate("MainWindow", "Favoured for TAG with all three residues identified", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabframe.setTabText(self.tabframe.indexOf(self.cfg_tab), QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Lipid Class", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_lipidclass_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Phospholipid", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_lipidclass_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Triacylglycerol", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_lipidclass_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Sphingolipid", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_lipidclass_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Ceramide", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_lipidclass_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Cardiolipin", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Diacylglycerol", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_all_sn_chb.setText(QtGui.QApplication.translate("MainWindow", "Apply settings to all sn positions", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_59.setText(QtGui.QApplication.translate("MainWindow", "Save FA white list as .xlsx:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_savelist_pb.setText(QtGui.QApplication.translate("MainWindow", "Save as", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_sn1_lb.setText(QtGui.QApplication.translate("MainWindow", "sn1", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_sn1allfa_chb.setText(QtGui.QApplication.translate("MainWindow", "Select all", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa12x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA12:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa22x5_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:5", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa18x2_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:2", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa18x1_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:1", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa22x4_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:4", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa20x5_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:5", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa18x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa22x6_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:6", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa16x1_chb.setText(QtGui.QApplication.translate("MainWindow", "FA16:1", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa14x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA14:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa20x3_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:3", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa16x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA16:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa18x3_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:3", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_fa20x4_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:4", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_showop_chb.setText(QtGui.QApplication.translate("MainWindow", "Consider O- & P- (PC,PE only)", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_o16x0_chb.setText(QtGui.QApplication.translate("MainWindow", "O-16:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_o18x0_chb.setText(QtGui.QApplication.translate("MainWindow", "O-18:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_o20x0_chb.setText(QtGui.QApplication.translate("MainWindow", "O-20:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_p16x0_chb.setText(QtGui.QApplication.translate("MainWindow", "P-16:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_p18x0_chb.setText(QtGui.QApplication.translate("MainWindow", "P-18:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn1_p20x0_chb.setText(QtGui.QApplication.translate("MainWindow", "P-20:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_22.setText(QtGui.QApplication.translate("MainWindow", "Other residues*:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_62.setText(QtGui.QApplication.translate("MainWindow", "*: Add additional FA residue(s) using corresponging abbreviation(s) and put \", \" in between e.g. FA17:0, FA14:1", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_sn2_lb.setText(QtGui.QApplication.translate("MainWindow", "sn2", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_sn2allfa_chb.setText(QtGui.QApplication.translate("MainWindow", "Select all", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa22x5_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:5", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa22x4_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:4", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa20x5_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:5", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa22x6_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:6", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa18x1_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:1", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa14x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA14:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa16x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA16:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa18x3_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:3", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa18x2_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:2", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa18x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa16x1_chb.setText(QtGui.QApplication.translate("MainWindow", "FA16:1", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa20x4_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:4", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa20x3_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:3", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn2_fa12x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA12:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_41.setText(QtGui.QApplication.translate("MainWindow", "Other residues*:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_sn3_lb.setText(QtGui.QApplication.translate("MainWindow", "sn3", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_sn3allfa_chb.setText(QtGui.QApplication.translate("MainWindow", "Select all", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa14x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA14:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa22x4_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:4", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa18x1_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:1", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa22x5_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:5", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa22x6_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:6", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa18x3_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:3", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa16x1_chb.setText(QtGui.QApplication.translate("MainWindow", "FA16:1", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa20x4_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:4", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa18x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa20x5_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:5", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa18x2_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:2", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa16x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA16:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa12x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA12:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn3_fa20x3_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:3", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_61.setText(QtGui.QApplication.translate("MainWindow", "Other residues*:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_sn4_lb.setText(QtGui.QApplication.translate("MainWindow", "sn4", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab1_sn3allfa_chb_2.setText(QtGui.QApplication.translate("MainWindow", "Select all", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa22x6_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:6", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa22x5_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:5", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa22x4_chb.setText(QtGui.QApplication.translate("MainWindow", "FA22:4", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa20x5_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:5", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa20x4_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:4", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa20x3_chb.setText(QtGui.QApplication.translate("MainWindow", "FA20:3", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa18x3_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:3", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa18x2_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:2", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa18x1_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:1", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa18x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA18:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa16x1_chb.setText(QtGui.QApplication.translate("MainWindow", "FA16:1", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa16x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA16:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa14x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA14:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.sn4_fa12x0_chb.setText(QtGui.QApplication.translate("MainWindow", "FA12:0", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_66.setText(QtGui.QApplication.translate("MainWindow", "Other residues*:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tabframe.setTabText(self.lipidgen_tabframe.indexOf(self.lipidgen_tab1), QtGui.QApplication.translate("MainWindow", "Lipid Generator Wizard", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_60.setText(QtGui.QApplication.translate("MainWindow", "Load FA white list from .xlsx:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab2_loadlist_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tab2_loadlist_lb.setText(QtGui.QApplication.translate("MainWindow", "Sucessfully loaded!", None, QtGui.QApplication.UnicodeUTF8))
+        self.lipidgen_tabframe.setTabText(self.lipidgen_tabframe.indexOf(self.lipidgen_tab2), QtGui.QApplication.translate("MainWindow", "Check FA white list", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabframe.setTabText(self.tabframe.indexOf(self.generator_tab), QtGui.QApplication.translate("MainWindow", "FA White List Generator", None, QtGui.QApplication.UnicodeUTF8))
+        self.version_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:600;\">LipidHunter Beta relased date: 10, January, 2018</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_26.setText(QtGui.QApplication.translate("MainWindow", "Developed by: SysMedOs team", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_43.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:600;\">LipidHunter is Dual-Licensed:</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_42.setText(QtGui.QApplication.translate("MainWindow", "       For academic & non-commercial use:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_44.setText(QtGui.QApplication.translate("MainWindow", "       For commercial use please contact the developers:", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_gplv2_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Under GPL v2 License: <a href=\" https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html\"><span style=\" text-decoration: none; color:    #FF8C00;\">https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_45.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>oxlpp@bbz.uni-leipzig.de</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_source_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Project page: <a href=\" https://bitbucket.org/SysMedOs/lipidhunter\"><span style=\" text-decoration: none; color:#ff8c00;\">https://bitbucket.org/SysMedOs/lipidhunter</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_tutorial_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Online tutorial: <a href=\"https://bitbucket.org/SysMedOs/lipidhunter/wiki/\"><span style=\" text-decoration: none; color:#FF8C00;\">https://bitbucket.org/SysMedOs/lipidhunter/wiki/</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_paper_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Please cite our publication: <a href=\"http://pubs.acs.org/doi/abs/10.1021/acs.analchem.7b01126\"><span style=\" text-decoration: none; color:#FF8C00;\">Ni, Z., Angelidou, G., Lange, M., Hoffmann, R., &amp; Fedorova, M. (2017). LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets. Analytical chemistry, 89(17), 8800-8807.</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_otherprojects_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>Other SysMedOs software Projects: <a href=\"https://home.uni-leipzig.de/fedorova/software/\"><span style=\" text-decoration: none; color:#ff8c00;\">https://home.uni-leipzig.de/fedorova/software/</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_30.setText(QtGui.QApplication.translate("MainWindow", "We acknowlege all open source libraries used in LipidHunter:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_31.setText(QtGui.QApplication.translate("MainWindow", "matplotlib", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_matplotlib_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"http://www.matplotlib.org\"><span style=\"  text-decoration: none; color:#FF8C00;\">http://www.matplotlib.org</span></a><br/>John D. Hunter. Matplotlib: A 2D Graphics Environment,<br/>Computing in Science &amp; Engineering, 9, 90-95 (2007), DOI:10.1109/MCSE.2007.55 </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_36.setText(QtGui.QApplication.translate("MainWindow", "numpy & scipy", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_numpy_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://www.numpy.org\"><span style=\" color:#ff8c00;\">https://www.numpy.org</span></a> &amp; <a href=\"https://www.scipy.org\"><span style=\" color:#ff8c00;\">https://www.scipy.org</span></a><br/>Stéfan van der Walt, S. Chris Colbert and Gaël Varoquaux. The NumPy Array: A Structure for Efficient Numerical Computation, <br/>Computing in Science &amp; Engineering, 13, 22-30 (2011), DOI:10.1109/MCSE.2011.37 </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_32.setText(QtGui.QApplication.translate("MainWindow", "pandas", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_pandas_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"http://pandas.pydata.org\"><span style=\"  text-decoration: none; color:#FF8C00;\">http://pandas.pydata.org</span></a><br/>Wes McKinney. Data Structures for Statistical Computing in Python,<br/>Proceedings of the 9th Python in Science Conference, 51-56 (2010) </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_33.setText(QtGui.QApplication.translate("MainWindow", "pymzML", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_pymzml_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://pymzml.github.io\"><span style=\" color:#ff8c00;\">https://pymzml.github.io</span></a><br/>Bald, T., Barth, J., Niehues, A., Specht, M., Hippler, M., and Fufezan, C. (2012) <br/>pymzML - Python module for high throughput bioinformatics on mass spectrometry data,<br/>Bioinformatics, DOI: 10.1093/bioinformatics/bts066 </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_34.setText(QtGui.QApplication.translate("MainWindow", "pyside", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_pyside_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://wiki.qt.io/PySide\"><span style=\"  text-decoration: none; color:#FF8C00;\">https://wiki.qt.io/PySide</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_46.setText(QtGui.QApplication.translate("MainWindow", "We acknowlege all projects that supports the development of LipidHunter:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_47.setText(QtGui.QApplication.translate("MainWindow", "BMBF - Federal Ministry of Education and Research Germany:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_49.setText(QtGui.QApplication.translate("MainWindow", "e:Med Systems Medicine Network:", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_bmbf_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://www.bmbf.de/en/\"><span style=\"  text-decoration: none; color:#FF8C00;\">https://www.bmbf.de/en/</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_emed_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"http://www.sys-med.de/en/\"><span style=\"   text-decoration: none; color:#FF8C00;\">http://www.sys-med.de/en/</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_sysmedos_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://home.uni-leipzig.de/fedorova/sysmedos/\"><span style=\"   text-decoration: none; color:#FF8C00;\">https://home.uni-leipzig.de/fedorova/sysmedos/</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_58.setText(QtGui.QApplication.translate("MainWindow", "SysMedOS Project : ", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabframe.setTabText(self.tabframe.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "About LipidHunter", None, QtGui.QApplication.UnicodeUTF8))
+        self.link_uni_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>LipidHunter (C) 2016-2018 | <a href=\"http://www.zv.uni-leipzig.de/\"><span style=\" color:#ff8c00;\">University of Leipzig</span></a> | <a href=\"http://research.uni-leipzig.de/bioanalytik/\"><span style=\" color:#ff8c00;\">AG Bioanalytik</span></a> | <a href=\"https://home.uni-leipzig.de/fedorova/\"><span style=\" color:#ff8c00;\">Fedorova Research Group</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
 
 import LipidHunter_rcc
