@@ -126,8 +126,10 @@ class LipidComposer:
         if lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'PIP']:
 
             lyso_type_dct = {'[L%s-H]-' % lipid_type: 'EXACTMASS', '[L%s-H2O-H]-' % lipid_type: '[FA-H2O]_MZ'}
-
+            print (lyso_type_dct)
+            exit()
             lyso_base_elem_dct = self.lipid_hg_elem_dct[lipid_type]
+            # create the phospholipid head group
             for _e in self.glycerol_bone_elem_dct.keys():
                 lyso_base_elem_dct[_e] += self.glycerol_bone_elem_dct[_e]
 
@@ -154,40 +156,54 @@ class LipidComposer:
                                                                       ms2_ppm)
                 usr_fa_df['%s_Q' % _lyso_ion] = (usr_fa_df['%s_MZ_LOW' % _lyso_ion].astype(str) + ' <= mz <= '
                                                  + usr_fa_df['%s_MZ_HIGH' % _lyso_ion].astype(str))
+        elif lipid_type in ['TG']:
+            # TODO(georgia.angelidou@uni-leipzig.de): create the section for theuniue fragments when there is TG
+            mg_type_dct = {'[MG-H2O+H]+': 'EXACTMASS'}
+            mg_base_elem_dct = self.lipid_hg_elem_dct[lipid_type]
 
+            for _e in self.glycerol_bone_elem_dct.keys():
+                mg_base_elem_dct[_e] += self.glycerol_bone_elem_dct[_e]
+
+            # Calculate the rest of monoglycerol after the neutral loss of the FA in protonated form
+            mg_base_elem_dct = elem_calc.get_exactmass(mg_base_elem_dct) + 15.9949146221 + (3*1.0078250321)
+            for _mg_ion in mg_type_dct.keys():
+                usr_fa_df['%s_ABBR' % _mg_ion] = ('[MG(' + usr_fa_df['ABBR'].str.strip('FA') + ')-H2O+H]+')
+                usr_fa_df['%s_MZ' % _mg_ion] = mg_base_elem_dct + usr_fa_df[mg_type_dct[_mg_ion]]
+                usr_fa_df['%s_MZ_LOW' % _mg_ion]
+                ppm_window_para(usr_fa_df['%s_MZ' % _mg_ion].values.tolist * (), ms2_ppm * -1)
+                usr_fa_df['%s_MZ_HIGH' % _mg_ion] = ppm_window_para(usr_fa_df['%s_MZ' % _mg_ion].values.tolist(),
+                                                                    ms2_ppm)
+                usr_fa_df['%s_Q' % _mg_ion] = (usr_fa_df['%s_MZ_LOW' % _mg_ion].astype(str) + ' <= mz <= ' + usr_fa_df[
+                    '%s_MZ_HIGH' % _mg_ion].astype(str))
         return usr_fa_df
 
     def gen_all_comb(self, lipid_class, usr_fa_df, position=False):
 
         sn_units_lst = self.calc_fa_df(lipid_class, usr_fa_df)
 
-        if position is False:
-            if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(sn_units_lst) == 2:
-                sn_units_lst_all = list(set(sn_units_lst[0] + sn_units_lst[1]))
-                sn_comb_lst = list(itertools.combinations_with_replacement(sn_units_lst_all, 2))
-                # lipid_template = '{}'
-            elif lipid_class == 'TG' and len(sn_units_lst) == 3:
-                sn_units_lst_all = list(set(sn_units_lst[0] + sn_units_lst[1] + sn_units_lst[2]))
-                sn_comb_lst = list(itertools.combinations_with_replacement(sn_units_lst_all, 3))
-
-            elif lipid_class == 'CL' and len(sn_units_lst) == 4:
-                sn_units_lst_all = list(set(sn_units_lst[0] + sn_units_lst[1] + sn_units_lst[2] + sn_units_lst[3]))
-                sn_comb_lst = list(
-                    itertools.combinations_with_replacement(sn_units_lst_all, 4))
-            else:
-                sn_comb_lst = []
-            sn_comb_lite_lst = sn_comb_lst
+        if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(sn_units_lst) == 2:
+            sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1]))
+            # lipid_template = '{}'
+        elif lipid_class == 'TG' and len(sn_units_lst) == 3:
+            sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2]))
+        elif lipid_class == 'CL' and len(sn_units_lst) == 4:
+            sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2], sn_units_lst[3]))
         else:
-            if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(sn_units_lst) == 2:
-                sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1]))
-                # lipid_template = '{}'
-            elif lipid_class == 'TG' and len(sn_units_lst) == 3:
-                sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2]))
-            elif lipid_class == 'CL' and len(sn_units_lst) == 4:
-                sn_comb_lst = list(
-                    itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2], sn_units_lst[3]))
-            else:
-                sn_comb_lst = []
+            sn_comb_lst = []
+
+        sn_comb_lite_lst = []
+        sn_comb_rm_lst = []
+
+        if position is False:
+
+            for _comb in sn_comb_lst:
+                _rev_comb = tuple(sorted(list(_comb)))
+                if _comb not in sn_comb_lite_lst and _rev_comb not in sn_comb_lite_lst:
+                    sn_comb_lite_lst.append(_comb)
+                else:
+                    sn_comb_rm_lst.append(_comb)
+                    # sn_comb_rm_lst.append(_rev_comb)
+        else:
             sn_comb_lite_lst = sn_comb_lst
 
         lipid_comb_dct = {}
@@ -200,9 +216,12 @@ class LipidComposer:
                                                'DISCRETE_ABBR': _lipid_abbr}
         elif lipid_class in ['TG'] and len(sn_comb_lite_lst) > 0:
             for _comb_lite in sn_comb_lite_lst:
-                _lipid_abbr = '{pl}({sn1}_{sn2}_{sn3})'.format(pl=lipid_class, sn1=_comb_lite[0].strip('FA'), sn2=_comb_lite[1].strip('FA'), sn3=_comb_lite[2].strip('FA'))
+                _lipid_abbr = '{pl}({sn1}_{sn2}_{sn3})'.format(pl=lipid_class, sn1=_comb_lite[0].strip('FA'),
+                                                               sn2=_comb_lite[1].strip('FA'),
+                                                               sn3=_comb_lite[2].strip('FA'))
 
-                lipid_comb_dct[_lipid_abbr] = { 'CLASS': lipid_class, 'SN1': _comb_lite[0], 'SN2': _comb_lite[1], 'SN3': _comb_lite[2], 'SISCRETE_ABBR': _lipid_abbr}
+                lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'SN1': _comb_lite[0], 'SN2': _comb_lite[1],
+                                               'SN3': _comb_lite[2], 'DISCRETE_ABBR': _lipid_abbr}
         else:
             pass
         # print(sn_units_lst)
@@ -268,8 +287,10 @@ class LipidComposer:
 
         abbr_parser = NameParserFA()
         elem_calc = ElemCalc()
+        # TODO(georgia.angelidou@uni-leipzig.de): need to add the lipid class to support more than 2 sn
         for _lipid in lipid_comb_dct.keys():
             _lipid_dct = lipid_comb_dct[_lipid]
+
             _sn1_abbr = _lipid_dct['SN1']
             _sn2_abbr = _lipid_dct['SN2']
             _sn1_info_dct = abbr_parser.get_fa_info(_sn1_abbr)
@@ -281,19 +302,36 @@ class LipidComposer:
             for _sn2_k in _sn1_info_dct.keys():
                 _lipid_dct['SN2_' + _sn2_k] = _sn2_info_dct[_sn2_k]
 
-            _lipid_dct['M_DB'] = _sn1_info_dct['DB'] + _sn2_info_dct['DB']
-            if _sn1_info_dct['LINK'] in ['FA', 'A']:
-                lipid_bulk_str = '{pl}({c}:{db})'.format(pl=lipid_class,
-                                                         c=_sn1_info_dct['C'] + _sn2_info_dct['C'],
-                                                         db=lipid_comb_dct[_lipid]['M_DB'])
-            else:
-                lipid_bulk_str = '{pl}({lk}{c}:{db})'.format(pl=lipid_class, lk=_sn1_info_dct['LINK'],
+            if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
+                _lipid_dct['M_DB'] = _sn1_info_dct['DB'] + _sn2_info_dct['DB']
+                # TODO(georgia.angelidou@uni-leipzig.de): not important (just keep in mind for future correction)
+                # consideration the case if the user choose the sn2 position for the different link types
+                # or in that they may mistype something
+                if _sn1_info_dct['LINK'] in ['FA', 'A']:
+                    lipid_bulk_str = '{pl}({c}:{db})'.format(pl=lipid_class,
                                                              c=_sn1_info_dct['C'] + _sn2_info_dct['C'],
                                                              db=lipid_comb_dct[_lipid]['M_DB'])
+                else:
+                    lipid_bulk_str = '{pl}({lk}{c}:{db})'.format(pl=lipid_class, lk=_sn1_info_dct['LINK'],
+                                                                 c=_sn1_info_dct['C'] + _sn2_info_dct['C'],
+                                                                 db=lipid_comb_dct[_lipid]['M_DB'])
+            elif lipid_class in ['TG']:
+                _sn3_abbr = _lipid_dct['SN3']
+                _sn3_info_dct = abbr_parser.get_fa_info(_sn3_abbr)
+                for _sn3_k in _sn3_info_dct.keys():
+                    _lipid_dct['SN3_' + _sn3_k] = _sn3_info_dct[_sn3_k]
+
+                _lipid_dct['M_DB'] = _sn3_info_dct['DB'] + _sn2_info_dct['DB'] + _sn1_info_dct['DB']
+                # Note: For TG in the current default not consider the different lipids with other type of bond
+                # If stay like this need to be mention in somewhere for the user
+                lipid_bulk_str = '{pl}({c}:{db})'.format(pl=lipid_class,
+                                                         c=_sn1_info_dct['C'] + _sn2_info_dct['C'] + _sn3_info_dct['C'],
+                                                         db=lipid_comb_dct[_lipid]['M_DB'])
 
             _lipid_dct['BULK_ABBR'] = lipid_bulk_str
 
             _lipid_formula, _lipid_elem_dct = elem_calc.get_formula(lipid_bulk_str)
+
             _lipid_dct['FORMULA'] = _lipid_formula
             _lipid_dct['EXACTMASS'] = elem_calc.get_exactmass(_lipid_elem_dct)
             for _elem_k in _lipid_elem_dct.keys():
@@ -318,9 +356,14 @@ class LipidComposer:
 
 
 if __name__ == '__main__':
-    fa_lst_file = r'../ConfigurationFiles/FA_Whitelist.xlsx'
+    fa_lst_file = r'../ConfigurationFiles/FA_Whitelist2.xlsx'
 
-    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'PE', 'charge_mode': '[M-H]-',
+    # Note:
+    # exact position means to consider the poition from the FA white list that the user give but,
+    # in the case that the user define 2 different FA for both positions then:
+    # When it is false it will give only one option
+    # and when it is TRUE to give both compinations that these 2 FA an make (incase of phospholipids)
+    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'TG', 'charge_mode': '[M+H]+',
                      'exact_position': 'FALSE'}
 
     composer = LipidComposer()
@@ -333,8 +376,8 @@ if __name__ == '__main__':
     master_xlsx = r'../Temp/LipidMaster_Whitelist.xlsx'
     fa_xlsx = r'../Temp/LipidMaster_FAlist.xlsx'
 
-    calc_fa_df = composer.calc_fa_query('PC', r'../ConfigurationFiles/FA_Whitelist.xlsx', ms2_ppm=50)
+    calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_type'], r'../ConfigurationFiles/FA_Whitelist.xlsx', ms2_ppm=50)
 
-    print(calc_fa_df)
+    #print(calc_fa_df)
     usr_lipid_master_df.to_excel(master_xlsx)
     calc_fa_df.to_excel(fa_xlsx)

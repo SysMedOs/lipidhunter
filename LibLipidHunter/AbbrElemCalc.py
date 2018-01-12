@@ -73,6 +73,7 @@ class ElemCalc:
         bulk_fa_db = 0
         lyso_fa_linker_dct = {'sn1': '', 'sn2': ''}
 
+        # TODO(georgia.angelidou@uni-leipzig.de): consideration to put se elif statement
         if pl_checker.match(abbr):
             # print('PL')
             pl_re_chk = pl_checker.match(abbr)
@@ -133,6 +134,7 @@ class ElemCalc:
             lyso_fa_linker_dct = {'P': ''}
 
         if _pl_typ in ['PL', 'PA', 'PC', 'PE', 'PG', 'PI', 'PS']:
+            # TODO(georgia.angelidou@uni-leipzig.de): the first 2 statements are the same. What is the difference?
             if fa_short_checker.match(bulk_fa_typ):
                 bulk_fa_linker = 'A-A-'
                 lyso_fa_linker_dct = {'A': ''}
@@ -162,10 +164,10 @@ class ElemCalc:
                 bulk_fa_c = bulk_fa_lst[1]
                 bulk_fa_db = bulk_fa_lst[3]
         elif _pl_typ in ['TG']:
-            if fa_checker.match(bulk_fa_typ):
+            if fa_short_checker.match(bulk_fa_typ):
                 bulk_fa_linker = 'A-A-A-'
                 lyso_fa_linker_dct = {'A': ''}
-                fa_chk = fa_checker.match(bulk_fa_typ)
+                fa_chk = fa_short_checker.match(bulk_fa_typ)
                 bulk_fa_lst = fa_chk.groups()
                 bulk_fa_c = bulk_fa_lst[0]
                 bulk_fa_db = bulk_fa_lst[2]
