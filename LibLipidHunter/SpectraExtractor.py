@@ -196,7 +196,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
             spec_idx += 1
 
-    elif vendor == 'thermo':
+    elif vendor in ['thermo', 'sciex', 'agilent']:
         dda_rank_idx = 0
         for _spectrum in spec_obj:
             pr_mz = 0
@@ -449,7 +449,7 @@ def get_xic(ms1_mz, mzml, rt_range, ppm=500, ms1_precision=50e-6, msn_precision=
 
                         ms1_xic_df = ms1_xic_df.append(_found_ms1_df.sort_values(by='ppm').head(1))
 
-    elif vendor == 'thermo':
+    elif vendor in ['thermo', 'sciex', 'agilent']:
 
         for _spectrum in spec_obj:
 
@@ -540,7 +540,7 @@ def get_xic_all(core_list, mzml, rt_range, ms1_precision=50e-6, msn_precision=50
         except KeyError:
             print('!! Spectra format does not match to vendor settings !! Please check your file and settings !!')
 
-    elif vendor == 'thermo':
+    elif vendor in ['thermo', 'sciex', 'agilent']:
         print('Thermo files')
         try:
             for _spectrum in spec_obj:

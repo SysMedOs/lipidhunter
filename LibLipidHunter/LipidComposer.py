@@ -161,33 +161,28 @@ class LipidComposer:
 
         sn_units_lst = self.calc_fa_df(lipid_class, usr_fa_df)
 
-        if position is False:
-            if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(sn_units_lst) == 2:
-                sn_units_lst_all = list(set(sn_units_lst[0] + sn_units_lst[1]))
-                sn_comb_lst = list(itertools.combinations_with_replacement(sn_units_lst_all, 2))
-                # lipid_template = '{}'
-            elif lipid_class == 'TG' and len(sn_units_lst) == 3:
-                sn_units_lst_all = list(set(sn_units_lst[0] + sn_units_lst[1] + sn_units_lst[2]))
-                sn_comb_lst = list(itertools.combinations_with_replacement(sn_units_lst_all, 3))
-
-            elif lipid_class == 'CL' and len(sn_units_lst) == 4:
-                sn_units_lst_all = list(set(sn_units_lst[0] + sn_units_lst[1] + sn_units_lst[2] + sn_units_lst[3]))
-                sn_comb_lst = list(
-                    itertools.combinations_with_replacement(sn_units_lst_all, 4))
-            else:
-                sn_comb_lst = []
-            sn_comb_lite_lst = sn_comb_lst
+        if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(sn_units_lst) == 2:
+            sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1]))
+            # lipid_template = '{}'
+        elif lipid_class == 'TG' and len(sn_units_lst) == 3:
+            sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2]))
+        elif lipid_class == 'CL' and len(sn_units_lst) == 4:
+            sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2], sn_units_lst[3]))
         else:
-            if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(sn_units_lst) == 2:
-                sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1]))
-                # lipid_template = '{}'
-            elif lipid_class == 'TG' and len(sn_units_lst) == 3:
-                sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2]))
-            elif lipid_class == 'CL' and len(sn_units_lst) == 4:
-                sn_comb_lst = list(
-                    itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2], sn_units_lst[3]))
-            else:
-                sn_comb_lst = []
+            sn_comb_lst = []
+
+        sn_comb_lite_lst = []
+        sn_comb_rm_lst = []
+
+        if position is False:
+            for _comb in sn_comb_lst:
+                _rev_comb = tuple(sorted(list(_comb)))
+                if _comb not in sn_comb_lite_lst and _rev_comb not in sn_comb_lite_lst:
+                    sn_comb_lite_lst.append(_comb)
+                else:
+                    sn_comb_rm_lst.append(_comb)
+                    # sn_comb_rm_lst.append(_rev_comb)
+        else:
             sn_comb_lite_lst = sn_comb_lst
 
         lipid_comb_dct = {}
@@ -200,9 +195,12 @@ class LipidComposer:
                                                'DISCRETE_ABBR': _lipid_abbr}
         elif lipid_class in ['TG'] and len(sn_comb_lite_lst) > 0:
             for _comb_lite in sn_comb_lite_lst:
-                _lipid_abbr = '{pl}({sn1}_{sn2}_{sn3})'.format(pl=lipid_class, sn1=_comb_lite[0].strip('FA'), sn2=_comb_lite[1].strip('FA'), sn3=_comb_lite[2].strip('FA'))
+                _lipid_abbr = '{pl}({sn1}_{sn2}_{sn3})'.format(pl=lipid_class, sn1=_comb_lite[0].strip('FA'),
+                                                               sn2=_comb_lite[1].strip('FA'),
+                                                               sn3=_comb_lite[2].strip('FA'))
 
-                lipid_comb_dct[_lipid_abbr] = { 'CLASS': lipid_class, 'SN1': _comb_lite[0], 'SN2': _comb_lite[1], 'SN3': _comb_lite[2], 'SISCRETE_ABBR': _lipid_abbr}
+                lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'SN1': _comb_lite[0], 'SN2': _comb_lite[1],
+                                               'SN3': _comb_lite[2], 'DISCRETE_ABBR': _lipid_abbr}
         else:
             pass
         # print(sn_units_lst)
@@ -333,7 +331,7 @@ if __name__ == '__main__':
     master_xlsx = r'../Temp/LipidMaster_Whitelist.xlsx'
     fa_xlsx = r'../Temp/LipidMaster_FAlist.xlsx'
 
-    calc_fa_df = composer.calc_fa_query('PC', r'../ConfigurationFiles/FA_Whitelist.xlsx', ms2_ppm=50)
+    calc_fa_df = composer.calc_fa_query('PE', r'../ConfigurationFiles/FA_Whitelist.xlsx', ms2_ppm=50)
 
     print(calc_fa_df)
     usr_lipid_master_df.to_excel(master_xlsx)

@@ -135,10 +135,6 @@ def huntlipids(param_dct):
             os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
     os.chdir(current_path)
 
-    log_pager = LogPageCreator(output_folder, hunter_start_time_str, param_dct)
-
-    output_df = pd.DataFrame()
-
     print('=== ==> --> Start to process >>>')
     print('=== ==> --> Phospholipid class: %s >>>' % usr_lipid_type)
 
@@ -202,8 +198,7 @@ def huntlipids(param_dct):
                                                                 ms2_threshold=usr_ms2_threshold,
                                                                 ms1_precision=usr_ms1_precision,
                                                                 ms2_precision=usr_ms2_precision,
-                                                                vendor=usr_vendor, ms1_max=usr_ms1_max
-                                                                )
+                                                                vendor=usr_vendor, ms1_max=usr_ms1_max)
 
     print('MS1_XIC_df.shape', ms1_xic_df.shape)
 
@@ -223,7 +218,7 @@ def huntlipids(param_dct):
         _tmp_usr_df = ms1_obs_pr_df.query('DDA_rank == %f and scan_number == %f' % (_dda_rank, _scan_id))
         checked_info_df = checked_info_df.append(_tmp_usr_df)
 
-    checked_info_df.sort_values(by='MS2_PR_mz')
+    checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'])
 
     ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].tolist()
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
@@ -246,6 +241,7 @@ def huntlipids(param_dct):
     # else:
     #     xic_core_num = usr_core_num
     # parallel_pool = Pool(xic_core_num)
+    # usr_core_num = 1
     if 1 < usr_core_num < len(core_key_list):
         parallel_pool = Pool(usr_core_num)
         xic_results_lst = []
@@ -311,7 +307,7 @@ def huntlipids(param_dct):
     spec_sub_key_lst = map(None, *(iter(lpp_all_group_key_lst),) * spec_sub_len)
 
     lpp_spec_info_dct = {}
-
+    # usr_core_num = 1
     if usr_core_num > 1:
         parallel_pool = Pool(usr_core_num)
         spec_results_lst = []
@@ -528,18 +524,20 @@ if __name__ == '__main__':
                'mzml_path_str': r'D:\project_lipidhunter\MF_mzML\MS2\070120_CM_neg_70min_SIN_I.mzML',
                'img_output_folder_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test1',
                'xlsx_output_path_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test1\t1.xlsx',
-               'img_type': u'png',
-               'lipid_specific_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
-               'img_dpi': 300, 'mz_start': 700.0, 'mz_end': 800.0, 'rank_score_filter': 27.5, 'score_filter': 27.5,
-               'ms2_infopeak_threshold': 0.001, 'lipid_type': 'PE', 'ms2_th': 10, 'core_number': 3,
-               'isotope_score_filter': 75.0, 'hunter_start_time': '2017-12-21_15-27-49', 'vendor': 'waters',
-               'ms_th': 1000, 'rt_start': 22.0, 'hg_ppm': 100.0, 'experiment_mode': 'LC-MS', 'rank_score': True,
+               'lipid_specific_cfg':
+                   r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
+               'hunter_start_time': '2017-12-21_15-27-49',
+               'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': 'PE', 'charge_mode': '[M-H]-',
+               'rt_start': 20.0, 'rt_end': 25.0, 'mz_start': 700.0, 'mz_end': 800.0,
+               'rank_score': True, 'rank_score_filter': 27.5, 'score_filter': 27.5,
+               'isotope_score_filter': 75.0, 'fast_isotope': False,
+               'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
+               'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
+               'hg_th': 10.0, 'hg_ppm': 100.0, 'ms2_hginfopeak_threshold': 0.001,
                'score_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\Score_cfg.xlsx',
-               'charge_mode': '[M-H]-',
                'fa_white_list_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\FA_Whitelist.xlsx',
-               'ms2_hginfopeak_threshold': 0.001, 'rt_end': 25.0,
-               'hunter_folder': 'D:\\project_lipidhunter\\lipidhunterdev', 'dda_top': 6, 'fast_isotope': False,
-               'ms_ppm': 20, 'hg_th': 10.0, 'max_ram': 5, 'ms2_ppm': 50, 'ms_max': 0, 'pr_window': 0.75}
+               'hunter_folder': r'D:\project_lipidhunter\lipidhunterdev',
+               'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300}
 
     t = huntlipids(usr_dct)
     print(t)

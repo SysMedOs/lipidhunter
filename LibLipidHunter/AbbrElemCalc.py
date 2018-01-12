@@ -140,13 +140,13 @@ class ElemCalc:
                 bulk_fa_lst = fa_chk.groups()
                 bulk_fa_c = bulk_fa_lst[0]
                 bulk_fa_db = bulk_fa_lst[2]
-            elif fa_short_checker.match(bulk_fa_typ):
-                bulk_fa_linker = ''
-                lyso_fa_linker_dct = {'A': ''}
-                fa_chk = fa_short_checker.match(bulk_fa_typ)
-                bulk_fa_lst = fa_chk.groups()
-                bulk_fa_c = bulk_fa_lst[0]
-                bulk_fa_db = bulk_fa_lst[2]
+            # elif fa_short_checker.match(bulk_fa_typ):
+            #     bulk_fa_linker = ''
+            #     lyso_fa_linker_dct = {'A': ''}
+            #     fa_chk = fa_short_checker.match(bulk_fa_typ)
+            #     bulk_fa_lst = fa_chk.groups()
+            #     bulk_fa_c = bulk_fa_lst[0]
+            #     bulk_fa_db = bulk_fa_lst[2]
             elif fa_o_checker.match(bulk_fa_typ):
                 bulk_fa_linker = 'O-A-'
                 lyso_fa_linker_dct = {'O': '', 'A': 'O-'}  # link of the other sn after NL of this sn

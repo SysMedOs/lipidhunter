@@ -19,20 +19,15 @@
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 from __future__ import division
-import os
-import json
-
-from PySide import QtCore, QtGui
+import pandas as pd
 import matplotlib
-
 # matplotlib.use('Qt4Agg')
 matplotlib.use('agg')
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
-import matplotlib as mpl
-from matplotlib.offsetbox import AnnotationBbox, OffsetImage
-from matplotlib._png import read_png
-import pandas as pd
+# import matplotlib as mpl
+# from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+# from matplotlib._png import read_png
 
 
 def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct,
@@ -391,7 +386,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_pic.set_xlim([min(ms2_df['mz'].tolist()) - 1, ms2_pr_mz + 5])
         msms_pic.set_ylim([0, _msms_max * 1.5])
         msms_low_pic.set_ylim([0, _msms_max * 1.5])
-        msms_high_pic.set_ylim([0, msms_high_max * 1.1])
+        msms_high_pic.set_ylim([0, msms_high_max * 1.15])
 
         # remove identified FA
         ident_peak_lst = obs_ident_df['obs_abbr'].tolist()
@@ -431,19 +426,19 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             markerline, stemlines, baseline = msms_pic.stem([_frag_mz], [_frag_i], markerfmt=' ')
             plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
             msms_low_pic.text(_frag_mz, _frag_i_r, _frag_se['obs_label'], txt_props, fontsize=6,
-                              color=(1.0, 0.7, 0.0, 1), rotation=60)
+                              color=(1.0, 0.6, 0.0, 1), rotation=60)
 
         # plot all Lyso
         for _idx, _nl_se in obs_lyso_df.iterrows():
             _nl_mz = _nl_se['mz']
             _nl_i = _nl_se['i']
-            _nl_i_r = _nl_i * 1.25
+            _nl_i_r = _nl_i * 1.05
             markerline, stemlines, baseline = msms_high_pic.stem([_nl_mz], [_nl_i_r], markerfmt=' ')
             plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
             markerline, stemlines, baseline = msms_pic.stem([_nl_mz], [_nl_i], markerfmt=' ')
             plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
             msms_high_pic.text(_nl_mz, _nl_i_r, _nl_se['obs_label'], txt_props, fontsize=6,
-                               color=(1.0, 0.7, 0.0, 1), rotation=60)
+                               color=(1.0, 0.6, 0.0, 1), rotation=60)
 
         # plot all identified peaks
         for _idx, _ident_se in obs_ident_df.iterrows():
@@ -466,7 +461,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # set title
         xic_title_str = 'XIC of m/z %.4f | @ m/z %.4f ppm=%.2f' % (ms1_pr_mz, lib_mz, ms1_pr_ppm)
-        ms_title_str = 'MS @ %.3f min' % ms1_rt
+        ms_title_str = 'MS @ %.3f min | %s' % (ms1_rt, abbr)
         ms_zoom_title_str = 'Theoretical isotopic distribution for %s %s' % (formula_charged, charge)
         msms_title_str = ('MS/MS for m/z %.4f | DDA rank %d @ %.3f min' % (ms2_pr_mz, func_id, ms2_rt))
         msms_low_str = 'MS/MS zoomed below m/z 400'

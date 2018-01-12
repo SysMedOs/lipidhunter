@@ -24,7 +24,6 @@ from __future__ import division
 import re
 from LibLipidHunter.AbbrElemCalc import ElemCalc
 from LibLipidHunter.IsotopeHunter import IsotopeHunter
-from FAwhiteList import FA_list
 import pandas as pd
 import itertools
 
@@ -1782,13 +1781,14 @@ class ScoreGenerator:
 
         return obs_peaks_df.head(10)
 
-    def get_rankscore(self, fa_df, master_info_df, abbr_bulk, charge, mz_lib, ms2_df, lipid_type
-                      , ms2_ppm=100, rankscore_filter=27.5):
+    def get_rankscore(self, fa_df, master_info_df, abbr_bulk, charge, mz_lib, ms2_df, _ms2_idx, lipid_type,
+                      ms2_ppm=100, rankscore_filter=27.5):
 
-        lite_info_df = master_info_df.query('BULK_ABBR == "%s"' % abbr_bulk)
+        lite_info_df = master_info_df.query('BULK_ABBR == "%s" and spec_index == %f' % (abbr_bulk, _ms2_idx))
         lite_info_df.is_copy = False
         lite_info_df['RANK_SCORE'] = 0
-
+        # print('lite_info_df')
+        # print(lite_info_df)
         ident_peak_dct = {}
 
         obs_fa_frag_df = self.get_all_fa_frag(fa_df, ms2_df)
@@ -1828,16 +1828,19 @@ class ScoreGenerator:
                         try:
                             _rank_idx = _obs_df.loc[_obs_df['obs_abbr'] == _abbr].index[0]
                             _i = _obs_df.loc[_rank_idx, 'i']
+                            _i_r = _obs_df.loc[_rank_idx, 'obs_i_r']
                             _mz = _obs_df.loc[_rank_idx, 'mz']
                             _label = _obs_df.loc[_rank_idx, 'obs_label']
                         except (IndexError, KeyError):
                             _rank_idx = 10
                             _i = 0
+                            _i_r = 0
                             _mz = 0
                             _label = ''
                         if _rank_idx < 10 and _i > 0:
                             lite_info_df.set_value(_idx, '%s_RANK' % _obs, _rank_idx)
                             lite_info_df.set_value(_idx, '%s_i' % _obs, _i)
+                            lite_info_df.set_value(_idx, '{obs} i (%)'.format(obs=_obs), _i_r)
                             print(_abbr, _rank_idx, _i)
                             ident_peak_dct[_abbr] = {'discrete_abbr': _lipid_abbr, 'obs_label': _label, 'i': _i,
                                                      'mz': _mz, 'obs_abbr': _abbr, 'obs_rank': '%s_RANK' % _obs}

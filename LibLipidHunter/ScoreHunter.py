@@ -34,8 +34,6 @@ from LibLipidHunter.PanelPlotter import plot_spectra
 def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_list, usr_weight_df,
                    usr_key_frag_df, core_spec_dct, xic_dct):
 
-    print('===> ==> -->Start to hunt for lipids!')
-
     usr_lipid_type = param_dct['lipid_type']
     charge_mode = param_dct['charge_mode']
     output_folder = param_dct['img_output_folder_str']
@@ -62,9 +60,9 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
 
     for group_key in core_list:
         _subgroup_df = checked_info_groups.get_group(group_key)
+        _usr_abbr_bulk_lst = list(set(_subgroup_df['BULK_ABBR'].tolist()))
         usr_spec_info_dct = core_spec_dct[group_key]
-        _samemz_se = _subgroup_df.iloc[0, :].squeeze()
-
+        _samemz_se = _subgroup_df.iloc[0, :].squeeze()  # compress df to se for lipids with same bulk structures
         _usr_ms2_rt = _samemz_se['scan_time']
         _usr_ms2_dda_rank = _samemz_se['DDA_rank']
         _usr_ms2_scan_id = _samemz_se['scan_number']
@@ -81,6 +79,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         _ms1_pr_mz = usr_spec_info_dct['ms1_mz']
         _ms1_df = usr_spec_info_dct['ms1_df']
         _ms2_df = usr_spec_info_dct['ms2_df']
+        _ms2_idx = usr_spec_info_dct['_ms2_spec_idx']
 
         print(_usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged)
 
@@ -113,14 +112,14 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                 _exact_ppm = 1e6 * (_ms1_pr_mz - _usr_mz_lib) / _usr_mz_lib
                 _samemz_se.set_value('ppm', _exact_ppm)
                 _samemz_se.set_value('abs_ppm', abs(_exact_ppm))
-
-                for _i_abbr, _r_abbr in _subgroup_df.iterrows():
-                    _usr_abbr_bulk = _r_abbr['BULK_ABBR']
-                    print('Check_proposed_structure:', _usr_abbr_bulk)
+                print('Proposed_bulk_structure can be:', _usr_abbr_bulk_lst)
+                for _usr_abbr_bulk in _usr_abbr_bulk_lst:
+                    print('Now check_proposed_structure:', _usr_abbr_bulk)
 
                     matched_checker, obs_info_dct = score_calc.get_rankscore(fa_df, checked_info_df, _usr_abbr_bulk,
                                                                              charge_mode, _usr_mz_lib, _score_ms2_df,
-                                                                             usr_lipid_type, ms2_ppm=usr_ms2_ppm,
+                                                                             _ms2_idx, usr_lipid_type,
+                                                                             ms2_ppm=usr_ms2_ppm,
                                                                              rankscore_filter=usr_rank_score_filter)
 
                     obs_info_df = obs_info_dct['INFO']
