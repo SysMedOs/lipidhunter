@@ -19,12 +19,17 @@
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 from __future__ import print_function
+
 import ConfigParser as configparser
 import glob
+import multiprocessing
+import multiprocessing.pool
 import os
 import re
 import time
+
 from PySide import QtCore, QtGui
+
 from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
 from LibLipidHunter.Hunter_Core import huntlipids
 
@@ -36,7 +41,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'10, January, 2018'
+        version_date = r'15, January, 2018'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
                         r'LipidHunter Beta released date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
@@ -55,6 +60,14 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.load_cfg()
         self.a_max_ms()
 
+        # disable multi_mode in batch run
+        self.ui.tab_b_mutlimode_cmb.hide()
+        self.ui.tab_b_maxbatch_lb.hide()
+        self.ui.tab_b_maxbatch_spb.setValue(1)
+        self.ui.tab_b_maxbatch_spb.hide()
+        self.ui.tab_b_maxsubcore_spb.setValue(3)
+        self.ui.tab_b_maxsubram_spb.setValue(5)
+
         # slots for tab a
         QtCore.QObject.connect(self.ui.tab_a_loadxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.a_load_xlsx)
         QtCore.QObject.connect(self.ui.tab_a_launchgen_pb, QtCore.SIGNAL("clicked()"), self.a_go_generator)
@@ -65,6 +78,12 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_a_runhunter_pb, QtCore.SIGNAL("clicked()"), self.a_run_hunter)
         QtCore.QObject.connect(self.ui.tab_a_cfgpath_pb, QtCore.SIGNAL("clicked()"), self.a_save_cfg)
         QtCore.QObject.connect(self.ui.tab_a_gencfg_pb, QtCore.SIGNAL("clicked()"), self.a_create_cfg)
+        # # slots for tab b
+        self.ui.tab_b_mutlimode_cmb.currentIndexChanged['QString'].connect(self.b_set_multi_mode)
+        QtCore.QObject.connect(self.ui.tab_b_addcfg_pb, QtCore.SIGNAL("clicked()"), self.b_load_batchcfg)
+        QtCore.QObject.connect(self.ui.tab_b_addcfgfolder_pb, QtCore.SIGNAL("clicked()"), self.b_load_batchcfgfolder)
+        QtCore.QObject.connect(self.ui.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_b_infiles_pte.clear)
+        QtCore.QObject.connect(self.ui.tab_b_runbatch_pb, QtCore.SIGNAL("clicked()"), self.b_run_batchmode)
         # # slots for tab c
         QtCore.QObject.connect(self.ui.tab_c_fawhitelist_pb, QtCore.SIGNAL("clicked()"), self.c_load_fawhitelist)
         QtCore.QObject.connect(self.ui.tab_c_hgcfg_pb, QtCore.SIGNAL("clicked()"), self.c_load_hgcfg)
@@ -324,6 +343,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         error_log_lst.append(self.check_path(fa_white_list_cfg, 'FA whitelist'))
         error_log_lst.append(self.check_path(lipid_specific_cfg, 'configuration for Phospholipids'))
         error_log_lst.append(self.check_path(score_cfg, 'W_frag score configuration'))
+        # TODO(zhixu.ni@uni-leipzig.de): Add more strict checker here. e.g. file type check.
 
         usr_score_mode = self.ui.tab_c_scoremode_cmb.currentIndex()
         if usr_score_mode == 0:
@@ -336,6 +356,11 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             fast_isotope = False
         else:
             fast_isotope = True
+
+        if self.ui.tab_c_tag_all_fa_chb.isChecked():
+            tag_all_sn = False
+        else:
+            tag_all_sn = True
 
         start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
 
@@ -355,7 +380,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                             'rank_score': rank_score, 'fast_isotope': fast_isotope,
                             'hunter_folder': self.lipidhunter_cwd,
                             'hunter_start_time': start_time_str, 'experiment_mode': usr_exp_mode,
-                            'core_number': core_num, 'max_ram': max_ram,
+                            'core_number': core_num, 'max_ram': max_ram, 'tag_all_sn': tag_all_sn,
                             'img_type': img_typ, 'img_dpi': img_dpi, 'ms_max': ms_max, 'pr_window': pr_window}
 
         return hunter_param_dct, error_log_lst
@@ -404,7 +429,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
             # default output code
             try:
-                tot_run_time = huntlipids(hunter_param_dct)
+                tot_run_time, error_log_lst = huntlipids(hunter_param_dct, error_log_lst)
 
             except:
                 tot_run_time = '!! Sorry, an error has occurred, please check your settings !!'
@@ -444,6 +469,223 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                     config.set('parameters', param, str(hunter_param_dct[param]))
                 config.write(usr_param_cfg)
                 self.ui.tab_a_gencfg_pte.insertPlainText('>>> >>> >>> SAVED <<< <<< <<<')
+
+    def b_set_multi_mode(self):
+
+        multi_mode_idx = self.ui.tab_b_mutlimode_cmb.currentIndex()
+
+        if multi_mode_idx == 1:
+            print('Set Batch mode to: Multi processing mode')
+            self.ui.tab_b_maxbatch_lb.show()
+            self.ui.tab_b_maxbatch_spb.show()
+            self.ui.tab_b_maxsubcore_lb.show()
+            self.ui.tab_b_maxsubcore_spb.show()
+            self.ui.tab_b_maxsubram_lb.show()
+            self.ui.tab_b_maxsubram_spb.show()
+        elif multi_mode_idx == 0:
+            print('Set Batch mode to: Single processing mode')
+            self.ui.tab_b_maxbatch_lb.hide()
+            self.ui.tab_b_maxbatch_spb.hide()
+            self.ui.tab_b_maxsubcore_lb.hide()
+            self.ui.tab_b_maxsubcore_spb.hide()
+            self.ui.tab_b_maxsubram_lb.hide()
+            self.ui.tab_b_maxsubram_spb.hide()
+
+    @staticmethod
+    def b_get_same_files(folder, filetype_lst):
+
+        if folder is not u'':
+            os.chdir(folder)
+            _pre_found_lst = []
+            for _filetype in filetype_lst:
+                _tmp_found_lst = glob.glob(_filetype)
+                # merge list
+                _pre_found_lst += [f for f in _tmp_found_lst if f not in _pre_found_lst]
+            filename_lst = _pre_found_lst
+            abs_path_lst = list(os.path.abspath(ff) for ff in _pre_found_lst)
+        else:
+            filename_lst = []
+            abs_path_lst = []
+
+        return filename_lst, abs_path_lst
+
+    def b_load_batchcfg(self):
+        # check existed files
+        _loaded_files = str(self.ui.tab_b_infiles_pte.toPlainText())
+        _loaded_lst = _loaded_files.split('\n')
+
+        b_load_cfg_dialog = QtGui.QFileDialog(self)
+        b_load_cfg_dialog.setNameFilters([u'LipidHunter batch mode files (*.txt)'])
+        b_load_cfg_dialog.selectNameFilter(u'LipidHunter batch mode files (*.txt)')
+        if b_load_cfg_dialog.exec_():
+            b_load_cfg_str = b_load_cfg_dialog.selectedFiles()[0]
+            b_load_cfg_str = os.path.abspath(b_load_cfg_str)
+            if b_load_cfg_str not in _loaded_lst:
+                self.ui.tab_b_infiles_pte.insertPlainText(b_load_cfg_str)  # take unicode only
+                self.ui.tab_b_infiles_pte.insertPlainText(u'\n')
+            else:
+                _msgBox = QtGui.QMessageBox()
+                _msgBox.setText(u'Batch config file has been chosen already.')
+                _msgBox.exec_()
+
+    def b_load_batchcfgfolder(self):
+        # check existed files
+        _loaded_files = str(self.ui.tab_b_infiles_pte.toPlainText())
+        _loaded_lst = _loaded_files.split('\n')
+
+        b_load_cfgfolder_str = QtGui.QFileDialog.getExistingDirectory()
+        _cfg_name_lst, _cfg_path_lst = self.b_get_same_files(b_load_cfgfolder_str, filetype_lst=['*.txt', '*.txt'])
+        _duplicated_str = ''
+        for _cfg in _cfg_path_lst:
+            if _cfg not in _loaded_lst:
+                self.ui.tab_b_infiles_pte.insertPlainText(_cfg)
+                self.ui.tab_b_infiles_pte.insertPlainText('\n')
+            else:
+                _duplicated_str = _duplicated_str + _cfg + '\n'
+        if len(_duplicated_str) > 0:
+            _msgBox = QtGui.QMessageBox()
+            _msgBox.setText(_duplicated_str + u'Already chosen. \n Skipped')
+            _msgBox.exec_()
+
+    @staticmethod
+    def b_read_cfg(batch_cfg):
+        cfg_params_dct = {}
+
+        i_type_key_lst = ['ms_th', 'ms2_th', 'hg_th', 'ms_ppm', 'ms2_ppm', 'hg_ppm', 'dda_top', 'sn_ratio',
+                          'core_number', 'max_ram', 'img_dpi', 'ms_max']
+        f_type_key_lst = ['rt_start', 'rt_end', 'mz_start', 'mz_end', 'pr_window', 'ms2_infopeak_threshold',
+                          'ms2_hginfopeak_threshold', 'score_filter', 'isotope_score_filter', 'rank_score_filter']
+        b_type_key_lst = ['rank_score', 'fast_isotope', 'tag_all_sn']
+
+        print('Input LipidHunter configuration file : ', batch_cfg)
+        if os.path.isfile(batch_cfg):
+            with open(batch_cfg) as _cfg_obj:
+                config = configparser.ConfigParser()
+                config.readfp(_cfg_obj)
+                if config.has_section('parameters'):
+                    usr_cfg = 'parameters'
+                    options = config.options(usr_cfg)
+                    for param in options:
+                        _val = config.get(usr_cfg, param)
+                        if param in i_type_key_lst:
+                            try:
+                                cfg_params_dct[param] = int(_val)
+                            except ValueError:
+                                cfg_params_dct[param] = int(float(_val))
+                        elif param in f_type_key_lst:
+                            cfg_params_dct[param] = float(_val)
+                        elif param in b_type_key_lst:
+                            if _val.lower() == 'true':
+                                cfg_params_dct[param] = True
+                            if _val.lower() == 'false':
+                                cfg_params_dct[param] = False
+                        else:
+                            cfg_params_dct[param] = _val
+        return cfg_params_dct
+
+    def b_run_batchmode(self):
+
+        self.ui.tab_b_statusrun_pte.clear()
+
+        loaded_cfg_files = str(self.ui.tab_b_infiles_pte.toPlainText())
+        pre_loaded_cfg_lst = loaded_cfg_files.split('\n')
+
+        loaded_cfg_lst = []
+        for f in pre_loaded_cfg_lst:
+            if len(f) > 4:
+                loaded_cfg_lst.append(f)
+
+        tot_num = len(loaded_cfg_lst)
+        run_counter = 1
+
+        multi_mode_idx = self.ui.tab_b_mutlimode_cmb.currentIndex()
+
+        os.chdir(self.lipidhunter_cwd)
+
+        if multi_mode_idx == 1:  # multi mode
+
+            max_process = self.ui.tab_b_maxbatch_spb.value()
+            sub_max_core = self.ui.tab_b_maxsubcore_spb.value()
+            sub_max_ram = self.ui.tab_b_maxsubram_spb.value()
+
+            cfg_dct_lst = []
+            for cfg_file in loaded_cfg_lst:
+                hunter_param_dct = self.b_read_cfg(cfg_file)
+                if 'vendor' in hunter_param_dct.keys():
+                    hunter_param_dct['batch_cfg_file'] = cfg_file
+                    hunter_param_dct['core_number'] = sub_max_core
+                    hunter_param_dct['max_ram'] = sub_max_ram
+                    cfg_dct_lst.append(hunter_param_dct)
+                else:
+                    hunter_param_dct['batch_cfg_file'] = ''
+
+            if len(cfg_dct_lst) > max_process:
+                sub_part_lst = map(None, *(iter(cfg_dct_lst),) * max_process)
+            else:
+                sub_part_lst = [cfg_dct_lst]
+
+            tot_part = len(sub_part_lst)
+            part_num = 1
+            for sub_cfg_lst in sub_part_lst:
+                sub_cfg_lst = filter(lambda x: x is not None, sub_cfg_lst)
+                parallel_pool = multiprocessing.pool.ThreadPool(max_process)
+                hunter_results_lst = []
+                hunter_log_lst = []
+                core_worker_count = 1
+                for _cfg_dct in sub_cfg_lst:
+                    time.sleep(1)
+                    self.ui.tab_b_statusrun_pte.insertPlainText('Start Batch %i / %i file %i / %i ...\n'
+                                                                % (part_num, tot_part, core_worker_count, max_process))
+                    self.ui.tab_b_statusrun_pte.insertPlainText('>>> processing...\n')
+
+                    start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+                    _cfg_dct['hunter_start_time'] = start_time_str
+                    os.chdir(_cfg_dct['hunter_folder'])
+                    log_lst = []
+                    tot_run_time, log_lst = parallel_pool.apply_async(huntlipids, args=(_cfg_dct, log_lst))
+
+                    core_worker_count += 1
+                    hunter_results_lst.append(tot_run_time)
+                    hunter_log_lst.append(log_lst)
+
+                parallel_pool.close()
+                parallel_pool.join()
+
+                for hunter_time in hunter_results_lst:
+
+                    run_time = str(hunter_time.get())
+
+                    if isinstance(run_time, float):
+                        self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % run_time)
+                        self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+                        run_counter += 1
+                    else:
+                        self.ui.tab_b_statusrun_pte.insertPlainText(
+                            '!! Failed to process batch mode configure file:\n Please check settings!!')
+
+                part_num += 1
+
+        else:  # single mode
+            for _cfg in loaded_cfg_lst:
+
+                self.ui.tab_b_statusrun_pte.insertPlainText('Start processing...\n%s\n' % _cfg)
+                hunter_param_dct = self.b_read_cfg(_cfg)
+                if 'vendor' in hunter_param_dct.keys():
+                    start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+                    hunter_param_dct['hunter_start_time'] = start_time_str
+                    log_lst = []
+                    run_time, log_lst = huntlipids(hunter_param_dct, error_lst=log_lst)
+
+                    if isinstance(run_time, float):
+                        self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % run_time)
+                        self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+                        run_counter += 1
+                    else:
+                        self.ui.tab_b_statusrun_pte.insertPlainText(
+                            '!! Failed read batch mode configure files:\n %s \n Please check settings!!' % _cfg)
+                else:
+                    self.ui.tab_b_statusrun_pte.insertPlainText(
+                        '!! Failed read batch mode configure files:\n %s \n Please check settings!!' % _cfg)
 
     def c_set_default_cfg(self):
         config = configparser.ConfigParser()

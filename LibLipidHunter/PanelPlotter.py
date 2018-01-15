@@ -19,6 +19,8 @@
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 from __future__ import division
+from __future__ import print_function
+
 import pandas as pd
 import matplotlib
 # matplotlib.use('Qt4Agg')
@@ -47,7 +49,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     obs_lyso_df = ident_info_dct['OBS_LYSO']
     obs_ident_df = ident_info_dct['IDENT']
     print('obs_ident_df')
-    print(obs_ident_df)
+    print(obs_ident_df[['discrete_abbr', 'mz', 'i', 'obs_rank_type', 'obs_rank']])
 
     isotope_score = isotope_score_info_dct['isotope_score']
     isotope_checker_dct = isotope_score_info_dct['isotope_checker_dct']

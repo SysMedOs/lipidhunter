@@ -294,7 +294,7 @@ class IsotopeHunter(object):
                     ms1_pr_i -= m0_base_abs
                     m0_deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs]
                     isotope_calc_dct = self.calc_isotope_score(isotope_pattern_df, spec_df,
-                                                                   ms1_precision, ms1_pr_i, deconv=m0_deconv_lst)
+                                                               ms1_precision, ms1_pr_i, deconv=m0_deconv_lst)
 
                     isotope_checker_dct = isotope_calc_dct['isotope_checker_dct']
                     isotope_score = isotope_calc_dct['isotope_score']
@@ -360,7 +360,7 @@ class IsotopeHunter(object):
         return isotope_score_info_dct
 
     def get_isotope_fragments(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2, ms1_precision=50e-6,
-                          pattern_tolerance=5, only_c=False, score_filter=75, decon=True, exp_mode='LC-MS'):
+                              pattern_tolerance=5, only_c=False, score_filter=75, decon=True, exp_mode='LC-MS'):
 
         mz_delta = ms1_pr_mz * ms1_precision
         delta_13c = 1.0033548378
@@ -431,8 +431,8 @@ if __name__ == '__main__':
     #
     #     print(isotope_pattern_dct)
 
-    #f = 'C41H71NO7P'  # PE
-    f= 'C51H92O6Na'
+    # f = 'C41H71NO7P'  # PE
+    f = 'C51H92O6Na'
     # f_lst = [f, f + 'H+']
     f_lst = [f]
     usr_spec_df = pd.DataFrame()
