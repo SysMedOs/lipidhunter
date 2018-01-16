@@ -8,15 +8,21 @@
 #     For commercial use:
 #         please contact the SysMedOs_team by email.
 # Please cite our publication in an appropriate form.
+# Ni, Zhixu, Georgia Angelidou, Mike Lange, Ralf Hoffmann, and Maria Fedorova.
+# "LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets."
+# Analytical Chemistry (2017).
+# DOI: 10.1021/acs.analchem.7b01126
 #
 # For more info please contact:
 #     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
-#
+
+from __future__ import print_function
 
 import os
 import shutil
+
 import pandas as pd
 
 
@@ -49,7 +55,7 @@ class LogPageCreator(object):
 
         with open(self.main_page, 'w') as _m_page:
             m_info_lst = ['<html>\n', '<link rel="icon" href="', self.logo, '" type="image/x-icon"/>\n'
-                          '<title>LipidHunter_Results ', start_time,
+                                                                            '<title>LipidHunter_Results ', start_time,
                           '</title>\n<frameset cols="350,*">\n<frameset rows="390,*">\n',
                           '<frame src="', _params_lst_page, '" frameborder="0" >\n',
                           '<frame src="', _idx_lst_page, '" frameborder="0" >\n</frameset>\n',
@@ -94,7 +100,7 @@ class LogPageCreator(object):
                                 ''' % ('%', params['hunter_start_time'], self.lipid_type, params['charge_mode'],
                                        params['mz_start'], params['mz_end'], params['rt_start'], params['rt_end'],
                                        params['ms_th'], params['ms2_th'], params['ms_ppm'], params['ms2_ppm'],
-                                       params['score_filter'], score_mode,
+                                       params['rank_score_filter'], score_mode,
                                        params['isotope_score_filter'], isotope_score_mode))
 
         with open(self.idx_lst_page, 'w') as _idx_page:
@@ -138,9 +144,10 @@ class LogPageCreator(object):
                 plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
                                 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
             elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
-                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_sn3', 'i_[M+H]-sn1', 'i_[M+H]-sn2',
-                                'i_[M+H]-sn3', 'i_[M+H]-sn1-H2O', 'i_[M+H]-sn2-H2O', 'i_[M+H]-sn3-H2O', 'i_[M+H]-(sn1+sn2)-H2O',
-                                'i_[M+H]-(sn1+sn3)-H2O', 'i_[M+H]-(sn2+sn3)-H2O']
+                plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_sn3',
+                                'i_[M+H]-sn1', 'i_[M+H]-sn2', 'i_[M+H]-sn3',
+                                'i_[M+H]-sn1-H2O', 'i_[M+H]-sn2-H2O', 'i_[M+H]-sn3-H2O',
+                                'i_[M+H]-(sn1+sn2)-H2O', 'i_[M+H]-(sn1+sn3)-H2O', 'i_[M+H]-(sn2+sn3)-H2O']
             else:
                 plot_df_cols = ['Proposed_structures', 'Score', 'i_sn1', 'i_sn2', 'i_[M-H]-sn1', 'i_[M-H]-sn2',
                                 'i_[M-H]-sn1-H2O', 'i_[M-H]-sn2-H2O']
@@ -152,8 +159,8 @@ class LogPageCreator(object):
             table_buf_code = ident_info_df.to_html(columns=plot_df_cols, float_format='%.1f', border=0)
             table_buf_code = table_buf_code.replace('NaN', '')
             img_title_str = ('{mz}_RT{rt:.3}_DDArank{dda}_Scan{scan}_{bulk}_{ident}_{f}_{chg}_score{score}'
-                             .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id, bulk=abbr_bulk,
-                                     ident=ident_abbr, score=score, f=formula_ion, chg=charge))
+                .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id, bulk=abbr_bulk,
+                        ident=ident_abbr, score=score, f=formula_ion, chg=charge))
             img_info_lst = ['<a name="', ident_idx, '"><h3>', '<a href="', img_path, '" target="blank">', img_title_str,
                             '</a></h3></a>', '<a href="', img_path, '" target="blank">',
                             '<img src="', img_path, '" height="720" /></a>', table_buf_code, '\n<hr>\n']
@@ -174,6 +181,95 @@ class LogPageCreator(object):
             idx_page.write(idx_str)
 
         print('==> info added to report html -->')
+
+    def add_all_info(self, ident_info_df):
+
+        with open(self.image_lst_page, 'a') as img_page:
+            with open(self.idx_lst_page, 'a') as idx_page:
+
+                _log_info_df = ident_info_df
+                _log_info_df['MS1_log_mz'] = _log_info_df['MS1_obs_mz'].round(1)
+                _log_info_df = _log_info_df.sort_values(by=['MS1_log_mz', 'Proposed_structures', 'MS2_scan_time',
+                                                            'RANK_SCORE'], ascending=[True, True, True, False])
+                _log_info_df = _log_info_df.drop_duplicates(['MS1_obs_mz', 'Proposed_structures', 'MS2_scan_time'],
+                                                            keep='first')
+                _log_info_df.reset_index(drop=True, inplace=True)
+                _log_info_df.index += 1
+
+                for _idx, _row_se in _log_info_df.iterrows():
+                    img_path = str(_row_se['img_name'])
+                    ms1_pr_mz = _row_se['MS1_obs_mz']
+                    ms2_rt = _row_se['MS2_scan_time']
+                    dda = _row_se['DDA#']
+                    ms2_scan_id = _row_se['Scan#']
+                    ident_abbr = str(_row_se['Proposed_structures'])
+                    try:
+                        ident_abbr = ident_abbr.replace('<', '&lt;')
+                        ident_abbr = ident_abbr.replace('>', '&gt;')
+                    except AttributeError:
+                        pass
+                    score = _row_se['RANK_SCORE']
+                    formula_ion = _row_se['Formula_ion']
+                    charge = _row_se['Charge']
+                    # ident_idx = str(_idx)
+
+                    ident_info_df = pd.DataFrame()
+                    ident_info_df = ident_info_df.append(_row_se, ignore_index=True)
+                    plot_df_cols = []
+
+                    # convert info df to html table code
+                    if self.lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
+                                        'SN1_[FA-H]- i (%)', 'SN2_[FA-H]- i (%)',
+                                        '[LPL(SN1)-H]- i (%)', '[LPL(SN2)-H]- i (%)',
+                                        '[LPL(SN1)-H2O-H]- i (%)', '[LPL(SN2)-H2O-H]- i (%)']
+                    elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
+                        pass
+                        # TODO(zhixu.ni@uni-leipzig.de): @Georgia add TG here please :)
+                    else:
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
+                                        'SN1_[FA-H]- i (%)', 'SN2_[FA-H]- i (%)',
+                                        '[LPL(SN1)-H]- i (%)', '[LPL(SN2)-H]- i (%)',
+                                        '[LPL(SN1)-H2O-H]- i (%)', '[LPL(SN2)-H2O-H]- i (%)']
+
+                    ident_info_df = pd.DataFrame(ident_info_df, columns=plot_df_cols)
+                    ident_col = ident_info_df.columns.tolist()
+
+                    for _col in plot_df_cols:
+                        if _col not in ident_col:
+                            ident_info_df.loc[:, _col] = 0
+                    try:
+                        table_buf_code = ident_info_df.to_html(float_format='%.1f', border=0, index=False)
+                    except TypeError:
+                        table_buf_code = ident_info_df.to_html(index=False)
+                    table_buf_code = table_buf_code.replace('NaN', '')
+                    img_title_str = ('{mz}_RT{rt:.3}_DDArank{dda}_Scan{scan}_{ident}_{f}_{chg}_score{score}'
+                        .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
+                                ident=ident_abbr, score=score, f=formula_ion, chg=charge))
+                    img_info_lst = ['<a name="', '%i' % _idx, '"><h3>', '<a href="', img_path, '" target="blank">',
+                                    img_title_str,
+                                    '</a></h3></a>', '<a href="', img_path, '" target="blank">',
+                                    '<img src="', img_path, '" height="800" /></a>', table_buf_code, '\n<hr>\n']
+                    img_page.write(''.join(img_info_lst))
+
+                    idx_str = ('''
+                            <tr>\n
+                            <td>
+                            <a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{id}
+                            </td>\n<td>
+                            <a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{mz}
+                            </td>\n<td>
+                            <a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{rt}
+                            </td>\n<td>
+                            <a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{ident}
+                            </td>\n<td>
+                            <a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{score}
+                            </td>\n</tr>\n
+                            '''.format(id='%i' % _idx, mz='%.4f' % ms1_pr_mz, rt='%.1f' % ms2_rt,
+                                       ident=ident_abbr, score=score))
+                    idx_page.write(idx_str)
+
+            print('==> info added to report html -->')
 
     def close_page(self):
         with open(self.main_page, 'a') as _m_page:

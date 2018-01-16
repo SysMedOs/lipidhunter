@@ -8,12 +8,15 @@
 #     For commercial use:
 #         please contact the SysMedOs_team by email.
 # Please cite our publication in an appropriate form.
+# Ni, Zhixu, Georgia Angelidou, Mike Lange, Ralf Hoffmann, and Maria Fedorova.
+# "LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets."
+# Analytical Chemistry (2017).
+# DOI: 10.1021/acs.analchem.7b01126
 #
 # For more info please contact:
 #     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
-#
 
 from __future__ import division
 from __future__ import print_function
@@ -43,7 +46,8 @@ class IsotopeHunter(object):
     def get_elements(self, formula):
         elem_dct = {}
         elem_key_lst = self.periodic_table_dct.keys()
-        tmp_formula = formula
+        tmp_formula = formula.strip('+')
+        tmp_formula = tmp_formula.strip('-')
 
         elem_lst = re.findall('[A-Z][a-z]*[0-9]*', formula)
         for _e in range(0, len(elem_lst)):
@@ -61,12 +65,7 @@ class IsotopeHunter(object):
 
         return elem_dct
 
-    #############################################
-    #
-    #   Function which calculates the elemental mass from an dictionary which contains information about the elemental composition
-    #
-    ################################################
-    def get_mono_mz(self, elem_dct):
+    def get_mono_mz(self, elem_dct={}):
         mono_mz = 0.0
         for _elem in elem_dct.keys():
             mono_mz += elem_dct[_elem] * self.periodic_table_dct[_elem][0][0]
@@ -207,7 +206,16 @@ class IsotopeHunter(object):
 
         return isotope_calc_dct
 
-    def get_deconvolution(self, elem_dct, spec_df, mz_delta, base_i, only_c=False):
+    def get_deconvolution(self, spec_df, mz_delta, base_i, elem_dct={}, only_c=False):
+
+        """
+        :param elem_dct: (dict)
+        :param spec_df:
+        :param mz_delta:
+        :param base_i:
+        :param only_c:
+        :return:
+        """
 
         base_m1_i = 0
         base_m2_i = 0
@@ -244,14 +252,14 @@ class IsotopeHunter(object):
             # M-2
             deconv_elem_dct['H'] += -2
             base_i = 0
-            pre2_base_m1_i, pre2_base_m2_i, pre2_base_m3_i = self.get_deconvolution(deconv_elem_dct, spec_df,
-                                                                                    mz_delta, base_i, only_c=only_c)
+            pre2_base_m1_i, pre2_base_m2_i, pre2_base_m3_i = self.get_deconvolution(spec_df, mz_delta, base_i,
+                                                                                    deconv_elem_dct, only_c=only_c)
 
             # M+0
             # m0_base_abs = pre2_base_m2_i + pre1_base_m1_i
             m0_base_abs = pre2_base_m2_i
-            base_m1_i, base_m2_i, base_m3_i = self.get_deconvolution(self.get_elements(formula), spec_df, mz_delta,
-                                                                     m0_base_abs, only_c=only_c)
+            base_m1_i, base_m2_i, base_m3_i = self.get_deconvolution(spec_df, mz_delta, m0_base_abs,
+                                                                     self.get_elements(formula), only_c=only_c)
             # M+1
             m1_base_abs = pre2_base_m3_i
 
@@ -276,6 +284,7 @@ class IsotopeHunter(object):
 
         if i_df.shape[0] > 0:
             max_pre_m_i = i_df['i'].max()
+
             if ms1_pr_i > max_pre_m_i or pseudo_pr_check == 0:
                 elem_dct = self.get_elements(formula)
                 mono_mz = self.get_mono_mz(elem_dct)
@@ -285,7 +294,7 @@ class IsotopeHunter(object):
                     ms1_pr_i -= m0_base_abs
                     m0_deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs]
                     isotope_calc_dct = self.calc_isotope_score(isotope_pattern_df, spec_df,
-                                                                   ms1_precision, ms1_pr_i, deconv=m0_deconv_lst)
+                                                               ms1_precision, ms1_pr_i, deconv=m0_deconv_lst)
 
                     isotope_checker_dct = isotope_calc_dct['isotope_checker_dct']
                     isotope_score = isotope_calc_dct['isotope_score']
@@ -349,8 +358,9 @@ class IsotopeHunter(object):
                                   'm2_score': m2_score, 'm2_checker_dct': m2_checker_dct,
                                   'deconv_lst': deconv_lst}
         return isotope_score_info_dct
+
     def get_isotope_fragments(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2, ms1_precision=50e-6,
-                          pattern_tolerance=5, only_c=False, score_filter=75, decon=True, exp_mode='LC-MS'):
+                              pattern_tolerance=5, only_c=False, score_filter=75, decon=True, exp_mode='LC-MS'):
 
         mz_delta = ms1_pr_mz * ms1_precision
         delta_13c = 1.0033548378
@@ -364,11 +374,11 @@ class IsotopeHunter(object):
 
             deconv_elem_dct['H'] += -2
             base_i = 0
-            pre2_base_m1_i, pre2_base_m2_i, pre2_base_m3_i = self.get_deconvolution(deconv_elem_dct, spec_df,
-                                                                                    mz_delta, base_i, only_c=only_c)
+            pre2_base_m1_i, pre2_base_m2_i, pre2_base_m3_i = self.get_deconvolution(spec_df, mz_delta, base_i,
+                                                                                    deconv_elem_dct, only_c=only_c)
             m0_base_abs = pre2_base_m2_i
-            base_m1_i, base_m2_i, base_m3_i = self.get_deconvolution(self.get_elements(formula), spec_df, mz_delta,
-                                                                     m0_base_abs, only_c=only_c)
+            base_m1_i, base_m2_i, base_m3_i = self.get_deconvolution(spec_df, mz_delta, m0_base_abs,
+                                                                     self.get_elements(formula), only_c=only_c)
 
             m1_base_abs = pre2_base_m3_i
 
@@ -409,6 +419,7 @@ class IsotopeHunter(object):
             pass
         return isotope_flag
 
+
 if __name__ == '__main__':
     # f = 'C39H67NO8P'  # PE(34:5)
     # f_lst = [f, f + 'K', f + 'Na', f + 'NH4', f + 'S', f + 'D']
@@ -420,8 +431,8 @@ if __name__ == '__main__':
     #
     #     print(isotope_pattern_dct)
 
-    #f = 'C41H71NO7P'  # PE
-    f= 'C51H92O6Na'
+    # f = 'C41H71NO7P'  # PE
+    f = 'C51H92O6Na'
     # f_lst = [f, f + 'H+']
     f_lst = [f]
     usr_spec_df = pd.DataFrame()
