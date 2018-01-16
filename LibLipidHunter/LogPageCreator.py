@@ -18,8 +18,11 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
+from __future__ import print_function
+
 import os
 import shutil
+
 import pandas as pd
 
 
@@ -52,7 +55,7 @@ class LogPageCreator(object):
 
         with open(self.main_page, 'w') as _m_page:
             m_info_lst = ['<html>\n', '<link rel="icon" href="', self.logo, '" type="image/x-icon"/>\n'
-                          '<title>LipidHunter_Results ', start_time,
+                                                                            '<title>LipidHunter_Results ', start_time,
                           '</title>\n<frameset cols="350,*">\n<frameset rows="390,*">\n',
                           '<frame src="', _params_lst_page, '" frameborder="0" >\n',
                           '<frame src="', _idx_lst_page, '" frameborder="0" >\n</frameset>\n',
@@ -156,8 +159,8 @@ class LogPageCreator(object):
             table_buf_code = ident_info_df.to_html(columns=plot_df_cols, float_format='%.1f', border=0)
             table_buf_code = table_buf_code.replace('NaN', '')
             img_title_str = ('{mz}_RT{rt:.3}_DDArank{dda}_Scan{scan}_{bulk}_{ident}_{f}_{chg}_score{score}'
-                             .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id, bulk=abbr_bulk,
-                                     ident=ident_abbr, score=score, f=formula_ion, chg=charge))
+                .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id, bulk=abbr_bulk,
+                        ident=ident_abbr, score=score, f=formula_ion, chg=charge))
             img_info_lst = ['<a name="', ident_idx, '"><h3>', '<a href="', img_path, '" target="blank">', img_title_str,
                             '</a></h3></a>', '<a href="', img_path, '" target="blank">',
                             '<img src="', img_path, '" height="720" /></a>', table_buf_code, '\n<hr>\n']
@@ -184,7 +187,16 @@ class LogPageCreator(object):
         with open(self.image_lst_page, 'a') as img_page:
             with open(self.idx_lst_page, 'a') as idx_page:
 
-                for _idx, _row_se in ident_info_df.iterrows():
+                _log_info_df = ident_info_df
+                _log_info_df['MS1_log_mz'] = _log_info_df['MS1_obs_mz'].round(1)
+                _log_info_df = _log_info_df.sort_values(by=['MS1_log_mz', 'Proposed_structures', 'MS2_scan_time',
+                                                            'RANK_SCORE'], ascending=[True, True, True, False])
+                _log_info_df = _log_info_df.drop_duplicates(['MS1_obs_mz', 'Proposed_structures', 'MS2_scan_time'],
+                                                            keep='first')
+                _log_info_df.reset_index(drop=True, inplace=True)
+                _log_info_df.index += 1
+
+                for _idx, _row_se in _log_info_df.iterrows():
                     img_path = str(_row_se['img_name'])
                     ms1_pr_mz = _row_se['MS1_obs_mz']
                     ms2_rt = _row_se['MS2_scan_time']
@@ -207,16 +219,18 @@ class LogPageCreator(object):
 
                     # convert info df to html table code
                     if self.lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
-                        plot_df_cols = ['Proposed_structures', 'RANK_SCORE', 'SN1_[FA-H]-_i', 'SN2_[FA-H]-_i',
-                                        '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
-                                        '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
+                                        'SN1_[FA-H]- i (%)', 'SN2_[FA-H]- i (%)',
+                                        '[LPL(SN1)-H]- i (%)', '[LPL(SN2)-H]- i (%)',
+                                        '[LPL(SN1)-H2O-H]- i (%)', '[LPL(SN2)-H2O-H]- i (%)']
                     elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
                         pass
                         # TODO(zhixu.ni@uni-leipzig.de): @Georgia add TG here please :)
                     else:
-                        plot_df_cols = ['Proposed_structures', 'RANK_SCORE', 'SN1_[FA-H]-_i', 'SN2_[FA-H]-_i',
-                                        '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
-                                        '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
+                                        'SN1_[FA-H]- i (%)', 'SN2_[FA-H]- i (%)',
+                                        '[LPL(SN1)-H]- i (%)', '[LPL(SN2)-H]- i (%)',
+                                        '[LPL(SN1)-H2O-H]- i (%)', '[LPL(SN2)-H2O-H]- i (%)']
 
                     ident_info_df = pd.DataFrame(ident_info_df, columns=plot_df_cols)
                     ident_col = ident_info_df.columns.tolist()
@@ -230,8 +244,8 @@ class LogPageCreator(object):
                         table_buf_code = ident_info_df.to_html(index=False)
                     table_buf_code = table_buf_code.replace('NaN', '')
                     img_title_str = ('{mz}_RT{rt:.3}_DDArank{dda}_Scan{scan}_{ident}_{f}_{chg}_score{score}'
-                                     .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
-                                             ident=ident_abbr, score=score, f=formula_ion, chg=charge))
+                        .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
+                                ident=ident_abbr, score=score, f=formula_ion, chg=charge))
                     img_info_lst = ['<a name="', '%i' % _idx, '"><h3>', '<a href="', img_path, '" target="blank">',
                                     img_title_str,
                                     '</a></h3></a>', '<a href="', img_path, '" target="blank">',

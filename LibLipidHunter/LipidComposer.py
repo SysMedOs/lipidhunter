@@ -2,10 +2,23 @@
 #
 # Copyright (C) 2016-2017  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
 # SysMedOs_team: Zhixu Ni, Georgia Angelidou, Mike Lange, Maria Fedorova
+# LipidHunter is Dual-licensed
+#     For academic and non-commercial use: `GPLv2 License` Please read more information by the following link:
+#         [The GNU General Public License version 2] (https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+#     For commercial use:
+#         please contact the SysMedOs_team by email.
+# Please cite our publication in an appropriate form.
+# Ni, Zhixu, Georgia Angelidou, Mike Lange, Ralf Hoffmann, and Maria Fedorova.
+# "LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets."
+# Analytical Chemistry (2017).
+# DOI: 10.1021/acs.analchem.7b01126
 #
 # For more info please contact:
 #     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
+#     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
+
+from __future__ import print_function
 
 import itertools
 
@@ -139,14 +152,25 @@ class LipidComposer:
                 lyso_base_mz -= (12.0 + 2 * 1.0078250321)  # LPC loss one -CH3 from HG (one H already remove above)
 
             for _lyso_ion in lyso_type_dct.keys():
-                if lyso_type_dct[_lyso_ion] == 'EXACTMASS':
-                    usr_fa_df['%s_ABBR' % _lyso_ion] = ('[L' + lipid_type + '(' + usr_fa_df['ABBR'].str.strip('FA') +
-                                                        ')-H]-')
-                elif lyso_type_dct[_lyso_ion] == '[FA-H2O]_MZ':
-                    usr_fa_df['%s_ABBR' % _lyso_ion] = ('[L' + lipid_type + '(' + usr_fa_df['ABBR'].str.strip('FA') +
-                                                        ')-H2O-H]-')
+                if lipid_type in ['PC', 'SM']:
+
+                    if lyso_type_dct[_lyso_ion] == 'EXACTMASS':
+                        usr_fa_df['%s_ABBR' % _lyso_ion] = ('[L' + lipid_type + '(' + usr_fa_df['ABBR'].str.strip('FA')
+                                                            + ')-CH3]-')
+                    elif lyso_type_dct[_lyso_ion] == '[FA-H2O]_MZ':
+                        usr_fa_df['%s_ABBR' % _lyso_ion] = ('[L' + lipid_type + '(' + usr_fa_df['ABBR'].str.strip('FA')
+                                                            + ')-H2O-CH3]-')
+                    else:
+                        usr_fa_df['%s_ABBR' % _lyso_ion] = 'ERROR'
                 else:
-                    usr_fa_df['%s_ABBR' % _lyso_ion] = 'ERROR'
+                    if lyso_type_dct[_lyso_ion] == 'EXACTMASS':
+                        usr_fa_df['%s_ABBR' % _lyso_ion] = ('[L' + lipid_type + '(' + usr_fa_df['ABBR'].str.strip('FA')
+                                                            + ')-H]-')
+                    elif lyso_type_dct[_lyso_ion] == '[FA-H2O]_MZ':
+                        usr_fa_df['%s_ABBR' % _lyso_ion] = ('[L' + lipid_type + '(' + usr_fa_df['ABBR'].str.strip('FA')
+                                                            + ')-H2O-H]-')
+                    else:
+                        usr_fa_df['%s_ABBR' % _lyso_ion] = 'ERROR'
 
                 usr_fa_df['%s_MZ' % _lyso_ion] = lyso_base_mz + usr_fa_df[lyso_type_dct[_lyso_ion]]
                 usr_fa_df['%s_MZ_LOW' % _lyso_ion] = ppm_window_para(usr_fa_df['%s_MZ' % _lyso_ion].values.tolist(),
@@ -194,7 +218,6 @@ class LipidComposer:
         sn_comb_rm_lst = []
 
         if position is False:
-
             for _comb in sn_comb_lst:
                 _rev_comb = tuple(sorted(list(_comb)))
                 if _comb not in sn_comb_lite_lst and _rev_comb not in sn_comb_lite_lst:
@@ -242,6 +265,7 @@ class LipidComposer:
         m_exactmass = lipid_dct['EXACTMASS']
         m_class = lipid_dct['CLASS']
         h_exactmass = 1.0078250321
+        ch3_exactmass = 12.0 + 3 * 1.0078250321
         nl_water = 2 * 1.0078250321 + 15.9949146221
         sn1_abbr = lipid_dct['SN1'].strip('FA')
         sn2_abbr = lipid_dct['SN2'].strip('FA')
@@ -256,7 +280,12 @@ class LipidComposer:
         #   In calc_fa_query library    Line 126
         #
         #####################################################
-        if m_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS']:
+        if m_class in ['PA', 'PE', 'PG', 'PI', 'PS']:
+            sn1_abbr = lipid_dct['SN1'].strip('FA')
+            sn2_abbr = lipid_dct['SN2'].strip('FA')
+
+            sn1_exactmass = lipid_dct['SN1_EXACTMASS']
+            sn2_exactmass = lipid_dct['SN2_EXACTMASS']
             lyso_str = 'L' + m_class
 
             lipid_dct['[LPL(SN1)-H]-_ABBR'] = '[%s(%s)-H]-' % (lyso_str, sn1_abbr)
@@ -268,6 +297,25 @@ class LipidComposer:
             lipid_dct['[LPL(SN2)-H]-_MZ'] = round(m_exactmass - (sn1_exactmass - nl_water) - h_exactmass, 6)
             lipid_dct['[LPL(SN1)-H2O-H]-_MZ'] = round(m_exactmass - sn2_exactmass - h_exactmass, 6)
             lipid_dct['[LPL(SN2)-H2O-H]-_MZ'] = round(m_exactmass - sn1_exactmass - h_exactmass, 6)
+
+        elif m_class in ['PC']:
+            sn1_abbr = lipid_dct['SN1'].strip('FA')
+            sn2_abbr = lipid_dct['SN2'].strip('FA')
+
+            sn1_exactmass = lipid_dct['SN1_EXACTMASS']
+            sn2_exactmass = lipid_dct['SN2_EXACTMASS']
+
+            lyso_str = 'L' + m_class
+            # The abbr. here is not exactly correct due to the compatibility issues with ranks core calc functions
+            lipid_dct['[LPL(SN1)-H]-_ABBR'] = '[%s(%s)-CH3]-' % (lyso_str, sn1_abbr)
+            lipid_dct['[LPL(SN2)-H]-_ABBR'] = '[%s(%s)-CH3]-' % (lyso_str, sn2_abbr)
+            lipid_dct['[LPL(SN1)-H2O-H]-_ABBR'] = '[%s(%s)-H2O-CH3]-' % (lyso_str, sn1_abbr)
+            lipid_dct['[LPL(SN2)-H2O-H]-_ABBR'] = '[%s(%s)-H2O-CH3]-' % (lyso_str, sn2_abbr)
+
+            lipid_dct['[LPL(SN1)-H]-_MZ'] = round(m_exactmass - (sn2_exactmass - nl_water) - ch3_exactmass, 6)
+            lipid_dct['[LPL(SN2)-H]-_MZ'] = round(m_exactmass - (sn1_exactmass - nl_water) - ch3_exactmass, 6)
+            lipid_dct['[LPL(SN1)-H2O-H]-_MZ'] = round(m_exactmass - sn2_exactmass - ch3_exactmass, 6)
+            lipid_dct['[LPL(SN2)-H2O-H]-_MZ'] = round(m_exactmass - sn1_exactmass - ch3_exactmass, 6)
 
         else:
             ############### Here maybe should get the DG fragments
@@ -305,8 +353,6 @@ class LipidComposer:
             lipid_dct['[M-(SN1-H2O)+H]+_MZ'] = round(m_exactmass - (sn1_exactmass - nl_water) + h_exactmass, 6)
             lipid_dct['[M-(SN2-H2O)+H]+_MZ'] = round(m_exactmass - (sn2_exactmass - nl_water) + h_exactmass, 6)
             lipid_dct['[M-(SN3-H2O)+H]+_MZ'] = round(m_exactmass - (sn3_exactmass - nl_water) + h_exactmass, 6)
-
-
 
         return lipid_dct
 
@@ -398,15 +444,15 @@ class LipidComposer:
 
 
 if __name__ == '__main__':
-    fa_lst_file = r'../ConfigurationFiles/FA_Whitelist2.xlsx'
+
+    fa_lst_file = r'../ConfigurationFiles/FA_Whitelist.xlsx'
 
     # Note:
     # exact position means to consider the poition from the FA white list that the user give but,
     # in the case that the user define 2 different FA for both positions then:
     # When it is false it will give only one option
     # and when it is TRUE to give both compinations that these 2 FA an make (incase of phospholipids)
-    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'TG', 'charge_mode': '[M+H]+',
-                     'exact_position': 'FALSE'}
+    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'TG', 'charge_mode': '[M+H]+','exact_position': 'FALSE'}
 
     composer = LipidComposer()
     usr_lipid_master_df = composer.compose_lipid(param_dct=usr_param_dct)
@@ -415,12 +461,12 @@ if __name__ == '__main__':
     # print(usr_lipid_master_df.head())
     # print(usr_lipid_master_df.tail())
 
-    master_xlsx = r'../Temp/LipidMaster_Whitelist.xlsx'
+    master_xlsx = r'../Temp/LipidMaster_Whitelist_TG.xlsx'
     fa_xlsx = r'../Temp/LipidMaster_FAlist.xlsx'
 
     calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_type'], r'../ConfigurationFiles/FA_Whitelist.xlsx',
                                         ms2_ppm=50)
 
-    #print(calc_fa_df)
+    print(calc_fa_df)
     usr_lipid_master_df.to_excel(master_xlsx)
     calc_fa_df.to_excel(fa_xlsx)
