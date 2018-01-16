@@ -382,6 +382,36 @@ def huntlipids(param_dct, error_lst):
     part_tot = len(lipid_part_key_lst)
     part_counter = 1
 
+    # parse specific peak info
+    pl_class_lst = ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'PIP']
+    pl_neg_chg_lst = ['[M-H]-', '[M+HCOO]-', '[M+CH3COO]-']
+    if usr_lipid_class in pl_class_lst and usr_charge in pl_neg_chg_lst:
+        charge_mode = 'NEG'
+        usr_key_frag_df = pd.read_excel(key_frag_cfg)
+        usr_key_frag_df = usr_key_frag_df.query('EXACTMASS > 0')
+        # get the information from the following columns
+        usr_key_frag_df = usr_key_frag_df[['CLASS', 'TYPE', 'EXACTMASS', 'PR_CHARGE', 'LABEL', 'CHARGE_MODE']]
+        # find key peaks for the target PL class
+        target_frag_df = usr_key_frag_df.query(r'CLASS == "%s" and TYPE == "FRAG" and PR_CHARGE == "%s"'
+                                               % (usr_lipid_class, usr_charge))
+        target_nl_df = usr_key_frag_df.query(r'CLASS == "%s" and TYPE == "NL" and PR_CHARGE == "%s"'
+                                             % (usr_lipid_class, usr_charge))
+        # add precursor to the list
+        target_pr_df = pd.DataFrame(data={'CLASS': usr_lipid_class, 'TYPE': 'NL', 'EXACTMASS': 0.0,
+                                          'PR_CHARGE': usr_charge, 'LABEL': 'PR', 'CHARGE_MODE': 'NEG'}, index=['PR'])
+        target_nl_df = target_nl_df.append(target_pr_df)
+        target_nl_df.reset_index(drop=True, inplace=True)
+
+        # extract info for other classes
+        other_frag_df = usr_key_frag_df.query('CLASS != "%s" and TYPE == "FRAG" and CHARGE_MODE == "%s"'
+                                              % (usr_lipid_class, charge_mode))
+        other_nl_df = usr_key_frag_df.query('CLASS != "%s" and TYPE == "NL" and CHARGE_MODE == "%s"'
+                                            % (usr_lipid_class, charge_mode))
+        key_frag_dct = {'target_frag_df': target_frag_df, 'target_nl_df': target_nl_df,
+                        'other_frag_df': other_frag_df, 'other_nl_df': other_nl_df}
+    else:
+        key_frag_dct = {}
+
     for lipid_sub_key_lst in lipid_part_key_lst:
 
         if part_tot == 1:
@@ -408,7 +438,7 @@ def huntlipids(param_dct, error_lst):
                     lipid_info_result = parallel_pool.apply_async(get_lipid_info,
                                                                   args=(param_dct, usr_fa_df, checked_info_df,
                                                                         checked_info_groups, lipid_sub_lst,
-                                                                        usr_weight_df, usr_key_frag_df,
+                                                                        usr_weight_df, key_frag_dct,
                                                                         lipid_sub_dct, xic_dct))
                     lipid_info_results_lst.append(lipid_info_result)
                     core_worker_count += 1
@@ -439,7 +469,7 @@ def huntlipids(param_dct, error_lst):
                     else:
                         pass
                     lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
-                    print('>>> >>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
+                    print('>>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
                     tmp_lipid_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
                                                        lipid_sub_lst, usr_weight_df, usr_key_frag_df, lipid_sub_dct,
                                                        xic_dct)
@@ -513,27 +543,30 @@ def huntlipids(param_dct, error_lst):
 
 
 if __name__ == '__main__':
-    # lipid_class = 'PE'
-    # charge = '[M-H]-'
-    lipid_class = 'PC'
-    charge = '[M+HCOO]-'
+
+    pl_class = 'PE'
+    charge = '[M-H]-'
+    # pl_class = 'PC'
+    # charge = '[M+HCOO]-'
     mz_range = [650, 950]
-    rt_range = [20, 27.5]
+    rt_range = [20, 30]
+    count = 1
 
     usr_dct = {'fawhitelist_path_str': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\FA_Whitelist.xlsx',
                'mzml_path_str': r'D:\project_lipidhunter\MF_mzML\MS2\070120_CM_neg_70min_SIN_I.mzML',
-               'img_output_folder_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test1',
-               'xlsx_output_path_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test1\t1.xlsx',
+               'img_output_folder_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test%s%i' % (pl_class, count),
+               'xlsx_output_path_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test%s%i\t%s_%i.xlsx'
+                                       % (pl_class, count, pl_class, count),
                'lipid_specific_cfg':
                    r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
                'hunter_start_time': '2017-12-21_15-27-49',
-               'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': lipid_class, 'charge_mode': charge,
+               'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': pl_class, 'charge_mode': charge,
                'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1],
                'rank_score': True, 'rank_score_filter': 27.5, 'score_filter': 27.5,
                'isotope_score_filter': 75.0, 'fast_isotope': False,
                'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
                'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
-               'hg_th': 10.0, 'hg_ppm': 100.0, 'ms2_hginfopeak_threshold': 0.001,
+               'hg_th': 10.0, 'hg_ppm': 200.0, 'ms2_hginfopeak_threshold': 0.001,
                'score_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\Score_cfg.xlsx',
                'fa_white_list_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\FA_Whitelist.xlsx',
                'hunter_folder': r'D:\project_lipidhunter\lipidhunterdev',

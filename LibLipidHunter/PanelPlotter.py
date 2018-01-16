@@ -32,7 +32,7 @@ import matplotlib.patches as patches
 # from matplotlib._png import read_png
 
 
-def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct,
+def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
                  formula_charged, charge, save_img_as=None, img_type='png', dpi=300,
                  ms1_precision=50e-6):
     print('Start to plot')
@@ -374,7 +374,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
             msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
             msms_high_pic.set_ylabel("Intensity", fontsize=10)
-            msms_high_pic.set_xlim([400, ms2_pr_mz + 5])
+            msms_high_pic.set_xlim([400, ms2_pr_mz + 20])
             msms_high_pic.set_ylim([0, max(_msms_high_df['i'].tolist()) * 1.3])
         else:
             pass
@@ -385,10 +385,10 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
         msms_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
         msms_pic.set_ylabel("Intensity", fontsize=10)
-        msms_pic.set_xlim([min(ms2_df['mz'].tolist()) - 1, ms2_pr_mz + 5])
+        msms_pic.set_xlim([min(ms2_df['mz'].tolist()) - 1, ms2_pr_mz + 20])
         msms_pic.set_ylim([0, _msms_max * 1.5])
         msms_low_pic.set_ylim([0, _msms_max * 1.5])
-        msms_high_pic.set_ylim([0, msms_high_max * 1.15])
+        msms_high_pic.set_ylim([0, msms_high_max * 1.25])
 
         # remove identified FA
         ident_peak_lst = obs_ident_df['obs_abbr'].tolist()
@@ -426,7 +426,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             markerline, stemlines, baseline = msms_low_pic.stem([_frag_mz], [_frag_i_r], markerfmt=' ')
             plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
             markerline, stemlines, baseline = msms_pic.stem([_frag_mz], [_frag_i], markerfmt=' ')
-            plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
+            plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.7), linewidth=3, alpha=0.4)
             msms_low_pic.text(_frag_mz, _frag_i_r, _frag_se['obs_label'], txt_props, fontsize=6,
                               color=(1.0, 0.6, 0.0, 1), rotation=60)
 
@@ -434,11 +434,11 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         for _idx, _nl_se in obs_lyso_df.iterrows():
             _nl_mz = _nl_se['mz']
             _nl_i = _nl_se['i']
-            _nl_i_r = _nl_i * 1.05
+            _nl_i_r = _nl_i * 1.075
             markerline, stemlines, baseline = msms_high_pic.stem([_nl_mz], [_nl_i_r], markerfmt=' ')
             plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
             markerline, stemlines, baseline = msms_pic.stem([_nl_mz], [_nl_i], markerfmt=' ')
-            plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
+            plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.7), linewidth=3, alpha=0.4)
             msms_high_pic.text(_nl_mz, _nl_i_r, _nl_se['obs_label'], txt_props, fontsize=6,
                                color=(1.0, 0.6, 0.0, 1), rotation=60)
 
@@ -452,14 +452,68 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 _ident_i_r = _ident_i * 1.025
             else:
                 _sub_plot = msms_high_pic
-                _ident_i_r = _ident_i * 1.25
+                _ident_i_r = _ident_i * 1.075
 
             markerline, stemlines, baseline = _sub_plot.stem([_ident_mz], [_ident_i_r], markerfmt=' ')
             plt.setp(stemlines, color=(0, 0.7, 1.0, 0.4), linewidth=3)
             markerline, stemlines, baseline = msms_pic.stem([_ident_mz], [_ident_i], markerfmt=' ')
-            plt.setp(stemlines, color=(0, 0.7, 1.0, 0.4), linewidth=3)
+            plt.setp(stemlines, color=(0, 0.7, 1.0, 0.7), linewidth=3)
             _sub_plot.text(_ident_mz, _ident_i_r, _ident_se['obs_label'], txt_props,
                            fontsize=8, color=(0, 0.6, 1.0, 1.0), rotation=60, weight='bold')
+
+        # add specific ion info
+        if 'OTHER_FRAG' in specific_dct.keys():
+            other_frag_df = specific_dct['OTHER_FRAG']
+            for _idx, _frag_se in other_frag_df.iterrows():
+                _frag_mz = _frag_se['mz']
+                _frag_i = _frag_se['i']
+                _frag_class = _frag_se['LABEL']
+                _frag_i_r = _frag_i * 1.4
+                markerline, stemlines, baseline = msms_low_pic.stem([_frag_mz], [_frag_i_r], markerfmt=' ')
+                plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.5), linewidth=3)
+                markerline, stemlines, baseline = msms_pic.stem([_frag_mz], [_frag_i], markerfmt=' ')
+                plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.7), linewidth=3)
+                msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, fontsize=7, color=(1.0, 0.6, 0.0, 1))
+
+        if 'OTHER_NL' in specific_dct.keys():
+            other_nl_df = specific_dct['OTHER_NL']
+            for _idx, _nl_se in other_nl_df.iterrows():
+                _nl_mz = _nl_se['mz']
+                _nl_i = _nl_se['i']
+                _nl_class = _nl_se['LABEL']
+                _nl_i_r = _nl_i * 1.2
+                markerline, stemlines, baseline = msms_high_pic.stem([_nl_mz], [_nl_i_r], markerfmt=' ')
+                plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.5), linewidth=3)
+                markerline, stemlines, baseline = msms_pic.stem([_nl_mz], [_nl_i], markerfmt=' ')
+                plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.7), linewidth=3)
+                msms_high_pic.text(_nl_mz, _nl_i_r, _nl_class, fontsize=7, color=(1.0, 0.6, 0.0, 1))
+
+        if 'TARGET_FRAG' in specific_dct.keys():
+            target_frag_df = specific_dct['TARGET_FRAG']
+            for _idx, _frag_se in target_frag_df.iterrows():
+                _frag_mz = _frag_se['mz']
+                _frag_i = _frag_se['i']
+                _frag_class = _frag_se['LABEL']
+                _frag_i_r = _frag_i * 1.4
+                markerline, stemlines, baseline = msms_low_pic.stem([_frag_mz], [_frag_i_r], markerfmt=' ')
+                plt.setp(stemlines, color=(0.5, 0.8, 0.5, 0.6), linewidth=3)
+                markerline, stemlines, baseline = msms_pic.stem([_frag_mz], [_frag_i], markerfmt=' ')
+                plt.setp(stemlines, color=(0.5, 0.8, 0.5, 0.7), linewidth=3)
+                msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, fontsize=8, color=(0.4, 0.7, 0.4, 1.0),
+                                  weight='bold')
+
+        if 'TARGET_NL' in specific_dct.keys():
+            target_nl_df = specific_dct['TARGET_NL']
+            for _idx, _nl_se in target_nl_df.iterrows():
+                _nl_mz = _nl_se['mz']
+                _nl_i = _nl_se['i']
+                _nl_class = _nl_se['LABEL']
+                _nl_i_r = _nl_i * 1.2
+                markerline, stemlines, baseline = msms_high_pic.stem([_nl_mz], [_nl_i_r], markerfmt=' ')
+                plt.setp(stemlines, color=(0.5, 0.8, 0.5, 0.6), linewidth=3)
+                markerline, stemlines, baseline = msms_pic.stem([_nl_mz], [_nl_i], markerfmt=' ')
+                plt.setp(stemlines, color=(0.5, 0.8, 0.5, 0.7), linewidth=3)
+                msms_high_pic.text(_nl_mz, _nl_i_r, _nl_class, fontsize=8, color=(0.4, 0.7, 0.4, 1.0), weight='bold')
 
         # set title
         xic_title_str = 'XIC of m/z %.4f | @ m/z %.4f ppm=%.2f' % (ms1_pr_mz, lib_mz, ms1_pr_ppm)

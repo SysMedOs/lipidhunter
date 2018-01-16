@@ -653,11 +653,11 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
                 for hunter_time in hunter_results_lst:
 
-                    run_time = str(hunter_time.get())
-
-                    if isinstance(run_time, float):
-                        self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % run_time)
-                        self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+                    run_time = str(hunter_time)
+                    if isinstance(run_time, str):
+                        self.ui.tab_b_statusrun_pte.appendPlainText('>>> %s' % run_time)
+                        self.ui.tab_b_statusrun_pte.appendPlainText('FINISHED with file %i / %i\n' %
+                                                                    (run_counter, tot_num))
                         run_counter += 1
                     else:
                         self.ui.tab_b_statusrun_pte.insertPlainText(
@@ -674,15 +674,18 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                     start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                     hunter_param_dct['hunter_start_time'] = start_time_str
                     log_lst = []
-                    run_time, log_lst = huntlipids(hunter_param_dct, error_lst=log_lst)
+                    hunter_time, log_lst = huntlipids(hunter_param_dct, error_lst=log_lst)
 
-                    if isinstance(run_time, float):
-                        self.ui.tab_a_statusrun_pte.insertPlainText('%.2f Sec\n' % run_time)
-                        self.ui.tab_a_statusrun_pte.insertPlainText('>>> >>> >>> FINISHED <<< <<< <<<')
+                    run_time = str(hunter_time)
+
+                    if isinstance(run_time, str):
+                        self.ui.tab_b_statusrun_pte.appendPlainText('>>> %s' % run_time)
+                        self.ui.tab_b_statusrun_pte.appendPlainText('FINISHED with file %i / %i\n' %
+                                                                    (run_counter, tot_num))
                         run_counter += 1
                     else:
                         self.ui.tab_b_statusrun_pte.insertPlainText(
-                            '!! Failed read batch mode configure files:\n %s \n Please check settings!!' % _cfg)
+                            '!! Failed to process batch mode configure file:\n Please check settings!!')
                 else:
                     self.ui.tab_b_statusrun_pte.insertPlainText(
                         '!! Failed read batch mode configure files:\n %s \n Please check settings!!' % _cfg)
