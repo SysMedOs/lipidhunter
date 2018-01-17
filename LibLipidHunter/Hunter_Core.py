@@ -412,6 +412,8 @@ def huntlipids(param_dct, error_lst):
     else:
         key_frag_dct = {}
 
+    print('... Key FRAG Dict Generated ...')
+
     for lipid_sub_key_lst in lipid_part_key_lst:
 
         if part_tot == 1:
@@ -433,13 +435,18 @@ def huntlipids(param_dct, error_lst):
                         lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
                     else:
                         pass
-                    lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                    if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
+                        lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                    else:
+                        lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
+                        lipid_sub_lst = tuple([lipid_sub_lst])
                     print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-                    lipid_info_result = parallel_pool.apply_async(get_lipid_info,
-                                                                  args=(param_dct, usr_fa_df, checked_info_df,
-                                                                        checked_info_groups, lipid_sub_lst,
-                                                                        usr_weight_df, key_frag_dct,
-                                                                        lipid_sub_dct, xic_dct))
+                    if len(lipid_sub_dct.keys()) > 0:
+                        lipid_info_result = parallel_pool.apply_async(get_lipid_info,
+                                                                      args=(param_dct, usr_fa_df, checked_info_df,
+                                                                            checked_info_groups, lipid_sub_lst,
+                                                                            usr_weight_df, key_frag_dct,
+                                                                            lipid_sub_dct, xic_dct))
                     lipid_info_results_lst.append(lipid_info_result)
                     core_worker_count += 1
 
@@ -462,17 +469,21 @@ def huntlipids(param_dct, error_lst):
             print('Using single core mode...')
             core_worker_count = 1
             for lipid_sub_lst in lipid_sub_key_lst:
-
                 if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
                     if None in lipid_sub_lst:
                         lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
                     else:
                         pass
-                    lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                    if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
+                        lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                    else:
+                        lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
+                        lipid_sub_lst = tuple([lipid_sub_lst])
                     print('>>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
-                    tmp_lipid_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
-                                                       lipid_sub_lst, usr_weight_df, usr_key_frag_df, lipid_sub_dct,
-                                                       xic_dct)
+                    if len(lipid_sub_dct.keys()) > 0:
+                        tmp_lipid_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
+                                                           lipid_sub_lst, usr_weight_df, key_frag_dct,
+                                                           lipid_sub_dct, xic_dct)
 
                     core_worker_count += 1
                     if isinstance(tmp_lipid_info_df, str):
@@ -543,7 +554,6 @@ def huntlipids(param_dct, error_lst):
 
 
 if __name__ == '__main__':
-
     pl_class = 'PE'
     charge = '[M-H]-'
     # pl_class = 'PC'

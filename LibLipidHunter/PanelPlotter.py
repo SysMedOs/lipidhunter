@@ -48,8 +48,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     obs_fa_df = ident_info_dct['OBS_FA']
     obs_lyso_df = ident_info_dct['OBS_LYSO']
     obs_ident_df = ident_info_dct['IDENT']
-    print('obs_ident_df')
-    print(obs_ident_df[['discrete_abbr', 'mz', 'i', 'obs_rank_type', 'obs_rank']])
+    # print('obs_ident_df')
+    # print(obs_ident_df[['discrete_abbr', 'mz', 'i', 'obs_rank_type', 'obs_rank']])
 
     isotope_score = isotope_score_info_dct['isotope_score']
     isotope_checker_dct = isotope_score_info_dct['isotope_checker_dct']
@@ -92,7 +92,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         m1_theo_i = m1_dct['theo_i']
         m1_obs_mz = m1_dct['obs_mz']
         m1_obs_i = m1_dct['obs_i']
-        print('spectra shape', ms1_df.shape, ms2_df.shape)
+
         if ms1_df['i'].max() >= 10000 and ms1_df.shape[0] >= 500:
             ms1_min = ms1_df['i'].min()
             ms1_max = ms1_df['i'].max()
@@ -327,30 +327,34 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                      colLabels=ident_col_labels, loc='upper center', cellLoc='center')
         ident_table.set_fontsize(8)
 
-        _fa_col_labels = ('#', 'identification', 'm/z', 'ppm', 'i (%)')
-        _fa_table_df = pd.DataFrame(data={'#': obs_fa_df['obs_rank'].tolist(),
-                                          'identification': obs_fa_df['obs_abbr'].tolist(),
-                                          'm/z': obs_fa_df['obs_mz'].tolist(),
-                                          'ppm': obs_fa_df['obs_ppm'].tolist(),
-                                          'i (%)': obs_fa_df['obs_i_r'].tolist()})
-        _fa_table_df = _fa_table_df.reindex(columns=_fa_col_labels)
-        _fa_table_vals = map(list, _fa_table_df.values)
-        _fa_col_width_lst = [0.03, 0.125, 0.10, 0.06, 0.06]
-        _fa_table = msms_low_pic.table(cellText=_fa_table_vals, colWidths=_fa_col_width_lst,
-                                       colLabels=_fa_col_labels, loc='upper left', cellLoc='center')
-        _fa_table.set_fontsize(5)
+        # plot fa frag identification table
+        if obs_fa_df.shape[0] > 0:
+            _fa_col_labels = ('#', 'identification', 'm/z', 'ppm', 'i (%)')
+            _fa_table_df = pd.DataFrame(data={'#': obs_fa_df['obs_rank'].tolist(),
+                                              'identification': obs_fa_df['obs_abbr'].tolist(),
+                                              'm/z': obs_fa_df['obs_mz'].tolist(),
+                                              'ppm': obs_fa_df['obs_ppm'].tolist(),
+                                              'i (%)': obs_fa_df['obs_i_r'].tolist()})
+            _fa_table_df = _fa_table_df.reindex(columns=_fa_col_labels)
+            _fa_table_vals = map(list, _fa_table_df.values)
+            _fa_col_width_lst = [0.03, 0.125, 0.10, 0.06, 0.06]
+            _fa_table = msms_low_pic.table(cellText=_fa_table_vals, colWidths=_fa_col_width_lst,
+                                           colLabels=_fa_col_labels, loc='upper left', cellLoc='center')
+            _fa_table.set_fontsize(5)
 
-        _lyso_col_labels = ('#', 'identification', 'm/z', 'ppm', 'i (%)')
-        _lyso_table_df = pd.DataFrame(data={'#': obs_lyso_df['obs_rank'].tolist(),
-                                            'identification': obs_lyso_df['obs_abbr'].tolist(),
-                                            'm/z': obs_lyso_df['obs_mz'].tolist(),
-                                            'ppm': obs_lyso_df['obs_ppm'].tolist(),
-                                            'i (%)': obs_lyso_df['obs_i_r'].tolist()})
-        _lyso_table_df = _lyso_table_df.reindex(columns=_lyso_col_labels)
-        _lyso_table_vals = map(list, _lyso_table_df.values)
-        _lyso_col_width_lst = [0.03, 0.175, 0.10, 0.06, 0.06]
-        _lyso_table = msms_high_pic.table(cellText=_lyso_table_vals, colWidths=_lyso_col_width_lst,
-                                          colLabels=_lyso_col_labels, loc='upper center', cellLoc='center')
+        # plot fa nl identification table
+        if obs_lyso_df.shape[0] > 0:
+            _lyso_col_labels = ('#', 'identification', 'm/z', 'ppm', 'i (%)')
+            _lyso_table_df = pd.DataFrame(data={'#': obs_lyso_df['obs_rank'].tolist(),
+                                                'identification': obs_lyso_df['obs_abbr'].tolist(),
+                                                'm/z': obs_lyso_df['obs_mz'].tolist(),
+                                                'ppm': obs_lyso_df['obs_ppm'].tolist(),
+                                                'i (%)': obs_lyso_df['obs_i_r'].tolist()})
+            _lyso_table_df = _lyso_table_df.reindex(columns=_lyso_col_labels)
+            _lyso_table_vals = map(list, _lyso_table_df.values)
+            _lyso_col_width_lst = [0.03, 0.175, 0.10, 0.06, 0.06]
+            _lyso_table = msms_high_pic.table(cellText=_lyso_table_vals, colWidths=_lyso_col_width_lst,
+                                              colLabels=_lyso_col_labels, loc='upper center', cellLoc='center')
 
         # msms spectrum zoomed < 400 start
         if _msms_low_df.shape[0] > 0:

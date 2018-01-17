@@ -590,6 +590,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         loaded_cfg_files = str(self.ui.tab_b_infiles_pte.toPlainText())
         pre_loaded_cfg_lst = loaded_cfg_files.split('\n')
 
+        max_process = self.ui.tab_b_maxbatch_spb.value()
+        sub_max_core = self.ui.tab_b_maxsubcore_spb.value()
+        sub_max_ram = self.ui.tab_b_maxsubram_spb.value()
+
         loaded_cfg_lst = []
         for f in pre_loaded_cfg_lst:
             if len(f) > 4:
@@ -603,10 +607,6 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         os.chdir(self.lipidhunter_cwd)
 
         if multi_mode_idx == 1:  # multi mode
-
-            max_process = self.ui.tab_b_maxbatch_spb.value()
-            sub_max_core = self.ui.tab_b_maxsubcore_spb.value()
-            sub_max_ram = self.ui.tab_b_maxsubram_spb.value()
 
             cfg_dct_lst = []
             for cfg_file in loaded_cfg_lst:
@@ -671,6 +671,9 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 self.ui.tab_b_statusrun_pte.insertPlainText('Start processing...\n%s\n' % _cfg)
                 hunter_param_dct = self.b_read_cfg(_cfg)
                 if 'vendor' in hunter_param_dct.keys():
+                    hunter_param_dct['batch_cfg_file'] = _cfg
+                    hunter_param_dct['core_number'] = sub_max_core
+                    hunter_param_dct['max_ram'] = sub_max_ram
                     start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                     hunter_param_dct['hunter_start_time'] = start_time_str
                     log_lst = []
