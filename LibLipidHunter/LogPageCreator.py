@@ -77,34 +77,6 @@ class LogPageCreator(object):
                             a:link {text-decoration:none; color:black} a:hover{text-decoration:underline; color:black;}
                             a:visited {text-decoration:none; color:black;}\n</style>\n''')
 
-        with open(self.params_lst_page, 'w') as _params_page:
-            _params_page.write('''
-                                <html>\n<body>\n<style type="text/css">\n
-                                p {margin-left: 20px; text-decoration: none; font-family: sans-serif;}\n
-                                body {font-family: sans-serif;}\n table{width:100%s;}\n
-                                table, th, td {font-size:14px;text-align: center; font-family: sans-serif;}\n
-                                th{background-color:#0066B2;color:white; margin:center;}\n
-                                a:link {text-decoration:none} a:hover{text-decoration:underline }\n
-                                ul {font-size:14px; width: 260px;}\n </style>\n
-                                <h3><img src="LipidHunter.ico" height=30/>  LipidHunter</h3><font size="1">\n
-                                <hr> <h3>Parameters:</h3>\n<ul>\n
-                                <li>Start time: %s</li>\n<li>Mode: %s %s</li>\n
-                                <li><i>m/z</i> range: %.1f - %.1f <i>m/z</i></li>\n<li>RT range: %.1f - %.1f min</li>\n
-                                <li>MS1 Threshold: %i</li>\n<li>MS2 Threshold: %i</li>\n
-                                <li>MS1 ppm: %i</li>\n<li>MS2 ppm: %i</li>\n
-                                <li>LipidHunter score > %.1f %s</li>\n<li>Isotope score > %.1f %s</li>\n</ul>\n<h4>
-                                <a href ="LipidHunter_Configuration_Summary.html" target ="_blank">
-                                View all parameters...</a><h4><hr>\n<h3>Lipid identification list:
-                                </h3><font size="1">\n<table>\n<thead>\n<tr style="text-align: center;">\n
-                                <th>ID#</th>\n<th> MS1_obs_mz </th>\n<th>RT(min)</th>\n<th>Discrete</th>\n
-                                <th>Score</th>\n
-                                </tr>\n</thead>\n</table>\n</body>\n</html>\n
-                                ''' % ('%', params['hunter_start_time'], self.lipid_type, params['charge_mode'],
-                                       params['mz_start'], params['mz_end'], params['rt_start'], params['rt_end'],
-                                       params['ms_th'], params['ms2_th'], params['ms_ppm'], params['ms2_ppm'],
-                                       params['rank_score_filter'], score_mode,
-                                       params['isotope_score_filter'], isotope_score_mode))
-
         with open(self.cfg_sum_page, 'w') as _cfg_page:
 
             cfg_sum_dct = {'fawhitelist_path_str': 'FA white list:',
@@ -142,7 +114,7 @@ class LogPageCreator(object):
                            'ms_ppm', 'ms_th', 'pr_window',
                            'ms2_ppm', 'ms2_th', 'ms2_infopeak_threshold',
                            'hg_ppm', 'hg_th', 'ms2_hginfopeak_threshold',
-                           'core_number', 'max_ram', 'img_type', 'img_dpi',  'ms_max', 'tag_all_sn']
+                           'core_number', 'max_ram', 'img_type', 'img_dpi', 'ms_max', 'tag_all_sn']
 
             param_key_lst = params.keys()
             disp_cfg_lst = []
@@ -168,6 +140,34 @@ class LogPageCreator(object):
             cfg_template += params_li_str
             cfg_template += '</ul>\n</body>\n</html>\n'
             _cfg_page.write(cfg_template)
+
+        with open(self.params_lst_page, 'w') as _params_page:
+            _params_page.write('''
+                                <html>\n<body>\n<style type="text/css">\n
+                                p {margin-left: 20px; text-decoration: none; font-family: sans-serif;}\n
+                                body {font-family: sans-serif;}\n table{width:100%s;}\n
+                                table, th, td {font-size:14px;text-align: center; font-family: sans-serif;}\n
+                                th{background-color:#0066B2;color:white; margin:center;}\n
+                                a:link {text-decoration:none} a:hover{text-decoration:underline }\n
+                                ul {font-size:14px; width: 260px;}\n </style>\n
+                                <h3><img src="LipidHunter.ico" height=30/>  LipidHunter</h3><font size="1">\n
+                                <hr> <h3>Parameters:</h3>\n<ul>\n
+                                <li>Start time: %s</li>\n<li>Mode: %s %s</li>\n
+                                <li><i>m/z</i> range: %.1f - %.1f <i>m/z</i></li>\n<li>RT range: %.1f - %.1f min</li>\n
+                                <li>MS1 Threshold: %i</li>\n<li>MS2 Threshold: %i</li>\n
+                                <li>MS1 ppm: %i</li>\n<li>MS2 ppm: %i</li>\n
+                                <li>LipidHunter score > %.1f %s</li>\n<li>Isotope score > %.1f %s</li>\n</ul>\n<h4>
+                                <a href ="LipidHunter_Configuration_Summary.html" target ="_blank">
+                                View all parameters...</a><h4><hr>\n<h3>Lipid identification list:
+                                </h3><font size="1">\n<table>\n<thead>\n<tr style="text-align: center;">\n
+                                <th>ID#</th>\n<th> MS1_obs_mz </th>\n<th>RT(min)</th>\n<th>Discrete</th>\n
+                                <th>Score</th>\n
+                                </tr>\n</thead>\n</table>\n</body>\n</html>\n
+                                ''' % ('%', params['hunter_start_time'], self.lipid_type, params['charge_mode'],
+                                       params['mz_start'], params['mz_end'], params['rt_start'], params['rt_end'],
+                                       params['ms_th'], params['ms2_th'], params['ms_ppm'], params['ms2_ppm'],
+                                       params['rank_score_filter'], score_mode,
+                                       params['isotope_score_filter'], isotope_score_mode))
 
         with open(self.idx_lst_page, 'w') as _idx_page:
             _idx_page.write('''
@@ -248,16 +248,15 @@ class LogPageCreator(object):
                     _idx += 1  # set start from 0 to 1
 
                     img_title_str = ('{mz}_RT{rt:.3}_DDArank{dda}_Scan{scan}_{ident}_{f}_{chg}_score{score}'
-                        .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
-                                ident=ident_abbr, score=score, f=formula_ion, chg=charge))
+                                     .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
+                                             ident=ident_abbr, score=score, f=formula_ion, chg=charge))
                     img_info_lst = ['<a name="', '%i' % _idx, '"><h3>', '<a href="', img_path, '" target="blank">',
                                     img_title_str, '</a></h3></a>', '<a href="', img_path, '" target="blank">',
                                     '<img src="', img_path, '" height="800" /></a>', table_buf_code, '\n<hr>\n']
                     img_page.write(''.join(img_info_lst))
 
                     idx_str = ('''
-                            <tr>\n
-                            <td>
+                            <tr>\n<td>
                             <a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{id}
                             </td>\n<td>
                             <a href ="LipidHunter_Results_Figures_list.html#{id}" target ="results_frame">{mz}

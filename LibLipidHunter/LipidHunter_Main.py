@@ -328,8 +328,6 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         ms_max = 0
         if self.ui.tab_a_msmax_chb.isChecked() and self.ui.tab_a_msmax_spb.value() > ms_th + 1:
             ms_max = self.ui.tab_a_msmax_spb.value()
-
-        fa_white_list_cfg = self.ui.tab_c_fawhitelist_le.text()
         lipid_specific_cfg = self.ui.tab_c_hgcfg_le.text()
         score_cfg = self.ui.tab_c_scorecfg_le.text()
 
@@ -340,7 +338,6 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         error_log_lst.append(self.check_path(fawhitelist_path_str, 'FA whitelist'))
         error_log_lst.append(self.check_path(mzml_path_str, 'mzML spectra'))
-        error_log_lst.append(self.check_path(fa_white_list_cfg, 'FA whitelist'))
         error_log_lst.append(self.check_path(lipid_specific_cfg, 'configuration for Phospholipids'))
         error_log_lst.append(self.check_path(score_cfg, 'W_frag score configuration'))
         # TODO(zhixu.ni@uni-leipzig.de): Add more strict checker here. e.g. file type check.
@@ -373,7 +370,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                             'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm, 'hg_th': hg_th, 'hg_ppm': hg_ppm,
                             'rank_score_filter': rank_score_filter, 'isotope_score_filter': isotope_score_filter,
                             'score_filter': score_filter,
-                            'lipid_type': _pl_class, 'charge_mode': _pl_charge, 'fa_white_list_cfg': fa_white_list_cfg,
+                            'lipid_type': _pl_class, 'charge_mode': _pl_charge,
                             'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor,
                             'ms2_infopeak_threshold': ms2_info_threshold,
                             'ms2_hginfopeak_threshold': hgms2_info_threshold,
