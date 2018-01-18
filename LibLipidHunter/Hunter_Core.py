@@ -526,6 +526,10 @@ def huntlipids(param_dct, error_lst):
                                           ascending=[True, True, False])
         output_df = output_df.reset_index(drop=True)
         output_df.index += 1
+
+        output_sum_xlsx_directory = os.path.dirname(output_sum_xlsx)
+        if not os.path.exists(output_sum_xlsx_directory):
+            os.makedirs(output_sum_xlsx_directory)
         try:
             output_df.to_excel(output_sum_xlsx, index=False)
             print(output_sum_xlsx)
