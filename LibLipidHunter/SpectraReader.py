@@ -271,7 +271,7 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
     ms1_pr_ppm = 0
     function_max = dda_top + 1
 
-    if mz in scan_info_df['MS2_PR_mz'].tolist():
+    if mz in scan_info_df['MS2_PR_mz'].values.tolist():
         _tmp_mz_scan_info_df = scan_info_df.query('MS2_PR_mz == %.6f and DDA_rank == %f and scan_number == %f'
                                                   % (mz, func_id, ms2_scan_id))
         _tmp_mz_scan_info_df.is_copy = False
@@ -289,8 +289,8 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
             # get spectra_df of corresponding MS survey scan
             tmp_ms1_info_df = scan_info_df.query('dda_event_idx == %i and DDA_rank == 0' % ms2_dda_idx)
             if tmp_ms1_info_df.shape[0] > 0 and ms2_function <= function_max:
-                ms1_spec_idx = tmp_ms1_info_df['spec_index'].tolist()[0]
-                ms1_rt = tmp_ms1_info_df['scan_time'].tolist()[0]
+                ms1_spec_idx = tmp_ms1_info_df['spec_index'].values.tolist()[0]
+                ms1_rt = tmp_ms1_info_df['scan_time'].values.tolist()[0]
                 if ms1_spec_idx in spectra_pl.items:
                     ms1_df = spectra_pl[ms1_spec_idx]
                     ms1_df = ms1_df.query('i > 0')

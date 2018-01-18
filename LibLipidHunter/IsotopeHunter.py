@@ -173,8 +173,8 @@ class IsotopeHunter(object):
                 _i_info_dct = {'theo_mz': _mz, 'theo_i': theo_i, 'theo_ratio': _ratio}
                 if _i_df.shape[0] > 0:
                     _i_df = _i_df.sort_values(by='i', ascending=False).head(1)
-                    _i_max = _i_df['i'].tolist()[0]
-                    _mz_max = _i_df['mz'].tolist()[0]
+                    _i_max = _i_df['i'].values.tolist()[0]
+                    _mz_max = _i_df['mz'].values.tolist()[0]
                     _i_info_dct['obs_i'] = _i_max
                     _i_info_dct['obs_mz'] = _mz_max
                 else:

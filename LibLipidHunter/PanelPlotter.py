@@ -76,14 +76,14 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     ms_zoom_query_str = ' %.2f < mz < %.2f' % (ms1_obs - 1.5, ms1_obs + 3.55)
     ms_zoom_df = ms1_df.query(ms_zoom_query_str)
     try:
-        ms_zoom_bp_i = max(ms_zoom_df['i'].tolist())
+        ms_zoom_bp_i = max(ms_zoom_df['i'].values.tolist())
     except ValueError:
         ms_zoom_bp_i = 0
 
     xic_df = xic_dct[ms1_xic_mz]
 
-    xic_rt_lst = xic_df['rt'].tolist()
-    xic_i_lst = xic_df['i'].tolist()
+    xic_rt_lst = xic_df['rt'].values.tolist()
+    xic_i_lst = xic_df['i'].values.tolist()
 
     if ms_zoom_bp_i > 0 and len(xic_rt_lst) > 0 and len(xic_i_lst) > 0:
         # cut lower peaks to accelerate plotting time
@@ -96,7 +96,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         if ms1_df['i'].max() >= 10000 and ms1_df.shape[0] >= 500:
             ms1_min = ms1_df['i'].min()
             ms1_max = ms1_df['i'].max()
-            ms1_top1000_i = sorted(ms1_df['i'].tolist(), reverse=True)[499]
+            ms1_top1000_i = sorted(ms1_df['i'].values.tolist(), reverse=True)[499]
             ms1_plot_th = min(m1_obs_i, 3 * ms1_min, ms1_max * 0.01, 1000, ms1_top1000_i)
             ms1_plot_th = max(ms1_plot_th, ms1_top1000_i)
             print(m1_obs_i, 3 * ms1_min, ms1_max * 0.01, 1000, ms1_top1000_i)
@@ -106,7 +106,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             ms2_min = ms2_df['i'].min()
             ms2_max = ms2_df['i'].max()
 
-            ms2_top1000_i = sorted(ms2_df['i'].tolist(), reverse=True)[499]
+            ms2_top1000_i = sorted(ms2_df['i'].values.tolist(), reverse=True)[499]
             ms2_min_lst = [3 * ms2_min, ms2_max * 0.01, 10, ms2_top1000_i]
             ms2_plot_th = max(min(ms2_min_lst), ms2_top1000_i)
 
@@ -143,7 +143,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_high_pic.tick_params(axis='both', which='major', labelsize=10)
 
         # ms spectrum start
-        ms_pic.plot(ms1_df['mz'].tolist(), ms1_df['i'].tolist(), 'grey')
+        ms_pic.plot(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey')
 
         markerline, stemlines, baseline = ms_pic.stem([ms1_pr_mz], dash_i, markerfmt=' ')
         plt.setp(stemlines, color='#00ccff', linewidth=5, alpha=0.3)
@@ -154,11 +154,11 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         ms_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
         ms_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
         ms_pic.set_ylabel("Intensity", fontsize=10)
-        ms_pic.set_ylim([0, max(ms1_df['i'].tolist()) * 1.3])
+        ms_pic.set_ylim([0, max(ms1_df['i'].values.tolist()) * 1.3])
 
         # add annotation
         _ms_pkl_top_df = ms1_df.sort_values(by='i', ascending=False).head(10)
-        _ms_pkl_top_peak_list = zip(_ms_pkl_top_df['mz'].tolist(), _ms_pkl_top_df['i'].tolist())
+        _ms_pkl_top_peak_list = zip(_ms_pkl_top_df['mz'].values.tolist(), _ms_pkl_top_df['i'].values.tolist())
         for _ms_pkl_top_peak in _ms_pkl_top_peak_list:
             _ms_pkl_top_peak_str = '%.4f' % _ms_pkl_top_peak[0]
             _ms_pkl_top_peak_y = _ms_pkl_top_peak[1]
@@ -186,9 +186,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         ms_zoom_pic.set_xlabel('m/z', fontsize=10, labelpad=-1)
         ms_zoom_pic.set_ylabel('Intensity', fontsize=10)
 
-        # ms_zoom_pic.stem(ms_zoom_df['mz'].tolist(), ms_zoom_df['i'].tolist(), 'grey', markerfmt=' ', zorder=1)
         ms_zoom_df = ms_zoom_df.sort_values(by='mz', ascending='True')
-        ms_zoom_pic.plot(ms_zoom_df['mz'].tolist(), ms_zoom_df['i'].tolist(), 'grey', zorder=1)
+        ms_zoom_pic.plot(ms_zoom_df['mz'].values.tolist(), ms_zoom_df['i'].values.tolist(), 'grey', zorder=1)
         markerline, stemlines, baseline = ms_zoom_pic.stem([ms1_pr_mz], [ms1_pr_i],
                                                            'magenta', markerfmt='D', zorder=20)
         plt.setp(markerline, markerfacecolor='magenta', markeredgecolor='none', markeredgewidth=0,
@@ -317,8 +316,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         _msms_max = ms2_df['i'].max()
 
         ident_col_labels = ('Proposed_structure', 'Score')
-        _ident_table_df = pd.DataFrame(data={'Proposed_structure': obs_info_df['DISCRETE_ABBR'].tolist(),
-                                             'Score': obs_info_df['RANK_SCORE'].tolist()})
+        _ident_table_df = pd.DataFrame(data={'Proposed_structure': obs_info_df['DISCRETE_ABBR'].values.tolist(),
+                                             'Score': obs_info_df['RANK_SCORE'].values.tolist()})
         _ident_table_df.sort_values(by=['Score'], ascending=False, inplace=True)
         _ident_table_df.drop_duplicates(subset=['Proposed_structure', 'Score'], keep='first', inplace=True)
         ident_table_vals = map(list, _ident_table_df.values)
@@ -330,72 +329,77 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         # plot fa frag identification table
         if obs_fa_df.shape[0] > 0:
             _fa_col_labels = ('#', 'identification', 'm/z', 'ppm', 'i (%)')
-            _fa_table_df = pd.DataFrame(data={'#': obs_fa_df['obs_rank'].tolist(),
-                                              'identification': obs_fa_df['obs_abbr'].tolist(),
-                                              'm/z': obs_fa_df['obs_mz'].tolist(),
-                                              'ppm': obs_fa_df['obs_ppm'].tolist(),
-                                              'i (%)': obs_fa_df['obs_i_r'].tolist()})
+            _fa_table_df = pd.DataFrame(data={'#': obs_fa_df['obs_rank'].values.tolist(),
+                                              'identification': obs_fa_df['obs_abbr'].values.tolist(),
+                                              'm/z': obs_fa_df['obs_mz'].values.tolist(),
+                                              'ppm': obs_fa_df['obs_ppm'].values.tolist(),
+                                              'i (%)': obs_fa_df['obs_i_r'].values.tolist()})
             _fa_table_df = _fa_table_df.reindex(columns=_fa_col_labels)
             _fa_table_vals = map(list, _fa_table_df.values)
             _fa_col_width_lst = [0.03, 0.125, 0.10, 0.06, 0.06]
             _fa_table = msms_low_pic.table(cellText=_fa_table_vals, colWidths=_fa_col_width_lst,
                                            colLabels=_fa_col_labels, loc='upper left', cellLoc='center')
             _fa_table.set_fontsize(5)
+        else:
+            _fa_table = False
 
         # plot fa nl identification table
         if obs_lyso_df.shape[0] > 0:
             _lyso_col_labels = ('#', 'identification', 'm/z', 'ppm', 'i (%)')
-            _lyso_table_df = pd.DataFrame(data={'#': obs_lyso_df['obs_rank'].tolist(),
-                                                'identification': obs_lyso_df['obs_abbr'].tolist(),
-                                                'm/z': obs_lyso_df['obs_mz'].tolist(),
-                                                'ppm': obs_lyso_df['obs_ppm'].tolist(),
-                                                'i (%)': obs_lyso_df['obs_i_r'].tolist()})
+            _lyso_table_df = pd.DataFrame(data={'#': obs_lyso_df['obs_rank'].values.tolist(),
+                                                'identification': obs_lyso_df['obs_abbr'].values.tolist(),
+                                                'm/z': obs_lyso_df['obs_mz'].values.tolist(),
+                                                'ppm': obs_lyso_df['obs_ppm'].values.tolist(),
+                                                'i (%)': obs_lyso_df['obs_i_r'].values.tolist()})
             _lyso_table_df = _lyso_table_df.reindex(columns=_lyso_col_labels)
             _lyso_table_vals = map(list, _lyso_table_df.values)
             _lyso_col_width_lst = [0.03, 0.175, 0.10, 0.06, 0.06]
             _lyso_table = msms_high_pic.table(cellText=_lyso_table_vals, colWidths=_lyso_col_width_lst,
                                               colLabels=_lyso_col_labels, loc='upper center', cellLoc='center')
+        else:
+            _lyso_table = False
 
         # msms spectrum zoomed < 400 start
         if _msms_low_df.shape[0] > 0:
-            msms_low_pic.stem(_msms_low_df['mz'].tolist(),
-                              _msms_low_df['i'].tolist(),
+            msms_low_pic.stem(_msms_low_df['mz'].values.tolist(),
+                              _msms_low_df['i'].values.tolist(),
                               'black', lw=2, markerfmt=' ')
             msms_low_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
             msms_low_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
             msms_low_pic.set_ylabel("Intensity", fontsize=10)
-            msms_low_pic.set_xlim([min(_msms_low_df['mz'].tolist()) - 1, 400])
-            msms_low_pic.set_ylim([0, max(_msms_low_df['i'].tolist()) * 1.3])
+            msms_low_pic.set_xlim([min(_msms_low_df['mz'].values.tolist()) - 1, 400])
+            msms_low_pic.set_ylim([0, max(_msms_low_df['i'].values.tolist()) * 1.3])
         else:
             pass
 
         # msms spectrum zoomed > 400 start
         if _msms_high_df.shape[0] > 0:
             msms_high_max = _msms_high_df['i'].max()
-            msms_high_pic.stem(_msms_high_df['mz'].tolist(),
-                               _msms_high_df['i'].tolist(),
+            msms_high_pic.stem(_msms_high_df['mz'].values.tolist(),
+                               _msms_high_df['i'].values.tolist(),
                                'black', lw=4, markerfmt=' ')
             msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
             msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
             msms_high_pic.set_ylabel("Intensity", fontsize=10)
             msms_high_pic.set_xlim([400, ms2_pr_mz + 20])
-            msms_high_pic.set_ylim([0, max(_msms_high_df['i'].tolist()) * 1.3])
+            msms_high_pic.set_ylim([0, max(_msms_high_df['i'].values.tolist()) * 1.3])
         else:
             pass
             msms_high_max = ms2_df['i'].max()
 
         # msms spectrum start
-        msms_pic.stem(ms2_df['mz'].tolist(), ms2_df['i'].tolist(), 'black', markerfmt=' ', basefmt='k-', zorder=10)
+        msms_pic.stem(ms2_df['mz'].values.tolist(), ms2_df['i'].values.tolist(),
+                      'black', markerfmt=' ', basefmt='k-', zorder=10)
         msms_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
         msms_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
         msms_pic.set_ylabel("Intensity", fontsize=10)
-        msms_pic.set_xlim([min(ms2_df['mz'].tolist()) - 1, ms2_pr_mz + 20])
+        msms_pic.set_xlim([min(ms2_df['mz'].values.tolist()) - 1, ms2_pr_mz + 20])
         msms_pic.set_ylim([0, _msms_max * 1.5])
         msms_low_pic.set_ylim([0, _msms_max * 1.5])
         msms_high_pic.set_ylim([0, msms_high_max * 1.25])
 
         # remove identified FA
-        ident_peak_lst = obs_ident_df['obs_abbr'].tolist()
+        ident_peak_lst = obs_ident_df['obs_abbr'].values.tolist()
         frag_idx_lst = []
         nl_idx_lst = []
         for _idx, _ion_se in obs_fa_df.iterrows():
@@ -410,12 +414,18 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         # set back ground of the table
         for _idx in frag_idx_lst:
             for _r in [0, 1, 2, 3, 4]:
-                _cell = _fa_table.get_celld()[(_idx + 1, _r)]
-                _cell.set_color((0, 0.7, 1.0, 0.4))
+                if _fa_table is False:
+                    pass
+                else:
+                    _cell = _fa_table.get_celld()[(_idx + 1, _r)]
+                    _cell.set_color((0, 0.7, 1.0, 0.4))
         for _idx in nl_idx_lst:
             for _r in [0, 1, 2, 3, 4]:
-                _cell = _lyso_table.get_celld()[(_idx + 1, _r)]
-                _cell.set_color((0, 0.7, 1.0, 0.4))
+                if _lyso_table is False:
+                    pass
+                else:
+                    _cell = _lyso_table.get_celld()[(_idx + 1, _r)]
+                    _cell.set_color((0, 0.7, 1.0, 0.4))
 
         # add specific ion info
         txt_props = {'ha': 'left', 'va': 'bottom'}
@@ -424,8 +434,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         for _idx, _frag_se in obs_fa_df.iterrows():
             _frag_mz = _frag_se['mz']
             _frag_i = _frag_se['i']
-            # _frag_i_x = min([_frag_i * 5, 0.3 * max(_msms_low_df['i'].tolist())])
-            # _frag_i_r = sorted([max(_msms_low_df['i'].tolist()) * 1.1, _frag_i * 1.1, _frag_i_x])[1]
+            # _frag_i_x = min([_frag_i * 5, 0.3 * max(_msms_low_df['i'].values.tolist())])
+            # _frag_i_r = sorted([max(_msms_low_df['i'].values.tolist()) * 1.1, _frag_i * 1.1, _frag_i_x])[1]
             _frag_i_r = _frag_i * 1.025
             markerline, stemlines, baseline = msms_low_pic.stem([_frag_mz], [_frag_i_r], markerfmt=' ')
             plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)

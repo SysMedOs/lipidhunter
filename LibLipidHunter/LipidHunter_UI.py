@@ -1298,7 +1298,7 @@ class Ui_MainWindow(object):
         self.tab_b_addcfg_pb.setText(QtGui.QApplication.translate("MainWindow", "Add a single file", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_b_2_lb.setText(QtGui.QApplication.translate("MainWindow", "Add all batch settings in a folder:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_b_addcfgfolder_pb.setText(QtGui.QApplication.translate("MainWindow", "Select a folder", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_98.setText(QtGui.QApplication.translate("MainWindow", "Load batch configureation files (.txt):", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_98.setText(QtGui.QApplication.translate("MainWindow", "Load batch settings files (.txt):", None, QtGui.QApplication.UnicodeUTF8))
         self.label_99.setText(QtGui.QApplication.translate("MainWindow", "Batch mode settings:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_b_mutlimode_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Process as a sequence", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_b_mutlimode_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Process multiple files in parallel", None, QtGui.QApplication.UnicodeUTF8))

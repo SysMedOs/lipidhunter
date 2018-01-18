@@ -222,7 +222,7 @@ def huntlipids(param_dct, error_lst):
 
     checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'])
 
-    ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].tolist()
+    ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
     print('ms1_xic_mz_lst', len(ms1_xic_mz_lst))
     print(ms1_xic_mz_lst)
@@ -495,18 +495,19 @@ def huntlipids(param_dct, error_lst):
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
         try:
-            output_df = output_df.sort_values(by=['Lib_mz', 'Proposed_structures', 'MS2_scan_time', 'RANK_SCORE'])
+            output_df = output_df.sort_values(by=['Lib_mz', 'Bulk_identification', 'MS2_scan_time', 'RANK_SCORE'],
+                                              ascending=[True, True, True, False])
         except KeyError:
             pass
         output_df.reset_index(drop=True, inplace=True)
         output_df.index += 1
-        print('output_df')
-        print(output_df.head(5))
-        print(output_df.columns.tolist())
-        print(output_df[['Proposed_structures', 'DISCRETE_ABBR', 'MS2_scan_time', 'img_name']])
-        output_df.drop_duplicates(keep='first', inplace=True)
+        # print('output_df')
+        # print(output_df.head(5))
+        # print(output_df.columns.values.tolist())
+        # print(output_df[['Proposed_structures', 'DISCRETE_ABBR', 'MS2_scan_time', 'img_name']])
         log_pager.add_all_info(output_df)
-        output_header_lst = output_df.columns.tolist()
+        output_df.drop_duplicates(keep='first', inplace=True)
+        output_header_lst = output_df.columns.values.tolist()
         for _i_check in ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
                          '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']:
             if _i_check not in output_header_lst:

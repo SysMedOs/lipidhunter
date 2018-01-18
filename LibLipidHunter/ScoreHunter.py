@@ -297,7 +297,12 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
     if lite_info_df.shape[0] > 0:
         lite_info_df = lite_info_df[lite_info_df['RANK_SCORE'] >= rankscore_filter]
-        lite_info_df.sort_values(by='RANK_SCORE', ascending=False, inplace=True)
+        if lipid_type in ['PA', 'PE', 'PG', 'PI', 'PS'] and charge == '[M-H]-':
+            lite_info_df.loc[:, 'ident_rank'] = lite_info_df['SN1_[FA-H]-_RANK'] + lite_info_df['SN2_[FA-H]-_RANK']
+            lite_info_df.sort_values(by=['RANK_SCORE', 'ident_rank'], ascending=[False, True], inplace=True)
+        elif lipid_type in ['TG', 'DG', 'MG'] and charge == '[M+H]+':
+            pass
+            # TODO(zhixu.ni@uni-leipzig.de): @Georgia add TG here please :)
         lite_info_df.reset_index(drop=True, inplace=True)
         ident_peak_df = pd.DataFrame(ident_peak_dct).T
     else:
@@ -305,7 +310,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
     if lite_info_df.shape[0] > 0 and ident_peak_df.shape[0] > 0:
         matched_checker = 1
-        checked_abbr_lst = lite_info_df['DISCRETE_ABBR'].tolist()
+        checked_abbr_lst = lite_info_df['DISCRETE_ABBR'].values.tolist()
         ident_peak_df = ident_peak_df[ident_peak_df['discrete_abbr'].isin(checked_abbr_lst)]
         ident_peak_df.sort_values(by='mz', inplace=True)
         ident_peak_df.reset_index(drop=True, inplace=True)
@@ -354,7 +359,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
 
     for group_key in core_list:
         _subgroup_df = checked_info_groups.get_group(group_key)
-        _usr_abbr_bulk_lst = list(set(_subgroup_df['BULK_ABBR'].tolist()))
+        _usr_abbr_bulk_lst = list(set(_subgroup_df['BULK_ABBR'].values.tolist()))
         usr_spec_info_dct = core_spec_dct[group_key]
         _samemz_se = _subgroup_df.iloc[0, :].squeeze()  # compress df to se for lipids with same bulk structures
         _usr_ms2_rt = _samemz_se['scan_time']
@@ -374,7 +379,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         print(_usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged)
 
         # use the max threshold from abs & relative intensity settings
-        if 'i' in _ms2_df.columns.tolist():
+        if 'i' in _ms2_df.columns.values.tolist():
             _ms2_max_i = _ms2_df['i'].max()
             ms2_threshold = max(usr_ms2_th, _ms2_max_i * usr_ms2_info_th_p)
             ms2_hg_threshold = max(usr_ms2_th, _ms2_max_i * usr_hg_info_th_p)
@@ -419,7 +424,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                                                                   all_sn=usr_tag_all_sn)
 
                     obs_info_df = obs_info_dct['INFO']
-                    rank_score = obs_info_df['RANK_SCORE'].tolist()
+                    rank_score = obs_info_df['RANK_SCORE'].values.tolist()
 
                     if matched_checker > 0:
 
