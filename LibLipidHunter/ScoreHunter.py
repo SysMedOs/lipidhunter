@@ -214,11 +214,12 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         # TODO(zhixu.ni@uni-leipzig.de): add support to positive mode
         # obs_fa_frag_df = get_all_fa_frag(fa_df, ms2_df)
         # obs_fa_nl_df = get_all_fa_nl(fa_df, ms2_df, lipid_type)
-    elif lipid_type in ['TG', 'DG', 'MG'] and charge == '[M+H]+':
-        obs_dct = {}
-        obs_fa_frag_df = pd.DataFrame()
-        obs_fa_nl_df = pd.DataFrame()
-        pass
+    elif lipid_type in ['TG', 'DG', 'MG'] and charge == '[M+NH]4+':
+        obs_fa_frag_df = get_all_fa_frag(fa_df, ms2_df)
+        obs_fa_nl_df = get_all_fa_nl(fa_df, ms2_df, lipid_type)
+        obs_dct = {'[FA-H2O+H]+': [obs_fa_frag_df, ['SN1_[FA-H2O+H]+']]}
+        print(obs_dct)
+        exit()
         # TODO(zhixu.ni@uni-leipzig.de): @Georgia add TG here please :)
         # obs_fa_frag_df = get_all_fa_frag(fa_df, ms2_df)
         # obs_fa_nl_df = get_all_fa_nl(fa_df, ms2_df, lipid_type)

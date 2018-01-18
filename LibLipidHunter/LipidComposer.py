@@ -265,6 +265,7 @@ class LipidComposer:
         m_exactmass = lipid_dct['EXACTMASS']
         m_class = lipid_dct['CLASS']
         h_exactmass = 1.0078250321
+        nh3_exactmass = 3 * 1.0078250321 + 14.0030740052
         ch3_exactmass = 12.0 + 3 * 1.0078250321
         nl_water = 2 * 1.0078250321 + 15.9949146221
         sn1_abbr = lipid_dct['SN1'].strip('FA')
@@ -273,13 +274,6 @@ class LipidComposer:
         sn1_exactmass = lipid_dct['SN1_EXACTMASS']
         sn2_exactmass = lipid_dct['SN2_EXACTMASS']
 
-        #################################################33
-        #
-        #   Note:
-        #   Why calculated the below fragments when there were all ready calculate before in the above section
-        #   In calc_fa_query library    Line 126
-        #
-        #####################################################
         if m_class in ['PA', 'PE', 'PG', 'PI', 'PS']:
             sn1_abbr = lipid_dct['SN1'].strip('FA')
             sn2_abbr = lipid_dct['SN2'].strip('FA')
@@ -333,11 +327,6 @@ class LipidComposer:
             #lipid_dct['MG(SN1)-H2O+H]+_MZ'] = round(m_exactmass - ())
 
             dg_str = 'M'
-            ###########################################################3
-            #
-            #   Ask if it should be FA(16:0) or without the letters FA
-            #
-            ###############################################################
             lipid_dct['[M-(SN1)+H]+_ABBR'] = '[%s-FA(%s)+H]+' % (dg_str, sn1_abbr)
             lipid_dct['[M-(SN2)+H]+_ABBR'] = '[%s-FA(%s)+H]+' % (dg_str, sn2_abbr)
             lipid_dct['[M-(SN3)+H]+_ABBR'] = '[%s-FA(%s)+H]+' % (dg_str, sn3_abbr)
@@ -353,6 +342,11 @@ class LipidComposer:
             lipid_dct['[M-(SN1-H2O)+H]+_MZ'] = round(m_exactmass - (sn1_exactmass - nl_water) + h_exactmass, 6)
             lipid_dct['[M-(SN2-H2O)+H]+_MZ'] = round(m_exactmass - (sn2_exactmass - nl_water) + h_exactmass, 6)
             lipid_dct['[M-(SN3-H2O)+H]+_MZ'] = round(m_exactmass - (sn3_exactmass - nl_water) + h_exactmass, 6)
+
+            # The loss of the NH3 from the [M+NH4]+
+            lipid_dct['[M+NH4-NH3]+_ABBR'] = '[%s+NH4-NH3]+' % dg_str
+
+            lipid_dct['[M+NH4-NH3]+_MZ'] = round(m_exactmass - nh3_exactmass, 6)
 
         return lipid_dct
 
@@ -452,7 +446,8 @@ if __name__ == '__main__':
     # in the case that the user define 2 different FA for both positions then:
     # When it is false it will give only one option
     # and when it is TRUE to give both compinations that these 2 FA an make (incase of phospholipids)
-    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'TG', 'charge_mode': '[M+H]+','exact_position': 'FALSE'}
+    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'TG', 'charge_mode': '[M+NH4]+',
+                     'exact_position': 'FALSE'}
 
     composer = LipidComposer()
     usr_lipid_master_df = composer.compose_lipid(param_dct=usr_param_dct)
