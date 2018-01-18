@@ -40,6 +40,7 @@ class LogPageCreator(object):
         self.image_lst_page = self.output_img_folder + r'\LipidHunter_Results_Figures_list.html'
         self.params_lst_page = self.output_img_folder + r'\LipidHunter_Params_list.html'
         self.idx_lst_page = self.output_img_folder + r'\LipidHunter_Identification_list.html'
+        self.cfg_sum_page = self.output_img_folder + r'\LipidHunter_Configuration_Summary.html'
 
         self.lipid_type = params['lipid_type']
         hunter_folder = params['hunter_folder']
@@ -55,13 +56,12 @@ class LogPageCreator(object):
             isotope_score_mode = ''
 
         with open(self.main_page, 'w') as _m_page:
-            m_info_lst = ['<html>\n', '<link rel="icon" href="', self.logo, '" type="image/x-icon"/>\n'
-                                                                            '<title>LipidHunter_Results ', start_time,
+            m_info_lst = ['<html>\n', '<link rel="icon" href="', self.logo,
+                          '" type="image/x-icon"/>\n<title>LipidHunter_Results ', start_time,
                           '</title>\n<frameset cols="350,*">\n<frameset rows="390,*">\n',
                           '<frame src="', _params_lst_page, '" frameborder="0" >\n',
                           '<frame src="', _idx_lst_page, '" frameborder="0" >\n</frameset>\n',
-                          '<frame src="', _image_lst_page, '"name ="results_frame">\n</frameset>\n</html>\n'
-                          ]
+                          '<frame src="', _image_lst_page, '"name ="results_frame">\n</frameset>\n</html>\n']
             _m_page.write(''.join(m_info_lst))
 
         with open(self.image_lst_page, 'w') as _img_page:
@@ -92,9 +92,10 @@ class LogPageCreator(object):
                                 <li><i>m/z</i> range: %.1f - %.1f <i>m/z</i></li>\n<li>RT range: %.1f - %.1f min</li>\n
                                 <li>MS1 Threshold: %i</li>\n<li>MS2 Threshold: %i</li>\n
                                 <li>MS1 ppm: %i</li>\n<li>MS2 ppm: %i</li>\n
-                                <li>LipidHunter score > %.1f %s</li>\n<li>Isotope score > %.1f %s</li>\n
-                                </ul>\n<hr>\n<h3>Lipid identification list:</h3><font size="1">\n<table>\n<thead>\n
-                                <tr style="text-align: center;">\n
+                                <li>LipidHunter score > %.1f %s</li>\n<li>Isotope score > %.1f %s</li>\n</ul>\n<h4>
+                                <a href ="LipidHunter_Configuration_Summary.html" target ="_blank">
+                                View all parameters...</a><h4><hr>\n<h3>Lipid identification list:
+                                </h3><font size="1">\n<table>\n<thead>\n<tr style="text-align: center;">\n
                                 <th>ID#</th>\n<th> MS1_obs_mz </th>\n<th>RT(min)</th>\n<th>Discrete</th>\n
                                 <th>Score</th>\n
                                 </tr>\n</thead>\n</table>\n</body>\n</html>\n
@@ -103,6 +104,70 @@ class LogPageCreator(object):
                                        params['ms_th'], params['ms2_th'], params['ms_ppm'], params['ms2_ppm'],
                                        params['rank_score_filter'], score_mode,
                                        params['isotope_score_filter'], isotope_score_mode))
+
+        with open(self.cfg_sum_page, 'w') as _cfg_page:
+
+            cfg_sum_dct = {'fawhitelist_path_str': 'FA white list:',
+                           'mzml_path_str': 'mzML file used:',
+                           'img_output_folder_str': 'Output images saved in folder:',
+                           'xlsx_output_path_str': 'Summary Output table saved as:',
+                           'lipid_specific_cfg': 'PL specific ions defined in:',
+                           'score_cfg': 'Weight factor defined in:',
+                           'hunter_start_time': 'Run start from:',
+                           'vendor': 'Instrument vendor:', 'experiment_mode': 'Experiment type:',
+                           'lipid_type': 'Lipid class:', 'charge_mode': 'Precursor charge mode:',
+                           'rt_start': 'RT start:', 'rt_end': 'RT end:',
+                           'mz_start': r'm/z start:', 'mz_end': r'm/z end:', 'score_filter': 'Score >=',
+                           'rank_score': 'Rank score mode:', 'rank_score_filter': 'Rank score >=',
+                           'isotope_score_filter': 'Isotope score >=', 'fast_isotope': 'Fast Isotope score mode:',
+                           'ms_th': 'Threshold @ MS level =', 'ms_ppm': 'ppm @ MS level <=',
+                           'ms_max': 'For precursor intensity <=', 'pr_window': 'Precursor selection window +/-',
+                           'dda_top': 'DDA Top =', 'ms2_th': 'Threshold @ MS/MS level =',
+                           'ms2_ppm': 'ppm @ MS/MS level <=', 'ms2_infopeak_threshold': 'Consider MS/MS with i (%) >=',
+                           'hg_th': 'For PL specific peaks Consider MS/MS with i (abs) >=',
+                           'hg_ppm': 'For PL specific peaks Consider MS/MS ppm <=',
+                           'ms2_hginfopeak_threshold': 'For PL specific peaks Consider MS/MS with i (%) >=',
+                           'hunter_folder': 'LipidHunter program folder',
+                           'core_number': 'Run with max CPU core number =',
+                           'max_ram': 'Run with max RAM (GB) =',
+                           'img_type': 'Save image format:', 'img_dpi': 'Save image with dpi =',
+                           'tag_all_sn': 'Prefer all sn identified for TAGs:'}
+
+            cfg_sum_lst = ['lipid_type', 'charge_mode', 'vendor', 'experiment_mode', 'hunter_start_time',
+                           'img_output_folder_str', 'xlsx_output_path_str',
+                           'mzml_path_str', 'fawhitelist_path_str', 'lipid_specific_cfg', 'score_cfg',
+                           'rt_start', 'rt_end', 'mz_start', 'mz_end', 'dda_top',
+                           'hunter_folder', 'isotope_score_filter', 'fast_isotope',
+                           'score_filter', 'rank_score', 'rank_score_filter',
+                           'ms_ppm', 'ms_th', 'pr_window',
+                           'ms2_ppm', 'ms2_th', 'ms2_infopeak_threshold',
+                           'hg_ppm', 'hg_th', 'ms2_hginfopeak_threshold',
+                           'core_number', 'max_ram', 'img_type', 'img_dpi',  'ms_max', 'tag_all_sn']
+
+            param_key_lst = params.keys()
+            disp_cfg_lst = []
+
+            for _key in cfg_sum_lst:
+                if _key in param_key_lst:
+                    disp_cfg_lst.append('<li><strong>{k}  </strong>{v}</li>\n'.
+                                        format(k=cfg_sum_dct[_key], v=params[_key]))
+
+            params_li_str = ''.join(disp_cfg_lst)
+
+            cfg_template = '''
+                           <html>\n<body>\n<style type="text/css">\n
+                           p {margin-left: 20px; text-decoration: none; font-family: sans-serif;}\n
+                           body {font-family: sans-serif;}\n table{width:100%;}\n
+                           table, th, td {font-size:14px;text-align: center; font-family: sans-serif;}\n
+                           th{background-color:#0066B2;color:white; margin:center;}\n
+                           a:link {text-decoration:none} a:hover{text-decoration:underline }\n
+                           ul\n </style>\n
+                           <h3><img src="LipidHunter.ico" height=30/>  LipidHunter</h3>\n
+                           <hr> <h3>Parameters:</h3>\n<ul>\n
+                           '''
+            cfg_template += params_li_str
+            cfg_template += '</ul>\n</body>\n</html>\n'
+            _cfg_page.write(cfg_template)
 
         with open(self.idx_lst_page, 'w') as _idx_page:
             _idx_page.write('''
@@ -183,8 +248,8 @@ class LogPageCreator(object):
                     _idx += 1  # set start from 0 to 1
 
                     img_title_str = ('{mz}_RT{rt:.3}_DDArank{dda}_Scan{scan}_{ident}_{f}_{chg}_score{score}'
-                                     .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
-                                             ident=ident_abbr, score=score, f=formula_ion, chg=charge))
+                        .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
+                                ident=ident_abbr, score=score, f=formula_ion, chg=charge))
                     img_info_lst = ['<a name="', '%i' % _idx, '"><h3>', '<a href="', img_path, '" target="blank">',
                                     img_title_str, '</a></h3></a>', '<a href="', img_path, '" target="blank">',
                                     '<img src="', img_path, '" height="800" /></a>', table_buf_code, '\n<hr>\n']
