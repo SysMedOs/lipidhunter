@@ -18,12 +18,16 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
+import multiprocessing
 import os
-from PySide import QtGui
-from LibLipidHunter.LipidHunter_Main import LipidHunterMain
 import sys
 
+from PySide import QtGui
+
+from LibLipidHunter.LipidHunter_Main import LipidHunterMain
+
 if __name__ == '__main__':
+    multiprocessing.freeze_support()
     usr_cwd = os.getcwd()
     gui = QtGui.QApplication(sys.argv)
     LipidHunter = LipidHunterMain(cwd=usr_cwd)

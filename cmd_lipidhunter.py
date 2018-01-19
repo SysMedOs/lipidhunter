@@ -26,6 +26,9 @@ import os.path
 import sys
 import time
 
+# required to perform multiprocessing
+import multiprocessing
+
 from LibLipidHunter.Hunter_Core import huntlipids
 
 
