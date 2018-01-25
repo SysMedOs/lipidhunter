@@ -41,7 +41,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'15, January, 2018'
+        version_date = r'18, January, 2018'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
                         r'LipidHunter Beta released date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
@@ -590,6 +590,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         loaded_cfg_files = str(self.ui.tab_b_infiles_pte.toPlainText())
         pre_loaded_cfg_lst = loaded_cfg_files.split('\n')
 
+        max_process = self.ui.tab_b_maxbatch_spb.value()
+        sub_max_core = self.ui.tab_b_maxsubcore_spb.value()
+        sub_max_ram = self.ui.tab_b_maxsubram_spb.value()
+
         loaded_cfg_lst = []
         for f in pre_loaded_cfg_lst:
             if len(f) > 4:
@@ -603,10 +607,6 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         os.chdir(self.lipidhunter_cwd)
 
         if multi_mode_idx == 1:  # multi mode
-
-            max_process = self.ui.tab_b_maxbatch_spb.value()
-            sub_max_core = self.ui.tab_b_maxsubcore_spb.value()
-            sub_max_ram = self.ui.tab_b_maxsubram_spb.value()
 
             cfg_dct_lst = []
             for cfg_file in loaded_cfg_lst:
@@ -641,6 +641,20 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                     start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                     _cfg_dct['hunter_start_time'] = start_time_str
                     os.chdir(_cfg_dct['hunter_folder'])
+                    param_log_output_path_str = (hunter_param_dct['img_output_folder_str'] +
+                                                 '/LipidHunter_Params-Log_%s.txt' % hunter_param_dct[
+                                                     'hunter_start_time'])
+                    try:
+                        config = configparser.ConfigParser()
+                        with open(param_log_output_path_str, 'w') as usr_param_cfg:
+                            config.add_section('parameters')
+                            for param in hunter_param_dct.keys():
+                                config.set('parameters', param, hunter_param_dct[param])
+                            config.write(usr_param_cfg)
+                    except IOError:
+                        self.ui.tab_b_statusrun_pte.appendPlainText('!!! Failed to save parameter log file:')
+                        self.ui.tab_b_statusrun_pte.appendPlainText(param_log_output_path_str)
+                        self.ui.tab_b_statusrun_pte.appendPlainText('\n')
                     log_lst = []
                     tot_run_time, log_lst = parallel_pool.apply_async(huntlipids, args=(_cfg_dct, log_lst))
 
@@ -671,21 +685,34 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 self.ui.tab_b_statusrun_pte.insertPlainText('Start processing...\n%s\n' % _cfg)
                 hunter_param_dct = self.b_read_cfg(_cfg)
                 if 'vendor' in hunter_param_dct.keys():
+                    hunter_param_dct['batch_cfg_file'] = _cfg
+                    hunter_param_dct['core_number'] = sub_max_core
+                    hunter_param_dct['max_ram'] = sub_max_ram
                     start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                     hunter_param_dct['hunter_start_time'] = start_time_str
-                    log_lst = []
-                    hunter_time, log_lst = huntlipids(hunter_param_dct, error_lst=log_lst)
-
-                    run_time = str(hunter_time)
-
-                    if isinstance(run_time, str):
-                        self.ui.tab_b_statusrun_pte.appendPlainText('>>> %s' % run_time)
-                        self.ui.tab_b_statusrun_pte.appendPlainText('FINISHED with file %i / %i\n' %
-                                                                    (run_counter, tot_num))
-                        run_counter += 1
-                    else:
-                        self.ui.tab_b_statusrun_pte.insertPlainText(
-                            '!! Failed to process batch mode configure file:\n Please check settings!!')
+                    param_log_output_path_str = (hunter_param_dct['img_output_folder_str'] +
+                                                 '/LipidHunter_Params-Log_%s.txt' % hunter_param_dct[
+                                                     'hunter_start_time'])
+                    try:
+                        config = configparser.ConfigParser()
+                        with open(param_log_output_path_str, 'w') as usr_param_cfg:
+                            config.add_section('parameters')
+                            for param in hunter_param_dct.keys():
+                                config.set('parameters', param, hunter_param_dct[param])
+                            config.write(usr_param_cfg)
+                        log_lst = []
+                        hunter_time, log_lst = huntlipids(hunter_param_dct, error_lst=log_lst)
+                        run_time = str(hunter_time)
+                        if isinstance(run_time, str):
+                            self.ui.tab_b_statusrun_pte.appendPlainText('>>> %s' % run_time)
+                            self.ui.tab_b_statusrun_pte.appendPlainText('FINISHED with file %i / %i\n' %
+                                                                        (run_counter, tot_num))
+                            run_counter += 1
+                        else:
+                            self.ui.tab_b_statusrun_pte.insertPlainText(
+                                '!! Failed to process batch mode configure file:\n Please check settings!!')
+                    except IOError:
+                        self.ui.tab_b_statusrun_pte.appendPlainText('!! Failed to save parameter log files !!')
                 else:
                     self.ui.tab_b_statusrun_pte.insertPlainText(
                         '!! Failed read batch mode configure files:\n %s \n Please check settings!!' % _cfg)

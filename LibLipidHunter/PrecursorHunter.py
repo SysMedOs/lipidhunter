@@ -55,7 +55,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
 
                 if tmp_ms1_info_df.shape[0] > 0:
 
-                    ms1_spec_idx = tmp_ms1_info_df['spec_index'].tolist()[0]
+                    ms1_spec_idx = tmp_ms1_info_df['spec_index'].values.tolist()[0]
 
                     if ms1_spec_idx in spectra_pl.items:
                         ms1_df = spectra_pl[ms1_spec_idx]
@@ -78,8 +78,8 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
                             if pr_info_df.shape[0] > 0:
                                 pr_info_df.sort_values(by='i', ascending=False, inplace=True)
                                 pr_info_df.reset_index(drop=True, inplace=True)
-                                _ms1_mz = pr_info_df['mz'].tolist()[0]
-                                _ppm = pr_info_df['ppm'].tolist()[0]
+                                _ms1_mz = pr_info_df['mz'].values.tolist()[0]
+                                _ppm = pr_info_df['ppm'].values.tolist()[0]
                                 len_df = subgroup_df.shape[0]
                                 subgroup_df.loc[:, 'MS1_obs_mz'] = [_ms1_mz] * len_df
                                 subgroup_df.loc[:, 'dda_event_idx'] = [ms2_dda_idx] * len_df
@@ -162,7 +162,7 @@ class PrecursorHunter(object):
         sub_len = int(math.ceil(len(all_group_key_lst) / core_num))
         core_key_list = map(None, *(iter(all_group_key_lst),) * sub_len)
 
-        spectra_pl_idx_lst = sorted(spectra_pl.items.tolist())
+        spectra_pl_idx_lst = sorted(spectra_pl.items.values.tolist())
 
         if len(spectra_pl_idx_lst) >= (max_ram * 50):
             sub_pl_group_lst = map(None, *(iter(spectra_pl_idx_lst),) * (max_ram * 40))

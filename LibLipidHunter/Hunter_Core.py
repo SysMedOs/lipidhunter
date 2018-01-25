@@ -119,7 +119,7 @@ def huntlipids(param_dct, error_lst):
 
     composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_type': usr_lipid_class,
                           'charge_mode': usr_charge, 'exact_position': 'FALSE'}
-    usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct)
+    usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
 
     print('=== ==> --> Lipid Master table generated >>>', usr_lipid_master_df.shape)
@@ -225,7 +225,7 @@ def huntlipids(param_dct, error_lst):
 
     checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'])
 
-    ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].tolist()
+    ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
     print('ms1_xic_mz_lst', len(ms1_xic_mz_lst))
     print(ms1_xic_mz_lst)
@@ -413,7 +413,9 @@ def huntlipids(param_dct, error_lst):
         key_frag_dct = {'target_frag_df': target_frag_df, 'target_nl_df': target_nl_df,
                         'other_frag_df': other_frag_df, 'other_nl_df': other_nl_df}
     else:
-        key_frag_dct = {}
+        key_frag_dct={}
+
+    print('... Key FRAG Dict Generated ...')
 
     for lipid_sub_key_lst in lipid_part_key_lst:
 
@@ -436,13 +438,18 @@ def huntlipids(param_dct, error_lst):
                         lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
                     else:
                         pass
-                    lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                    if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
+                        lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                    else:
+                        lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
+                        lipid_sub_lst = tuple([lipid_sub_lst])
                     print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-                    lipid_info_result = parallel_pool.apply_async(get_lipid_info,
-                                                                  args=(param_dct, usr_fa_df, checked_info_df,
-                                                                        checked_info_groups, lipid_sub_lst,
-                                                                        usr_weight_df, key_frag_dct,
-                                                                        lipid_sub_dct, xic_dct))
+                    if len(lipid_sub_dct.keys()) > 0:
+                        lipid_info_result = parallel_pool.apply_async(get_lipid_info,
+                                                                      args=(param_dct, usr_fa_df, checked_info_df,
+                                                                            checked_info_groups, lipid_sub_lst,
+                                                                            usr_weight_df, key_frag_dct,
+                                                                            lipid_sub_dct, xic_dct))
                     lipid_info_results_lst.append(lipid_info_result)
                     core_worker_count += 1
 
@@ -465,17 +472,21 @@ def huntlipids(param_dct, error_lst):
             print('Using single core mode...')
             core_worker_count = 1
             for lipid_sub_lst in lipid_sub_key_lst:
-
                 if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
                     if None in lipid_sub_lst:
                         lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
                     else:
                         pass
-                    lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                    if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
+                        lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                    else:
+                        lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
+                        lipid_sub_lst = tuple([lipid_sub_lst])
                     print('>>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
-                    tmp_lipid_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
-                                                       lipid_sub_lst, usr_weight_df, usr_key_frag_df, lipid_sub_dct,
-                                                       xic_dct)
+                    if len(lipid_sub_dct.keys()) > 0:
+                        tmp_lipid_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
+                                                           lipid_sub_lst, usr_weight_df, key_frag_dct,
+                                                           lipid_sub_dct, xic_dct)
 
                     core_worker_count += 1
                     if isinstance(tmp_lipid_info_df, str):
@@ -487,18 +498,19 @@ def huntlipids(param_dct, error_lst):
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
         try:
-            output_df = output_df.sort_values(by=['Lib_mz', 'Proposed_structures', 'MS2_scan_time', 'RANK_SCORE'])
+            output_df = output_df.sort_values(by=['Lib_mz', 'Bulk_identification', 'MS2_scan_time', 'RANK_SCORE'],
+                                              ascending=[True, True, True, False])
         except KeyError:
             pass
         output_df.reset_index(drop=True, inplace=True)
         output_df.index += 1
-        print('output_df')
-        print(output_df.head(5))
-        print(output_df.columns.tolist())
-        print(output_df[['Proposed_structures', 'DISCRETE_ABBR', 'MS2_scan_time', 'img_name']])
-        output_df.drop_duplicates(keep='first', inplace=True)
+        # print('output_df')
+        # print(output_df.head(5))
+        # print(output_df.columns.values.tolist())
+        # print(output_df[['Proposed_structures', 'DISCRETE_ABBR', 'MS2_scan_time', 'img_name']])
         log_pager.add_all_info(output_df)
-        output_header_lst = output_df.columns.tolist()
+        output_df.drop_duplicates(keep='first', inplace=True)
+        output_header_lst = output_df.columns.values.tolist()
         for _i_check in ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
                          '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']:
             if _i_check not in output_header_lst:
@@ -546,58 +558,57 @@ def huntlipids(param_dct, error_lst):
 
 
 if __name__ == '__main__':
-
-    pl_class = 'PE'
-    charge = '[M-H]-'
-    # pl_class = 'TG'
-    # charge = '[M+NH4]+'
+    # pl_class = 'PE'
+    # charge = '[M-H]-'
+    pl_class = 'TG'
+    charge = '[M+NH4]+'
     # pl_class = 'PC'
     # charge = '[M+HCOO]-'
-    mz_range = [650,950]
-    rt_range = [20,30]
-    # mz_range = [800, 1000]
-    # rt_range = [18, 24]
+    # mz_range = [650,950]
+    # rt_range = [20,30]
+    mz_range = [800, 1000]
+    rt_range = [18, 24]
     count = 2
 
-    usr_dct = {'fawhitelist_path_str': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
-               'mzml_path_str': r'D:\PhD\2017_new\Samples\Ni\070120_CM_neg_70min_SIN_I.mzML',
-               'img_output_folder_str': r'..\Temp\Test%s%i' % (pl_class, count),
-               'xlsx_output_path_str': r'..\Temp\Test%s%i\t%s_%i.xlsx'
-                                       % (pl_class, count, pl_class, count),
-               'lipid_specific_cfg':
-                   r'..\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
-               'hunter_start_time': '2017-12-21_15-27-49',
-               'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': pl_class, 'charge_mode': charge,
-               'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1],
-               'rank_score': True, 'rank_score_filter': 27.5, 'score_filter': 27.5,
-               'isotope_score_filter': 75.0, 'fast_isotope': False,
-               'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
-               'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
-               'hg_th': 10.0, 'hg_ppm': 200.0, 'ms2_hginfopeak_threshold': 0.001,
-               'score_cfg': r'..\ConfigurationFiles\Score_cfg.xlsx',
-               'fa_white_list_cfg': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
-               'hunter_folder': r'D:\Programs_PhD\lipidhunterdev',
-               'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
-
     # usr_dct = {'fawhitelist_path_str': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
-    #            'mzml_path_str': r'D:\PhD\2017_new\Samples\Angela\1strawFile\MS2\20190619_PLEv_pos_1.mzML',
+    #            'mzml_path_str': r'D:\PhD\2017_new\Samples\Ni\070120_CM_neg_70min_SIN_I.mzML',
     #            'img_output_folder_str': r'..\Temp\Test%s%i' % (pl_class, count),
     #            'xlsx_output_path_str': r'..\Temp\Test%s%i\t%s_%i.xlsx'
     #                                    % (pl_class, count, pl_class, count),
     #            'lipid_specific_cfg':
     #                r'..\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
     #            'hunter_start_time': '2017-12-21_15-27-49',
-    #            'vendor': 'thermo', 'experiment_mode': 'LC-MS', 'lipid_type': pl_class, 'charge_mode': charge,
+    #            'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': pl_class, 'charge_mode': charge,
     #            'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1],
     #            'rank_score': True, 'rank_score_filter': 27.5, 'score_filter': 27.5,
     #            'isotope_score_filter': 75.0, 'fast_isotope': False,
-    #            'ms_th': 10000, 'ms_ppm': 5, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 10,
-    #            'ms2_th': 2000, 'ms2_ppm': 20, 'ms2_infopeak_threshold': 0.001,
+    #            'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
+    #            'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
     #            'hg_th': 10.0, 'hg_ppm': 200.0, 'ms2_hginfopeak_threshold': 0.001,
     #            'score_cfg': r'..\ConfigurationFiles\Score_cfg.xlsx',
     #            'fa_white_list_cfg': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
     #            'hunter_folder': r'D:\Programs_PhD\lipidhunterdev',
-    #            'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
+    #            'core_number': 1, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
+
+    usr_dct = {'fawhitelist_path_str': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
+               'mzml_path_str': r'D:\PhD\2017_new\Samples\Angela\1strawFile\MS2\20190619_PLEv_pos_1.mzML',
+               'img_output_folder_str': r'..\Temp\Test%s%i' % (pl_class, count),
+               'xlsx_output_path_str': r'..\Temp\Test%s%i\t%s_%i.xlsx'
+                                       % (pl_class, count, pl_class, count),
+               'lipid_specific_cfg':
+                   r'..\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
+               'hunter_start_time': '2017-12-21_15-27-49',
+               'vendor': 'thermo', 'experiment_mode': 'LC-MS', 'lipid_type': pl_class, 'charge_mode': charge,
+               'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1],
+               'rank_score': True, 'rank_score_filter': 27.5, 'score_filter': 27.5,
+               'isotope_score_filter': 75.0, 'fast_isotope': False,
+               'ms_th': 10000, 'ms_ppm': 5, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 10,
+               'ms2_th': 2000, 'ms2_ppm': 20, 'ms2_infopeak_threshold': 0.001,
+               'hg_th': 10.0, 'hg_ppm': 200.0, 'ms2_hginfopeak_threshold': 0.001,
+               'score_cfg': r'..\ConfigurationFiles\ScoreTG2_cfg.xlsx',
+               'fa_white_list_cfg': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
+               'hunter_folder': r'D:\Programs_PhD\lipidhunterdev',
+               'core_number': 1, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
     log_lst = []
     t, log_lst = huntlipids(usr_dct, log_lst)
     print(t)
