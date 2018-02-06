@@ -388,6 +388,8 @@ def huntlipids(param_dct, error_lst):
     # parse specific peak info
     pl_class_lst = ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'PIP']
     pl_neg_chg_lst = ['[M-H]-', '[M+HCOO]-', '[M+CH3COO]-']
+    tg_class_lst = ['TG']
+    tg_pos_chg_lst = ['[M+NH4]+']
     if usr_lipid_class in pl_class_lst and usr_charge in pl_neg_chg_lst:
         charge_mode = 'NEG'
         usr_key_frag_df = pd.read_excel(key_frag_cfg)
@@ -412,6 +414,31 @@ def huntlipids(param_dct, error_lst):
                                             % (usr_lipid_class, charge_mode))
         key_frag_dct = {'target_frag_df': target_frag_df, 'target_nl_df': target_nl_df,
                         'other_frag_df': other_frag_df, 'other_nl_df': other_nl_df}
+    elif usr_lipid_class in tg_class_lst and usr_charge in tg_pos_chg_lst:
+        charge_mode = 'POS'
+        usr_key_frag_df = pd.read_excel(key_frag_cfg)
+        usr_key_frag_df = usr_key_frag_df.query('EXACTMASS > 0')
+        # get the information from the following columns
+        usr_key_frag_df = usr_key_frag_df[['CLASS', 'TYPE', 'EXACTMASS', 'PR_CHARGE', 'LABEL', 'CHARGE_MODE']]
+        # find key peaks for the target PL class
+        target_frag_df = usr_key_frag_df.query(r'CLASS == "%s" and TYPE == "FRAG" and PR_CHARGE == "%s"'
+                                               % (usr_lipid_class, usr_charge))
+        target_nl_df = usr_key_frag_df.query(r'CLASS == "%s" and TYPE == "NL" and PR_CHARGE == "%s"'
+                                             % (usr_lipid_class, usr_charge))
+        # add precursor to the list
+        target_pr_df = pd.DataFrame(data={'CLASS': usr_lipid_class, 'TYPE': 'NL', 'EXACTMASS': 0.0,
+                                          'PR_CHARGE': usr_charge, 'LABEL': 'PR', 'CHARGE_MODE': 'NEG'}, index=['PR'])
+        target_nl_df = target_nl_df.append(target_pr_df)
+        target_nl_df.reset_index(drop=True, inplace=True)
+
+        # extract info for other classes
+        other_frag_df = usr_key_frag_df.query('CLASS != "%s" and TYPE == "FRAG" and CHARGE_MODE == "%s"'
+                                              % (usr_lipid_class, charge_mode))
+        other_nl_df = usr_key_frag_df.query('CLASS != "%s" and TYPE == "NL" and CHARGE_MODE == "%s"'
+                                            % (usr_lipid_class, charge_mode))
+        key_frag_dct = {'target_frag_df': target_frag_df, 'target_nl_df': target_nl_df,
+                        'other_frag_df': other_frag_df, 'other_nl_df': other_nl_df}
+
     else:
         key_frag_dct={}
 

@@ -43,14 +43,12 @@ class NameParserFA:
         fa_info_dct['[FA-H2O]_MZ'] = round(exactmass - 2 * self.elem_dct['H'][0] - self.elem_dct['O'][0], 6)
         fa_info_dct['[FA-H2O+H]+_MZ'] = round(exactmass - self.elem_dct['H'][0] - self.elem_dct['O'][0], 6)
         fa_info_dct['[FA-H+Na]_MZ'] = round(exactmass - self.elem_dct['H'][0] + self.elem_dct['Na'][0], 6)
-        fa_info_dct['[MG-H2O+H]+_MZ'] = round(exactmass + self.elem_dct['C'][0] * 3 + self.elem_dct['H'][0] * 4 + self.elem_dct['O'][0], 6)
 
         fa_info_dct['[FA-H]-_ABBR'] = '[{fa}-H]-'.format(fa=fa_info_dct['ABBR'])
         fa_info_dct['[FA-H2O-H]-_ABBR'] = '[{fa}-H2O-H]-'.format(fa=fa_info_dct['ABBR'])
         fa_info_dct['[FA-H2O]_ABBR'] = '[{fa}-H2O]'.format(fa=fa_info_dct['ABBR'])
         fa_info_dct['[FA-H2O+H]+_ABBR'] = '[{fa}-H2O+H]+'.format(fa=fa_info_dct['ABBR'])
         fa_info_dct['[FA-H+Na]_ABBR'] = '[{fa}-H+Na]'.format(fa=fa_info_dct['ABBR'])
-        fa_info_dct['[MG-H2O+H]+_ABBR'] = '[MG({mg})-H2O+H]'.format(mg=fa_info_dct['ABBR']).replace('FA', '')
 
         return fa_info_dct
 

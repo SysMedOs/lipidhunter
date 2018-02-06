@@ -264,18 +264,21 @@ def get_rankscore (fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, l
             # TODO(zhixu.ni@uni-leipzig.de): add support to positive mode
         elif lipid_type in ['TG', 'DG', 'MG'] and charge == '[M+NH4]+':
             obs_dg_frag_df = get_all_fa_nl(lite_info_df, ms2_df, frag_lst_dg, lipid_type)
+            # obs_dct = {'[FA-H2O+H]+': [obs_fa_frag_df, ['SN1_[FA-H2O+H]+', 'SN2_[FA-H2O+H]+', 'SN3_[FA-H2O+H]+']],
+            #            '[MG-H2O+H]+': [obs_fa_nl_df, ['[MG(SN1)-H2O+H]+', '[MG(SN2)-H2O+H]+', '[MG(SN3)-H2O+H]+']],
+            #            '[M-FA+H]+': [obs_dg_frag_df, ['[M-(SN1)+H]+', '[M-(SN2)+H]+', '[M-(SN3)+H]+']],
+            #            '[M-(FA-H2O)+H]+': [obs_dg_frag_df,
+            #                                ['[M-(SN1-H2O)+H]+', '[M-(SN2-H2O)+H]+', '[M-(SN3-H2O)+H]+']]}
+            #####
+            # there is an error with the [M-(SN1-H2O)+H]+ temporary deactivated
             obs_dct = {'[FA-H2O+H]+': [obs_fa_frag_df, ['SN1_[FA-H2O+H]+', 'SN2_[FA-H2O+H]+', 'SN3_[FA-H2O+H]+']],
                        '[MG-H2O+H]+': [obs_fa_nl_df, ['[MG(SN1)-H2O+H]+', '[MG(SN2)-H2O+H]+', '[MG(SN3)-H2O+H]+']],
-                       '[M-FA+H]+': [obs_dg_frag_df, ['[M-(SN1)+H]+', '[M-(SN2)+H]+', '[M-(SN3)+H]+']],
-                       '[M-(FA-H2O)+H]+': [obs_dg_frag_df,
-                                           ['[M-(SN1-H2O)+H]+', '[M-(SN2-H2O)+H]+', '[M-(SN3-H2O)+H]+']]}
+                       '[M-FA+H]+': [obs_dg_frag_df, ['[M-(SN1)+H]+', '[M-(SN2)+H]+', '[M-(SN3)+H]+']]}
         else:
             pass
     else:
         print('Warning: No informative peak found !!!')
     if len(obs_dct.keys()) > 0:
-        # Note: Error not working correct for the TG
-
         for obs_type in obs_dct.keys():
             _obs_df = obs_dct[obs_type][0]
             _obs_lst = obs_dct[obs_type][1]
@@ -292,6 +295,7 @@ def get_rankscore (fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, l
                     _lipid_abbr = _lite_se['DISCRETE_ABBR']
 
                     try:
+                        # TODO (gorgia.angelidou@uni-leipzig.de): calculations for the new ranking system
                         if _abbr in _obs_df['obs_abbr'].values:
                             _rank_idx = _obs_df.loc[_obs_df['obs_abbr'] == _abbr].index[0]
                             _i = _obs_df.loc[_rank_idx, 'i']
@@ -314,11 +318,16 @@ def get_rankscore (fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, l
                     if _rank_idx < 10 and _i > 0:
                         lite_info_df.set_value(_idx, '%s_RANK' % _obs, _rank_idx)
                         lite_info_df.set_value(_idx, '%s_i' % _obs, _i)
-                        lite_info_df.set_value(_idx, '{obs} i (%)'.format(obs=_obs), _i_r)
+                        #lite_info_df.set_value(_idx, '{obs} i (%)'.format(obs=_obs), _i_r)
+                        lite_info_df.set_value(_idx, '%s_i_per' % _obs, _i_r)
+
+
                         # print(_abbr, _rank_idx, _i)
                         ident_peak_dct[_abbr] = {'discrete_abbr': _lipid_abbr, 'obs_label': _label, 'i': _i,
                                                  'mz': _mz, 'obs_abbr': _abbr, 'obs_rank_type': '%s_RANK' % _obs,
                                                  'obs_rank': _rank_idx}
+                        print (_abbr)
+                        print (ident_peak_dct[_abbr])
                         _obs_drop_idx.append(_rank_idx)
 
                     else:
