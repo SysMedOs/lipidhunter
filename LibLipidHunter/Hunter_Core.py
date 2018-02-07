@@ -120,7 +120,10 @@ def huntlipids(param_dct, error_lst):
     composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_type': usr_lipid_class,
                           'charge_mode': usr_charge, 'exact_position': 'FALSE'}
     usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
+
+    # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
+
 
     print('=== ==> --> Lipid Master table generated >>>', usr_lipid_master_df.shape)
     # print(usr_lipid_master_df.head())
@@ -585,16 +588,14 @@ def huntlipids(param_dct, error_lst):
 
 
 if __name__ == '__main__':
-    # pl_class = 'PE'
-    # charge = '[M-H]-'
-    pl_class = 'TG'
-    charge = '[M+NH4]+'
+    pl_class = 'PE'
+    charge = '[M-H]-'
     # pl_class = 'PC'
     # charge = '[M+HCOO]-'
     # mz_range = [650,950]
     # rt_range = [20,30]
     mz_range = [800, 1000]
-    rt_range = [18, 24]
+    rt_range = [18, 28]
     count = 2
 
     # usr_dct = {'fawhitelist_path_str': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
@@ -632,10 +633,9 @@ if __name__ == '__main__':
                'ms_th': 10000, 'ms_ppm': 5, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 10,
                'ms2_th': 2000, 'ms2_ppm': 20, 'ms2_infopeak_threshold': 0.001,
                'hg_th': 10.0, 'hg_ppm': 200.0, 'ms2_hginfopeak_threshold': 0.001,
-               'score_cfg': r'..\ConfigurationFiles\ScoreTG2_cfg.xlsx',
-               'fa_white_list_cfg': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
+               'score_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\Score_cfg.xlsx',
                'hunter_folder': r'D:\Programs_PhD\lipidhunterdev',
-               'core_number': 1, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
+               'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
     log_lst = []
     t, log_lst = huntlipids(usr_dct, log_lst)
     print(t)
