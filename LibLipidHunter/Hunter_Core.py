@@ -634,7 +634,7 @@ if __name__ == '__main__':
                'ms2_th': 2000, 'ms2_ppm': 20, 'ms2_infopeak_threshold': 0.001,
                'hg_th': 10.0, 'hg_ppm': 200.0, 'ms2_hginfopeak_threshold': 0.001,
                'score_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\Score_cfg.xlsx',
-               'hunter_folder': r'D:\Programs_PhD\lipidhunterdev',
+               'hunter_folder': r'D:\project_lipidhunter\lipidhunterdev',
                'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
     log_lst = []
     t, log_lst = huntlipids(usr_dct, log_lst)
