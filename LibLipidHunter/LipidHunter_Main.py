@@ -228,7 +228,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             lb_obj.setText(file_str)
 
     @staticmethod
-    def check_path(usr_path, info_str):
+    def check_file(usr_path, info_str):
         try:
             if os.path.isfile(usr_path):
                 error_log = ''
@@ -236,6 +236,20 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 error_log = '!! Failed to load {_file} !!'.format(_file=info_str)
         except IOError:
             error_log = '!! Failed to load {_file} !!'.format(_file=info_str)
+
+        return error_log
+
+    @staticmethod
+    def check_folder(usr_path, info_str):
+        try:
+            if os.path.isdir(usr_path):
+                error_log = ''
+            else:
+                os.makedirs(usr_path)
+                print('Folder created... %s' % usr_path)
+                error_log = ''
+        except IOError:
+            error_log = '!! Failed to open folder {_file} !!'.format(_file=info_str)
 
         return error_log
 
@@ -305,7 +319,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         fawhitelist_path_str = str(self.ui.tab_a_loadxlsxpath_le.text())
         mzml_path_str = str(self.ui.tab_a_mzml_le.text())
-        img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text())
+        img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text()).strip(r'\/')
         xlsx_output_path_str = str(self.ui.tab_a_savexlsxpath_le.text())
 
         rt_start = self.ui.tab_a_rtstart_dspb.value()
@@ -328,8 +342,6 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         ms_max = 0
         if self.ui.tab_a_msmax_chb.isChecked() and self.ui.tab_a_msmax_spb.value() > ms_th + 1:
             ms_max = self.ui.tab_a_msmax_spb.value()
-
-        fa_white_list_cfg = self.ui.tab_c_fawhitelist_le.text()
         lipid_specific_cfg = self.ui.tab_c_hgcfg_le.text()
         score_cfg = self.ui.tab_c_scorecfg_le.text()
 
@@ -338,12 +350,11 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         img_typ = self.ui.tab_c_imagetype_cmb.currentText()[1:]
         img_dpi = self.ui.tab_c_dpi_spb.value()
 
-        error_log_lst.append(self.check_path(fawhitelist_path_str, 'FA whitelist'))
-        error_log_lst.append(self.check_path(mzml_path_str, 'mzML spectra'))
-        error_log_lst.append(self.check_path(fa_white_list_cfg, 'FA whitelist'))
-        error_log_lst.append(self.check_path(lipid_specific_cfg, 'configuration for Phospholipids'))
-        error_log_lst.append(self.check_path(score_cfg, 'W_frag score configuration'))
-        # TODO(zhixu.ni@uni-leipzig.de): Add more strict checker here. e.g. file type check.
+        error_log_lst.append(self.check_file(fawhitelist_path_str, 'FA whitelist'))
+        error_log_lst.append(self.check_file(mzml_path_str, 'mzML spectra'))
+        error_log_lst.append(self.check_file(lipid_specific_cfg, 'configuration for Phospholipids'))
+        error_log_lst.append(self.check_file(score_cfg, 'W_frag score configuration'))
+        error_log_lst.append(self.check_folder(img_output_folder_str, 'Output folder'))
 
         usr_score_mode = self.ui.tab_c_scoremode_cmb.currentIndex()
         if usr_score_mode == 0:
@@ -373,7 +384,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                             'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm, 'hg_th': hg_th, 'hg_ppm': hg_ppm,
                             'rank_score_filter': rank_score_filter, 'isotope_score_filter': isotope_score_filter,
                             'score_filter': score_filter,
-                            'lipid_type': _pl_class, 'charge_mode': _pl_charge, 'fa_white_list_cfg': fa_white_list_cfg,
+                            'lipid_type': _pl_class, 'charge_mode': _pl_charge,
                             'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor,
                             'ms2_infopeak_threshold': ms2_info_threshold,
                             'ms2_hginfopeak_threshold': hgms2_info_threshold,
@@ -398,9 +409,19 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         print('Rankscore mode = %s' % (hunter_param_dct['rank_score']))
         print('Hunter started!')
 
-        param_log_output_path_str = (str(self.ui.tab_a_saveimgfolder_le.text()) +
-                                     '/LipidHunter_Params-Log_%s.txt' % hunter_param_dct['hunter_start_time']
-                                     )
+        output_folder_path = str(self.ui.tab_a_saveimgfolder_le.text()).strip(r'\/')
+
+        if os.path.isdir(output_folder_path):
+            print('Output folder path... %s' % output_folder_path)
+        else:
+            try:
+                os.mkdir(output_folder_path)
+                print('Output folder created... %s' % output_folder_path)
+            except IOError:
+                error_log_lst.append('!! Failed to create output folder !!')
+
+        param_log_output_path_str = (output_folder_path + '/LipidHunter_Params-Log_%s.txt'
+                                     % hunter_param_dct['hunter_start_time'])
 
         try:
             config = configparser.ConfigParser()
@@ -416,8 +437,9 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         print(hunter_param_dct)
 
         error_log_lst = filter(None, error_log_lst)
-        print(error_log_lst)
+
         if len(error_log_lst) > 0:
+            print('Parameter error:', error_log_lst)
             error_log_lst.append('!!! Please check your settings !!!')
             self.ui.tab_a_statusrun_pte.appendPlainText('\n'.join(error_log_lst) + '\n')
         else:
@@ -455,20 +477,25 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def a_create_cfg(self):
         hunter_param_dct, error_log_lst = self.a_get_params()
         error_log_lst = filter(None, error_log_lst)
-        print(error_log_lst)
 
         if len(error_log_lst) > 0:
+            print('Parameter error:', error_log_lst)
             error_log_lst.append('!!! Please check your settings !!!')
             self.ui.tab_a_gencfg_pte.appendPlainText('\n'.join(error_log_lst) + '\n')
         else:
             param_cfg_path_str = str(self.ui.tab_a_cfgpath_le.text())
+            param_cfg_directory = os.path.dirname(param_cfg_path_str)
+            if not os.path.exists(param_cfg_directory):
+                os.makedirs(param_cfg_directory)
             config = configparser.ConfigParser()
             with open(param_cfg_path_str, 'w') as usr_param_cfg:
                 config.add_section('parameters')
                 for param in hunter_param_dct.keys():
                     config.set('parameters', param, str(hunter_param_dct[param]))
                 config.write(usr_param_cfg)
-                self.ui.tab_a_gencfg_pte.insertPlainText('>>> >>> >>> SAVED <<< <<< <<<')
+                self.ui.tab_a_gencfg_pte.insertPlainText('>>> Configuration saved as:')
+                self.ui.tab_a_gencfg_pte.insertPlainText(param_cfg_path_str)
+                self.ui.tab_a_gencfg_pte.insertPlainText('\n')
 
     def b_set_multi_mode(self):
 

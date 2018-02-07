@@ -59,7 +59,6 @@ def huntlipids(param_dct, error_lst):
                         'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
                         'hg_th': 10.0, 'hg_ppm': 100.0, 'ms2_hginfopeak_threshold': 0.001,
                         'score_cfg': r'D:\lipidhunter\ConfigurationFiles\Score_cfg.xlsx',
-                        'fa_white_list_cfg': r'D:\lipidhunter\ConfigurationFiles\FA_Whitelist.xlsx',
                         'hunter_folder': r'D:\lipidhunter',
                         'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300}
     :param error_lst: empty list to store error info to display on GUI.
@@ -126,7 +125,6 @@ def huntlipids(param_dct, error_lst):
 
 
     print('=== ==> --> Lipid Master table generated >>>', usr_lipid_master_df.shape)
-    # print(usr_lipid_master_df.head())
 
     # parameters from settings tab
     usr_core_num = param_dct['core_number']
@@ -189,15 +187,8 @@ def huntlipids(param_dct, error_lst):
     print('=== ==> --> Start to process')
     print('=== ==> --> Phospholipid class: %s' % usr_lipid_class)
 
-    # generate the indicator table
-
+    # generate the Weight factor df
     usr_weight_df = pd.read_excel(score_cfg, index_col='Type')
-
-    usr_key_frag_df = pd.read_excel(key_frag_cfg)
-    usr_key_frag_df = usr_key_frag_df.query('EXACTMASS > 0')
-
-    # get the information from the following columns and leave the rest
-    usr_key_frag_df = usr_key_frag_df[['CLASS', 'TYPE', 'EXACTMASS', 'PR_CHARGE', 'LABEL', 'CHARGE_MODE']]
 
     print('=== ==> --> Start to parse mzML')
     # extract all spectra from mzML to pandas DataFrame
@@ -286,8 +277,8 @@ def huntlipids(param_dct, error_lst):
                 if len(sub_xic_dct.keys()) > 0:
                     xic_dct = dict(xic_dct, **sub_xic_dct)
 
-    print('xic_dct', len(xic_dct.keys()))
-    print(xic_dct.keys())
+    # print('xic_dct', len(xic_dct.keys()))
+    # print(xic_dct.keys())
 
     if len(xic_dct.keys()) == 0:
         print('No precursor for XIC found')
@@ -305,9 +296,8 @@ def huntlipids(param_dct, error_lst):
 
     spec_sub_len = int(math.ceil(len(lipid_all_group_key_lst) / usr_core_num))
     spec_sub_key_lst = map(None, *(iter(lipid_all_group_key_lst),) * spec_sub_len)
-
     lipid_spec_info_dct = {}
-    # usr_core_num = 1
+
     if usr_core_num > 1:
         parallel_pool = Pool(usr_core_num)
         spec_results_lst = []
@@ -457,7 +447,6 @@ def huntlipids(param_dct, error_lst):
         part_counter += 1
 
         # Start multiprocessing to get rank score
-        # usr_core_num = 1
         if usr_core_num > 1:
             parallel_pool = Pool(usr_core_num)
             lipid_info_results_lst = []
@@ -480,8 +469,8 @@ def huntlipids(param_dct, error_lst):
                                                                             checked_info_groups, lipid_sub_lst,
                                                                             usr_weight_df, key_frag_dct,
                                                                             lipid_sub_dct, xic_dct))
-                    lipid_info_results_lst.append(lipid_info_result)
-                    core_worker_count += 1
+                        lipid_info_results_lst.append(lipid_info_result)
+                        core_worker_count += 1
 
             parallel_pool.close()
             parallel_pool.join()
@@ -517,6 +506,8 @@ def huntlipids(param_dct, error_lst):
                         tmp_lipid_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
                                                            lipid_sub_lst, usr_weight_df, key_frag_dct,
                                                            lipid_sub_dct, xic_dct)
+                    else:
+                        tmp_lipid_info_df = ''
 
                     core_worker_count += 1
                     if isinstance(tmp_lipid_info_df, str):
@@ -568,6 +559,10 @@ def huntlipids(param_dct, error_lst):
                                           ascending=[True, True, False])
         output_df = output_df.reset_index(drop=True)
         output_df.index += 1
+
+        output_sum_xlsx_directory = os.path.dirname(output_sum_xlsx)
+        if not os.path.exists(output_sum_xlsx_directory):
+            os.makedirs(output_sum_xlsx_directory)
         try:
             output_df.to_excel(output_sum_xlsx, index=False)
             print(output_sum_xlsx)
@@ -588,6 +583,7 @@ def huntlipids(param_dct, error_lst):
 
 
 if __name__ == '__main__':
+
     pl_class = 'PE'
     charge = '[M-H]-'
     # pl_class = 'PC'
