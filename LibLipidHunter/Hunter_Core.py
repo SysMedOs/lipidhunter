@@ -555,7 +555,7 @@ def huntlipids(param_dct, error_lst):
 
     print('>>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
 
-    return tot_run_time, error_lst
+    return tot_run_time, error_lst, output_df
 
 
 if __name__ == '__main__':
@@ -587,6 +587,6 @@ if __name__ == '__main__':
                'hunter_folder': r'D:\project_lipidhunter\lipidhunterdev',
                'core_number': 3, 'max_ram': 5, 'img_type': 'png', 'img_dpi': 300, 'tag_all_sn': True}
     log_lst = []
-    t, log_lst = huntlipids(usr_dct, log_lst)
+    t, log_lst, export_df = huntlipids(usr_dct, log_lst)
     print(t)
     print('test passed!')

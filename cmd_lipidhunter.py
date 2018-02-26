@@ -99,7 +99,7 @@ def main(argv):
         start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
         cfg_params_dct['hunter_start_time'] = start_time_str
         print('Sart to process... ', start_time_str)
-        t, log_lst = huntlipids(cfg_params_dct, error_lst=[])
+        t, log_lst, export_df = huntlipids(cfg_params_dct, error_lst=[])
         if len(log_lst) > 0:
             for err in log_lst:
                 print('Error:', err)
