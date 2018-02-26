@@ -18,9 +18,6 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import division
-from __future__ import print_function
-
 import re
 
 import pandas as pd
@@ -45,7 +42,7 @@ class IsotopeHunter(object):
 
     def get_elements(self, formula):
         elem_dct = {}
-        elem_key_lst = self.periodic_table_dct.keys()
+        elem_key_lst = list(self.periodic_table_dct.keys())
         tmp_formula = formula.strip('+')
         tmp_formula = tmp_formula.strip('-')
 
@@ -58,7 +55,7 @@ class IsotopeHunter(object):
                 _elem_count = 1
             else:
                 _elem_count = sum([int(x) for x in _elem_count])
-            if _elem[0] in elem_dct.keys():
+            if _elem[0] in list(elem_dct.keys()):
                 elem_dct[_elem[0]] += _elem_count
             else:
                 elem_dct[_elem[0]] = _elem_count
@@ -67,7 +64,7 @@ class IsotopeHunter(object):
 
     def get_mono_mz(self, elem_dct={}):
         mono_mz = 0.0
-        for _elem in elem_dct.keys():
+        for _elem in list(elem_dct.keys()):
             mono_mz += elem_dct[_elem] * self.periodic_table_dct[_elem][0][0]
 
         return mono_mz
@@ -78,7 +75,7 @@ class IsotopeHunter(object):
         if isotope_number == 2:
             isotope_count_lst = [1, 2]
         else:
-            isotope_count_lst = range(1, isotope_number + 1)
+            isotope_count_lst = list(range(1, isotope_number + 1))
 
         # Calclulates the elemenatl mass from the elemental composition
         mono_mz = self.get_mono_mz(elem_dct)
@@ -96,7 +93,7 @@ class IsotopeHunter(object):
         # calc distribution by selected algorithms
         if only_c is True:
             # consider C only --> binomial expansion 3x faster
-            isotope_pattern = stats.binom.pmf(range(0, isotope_number + 1), c_count, ration_13c12c)
+            isotope_pattern = stats.binom.pmf(list(range(0, isotope_number + 1)), c_count, ration_13c12c)
 
         else:
             try:
@@ -110,19 +107,19 @@ class IsotopeHunter(object):
 
                 isotope_pattern_calc = c_ploy ** c_count * h_ploy ** h_count * o_ploy ** o_count
 
-                if 'N' in elem_dct.keys():
+                if 'N' in list(elem_dct.keys()):
                     n_count = elem_dct['N']
                     if n_count > 0:
                         n_ploy = Polynomial((0.99632, 0.00368))
                         isotope_pattern_calc *= n_ploy
 
-                if 'S' in elem_dct.keys():
+                if 'S' in list(elem_dct.keys()):
                     s_count = elem_dct['S']
                     if s_count > 0:
                         s_ploy = Polynomial((0.9493, 0.0076, 0.0429, 0.0002))
                         isotope_pattern_calc *= s_ploy
 
-                if 'K' in elem_dct.keys():
+                if 'K' in list(elem_dct.keys()):
                     k_count = elem_dct['K']
                     if k_count > 0:
                         k_ploy = Polynomial((0.932581, 0.000117, 0.067302))
@@ -131,7 +128,7 @@ class IsotopeHunter(object):
             except ValueError:
                 print('==>Elements error --> change to 13C mode for this compound -->')
                 # consider C only --> binomial expansion 3x faster
-                isotope_pattern = stats.binom.pmf(range(0, isotope_number + 1), c_count, ration_13c12c)
+                isotope_pattern = stats.binom.pmf(list(range(0, isotope_number + 1)), c_count, ration_13c12c)
 
         m0_i = isotope_pattern[0]
         isotope_pattern = [x / m0_i for x in isotope_pattern]
@@ -222,7 +219,7 @@ class IsotopeHunter(object):
         base_m3_i = 0
 
         m_pre1_isotope_pattern_df = self.get_isotope_mz(elem_dct, only_c=only_c, isotope_number=3)
-        m_pre1_mz = m_pre1_isotope_pattern_df.get_value(0, 'mz')
+        m_pre1_mz = m_pre1_isotope_pattern_df.at[0, 'mz']
         pre_i_df = spec_df.query('%f <= mz <= %f' %
                                  (m_pre1_mz - mz_delta, m_pre1_mz + mz_delta))
 
@@ -230,9 +227,9 @@ class IsotopeHunter(object):
             max_m_pre1_i = pre_i_df['i'].max()
             max_m_pre1_i -= base_i
             if max_m_pre1_i > 0:
-                base_m1_i += max_m_pre1_i * m_pre1_isotope_pattern_df.get_value(1, 'ratio')
-                base_m2_i += max_m_pre1_i * m_pre1_isotope_pattern_df.get_value(2, 'ratio')
-                base_m3_i += max_m_pre1_i * m_pre1_isotope_pattern_df.get_value(3, 'ratio')
+                base_m1_i += max_m_pre1_i * m_pre1_isotope_pattern_df.at[1, 'ratio']
+                base_m2_i += max_m_pre1_i * m_pre1_isotope_pattern_df.at[2, 'ratio']
+                base_m3_i += max_m_pre1_i * m_pre1_isotope_pattern_df.at[3, 'ratio']
 
         return base_m1_i, base_m2_i, base_m3_i
 
@@ -329,7 +326,7 @@ class IsotopeHunter(object):
                     else:
                         m2_score = 0
 
-                    if 2 in m2_checker_dct.keys():
+                    if 2 in list(m2_checker_dct.keys()):
                         del m2_checker_dct[2]
 
                     print('M+2-> M+4 has isotope score for [M+H2]: %.1f' % m2_score)
@@ -448,4 +445,4 @@ if __name__ == '__main__':
         isotope_distribute = iso_hunter.get_isotope_mz(isotope_pattern_dct, only_c=True)
         isotope_distribute = isotope_distribute.head(3)
         print(isotope_distribute)
-        print(isotope_distribute.get_value(0, 'mz'))
+        print(isotope_distribute.at[0, 'mz'])

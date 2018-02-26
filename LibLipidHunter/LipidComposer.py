@@ -18,7 +18,7 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import print_function
+
 
 import itertools
 
@@ -141,7 +141,7 @@ class LipidComposer:
             lyso_type_dct = {'[L%s-H]-' % lipid_type: 'EXACTMASS', '[L%s-H2O-H]-' % lipid_type: '[FA-H2O]_MZ'}
 
             lyso_base_elem_dct = self.lipid_hg_elem_dct[lipid_type]
-            for _e in self.glycerol_bone_elem_dct.keys():
+            for _e in list(self.glycerol_bone_elem_dct.keys()):
                 lyso_base_elem_dct[_e] += self.glycerol_bone_elem_dct[_e]
 
             # the element here is with no Hydroxyl on sn1 and sn2, here a [M-H]- is already considered
@@ -150,7 +150,7 @@ class LipidComposer:
             if lipid_type in ['PC', 'SM']:
                 lyso_base_mz -= (12.0 + 2 * 1.0078250321)  # LPC loss one -CH3 from HG (one H already remove above)
 
-            for _lyso_ion in lyso_type_dct.keys():
+            for _lyso_ion in list(lyso_type_dct.keys()):
                 if lipid_type in ['PC', 'SM']:
 
                     if lyso_type_dct[_lyso_ion] == 'EXACTMASS':
@@ -310,17 +310,17 @@ class LipidComposer:
 
         abbr_parser = NameParserFA()
         elem_calc = ElemCalc()
-        for _lipid in lipid_comb_dct.keys():
+        for _lipid in list(lipid_comb_dct.keys()):
             _lipid_dct = lipid_comb_dct[_lipid]
             _sn1_abbr = _lipid_dct['SN1']
             _sn2_abbr = _lipid_dct['SN2']
             _sn1_info_dct = abbr_parser.get_fa_info(_sn1_abbr)
             _sn2_info_dct = abbr_parser.get_fa_info(_sn2_abbr)
 
-            for _sn1_k in _sn1_info_dct.keys():
+            for _sn1_k in list(_sn1_info_dct.keys()):
                 _lipid_dct['SN1_' + _sn1_k] = _sn1_info_dct[_sn1_k]
 
-            for _sn2_k in _sn1_info_dct.keys():
+            for _sn2_k in list(_sn1_info_dct.keys()):
                 _lipid_dct['SN2_' + _sn2_k] = _sn2_info_dct[_sn2_k]
 
             _lipid_dct['M_DB'] = _sn1_info_dct['DB'] + _sn2_info_dct['DB']
@@ -338,7 +338,7 @@ class LipidComposer:
             _lipid_formula, _lipid_elem_dct = elem_calc.get_formula(lipid_bulk_str)
             _lipid_dct['FORMULA'] = _lipid_formula
             _lipid_dct['EXACTMASS'] = elem_calc.get_exactmass(_lipid_elem_dct)
-            for _elem_k in _lipid_elem_dct.keys():
+            for _elem_k in list(_lipid_elem_dct.keys()):
                 _lipid_dct['M_' + _elem_k] = _lipid_elem_dct[_elem_k]
 
             # charged

@@ -18,9 +18,7 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import print_function
-
-import ConfigParser as configparser
+from six.moves import configparser
 import glob
 import multiprocessing
 import multiprocessing.pool
@@ -202,7 +200,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         :return: a list of absolute file path
         :rtype: list
         """
-        if folder is not u'':
+        if folder is not '':
             os.chdir(folder)
             _pre_found_lst = []
             for _filetype in filetype_lst:
@@ -254,14 +252,14 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         return error_log
 
     def a_load_xlsx(self):
-        file_info_str = u'FA white list files (*.xlsx *.XLSX)'
+        file_info_str = 'FA white list files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_a_loadxlsxpath_le)
 
     def a_go_generator(self):
         self.ui.tabframe.setCurrentIndex(3)
 
     def a_load_mzml(self):
-        file_info_str = u'mzML spectra files (*.mzML *.mzml)'
+        file_info_str = 'mzML spectra files (*.mzML *.mzml)'
         self.open_file(file_info_str, self.ui.tab_a_mzml_le)
 
     def a_save_img2folder(self):
@@ -270,7 +268,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_a_saveimgfolder_le.setText(a_save_img2folder_str)
 
     def a_save_output(self):
-        a_save_output_path = QtGui.QFileDialog.getSaveFileName(caption=u'Save file', filter=u'.xlsx')
+        a_save_output_path = QtGui.QFileDialog.getSaveFileName(caption='Save file', filter='.xlsx')
         self.ui.tab_a_savexlsxpath_le.clear()
         a_save_output_str = os.path.abspath(a_save_output_path[0])
         self.ui.tab_a_savexlsxpath_le.setText(a_save_output_str)
@@ -289,7 +287,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         usr_vendor_str = self.ui.vendor_cmb.currentText().lower()
         vendors_dct = {'therm': 'thermo', 'water': 'waters', 'sciex': 'sciex', 'agile': 'agilent'}
-        if usr_vendor_str[0:5] in vendors_dct.keys():
+        if usr_vendor_str[0:5] in list(vendors_dct.keys()):
             usr_vendor = vendors_dct[usr_vendor_str[0:5]]
         else:
             usr_vendor = ''
@@ -427,7 +425,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             config = configparser.ConfigParser()
             with open(param_log_output_path_str, 'w') as usr_param_cfg:
                 config.add_section('parameters')
-                for param in hunter_param_dct.keys():
+                for param in list(hunter_param_dct.keys()):
                     config.set('parameters', param, hunter_param_dct[param])
                 config.write(usr_param_cfg)
 
@@ -436,7 +434,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         print(hunter_param_dct)
 
-        error_log_lst = filter(None, error_log_lst)
+        error_log_lst = [_f for _f in error_log_lst if _f]
 
         if len(error_log_lst) > 0:
             print('Parameter error:', error_log_lst)
@@ -469,14 +467,14 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                                                                 'please check your settings !!')
 
     def a_save_cfg(self):
-        a_save_cfg_path = QtGui.QFileDialog.getSaveFileName(caption=u'Save file', filter=u'.txt')
+        a_save_cfg_path = QtGui.QFileDialog.getSaveFileName(caption='Save file', filter='.txt')
         self.ui.tab_a_cfgpath_le.clear()
         a_save_cfg_str = os.path.abspath(a_save_cfg_path[0])
         self.ui.tab_a_cfgpath_le.setText(a_save_cfg_str)
 
     def a_create_cfg(self):
         hunter_param_dct, error_log_lst = self.a_get_params()
-        error_log_lst = filter(None, error_log_lst)
+        error_log_lst = [_f for _f in error_log_lst if _f]
 
         if len(error_log_lst) > 0:
             print('Parameter error:', error_log_lst)
@@ -490,7 +488,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             config = configparser.ConfigParser()
             with open(param_cfg_path_str, 'w') as usr_param_cfg:
                 config.add_section('parameters')
-                for param in hunter_param_dct.keys():
+                for param in list(hunter_param_dct.keys()):
                     config.set('parameters', param, str(hunter_param_dct[param]))
                 config.write(usr_param_cfg)
                 self.ui.tab_a_gencfg_pte.insertPlainText('>>> Configuration saved as:')
@@ -521,7 +519,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     @staticmethod
     def b_get_same_files(folder, filetype_lst):
 
-        if folder is not u'':
+        if folder is not '':
             os.chdir(folder)
             _pre_found_lst = []
             for _filetype in filetype_lst:
@@ -542,17 +540,17 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         _loaded_lst = _loaded_files.split('\n')
 
         b_load_cfg_dialog = QtGui.QFileDialog(self)
-        b_load_cfg_dialog.setNameFilters([u'LipidHunter batch mode files (*.txt)'])
-        b_load_cfg_dialog.selectNameFilter(u'LipidHunter batch mode files (*.txt)')
+        b_load_cfg_dialog.setNameFilters(['LipidHunter batch mode files (*.txt)'])
+        b_load_cfg_dialog.selectNameFilter('LipidHunter batch mode files (*.txt)')
         if b_load_cfg_dialog.exec_():
             b_load_cfg_str = b_load_cfg_dialog.selectedFiles()[0]
             b_load_cfg_str = os.path.abspath(b_load_cfg_str)
             if b_load_cfg_str not in _loaded_lst:
                 self.ui.tab_b_infiles_pte.insertPlainText(b_load_cfg_str)  # take unicode only
-                self.ui.tab_b_infiles_pte.insertPlainText(u'\n')
+                self.ui.tab_b_infiles_pte.insertPlainText('\n')
             else:
                 _msgBox = QtGui.QMessageBox()
-                _msgBox.setText(u'Batch config file has been chosen already.')
+                _msgBox.setText('Batch config file has been chosen already.')
                 _msgBox.exec_()
 
     def b_load_batchcfgfolder(self):
@@ -571,7 +569,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 _duplicated_str = _duplicated_str + _cfg + '\n'
         if len(_duplicated_str) > 0:
             _msgBox = QtGui.QMessageBox()
-            _msgBox.setText(_duplicated_str + u'Already chosen. \n Skipped')
+            _msgBox.setText(_duplicated_str + 'Already chosen. \n Skipped')
             _msgBox.exec_()
 
     @staticmethod
@@ -638,7 +636,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             cfg_dct_lst = []
             for cfg_file in loaded_cfg_lst:
                 hunter_param_dct = self.b_read_cfg(cfg_file)
-                if 'vendor' in hunter_param_dct.keys():
+                if 'vendor' in list(hunter_param_dct.keys()):
                     hunter_param_dct['batch_cfg_file'] = cfg_file
                     hunter_param_dct['core_number'] = sub_max_core
                     hunter_param_dct['max_ram'] = sub_max_ram
@@ -647,14 +645,14 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                     hunter_param_dct['batch_cfg_file'] = ''
 
             if len(cfg_dct_lst) > max_process:
-                sub_part_lst = map(None, *(iter(cfg_dct_lst),) * max_process)
+                sub_part_lst = list(*(iter(cfg_dct_lst),) * max_process)
             else:
                 sub_part_lst = [cfg_dct_lst]
 
             tot_part = len(sub_part_lst)
             part_num = 1
             for sub_cfg_lst in sub_part_lst:
-                sub_cfg_lst = filter(lambda x: x is not None, sub_cfg_lst)
+                sub_cfg_lst = [x for x in sub_cfg_lst if x is not None]
                 parallel_pool = multiprocessing.pool.ThreadPool(max_process)
                 hunter_results_lst = []
                 hunter_log_lst = []
@@ -675,7 +673,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                         config = configparser.ConfigParser()
                         with open(param_log_output_path_str, 'w') as usr_param_cfg:
                             config.add_section('parameters')
-                            for param in hunter_param_dct.keys():
+                            for param in list(hunter_param_dct.keys()):
                                 config.set('parameters', param, hunter_param_dct[param])
                             config.write(usr_param_cfg)
                     except IOError:
@@ -711,7 +709,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
                 self.ui.tab_b_statusrun_pte.insertPlainText('Start processing...\n%s\n' % _cfg)
                 hunter_param_dct = self.b_read_cfg(_cfg)
-                if 'vendor' in hunter_param_dct.keys():
+                if 'vendor' in list(hunter_param_dct.keys()):
                     hunter_param_dct['batch_cfg_file'] = _cfg
                     hunter_param_dct['core_number'] = sub_max_core
                     hunter_param_dct['max_ram'] = sub_max_ram
@@ -724,7 +722,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                         config = configparser.ConfigParser()
                         with open(param_log_output_path_str, 'w') as usr_param_cfg:
                             config.add_section('parameters')
-                            for param in hunter_param_dct.keys():
+                            for param in list(hunter_param_dct.keys()):
                                 config.set('parameters', param, hunter_param_dct[param])
                             config.write(usr_param_cfg)
                         log_lst = []
@@ -792,15 +790,15 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             config.write(default_cfg)
 
     def c_load_fawhitelist(self):
-        file_info_str = u'FA white list files (*.xlsx *.XLSX)'
+        file_info_str = 'FA white list files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_fawhitelist_le)
 
     def c_load_hgcfg(self):
-        file_info_str = u'MS Excel files (*.xlsx *.XLSX)'
+        file_info_str = 'MS Excel files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_hgcfg_le)
 
     def c_load_scorecfg(self):
-        file_info_str = u'MS Excel files (*.xlsx *.XLSX)'
+        file_info_str = 'MS Excel files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_scorecfg_le)
 
 
