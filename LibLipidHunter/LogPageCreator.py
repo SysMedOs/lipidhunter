@@ -225,17 +225,19 @@ class LogPageCreator(object):
                     plot_df_cols = []
                     if self.lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
-                                        'SN1_[FA-H]- i (%)', 'SN2_[FA-H]- i (%)',
-                                        '[LPL(SN1)-H]- i (%)', '[LPL(SN2)-H]- i (%)',
-                                        '[LPL(SN1)-H2O-H]- i (%)', '[LPL(SN2)-H2O-H]- i (%)']
+                                        'SN1_[FA-H]-_i_per', 'SN2_[FA-H]-_i_per',
+                                        '[LPL(SN1)-H]-_i_per', '[LPL(SN2)-H]-_i_per',
+                                        '[LPL(SN1)-H2O-H]-_i_per', '[LPL(SN2)-H2O-H]-_i_per']
                     elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
-                        pass
-                        # TODO(zhixu.ni@uni-leipzig.de): @Georgia add TG here please :)
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'SN1_[FA-H2O+H]+_i_per',
+                                        'SN2_[FA-H2O+H]+_i_per', 'SN3_[FA-H2O+H]+_i_per', '[M-(SN1)+H]+_i_per',
+                                        '[M-(SN2)+H]+_i_per', '[M-(SN3)+H]+_i_per', '[MG(SN1)-H2O+H]+_i_per',
+                                        '[MG(SN2)-H2O+H]+_i_per', '[MG(SN3)-H2O+H]+_i_per']
                     else:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
-                                        'SN1_[FA-H]- i (%)', 'SN2_[FA-H]- i (%)',
-                                        '[LPL(SN1)-H]- i (%)', '[LPL(SN2)-H]- i (%)',
-                                        '[LPL(SN1)-H2O-H]- i (%)', '[LPL(SN2)-H2O-H]- i (%)']
+                                        'SN1_[FA-H]-i_per', 'SN2_[FA-H]-i_per',
+                                        '[LPL(SN1)-H]-i_per', '[LPL(SN2)-H]-i_per',
+                                        '[LPL(SN1)-H2O-H]-i_per', '[LPL(SN2)-H2O-H]-i_per']
 
                     peak_info_df = pd.DataFrame(_subgroup_df, columns=plot_df_cols)
 

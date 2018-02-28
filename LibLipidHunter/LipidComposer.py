@@ -208,6 +208,9 @@ class LipidComposer:
                                                                     ms2_ppm)
                 usr_fa_df['%s_Q' % _mg_ion] = (usr_fa_df['%s_MZ_LOW' % _mg_ion].astype(str) + ' <= mz <= ' + usr_fa_df[
                     '%s_MZ_HIGH' % _mg_ion].astype(str))
+        else:
+            # TODO (georgia.angelidou@uni-leipzig.de): SM
+            pass
         return usr_fa_df
 
     def gen_all_comb(self, lipid_class, usr_fa_df, position=False):
@@ -445,7 +448,7 @@ class LipidComposer:
 
         abbr_parser = NameParserFA()
         elem_calc = ElemCalc()
-        # TODO(georgia.angelidou@uni-leipzig.de): need to add the lipid class to support more than 2 sn
+
         for _lipid in lipid_comb_dct.keys():
             _lipid_dct = lipid_comb_dct[_lipid]
 
@@ -459,7 +462,7 @@ class LipidComposer:
 
             for _sn2_k in _sn1_info_dct.keys():
                 _lipid_dct['SN2_' + _sn2_k] = _sn2_info_dct[_sn2_k]
-
+            # TODO (georgia.angelidou@uni-leipzig.de): SM, Cer
             if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
                 _lipid_dct['M_DB'] = _sn1_info_dct['DB'] + _sn2_info_dct['DB']
                 # TODO(georgia.angelidou@uni-leipzig.de): not important (just keep in mind for future correction)
@@ -527,7 +530,7 @@ if __name__ == '__main__':
     # in the case that the user define 2 different FA for both positions then:
     # When it is false it will give only one option
     # and when it is TRUE to give both compinations that these 2 FA an make (incase of phospholipids)
-    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'TG', 'charge_mode': '[M+NH4]+',
+    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'TG', 'charge_mode': '[M+H]+',
                      'exact_position': 'FALSE'}
 
     composer = LipidComposer()

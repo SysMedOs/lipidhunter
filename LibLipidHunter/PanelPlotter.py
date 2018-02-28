@@ -48,6 +48,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     obs_fa_df = ident_info_dct['OBS_FA']
     obs_lyso_df = ident_info_dct['OBS_LYSO']
     obs_ident_df = ident_info_dct['IDENT']
+    # obs_ident_df2 = ident_info_dct['IDENT2']
 
     isotope_score = isotope_score_info_dct['isotope_score']
     isotope_checker_dct = isotope_score_info_dct['isotope_checker_dct']
@@ -398,13 +399,18 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # remove identified FA
         ident_peak_lst = obs_ident_df['obs_abbr'].values.tolist()
+        # ident_peak_lst2 = obs_ident_df2['obs_abbr'].values.tolist()
+        ident_peak_lst.sort()
+        ident_peak_lst = set(ident_peak_lst)
         frag_idx_lst = []
         nl_idx_lst = []
         for _idx, _ion_se in obs_fa_df.iterrows():
+            # if _ion_se['obs_abbr'] in ident_peak_lst:
             if _ion_se['obs_abbr'] in ident_peak_lst:
                 frag_idx_lst.append(_idx)
         obs_fa_df = obs_fa_df.drop(frag_idx_lst)
         for _idx, _ion_se in obs_lyso_df.iterrows():
+            # if _ion_se['obs_abbr'] in ident_peak_lst:
             if _ion_se['obs_abbr'] in ident_peak_lst:
                 nl_idx_lst.append(_idx)
         obs_lyso_df = obs_lyso_df.drop(nl_idx_lst)
@@ -455,6 +461,23 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                color=(1.0, 0.6, 0.0, 1), rotation=60)
 
         # plot all identified peaks
+        # for _idx, _ident_se in obs_ident_df.iterrows():
+        #     _ident_mz = _ident_se['mz']
+        #     _ident_i = _ident_se['i']
+        #
+        #     if _ident_mz <= 400:
+        #         _sub_plot = msms_low_pic
+        #         _ident_i_r = _ident_i * 1.025
+        #     else:
+        #         _sub_plot = msms_high_pic
+        #         _ident_i_r = _ident_i * 1.075
+        #
+        #     markerline, stemlines, baseline = _sub_plot.stem([_ident_mz], [_ident_i_r], markerfmt=' ')
+        #     plt.setp(stemlines, color=(0, 0.7, 1.0, 0.4), linewidth=3)
+        #     markerline, stemlines, baseline = msms_pic.stem([_ident_mz], [_ident_i], markerfmt=' ')
+        #     plt.setp(stemlines, color=(0, 0.7, 1.0, 0.7), linewidth=3)
+        #     _sub_plot.text(_ident_mz, _ident_i_r, _ident_se['obs_label'], txt_props,
+        #                    fontsize=8, color=(0, 0.6, 1.0, 1.0), rotation=60, weight='bold')
         for _idx, _ident_se in obs_ident_df.iterrows():
             _ident_mz = _ident_se['mz']
             _ident_i = _ident_se['i']
@@ -472,7 +495,6 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             plt.setp(stemlines, color=(0, 0.7, 1.0, 0.7), linewidth=3)
             _sub_plot.text(_ident_mz, _ident_i_r, _ident_se['obs_label'], txt_props,
                            fontsize=8, color=(0, 0.6, 1.0, 1.0), rotation=60, weight='bold')
-
         # add specific ion info
         if 'OTHER_FRAG' in specific_dct.keys():
             other_frag_df = specific_dct['OTHER_FRAG']
