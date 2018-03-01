@@ -448,7 +448,6 @@ class LipidComposer:
 
         abbr_parser = NameParserFA()
         elem_calc = ElemCalc()
-
         for _lipid in list(lipid_comb_dct.keys()):
             _lipid_dct = lipid_comb_dct[_lipid]
 

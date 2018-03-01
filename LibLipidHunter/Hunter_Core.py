@@ -333,7 +333,6 @@ def huntlipids(param_dct, error_lst):
                 if None in _sub_lst:
                     _sub_lst = [x for x in _sub_lst if x is not None]
                     # TODO (georgia.angelidou@uni-leipzig.de): remove when fix
-                    # _sub_lst = filter(lambda x: x is not None, _sub_lst)
                     # # Check to avoid errors incase of only one identification
                     # if isinstance(_sub_lst[0], float):
                     #     _sub_lst2 = ()
@@ -622,15 +621,15 @@ def huntlipids(param_dct, error_lst):
 if __name__ == '__main__':
     # pl_class = 'PE'
     # charge = '[M-H]-'
-    # pl_class = 'PC'
-    # charge = '[M+HCOO]-'
-    pl_class = 'TG'
-    charge = '[M+NH4]+'
-    # mz_range = [650, 950]
-    # rt_range = [25, 27]
-    mz_range = [600, 1000]
+    pl_class = 'PC'
+    charge = '[M+HCOO]-'
+    # pl_class = 'TG'
+    # charge = '[M+NH4]+'
+    mz_range = [650, 950]
+    rt_range = [25, 27]
+    # mz_range = [600, 1000]
     # mz_range = [820, 850]
-    rt_range = [9, 16]
+    # rt_range = [9, 16]
     # rt_range = [24.3, 24.5]
     count = 3
 
@@ -649,9 +648,9 @@ if __name__ == '__main__':
                'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
                'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
                'hg_th': 10.0, 'hg_ppm': 200.0, 'ms2_hginfopeak_threshold': 0.001,
-               'score_cfg': r'..\ConfigurationFiles\Score_cfg.xlsx',
-               'fa_white_list_cfg': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
-               'hunter_folder': r'D:\Programs_PhD\lipidhunterdev',
+               'score_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\Score_cfg.xlsx',
+               'fa_white_list_cfg': r'D:\project_lipidhunter\lipidhunterdev\\ConfigurationFiles\FA_Whitelist.xlsx',
+               'hunter_folder': r'D:\project_lipidhunter\lipidhunterdev',
                'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
 
     # usr_dct = {'fawhitelist_path_str': r'..\ConfigurationFiles\FA_Whitelist2.xlsx',

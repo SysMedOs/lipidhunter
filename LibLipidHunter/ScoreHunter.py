@@ -299,8 +299,9 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         print('Warning: No informative peak found !!!')
 
     if len(list(obs_dct.keys())) > 0:
+
         for obs_type in list(obs_dct.keys()):
-            # obs_type = '[M-FA+H]+'  # later need to be remove
+
             _obs_df = obs_dct[obs_type][0]
             _obs_lst = obs_dct[obs_type][1]
             _obs_drop_idx = []
@@ -415,14 +416,6 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                         lite_info_df.at[_idx, '%s_RANK' % _obs] = _rank_idx
                         lite_info_df.at[_idx, '%s_i' % _obs] = _i
                         lite_info_df.at[_idx, '{obs}_i_per'.format(obs=_obs)] = _i_r
-
-                        # TODO (georgia.angelidou@uni-leipzig.de): remove when the code works
-                        # lite_info_df.set_value(_idx, '%s_RANK' % _obs, _rank_idx)
-                        # lite_info_df.set_value(_idx, '%s_i' % _obs, _i)
-                        # # lite_info_df.set_value(_idx, '{obs} i (%)'.format(obs=_obs), _i_r)
-                        # lite_info_df.set_value(_idx, '%s_i_per' % _obs, _i_r)
-
-                        # TODO(georgia.angelidou@uni-leipzig.de): when optimaze remove the uneccesary ones
                         # print(_abbr, _rank_idx, _i)
                         # ident_peak_dct[_abbr] = {'discrete_abbr': _lipid_abbr, 'obs_label': _label, 'i': _i,
                         #                          'mz': _mz, 'obs_abbr': _abbr, 'obs_rank_type': '%s_RANK' % _obs,
@@ -599,12 +592,9 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
             if isotope_score >= usr_isotope_score_filter:
                 print('>>> isotope_check PASSED! >>> >>> >>>')
                 print('>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
-                #_samemz_se.set_value('MS1_obs_mz', _ms1_pr_mz)
                 _samemz_se.at['MS1_obs_mz'] = _ms1_pr_mz
                 _exact_ppm = 1e6 * (_ms1_pr_mz - _usr_mz_lib) / _usr_mz_lib
-                #_samemz_se.set_value('ppm', _exact_ppm)
                 _samemz_se.at['ppm'] = _exact_ppm
-                #_samemz_se.set_value('abs_ppm', abs(_exact_ppm))
                 _samemz_se.at['abs_ppm'] = abs(_exact_ppm)
                 print('Proposed_bulk_structure can be:', _usr_abbr_bulk_lst)
                 for _usr_abbr_bulk in _usr_abbr_bulk_lst:
