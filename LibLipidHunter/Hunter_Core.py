@@ -331,12 +331,14 @@ def huntlipids(param_dct, error_lst):
         for _sub_lst in spec_sub_key_lst:
             if isinstance(_sub_lst, tuple) or isinstance(_sub_lst, list):
                 if None in _sub_lst:
-                    _sub_lst = filter(lambda x: x is not None, _sub_lst)
-                    # Check to avoid errors incase of only one identification
-                    if isinstance(_sub_lst[0], float):
-                        _sub_lst2 = ()
-                        _sub_lst2 = _sub_lst2 + (_sub_lst,)
-                        _sub_lst = _sub_lst2
+                    _sub_lst = [x for x in _sub_lst if x is not None]
+                    # TODO (georgia.angelidou@uni-leipzig.de): remove when fix
+                    # _sub_lst = filter(lambda x: x is not None, _sub_lst)
+                    # # Check to avoid errors incase of only one identification
+                    # if isinstance(_sub_lst[0], float):
+                    #     _sub_lst2 = ()
+                    #     _sub_lst2 = _sub_lst2 + (_sub_lst,)
+                    #     _sub_lst = _sub_lst2
 
                 else:
                     if isinstance(_sub_lst[0], float):
@@ -347,8 +349,12 @@ def huntlipids(param_dct, error_lst):
                 print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
                 sub_spec_dct = get_spec_info(_sub_lst, checked_info_groups, usr_scan_info_df)
                 core_worker_count += 1
-                if len(sub_spec_dct.keys()) > 0:
-                    lipid_spec_info_dct = dict(lipid_spec_info_dct, **sub_spec_dct)
+                if len(list(sub_spec_dct.keys())) > 0:
+                    #lipid_spec_info_dct = dict(lipid_spec_info_dct, **sub_spec_dct)
+                    lipid_spec_info_dct.update(sub_spec_dct)
+                # TODO (geprgia.angelidou@uni-leipzig.de): remove when the program works
+                # if len(sub_spec_dct.keys()) > 0:
+                #     lipid_spec_info_dct = dict(lipid_spec_info_dct, **sub_spec_dct)
             else:
                 pass
 
@@ -615,57 +621,57 @@ def huntlipids(param_dct, error_lst):
 
 if __name__ == '__main__':
     # pl_class = 'PE'
-    pl_class = 'TG'
     # charge = '[M-H]-'
-    charge = '[M+H]+'
     # pl_class = 'PC'
     # charge = '[M+HCOO]-'
+    pl_class = 'TG'
+    charge = '[M+NH4]+'
     # mz_range = [650, 950]
-    # rt_range = [20, 30]
+    # rt_range = [25, 27]
     mz_range = [600, 1000]
     # mz_range = [820, 850]
     rt_range = [9, 16]
     # rt_range = [24.3, 24.5]
-    count = 26
+    count = 3
 
-    # usr_dct = {'fawhitelist_path_str': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
-    #            'mzml_path_str': r'D:\PhD\2017_new\Samples\Ni\070120_CM_neg_70min_SIN_I.mzML',
+    usr_dct = {'fawhitelist_path_str': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\FA_Whitelist.xlsx',
+               'mzml_path_str': r'D:\project_lipidhunter\MF_mzML\MS2\070120_CM_neg_70min_SIN_I.mzML',
+               'img_output_folder_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test%s%i' % (pl_class, count),
+               'xlsx_output_path_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test%s%i\t%s_%i.xlsx'
+                                       % (pl_class, count, pl_class, count),
+               'lipid_specific_cfg':
+                   r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
+               'hunter_start_time': '2017-12-21_15-27-49',
+               'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': pl_class, 'charge_mode': charge,
+               'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1],
+               'rank_score': True, 'rank_score_filter': 27.5, 'score_filter': 27.5,
+               'isotope_score_filter': 75.0, 'fast_isotope': False,
+               'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
+               'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
+               'hg_th': 10.0, 'hg_ppm': 200.0, 'ms2_hginfopeak_threshold': 0.001,
+               'score_cfg': r'..\ConfigurationFiles\Score_cfg.xlsx',
+               'fa_white_list_cfg': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
+               'hunter_folder': r'D:\Programs_PhD\lipidhunterdev',
+               'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
+
+    # usr_dct = {'fawhitelist_path_str': r'..\ConfigurationFiles\FA_Whitelist2.xlsx',
+    #            'mzml_path_str': r'D:\PhD\2018\Samples\S3_17_43_M1.mzML',
     #            'img_output_folder_str': r'..\Temp\Test%s%i' % (pl_class, count),
     #            'xlsx_output_path_str': r'..\Temp\Test%s%i\t%s_%i.xlsx'
     #                                    % (pl_class, count, pl_class, count),
     #            'lipid_specific_cfg':
     #                r'..\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
-    #            'hunter_start_time': '2017-12-21_15-27-49',
+    #            'hunter_start_time': '2018-02-21_15-27-49',
     #            'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': pl_class, 'charge_mode': charge,
     #            'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1],
-    #            'rank_score': True, 'rank_score_filter': 27.5, 'score_filter': 27.5,
+    #            'rank_score': True, 'rank_score_filter': 50, 'score_filter': 50,
     #            'isotope_score_filter': 75.0, 'fast_isotope': False,
-    #            'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
-    #            'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
-    #            'hg_th': 10.0, 'hg_ppm': 200.0, 'ms2_hginfopeak_threshold': 0.001,
-    #            'score_cfg': r'..\ConfigurationFiles\Score_cfg.xlsx',
-    #            'fa_white_list_cfg': r'..\ConfigurationFiles\FA_Whitelist.xlsx',
+    #            'ms_th': 1000, 'ms_ppm': 50, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
+    #            'ms2_th': 25, 'ms2_ppm': 100, 'ms2_infopeak_threshold': 0.001,
+    #            'hg_th': 50.0, 'hg_ppm': 100.0, 'ms2_hginfopeak_threshold': 0.001,
+    #            'score_cfg': r'..\ConfigurationFiles\ScoreTG2_cfg.xlsx',
     #            'hunter_folder': r'D:\Programs_PhD\lipidhunterdev',
-    #            'core_number': 1, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
-
-    usr_dct = {'fawhitelist_path_str': r'..\ConfigurationFiles\FA_Whitelist2.xlsx',
-               'mzml_path_str': r'D:\PhD\2018\Samples\S3_17_43_M1.mzML',
-               'img_output_folder_str': r'..\Temp\Test%s%i' % (pl_class, count),
-               'xlsx_output_path_str': r'..\Temp\Test%s%i\t%s_%i.xlsx'
-                                       % (pl_class, count, pl_class, count),
-               'lipid_specific_cfg':
-                   r'..\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
-               'hunter_start_time': '2018-02-21_15-27-49',
-               'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': pl_class, 'charge_mode': charge,
-               'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1],
-               'rank_score': True, 'rank_score_filter': 50, 'score_filter': 50,
-               'isotope_score_filter': 75.0, 'fast_isotope': False,
-               'ms_th': 1000, 'ms_ppm': 50, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
-               'ms2_th': 25, 'ms2_ppm': 100, 'ms2_infopeak_threshold': 0.001,
-               'hg_th': 50.0, 'hg_ppm': 100.0, 'ms2_hginfopeak_threshold': 0.001,
-               'score_cfg': r'..\ConfigurationFiles\ScoreTG2_cfg.xlsx',
-               'hunter_folder': r'D:\Programs_PhD\lipidhunterdev',
-               'core_number': 1, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
+    #            'core_number': 1, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': False}
     log_lst = []
     t, log_lst = huntlipids(usr_dct, log_lst)
     print(t)

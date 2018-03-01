@@ -298,8 +298,8 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
     else:
         print('Warning: No informative peak found !!!')
 
-    if len(obs_dct.keys()) > 0:
-        for obs_type in obs_dct.keys():
+    if len(list(obs_dct.keys())) > 0:
+        for obs_type in list(obs_dct.keys()):
             # obs_type = '[M-FA+H]+'  # later need to be remove
             _obs_df = obs_dct[obs_type][0]
             _obs_lst = obs_dct[obs_type][1]
@@ -341,8 +341,9 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                             _fa_abbr = _lipid_abbr_comp_dct.keys()[_lipid_abbr_comp_dct.values().index(2)]
                             if _fa_abbr in list(_obs_df2['fa_abbr']):
                                 _position_df = _obs_df2.loc[_obs_df2['fa_abbr'] == _fa_abbr]
-                                _obs_df2.set_value(_position_df.index[0], 'i',
-                                                   _obs_df2.loc[_position_df.index[0], 'i'] / 2)
+                                # _obs_df2.set_value(_position_df.index[0], 'i',
+                                #                    _obs_df2.loc[_position_df.index[0], 'i'] / 2)
+                                _obs_df2.at[_position_df.index[0], 'i'] = _obs_df2.loc[_position_df.index[0], 'i'] / 2
                                 _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
                                 _obs_df2.reset_index(inplace=True, drop=True)
                                 _obs_df2['obs_rank'] = _obs_df2.index + 1
@@ -351,8 +352,9 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                             _fa_abbr = _lipid_abbr_comp_dct.keys()[_lipid_abbr_comp_dct.values().index(3)]
                             if _fa_abbr in list(_obs_df2['fa_abbr']):
                                 _position_df = _obs_df2.loc[_obs_df2['fa_abbr'] == _fa_abbr]
-                                _obs_df2.set_value(_position_df.index[0], 'i',
-                                                   _obs_df2.loc[_position_df.index[0], 'i'] / 3)
+                                # _obs_df2.set_value(_position_df.index[0], 'i',
+                                #                    _obs_df2.loc[_position_df.index[0], 'i'] / 3)
+                                _obs_df2.at[_position_df.index[0], 'i'] = _obs_df2.loc[_position_df.index[0], 'i'] / 2
                                 _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
                                 _obs_df2.reset_index(inplace=True, drop=True)
                                 _obs_df2['obs_rank'] = _obs_df2.index + 1
@@ -362,20 +364,26 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                         _sn_total_count = 0
                         _sn1_count = lite_info_df.loc[_idx, 'sn1_found']
                         if _sn1_abbr in list(_obs_df2['fa_abbr']) and _sn1_count == 0:
-                            lite_info_df.set_value(_idx, 'sn1_found', 1)
+                            # lite_info_df.set_value(_idx, 'sn1_found', 1)
+                            lite_info_df.at[_idx, 'sn1_found'] = 1
                             _sn_total_count = _sn_total_count + 1
                         _sn2_count = lite_info_df.loc[_idx, 'sn2_found']
                         if _sn2_abbr in list(_obs_df2['fa_abbr']) and _sn2_count == 0:
-                            lite_info_df.set_value(_idx, 'sn2_found', 1)
+                            # lite_info_df.set_value(_idx, 'sn2_found', 1)
+                            lite_info_df.at[_idx, 'sn2_found'] = 1
                             _sn_total_count = _sn_total_count + 1
                         _sn3_count = lite_info_df.loc[_idx, 'sn3_found']
                         if _sn3_abbr in list(_obs_df2['fa_abbr']) and _sn3_count == 0:
-                            lite_info_df.set_value(_idx, 'sn3_found', 1)
+                            # lite_info_df.set_value(_idx, 'sn3_found', 1)
+                            lite_info_df.at[_idx, 'sn3_found'] = 1
                             _sn_total_count = _sn_total_count + 1
                         if all_sn is True and _sn_total_count < 3:
-                            lite_info_df.set_value(_idx, 'sn3_found', 0)
-                            lite_info_df.set_value(_idx, 'sn2_found', 0)
-                            lite_info_df.set_value(_idx, 'sn1_found', 0)
+                            # lite_info_df.set_value(_idx, 'sn3_found', 0)
+                            lite_info_df.at[_idx, 'sn3_found'] = 0
+                            # lite_info_df.set_value(_idx, 'sn2_found', 0)
+                            lite_info_df.at[_idx, 'sn2_found'] = 0
+                            # lite_info_df.set_value(_idx, 'sn1_found', 0)
+                            lite_info_df.at[_idx, 'sn1_found'] = 0
                         else:
                             pass
 
@@ -404,10 +412,15 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                         _label = ''
 
                     if _rank_idx <= 10 and _i > 0:
-                        lite_info_df.set_value(_idx, '%s_RANK' % _obs, _rank_idx)
-                        lite_info_df.set_value(_idx, '%s_i' % _obs, _i)
-                        # lite_info_df.set_value(_idx, '{obs} i (%)'.format(obs=_obs), _i_r)
-                        lite_info_df.set_value(_idx, '%s_i_per' % _obs, _i_r)
+                        lite_info_df.at[_idx, '%s_RANK' % _obs] = _rank_idx
+                        lite_info_df.at[_idx, '%s_i' % _obs] = _i
+                        lite_info_df.at[_idx, '{obs}_i_per'.format(obs=_obs)] = _i_r
+
+                        # TODO (georgia.angelidou@uni-leipzig.de): remove when the code works
+                        # lite_info_df.set_value(_idx, '%s_RANK' % _obs, _rank_idx)
+                        # lite_info_df.set_value(_idx, '%s_i' % _obs, _i)
+                        # # lite_info_df.set_value(_idx, '{obs} i (%)'.format(obs=_obs), _i_r)
+                        # lite_info_df.set_value(_idx, '%s_i_per' % _obs, _i_r)
 
                         # TODO(georgia.angelidou@uni-leipzig.de): when optimaze remove the uneccesary ones
                         # print(_abbr, _rank_idx, _i)
@@ -586,10 +599,13 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
             if isotope_score >= usr_isotope_score_filter:
                 print('>>> isotope_check PASSED! >>> >>> >>>')
                 print('>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
-                _samemz_se.set_value('MS1_obs_mz', _ms1_pr_mz)
+                #_samemz_se.set_value('MS1_obs_mz', _ms1_pr_mz)
+                _samemz_se.at['MS1_obs_mz'] = _ms1_pr_mz
                 _exact_ppm = 1e6 * (_ms1_pr_mz - _usr_mz_lib) / _usr_mz_lib
-                _samemz_se.set_value('ppm', _exact_ppm)
-                _samemz_se.set_value('abs_ppm', abs(_exact_ppm))
+                #_samemz_se.set_value('ppm', _exact_ppm)
+                _samemz_se.at['ppm'] = _exact_ppm
+                #_samemz_se.set_value('abs_ppm', abs(_exact_ppm))
+                _samemz_se.at['abs_ppm'] = abs(_exact_ppm)
                 print('Proposed_bulk_structure can be:', _usr_abbr_bulk_lst)
                 for _usr_abbr_bulk in _usr_abbr_bulk_lst:
                     print('Now check_proposed_structure:', _usr_abbr_bulk)
