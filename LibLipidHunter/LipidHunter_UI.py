@@ -1260,7 +1260,7 @@ class Ui_MainWindow(object):
         self.tab_a_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+Na]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
         self.label_16.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level ppm:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_ms2threshold_spb_2.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
