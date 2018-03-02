@@ -325,7 +325,7 @@ class ElemCalc:
             formula_str += '-'
         elif charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
             formula_str += '+'
-        # print ('letssee if you manage to get out from this one')
+        # print ('lets see if you manage to get out from this one')
         return formula_str, elem_dct
 
     def get_exactmass(self, elem_dct):

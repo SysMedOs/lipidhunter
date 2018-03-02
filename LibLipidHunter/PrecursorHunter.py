@@ -92,15 +92,20 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
                                 core_results_df = core_results_df.append(subgroup_df)
                                 print('core_results_df.shape', core_results_df.shape)
                             else:
-                                print('pr_info_df.shape[0] == 0')
+                                pass
+                                # print('pr_info_df.shape[0] == 0')
                         else:
-                            print('pr_ms1_df.shape[0] == 0')
+                            pass
+                            # print('pr_ms1_df.shape[0] == 0')
                     else:
-                        print('ms1_spec_idx not in list')
+                        pass
+                        # print('ms1_spec_idx not in list')
                 else:
-                    print('tmp_ms1_info_df.shape[0] = 0')
+                    pass
+                    # print('tmp_ms1_info_df.shape[0] = 0')
         else:
-            print('_tmp_scan_info_df.shape[0] = 0')
+            pass
+            # print('_tmp_scan_info_df.shape[0] = 0')
 
     print(core_results_df.shape)
 
@@ -245,5 +250,5 @@ class PrecursorHunter(object):
             return ms1_obs_pr_df, opt_sub_pl_group_lst
 
         else:
-            return '!! NO suitable precursor --> Check settings!!', 'Empty spec_lst'
+            return False, False
 

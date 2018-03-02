@@ -233,8 +233,9 @@ class IsotopeHunter(object):
 
         return base_m1_i, base_m2_i, base_m3_i
 
-    def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2, ms1_precision=50e-6,
-                          pattern_tolerance=5, only_c=False, score_filter=75, decon=True, exp_mode='LC-MS'):
+    def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, core_count, isotope_number=2,
+                          ms1_precision=50e-6, pattern_tolerance=5, only_c=False, score_filter=75,
+                          decon=True, exp_mode='LC-MS'):
 
         mz_delta = ms1_pr_mz * ms1_precision
         delta_13c = 1.0033548378
@@ -266,7 +267,7 @@ class IsotopeHunter(object):
             # M+3
             m3_base_abs = base_m3_i
 
-            print('Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
+            print(core_count, 'Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
                   % (m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs))
             deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs]
         else:
@@ -282,7 +283,7 @@ class IsotopeHunter(object):
         if i_df.shape[0] > 0:
             max_pre_m_i = i_df['i'].max()
         else:
-            print('... No pseudo-precursor peaks ... ')
+            print(core_count, '... No pseudo-precursor peaks ... ')
             max_pre_m_i = 0
 
         if ms1_pr_i > max_pre_m_i or pseudo_pr_check == 0:
@@ -329,21 +330,21 @@ class IsotopeHunter(object):
                     if 2 in list(m2_checker_dct.keys()):
                         del m2_checker_dct[2]
 
-                    print('M+2-> M+4 has isotope score for [M+H2]: %.1f' % m2_score)
+                    print(core_count, 'M+2-> M+4 has isotope score for [M+H2]: %.1f' % m2_score)
                     if m2_score >= 60 and isotope_m1_score >= score_filter:
                         isotope_score = isotope_m1_score
                         del isotope_checker_dct[2]
                     else:
                         pass
             else:
-                print('!! MS1 PR m/z not fit to Formula check bulk identification !!!!!!')
+                print(core_count, '!! MS1 PR m/z not fit to Formula check bulk identification !!!!!!')
                 isotope_score = 0
                 isotope_checker_dct = {}
                 m2_checker_dct = {}
                 m2_score = 0
 
         else:
-            print('MS1 PR is an isotope !!!!!!')
+            print(core_count, 'MS1 PR is an isotope !!!!!!')
             isotope_score = 0
             isotope_checker_dct = {}
             m2_checker_dct = {}
@@ -359,8 +360,9 @@ class IsotopeHunter(object):
                                   'deconv_lst': deconv_lst}
         return isotope_score_info_dct
 
-    def get_isotope_fragments(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, isotope_number=2, ms1_precision=50e-6,
-                              pattern_tolerance=5, only_c=False, score_filter=75, decon=True, exp_mode='LC-MS'):
+    def get_isotope_fragments(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, core_count, isotope_number=2,
+                              ms1_precision=50e-6, pattern_tolerance=5, only_c=False, score_filter=75,
+                              decon=True, exp_mode='LC-MS'):
 
         mz_delta = ms1_pr_mz * ms1_precision
         delta_13c = 1.0033548378
@@ -388,7 +390,7 @@ class IsotopeHunter(object):
             # M+3
             m3_base_abs = base_m3_i
 
-            print('Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
+            print(core_count, 'Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
                   % (m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs))
 
             deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs]
@@ -411,9 +413,9 @@ class IsotopeHunter(object):
                 if abs((ms1_pr_mz - mono_mz)) <= ms1_precision * ms1_pr_mz:
                     isotope_flag = 0
                 else:
-                    print('!! MS1 PR m/z not fit to Formula check bulk identification !!!!!!')
+                    print(core_count, '!! MS1 PR m/z not fit to Formula check bulk identification !!!!!!')
             else:
-                print('MS1 PR is an isotope !!!!!!')
+                print(core_count, 'MS1 PR is an isotope !!!!!!')
                 isotope_flag = 1
         else:
             pass
