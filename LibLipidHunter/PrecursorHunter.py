@@ -26,7 +26,11 @@ from multiprocessing import Pool
 
 import pandas as pd
 
-from LibLipidHunter.ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
+try:
+    from LibLipidHunter.ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
+
+except ImportError:  # for python 2.7
+    from ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
 
 
 def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max):

@@ -26,8 +26,10 @@ import re
 import pandas as pd
 import pymzml
 
-from LibLipidHunter.ParallelFunc import ppm_window_para
-
+try:
+    from LibLipidHunter.ParallelFunc import ppm_window_para
+except ImportError:  # for python 2.7.14
+    from ParallelFunc import ppm_window_para
 
 def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10,
                  ms1_precision=50e-6, ms2_precision=500e-6, vendor='waters', ms1_max=0):

@@ -31,8 +31,14 @@ import time
 from PySide import QtCore, QtGui
 from six.moves import configparser
 
-from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
-from LibLipidHunter.Hunter_Core import huntlipids
+try:
+    # import configparser
+    from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
+    from LibLipidHunter.Hunter_Core import huntlipids
+except ImportError:  # for python 2.7.14
+    # import ConfigParser as configparser
+    from LipidHunter_UI import Ui_MainWindow
+    from Hunter_Core import huntlipids
 
 
 class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
@@ -594,7 +600,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             with open(batch_cfg) as _cfg_obj:
                 config = configparser.ConfigParser()
                 try:
-                    config.read_file(_cfg_obj)
+                    try:
+                        config.read_file(_cfg_obj)
+                    except AttributeError:  # for python 2.7.14
+                        config.readfp(_cfg_obj)
                     if config.has_section('parameters'):
                         usr_cfg = 'parameters'
                         options = config.options(usr_cfg)
@@ -614,7 +623,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                                     cfg_params_dct[param] = False
                             else:
                                 cfg_params_dct[param] = _val
-                except configparser.DuplicateOptionError as _cfg_e:
+                except configparser.Error as _cfg_e:
                     print('ERROR', _cfg_e)
                     cfg_error += str(_cfg_e)
                     cfg_error += '\n'

@@ -30,14 +30,24 @@ import time
 
 import pandas as pd
 
-from LibLipidHunter.LipidComposer import LipidComposer
-from LibLipidHunter.SpectraReader import extract_mzml
-from LibLipidHunter.SpectraReader import get_spectra
-from LibLipidHunter.SpectraReader import get_xic_from_pl
-from LibLipidHunter.SpectraReader import get_spec_info
-from LibLipidHunter.LogPageCreator import LogPageCreator
-from LibLipidHunter.PrecursorHunter import PrecursorHunter
-from LibLipidHunter.ScoreHunter import get_lipid_info
+try:
+    from LibLipidHunter.LipidComposer import LipidComposer
+    from LibLipidHunter.SpectraReader import extract_mzml
+    from LibLipidHunter.SpectraReader import get_spectra
+    from LibLipidHunter.SpectraReader import get_xic_from_pl
+    from LibLipidHunter.SpectraReader import get_spec_info
+    from LibLipidHunter.LogPageCreator import LogPageCreator
+    from LibLipidHunter.PrecursorHunter import PrecursorHunter
+    from LibLipidHunter.ScoreHunter import get_lipid_info
+except ImportError:  # for python 2.7.14
+    from LipidComposer import LipidComposer
+    from SpectraReader import extract_mzml
+    from SpectraReader import get_spectra
+    from SpectraReader import get_xic_from_pl
+    from SpectraReader import get_spec_info
+    from LogPageCreator import LogPageCreator
+    from PrecursorHunter import PrecursorHunter
+    from ScoreHunter import get_lipid_info
 
 
 def huntlipids(param_dct, error_lst):

@@ -25,9 +25,12 @@ import re
 
 import pandas as pd
 
-from LibLipidHunter.IsotopeHunter import IsotopeHunter
-from LibLipidHunter.PanelPlotter import plot_spectra
-
+try:
+    from LibLipidHunter.IsotopeHunter import IsotopeHunter
+    from LibLipidHunter.PanelPlotter import plot_spectra
+except ImportError:  # for python 2.7.14
+    from IsotopeHunter import IsotopeHunter
+    from PanelPlotter import plot_spectra
 
 def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='waters', exp_mode='LC-MS'):
     ms2_max_i = ms2_df['i'].max()

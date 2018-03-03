@@ -1452,5 +1452,7 @@ class Ui_MainWindow(object):
         self.label_58.setText(QtGui.QApplication.translate("MainWindow", "SysMedOS Project : ", None, QtGui.QApplication.UnicodeUTF8))
         self.tabframe.setTabText(self.tabframe.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "About LipidHunter", None, QtGui.QApplication.UnicodeUTF8))
         self.link_uni_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>LipidHunter (C) 2016-2018 | <a href=\"http://www.zv.uni-leipzig.de/\"><span style=\" color:#ff8c00;\">University of Leipzig</span></a> | <a href=\"http://research.uni-leipzig.de/bioanalytik/\"><span style=\" color:#ff8c00;\">AG Bioanalytik</span></a> | <a href=\"https://home.uni-leipzig.de/fedorova/\"><span style=\" color:#ff8c00;\">Fedorova Research Group</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-
-import LibLipidHunter.LipidHunter_rcc
+try:
+    import LibLipidHunter.LipidHunter_rcc
+except ImportError:  # for python 2.7.14
+    import LipidHunter_rcc
