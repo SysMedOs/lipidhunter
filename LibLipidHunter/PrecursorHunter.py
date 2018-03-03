@@ -18,16 +18,13 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import division
-from __future__ import print_function
-
 import math
 import sys
 
 import pandas as pd
 from multiprocessing import Pool
 
-from ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
+from .ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
 
 
 def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max):
@@ -95,15 +92,20 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
                                 core_results_df = core_results_df.append(subgroup_df)
                                 print('core_results_df.shape', core_results_df.shape)
                             else:
-                                print('pr_info_df.shape[0] == 0')
+                                pass
+                                # print('pr_info_df.shape[0] == 0')
                         else:
-                            print('pr_ms1_df.shape[0] == 0')
+                            pass
+                            # print('pr_ms1_df.shape[0] == 0')
                     else:
-                        print('ms1_spec_idx not in list')
+                        pass
+                        # print('ms1_spec_idx not in list')
                 else:
-                    print('tmp_ms1_info_df.shape[0] = 0')
+                    pass
+                    # print('tmp_ms1_info_df.shape[0] = 0')
         else:
-            print('_tmp_scan_info_df.shape[0] = 0')
+            pass
+            # print('_tmp_scan_info_df.shape[0] = 0')
 
     print(core_results_df.shape)
 
@@ -158,18 +160,21 @@ class PrecursorHunter(object):
 
         # Prepare for multiprocessing
         lpp_info_groups = self.lpp_info_df.groupby(['Lib_mz', 'Formula'])
-        all_group_key_lst = lpp_info_groups.groups.keys()
+        all_group_key_lst = list(lpp_info_groups.groups.keys())
         sub_len = int(math.ceil(len(all_group_key_lst) / core_num))
-        core_key_list = map(None, *(iter(all_group_key_lst),) * sub_len)
+        core_key_list = [all_group_key_lst[k: k+sub_len] for k in range(0, len(all_group_key_lst), sub_len)]
 
         spectra_pl_idx_lst = sorted(spectra_pl.items.values.tolist())
 
         if len(spectra_pl_idx_lst) >= (max_ram * 50):
-            sub_pl_group_lst = map(None, *(iter(spectra_pl_idx_lst),) * (max_ram * 40))
+            sub_pl_group_lst = [spectra_pl_idx_lst[s: s+sub_len] for s in range(0, len(spectra_pl_idx_lst),
+                                                                                max_ram * 40)]
         else:
             sub_pl_group_lst = [spectra_pl_idx_lst]
 
-        # print('sub_pl_group_lst')
+        # print('core_key_list', len(core_key_list))
+        # print(core_key_list)
+        # print('sub_pl_group_lst', len(sub_pl_group_lst))
         # print(sub_pl_group_lst)
 
         part_tot = len(sub_pl_group_lst)
@@ -178,7 +183,7 @@ class PrecursorHunter(object):
         for sub_idx_lst in sub_pl_group_lst:
 
             if isinstance(sub_idx_lst, tuple) or isinstance(sub_idx_lst, list):
-                sub_idx_lst = filter(lambda x: x is not None, sub_idx_lst)
+                sub_idx_lst = [x for x in sub_idx_lst if x is not None]
                 opt_sub_pl_group_lst.append(sub_idx_lst)
                 sub_pl = spectra_pl.loc[sub_idx_lst, :, :]
                 print(sub_pl.items)
@@ -198,7 +203,7 @@ class PrecursorHunter(object):
                     for core_list in core_key_list:
                         if isinstance(core_list, tuple) or isinstance(core_list, list):
                             if None in core_list:
-                                core_list = filter(lambda x: x is not None, core_list)
+                                core_list = [x for x in core_list if x is not None]
                             else:
                                 pass
                             print('>>> >>> ...... Core #%i ==> processing ......' % core_worker_count)
@@ -226,7 +231,7 @@ class PrecursorHunter(object):
                     for core_list in core_key_list:
                         if isinstance(core_list, tuple) or isinstance(core_list, list):
                             if None in core_list:
-                                core_list = filter(lambda x: x is not None, core_list)
+                                core_list = [x for x in core_list if x is not None]
                             else:
                                 pass
                             print('>>> >>> processing ......Part: %i subset: %i ' % (part_counter, core_worker_count))
@@ -245,5 +250,5 @@ class PrecursorHunter(object):
             return ms1_obs_pr_df, opt_sub_pl_group_lst
 
         else:
-            return '!! NO suitable precursor --> Check settings!!', 'Empty spec_lst'
+            return False, False
 

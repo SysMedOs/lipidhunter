@@ -26,6 +26,7 @@ import math
 import os
 import sys
 import time
+from itertools import count
 from multiprocessing import Pool
 
 import pandas as pd
@@ -205,8 +206,9 @@ def huntlipids(param_dct, error_lst):
     ms1_obs_pr_df, sub_pl_group_lst = pr_hunter.get_matched_pr(usr_scan_info_df, usr_spectra_pl, ms1_max=usr_ms1_max,
                                                                core_num=usr_core_num, max_ram=usr_max_ram)
 
-    if isinstance(ms1_obs_pr_df, str):
-        return '!! NO suitable precursor --> Check settings!!\n'
+    if ms1_obs_pr_df is False:
+        print('!! NO suitable precursor --> Check settings!!\n')
+        return False, False, False
 
     print('=== ==> --> ms1 precursor matched')
 
@@ -228,7 +230,9 @@ def huntlipids(param_dct, error_lst):
     print('=== ==> --> Start to extract XIC')
     if len(ms1_xic_mz_lst) >= 3 * usr_core_num:
         sub_len = int(math.ceil(len(ms1_xic_mz_lst) / usr_core_num))
-        core_key_list = map(None, *(iter(ms1_xic_mz_lst),) * sub_len)
+        # core_key_list = list(*(iter(ms1_xic_mz_lst),) * sub_len)
+        core_key_list = [ms1_xic_mz_lst[k: k + sub_len] for k in range(0, len(ms1_xic_mz_lst), sub_len)]
+
     else:
         core_key_list = [ms1_xic_mz_lst]
 
@@ -236,14 +240,14 @@ def huntlipids(param_dct, error_lst):
     print('!!!!!! Start multiprocessing to get XIC ==> ==> ==> Number of Cores: %i' % usr_core_num)
     xic_dct = {}
 
-    if 1 < usr_core_num < len(core_key_list):
+    if usr_core_num > 1:
         parallel_pool = Pool(usr_core_num)
         xic_results_lst = []
         core_worker_count = 1
         for core_list in core_key_list:
             if isinstance(core_list, tuple) or isinstance(core_list, list):
                 if None in core_list:
-                    core_list = filter(lambda x: x is not None, core_list)
+                    core_list = [x for x in core_list if x is not None]
                 else:
                     pass
                 print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
@@ -258,8 +262,9 @@ def huntlipids(param_dct, error_lst):
         for xic_result in xic_results_lst:
             try:
                 sub_xic_dct = xic_result.get()
-                if len(sub_xic_dct.keys()) > 0:
-                    xic_dct = dict(xic_dct, **sub_xic_dct)
+                if len(list(sub_xic_dct.keys())) > 0:
+                    xic_dct.update(sub_xic_dct)
+
             except (KeyError, SystemError, ValueError):
                 pass
     else:
@@ -268,35 +273,36 @@ def huntlipids(param_dct, error_lst):
         for core_list in core_key_list:
             if isinstance(core_list, tuple) or isinstance(core_list, list):
                 if None in core_list:
-                    core_list = filter(lambda x: x is not None, core_list)
+                    core_list = [x for x in core_list if x is not None]
                 else:
                     pass
                 print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
                 print(core_list)
                 sub_xic_dct = get_xic_from_pl(core_list, ms1_xic_df, 500)
                 core_worker_count += 1
-                if len(sub_xic_dct.keys()) > 0:
-                    xic_dct = dict(xic_dct, **sub_xic_dct)
+                if len(list(sub_xic_dct.keys())) > 0:
+                    xic_dct.update(sub_xic_dct)
 
     # print('xic_dct', len(xic_dct.keys()))
     # print(xic_dct.keys())
 
-    if len(xic_dct.keys()) == 0:
+    if len(list(xic_dct.keys())) == 0:
         print('No precursor for XIC found')
         return '!! NO suitable precursor --> Check settings!!\n'
     else:
-        print('=== ==> --> Number of XIC extracted: %i' % len(xic_dct.keys()))
+        print('=== ==> --> Number of XIC extracted: %i' % len(list(xic_dct.keys())))
 
     target_ident_lst = []
     checked_info_df.sort_values(by=['Lib_mz', 'scan_time', 'MS2_PR_mz'], ascending=[True, True, True], inplace=True)
 
     print('=== ==> --> Start to Hunt for Lipids !!')
     checked_info_groups = checked_info_df.groupby(['Lib_mz', 'MS2_PR_mz', 'Formula', 'scan_time', 'Ion'])
-    lipid_all_group_key_lst = checked_info_groups.groups.keys()
+    lipid_all_group_key_lst = list(checked_info_groups.groups.keys())
     # lipid_all_group_key_lst = sorted(lipid_all_group_key_lst, key=lambda x: x[0])
 
     spec_sub_len = int(math.ceil(len(lipid_all_group_key_lst) / usr_core_num))
-    spec_sub_key_lst = map(None, *(iter(lipid_all_group_key_lst),) * spec_sub_len)
+    spec_sub_key_lst = [lipid_all_group_key_lst[k: k + spec_sub_len] for k in range(0, len(lipid_all_group_key_lst),
+                                                                                    spec_sub_len)]
     lipid_spec_info_dct = {}
 
     if usr_core_num > 1:
@@ -306,7 +312,7 @@ def huntlipids(param_dct, error_lst):
         for _sub_lst in spec_sub_key_lst:
             if isinstance(_sub_lst, tuple) or isinstance(_sub_lst, list):
                 if None in _sub_lst:
-                    _sub_lst = filter(lambda x: x is not None, _sub_lst)
+                    _sub_lst = [x for x in _sub_lst if x is not None]
                 else:
                     pass
                 print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
@@ -321,8 +327,9 @@ def huntlipids(param_dct, error_lst):
         for spec_result in spec_results_lst:
             try:
                 sub_spec_dct = spec_result.get()
-                if len(sub_spec_dct.keys()) > 0:
-                    lipid_spec_info_dct = dict(lipid_spec_info_dct, **sub_spec_dct)
+                if len(list(sub_spec_dct.keys())) > 0:
+                    # lipid_spec_info_dct = dict(lipid_spec_info_dct, **sub_spec_dct)
+                    lipid_spec_info_dct.update(sub_spec_dct)
             except (KeyError, SystemError, ValueError):
                 print('ValueError: must supply a tuple to get_group with multiple grouping keys')
     else:
@@ -349,7 +356,6 @@ def huntlipids(param_dct, error_lst):
                 sub_spec_dct = get_spec_info(_sub_lst, checked_info_groups, usr_scan_info_df)
                 core_worker_count += 1
                 if len(list(sub_spec_dct.keys())) > 0:
-                    #lipid_spec_info_dct = dict(lipid_spec_info_dct, **sub_spec_dct)
                     lipid_spec_info_dct.update(sub_spec_dct)
                 # TODO (geprgia.angelidou@uni-leipzig.de): remove when the program works
                 # if len(sub_spec_dct.keys()) > 0:
@@ -357,11 +363,11 @@ def huntlipids(param_dct, error_lst):
             else:
                 pass
 
-    print('lipid_spec_info_dct', len(lipid_spec_info_dct.keys()))
+    print('lipid_spec_info_dct', len(list(lipid_spec_info_dct.keys())))
 
     # Single process ONLY. usr_spectra_pl is too big in RAM --> RAM leaking during copy
     lipid_spec_dct = {}
-    spec_info_key_lst = lipid_spec_info_dct.keys()
+    spec_info_key_lst = list(lipid_spec_info_dct.keys())
     for _spec_group_key in spec_info_key_lst:
         _spec_info_dct = lipid_spec_info_dct[_spec_group_key]
         _usr_ms2_pr_mz = _spec_info_dct['MS2_PR_mz']
@@ -374,26 +380,36 @@ def huntlipids(param_dct, error_lst):
                                         dda_top=usr_dda_top, ms1_precision=usr_ms1_precision, vendor=usr_vendor)
         lipid_spec_dct[_spec_group_key] = usr_spec_info_dct
 
-    found_spec_key_lst = lipid_spec_dct.keys()
+    found_spec_key_lst = list(lipid_spec_dct.keys())
     found_spec_key_lst = sorted(found_spec_key_lst, key=lambda x: x[0])
     spec_key_num = len(found_spec_key_lst)
+    print('spec_key_num', spec_key_num)
     lipid_part_key_lst = []
-    if spec_key_num > (usr_core_num * 40):
-        lipid_part_len = int(math.ceil(spec_key_num / 8))
-        lipid_part_lst = map(None, *(iter(found_spec_key_lst),) * lipid_part_len)
+    if spec_key_num >= (usr_core_num * 10):
+        # lipid_part_len = int(math.ceil(spec_key_num / usr_core_num))
+        lipid_part_len = usr_core_num * 10  # set each core try to plot max 10 images, so no core will wait long
+        print('lipid_part_len', lipid_part_len)
+        lipid_part_lst = [found_spec_key_lst[k: k + lipid_part_len] for k in range(0, len(found_spec_key_lst),
+                                                                                   lipid_part_len)]
+
         for part_lst in lipid_part_lst:
             if None in part_lst:
-                part_lst = filter(lambda x: x is not None, part_lst)
+                part_lst = [x for x in part_lst if x is not None]
             lipid_sub_len = int(math.ceil(len(part_lst) / usr_core_num))
-            lipid_sub_key_lst = map(None, *(iter(part_lst),) * lipid_sub_len)
+            print('lipid_sub_len', lipid_sub_len)
+            lipid_sub_key_lst = [part_lst[k: k + lipid_sub_len] for k in range(0, len(part_lst), lipid_sub_len)]
+            print(lipid_sub_key_lst)
             lipid_part_key_lst.append(lipid_sub_key_lst)
 
     else:
         lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
-        lipid_sub_key_lst = map(None, *(iter(found_spec_key_lst),) * lipid_sub_len)
+        lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
+                                                                                     lipid_sub_len)]
         lipid_part_key_lst.append(lipid_sub_key_lst)
 
     part_tot = len(lipid_part_key_lst)
+    print('part_tot', part_tot)
+    print(lipid_part_key_lst)
     part_counter = 1
 
     # parse specific peak info
@@ -472,7 +488,7 @@ def huntlipids(param_dct, error_lst):
             for lipid_sub_lst in lipid_sub_key_lst:
                 if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
                     if None in lipid_sub_lst:
-                        lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
+                        lipid_sub_lst = [x for x in lipid_sub_lst if x is not None]
                     else:
                         pass
                     if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
@@ -481,12 +497,12 @@ def huntlipids(param_dct, error_lst):
                         lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
                         lipid_sub_lst = tuple([lipid_sub_lst])
                     print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-                    if len(lipid_sub_dct.keys()) > 0:
+                    if len(list(lipid_sub_dct.keys())) > 0:
                         lipid_info_result = parallel_pool.apply_async(get_lipid_info,
                                                                       args=(param_dct, usr_fa_df, checked_info_df,
                                                                             checked_info_groups, lipid_sub_lst,
                                                                             usr_weight_df, key_frag_dct,
-                                                                            lipid_sub_dct, xic_dct))
+                                                                            lipid_sub_dct, xic_dct, core_worker_count))
                         lipid_info_results_lst.append(lipid_info_result)
                         core_worker_count += 1
 
@@ -511,7 +527,7 @@ def huntlipids(param_dct, error_lst):
             for lipid_sub_lst in lipid_sub_key_lst:
                 if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
                     if None in lipid_sub_lst:
-                        lipid_sub_lst = filter(lambda x: x is not None, lipid_sub_lst)
+                        lipid_sub_lst = [x for x in lipid_sub_lst if x is not None]
                     else:
                         pass
                     if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
@@ -520,10 +536,10 @@ def huntlipids(param_dct, error_lst):
                         lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
                         lipid_sub_lst = tuple([lipid_sub_lst])
                     print('>>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
-                    if len(lipid_sub_dct.keys()) > 0:
+                    if len(list(lipid_sub_dct.keys())) > 0:
                         tmp_lipid_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
                                                            lipid_sub_lst, usr_weight_df, key_frag_dct,
-                                                           lipid_sub_dct, xic_dct)
+                                                           lipid_sub_dct, xic_dct, core_worker_count)
                     else:
                         tmp_lipid_info_df = ''
 
@@ -551,7 +567,20 @@ def huntlipids(param_dct, error_lst):
         output_df.drop_duplicates(keep='first', inplace=True)
         output_header_lst = output_df.columns.values.tolist()
 
-        if usr_lipid_class in ['TG']:
+        # TODO (zhixu.ni@uni-leipzig.de): check following if segment
+        if usr_lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
+            output_list = ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
+                           '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
+            output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3,
+                                'i_sn1': 2, 'i_sn2': 2, 'i_[M-H]-sn1': 2, 'i_[M-H]-sn2': 2,
+                                'i_[M-H]-sn1-H2O': 2, 'i_[M-H]-sn2-H2O': 2
+                                }
+            # for _i_check in ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
+            #                  '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']:
+            #     if _i_check not in output_header_lst:
+            #         output_df[_i_check] = 0.0
+
+        elif usr_lipid_class in ['TG']:
             output_list = ['SN1_[FA-H2O+H]+_i', 'SN2_[FA-H2O+H]+_i', 'SN3_[FA-H2O+H]+_i', '[MG(SN1)-H2O+H]+_i',
                            '[MG(SN2)-H2O+H]+_i', '[MG(SN3)-H2O+H]+_i', '[M-(SN1)+H]+', '[M-(SN2)+H]+_i',
                            '[M-(SN3)+H]+_i']
@@ -615,63 +644,181 @@ def huntlipids(param_dct, error_lst):
 
     print('>>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
 
-    return tot_run_time, error_lst
+    return tot_run_time, error_lst, output_df
 
 
 if __name__ == '__main__':
-    # pl_class = 'PE'
-    # charge = '[M-H]-'
-    pl_class = 'PC'
-    charge = '[M+HCOO]-'
-    # pl_class = 'TG'
-    # charge = '[M+NH4]+'
-    mz_range = [650, 950]
-    rt_range = [25, 27]
-    # mz_range = [600, 1000]
-    # mz_range = [820, 850]
-    # rt_range = [9, 16]
-    # rt_range = [24.3, 24.5]
-    count = 3
 
-    usr_dct = {'fawhitelist_path_str': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\FA_Whitelist.xlsx',
-               'mzml_path_str': r'D:\project_lipidhunter\MF_mzML\MS2\070120_CM_neg_70min_SIN_I.mzML',
-               'img_output_folder_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test%s%i' % (pl_class, count),
-               'xlsx_output_path_str': r'D:\project_lipidhunter\lipidhunterdev\Temp\Test%s%i\t%s_%i.xlsx'
-                                       % (pl_class, count, pl_class, count),
-               'lipid_specific_cfg':
-                   r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
-               'hunter_start_time': '2017-12-21_15-27-49',
-               'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': pl_class, 'charge_mode': charge,
-               'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1],
-               'rank_score': True, 'rank_score_filter': 27.5, 'score_filter': 27.5,
-               'isotope_score_filter': 75.0, 'fast_isotope': False,
-               'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
-               'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
-               'hg_th': 10.0, 'hg_ppm': 200.0, 'ms2_hginfopeak_threshold': 0.001,
-               'score_cfg': r'D:\project_lipidhunter\lipidhunterdev\ConfigurationFiles\Score_cfg.xlsx',
-               'fa_white_list_cfg': r'D:\project_lipidhunter\lipidhunterdev\\ConfigurationFiles\FA_Whitelist.xlsx',
-               'hunter_folder': r'D:\project_lipidhunter\lipidhunterdev',
-               'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': True}
+    # set the core number and max ram in GB to be used for the test
+    core_count = 3
+    max_ram = 6
 
-    # usr_dct = {'fawhitelist_path_str': r'..\ConfigurationFiles\FA_Whitelist2.xlsx',
-    #            'mzml_path_str': r'D:\PhD\2018\Samples\S3_17_43_M1.mzML',
-    #            'img_output_folder_str': r'..\Temp\Test%s%i' % (pl_class, count),
-    #            'xlsx_output_path_str': r'..\Temp\Test%s%i\t%s_%i.xlsx'
-    #                                    % (pl_class, count, pl_class, count),
-    #            'lipid_specific_cfg':
-    #                r'..\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
-    #            'hunter_start_time': '2018-02-21_15-27-49',
-    #            'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': pl_class, 'charge_mode': charge,
-    #            'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1],
-    #            'rank_score': True, 'rank_score_filter': 50, 'score_filter': 50,
-    #            'isotope_score_filter': 75.0, 'fast_isotope': False,
-    #            'ms_th': 1000, 'ms_ppm': 50, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
-    #            'ms2_th': 25, 'ms2_ppm': 100, 'ms2_infopeak_threshold': 0.001,
-    #            'hg_th': 50.0, 'hg_ppm': 100.0, 'ms2_hginfopeak_threshold': 0.001,
-    #            'score_cfg': r'..\ConfigurationFiles\ScoreTG2_cfg.xlsx',
-    #            'hunter_folder': r'D:\Programs_PhD\lipidhunterdev',
-    #            'core_number': 1, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300, 'tag_all_sn': False}
+    # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo', 'TG_thermo_NH4']
+
+    # Modify usr_test_lst according to full_test_lst to run the supported built in tests
+    usr_test_lst = ['TG_thermo']
+
+    # define default ranges of each test
+    mz_range_pl_waters = [700, 900]  # [700, 900]
+    rt_range_pl_waters = [24, 26]  # [24, 26]
+
+    # mz_range_pl_thermo = [700, 900]  # [700, 900]
+    # rt_range_pl_thermo = [25, 27]  # [25, 27]
+
+    mz_range_tg_waters = [800, 1000]  # [800, 1000]
+    rt_range_tg_waters = [14, 16]  # [14, 16]
+
+    mz_range_tg_thermo = [738, 742]  # [800, 1000]
+    rt_range_tg_thermo = [22.0, 24.0]  # [22, 24]
+
+    # define default parameters of each vendor
+    # waters
+    ms_ppm_waters = 20
+    ms2_ppm_waters = 50
+    hg_ppm_waters = 200
+    ms_th_waters = 1000
+    ms2_th_waters = 10
+    hg_th_waters = 10
+    dda_top_waters = 6
+
+    # thermo
+    ms_ppm_thermo = 10
+    ms2_ppm_thermo = 20
+    hg_ppm_thermo = 50
+    ms_th_thermo = 5000
+    ms2_th_thermo = 500
+    hg_th_thermo = 500
+    dda_top_thermo = 6
+
+    # set the default files
+    pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'
+    tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'
+    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'
+
+    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_PL.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_PL.xlsx'}
+
+    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG.xlsx'}
+
+    usr_test_dct = {}
+
+    for usr_test in usr_test_lst:
+        _test_dct = {'rank_score_filter': 27.5, 'score_filter': 27.5, 'isotope_score_filter': 75.0, 'ms_max': 0,
+                     'pr_window': 0.75, 'ms2_infopeak_threshold': 0.001, 'ms2_hginfopeak_threshold': 0.001}
+        if usr_test[0] == 'P':
+            lipid_class = usr_test[0:2]
+            if lipid_class == 'PC':
+                charge = '[M+HCOO]-'
+            else:
+                charge = '[M-H]-'
+            vendor = usr_test[-6:]
+            if vendor == 'waters':
+                mzml = pl_mzml_waters
+                mz_range = mz_range_pl_waters
+                rt_range = rt_range_pl_waters
+            else:
+                mzml = False
+                pass
+
+            _test_dct.update(pl_base_dct)
+
+        elif usr_test[0] == 'T':
+            lipid_class = usr_test[0:2]
+            if usr_test[-6:] in ['waters', 'thermo']:
+                vendor = usr_test[-6:]
+                charge = '[M+H]+'
+            else:
+                if usr_test[-3:] == 'NH4':
+                    charge = '[M+NH4]+'
+                    usr_test_v = usr_test[: -4]
+                    if usr_test_v[-6:] in ['waters', 'thermo']:
+                        vendor = usr_test_v[-6:]
+                    else:
+                        charge = False
+                        vendor = False
+                else:
+                    charge = False
+                    vendor = False
+
+            if vendor == 'waters':
+                mzml = tg_mzml_waters
+                mz_range = mz_range_tg_waters
+                rt_range = rt_range_tg_waters
+            elif vendor == 'thermo':
+                mzml = tg_mzml_thermo
+                mz_range = mz_range_tg_thermo
+                rt_range = rt_range_tg_thermo
+            else:
+                mzml = False
+
+            _test_dct.update(tg_base_dct)
+
+        else:
+
+            lipid_class = False
+            charge = False
+            vendor = False
+            mzml = False
+
+        if mzml is not False and charge is not False:
+
+            _cfg_dct = {'lipid_type': lipid_class, 'charge_mode': charge, 'vendor': vendor, 'mzml_path_str': mzml,
+                        'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1]}
+
+            if vendor == 'waters':
+                _cfg_dct['ms_ppm'] = ms_ppm_waters
+                _cfg_dct['ms2_ppm'] = ms2_ppm_waters
+                _cfg_dct['hg_ppm'] = hg_ppm_waters
+                _cfg_dct['ms_th'] = ms_th_waters
+                _cfg_dct['ms2_th'] = ms2_th_waters
+                _cfg_dct['hg_th'] = hg_th_waters
+                _cfg_dct['dda_top'] = dda_top_waters
+                _test_dct.update(_cfg_dct)
+                usr_test_dct[usr_test] = _test_dct
+
+            elif vendor == 'thermo':
+                _cfg_dct['ms_ppm'] = ms_ppm_thermo
+                _cfg_dct['ms2_ppm'] = ms2_ppm_thermo
+                _cfg_dct['hg_ppm'] = hg_ppm_thermo
+                _cfg_dct['ms_th'] = ms_th_thermo
+                _cfg_dct['ms2_th'] = ms2_th_thermo
+                _cfg_dct['hg_th'] = hg_th_thermo
+                _cfg_dct['dda_top'] = dda_top_thermo
+
+                _test_dct.update(_cfg_dct)
+                usr_test_dct[usr_test] = _test_dct
+        else:
+            pass
+
+    print(usr_test_dct)
+
     log_lst = []
-    t, log_lst = huntlipids(usr_dct, log_lst)
-    print(t)
-    print('test passed!')
+
+    t0 = time.time()
+
+    for test_key in list(usr_test_dct.keys()):
+        test_dct = usr_test_dct[test_key]
+        t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+        lipid_class = test_dct['lipid_type']
+        cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
+                   'xlsx_output_path_str': r'D:../Test/results/%s_%s.xlsx' % (test_key, t_str),
+                   'hunter_folder': r'D:/project_lipidhunter/lipidhunterdev', 'img_type': u'png', 'img_dpi': 300,
+                   'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True, 'fast_isotope': False,
+                   'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
+
+        test_dct.update(cfg_dct)
+
+        print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
+
+        t, log_lst, export_df = huntlipids(test_dct, log_lst)
+        if t is not False:
+            print(t)
+            print('>>>>>>>>>>>>>>>> PASSED TEST: %s <<<<<<<<<<<<<<<<\n' % test_key)
+        else:
+            print('>>>>>>>>!!!!!!!! PASSED FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
+
+    t_end = time.time() - t0
+    print('|||||||||||||||| ALL TEST FINISHED in %.3f Sec |||||||||||||||| ' % t_end)

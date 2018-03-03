@@ -200,7 +200,7 @@ class ElemCalc:
 
         lipid_type = usr_lipid_info_dct['TYPE']
 
-        if lipid_type in self.lipid_hg_elem_dct.keys():
+        if lipid_type in list(self.lipid_hg_elem_dct.keys()):
             if lipid_type in ['FA']:
                 # print(abbr)
                 tmp_lipid_elem_dct = {'C': usr_lipid_info_dct['C'], 'O': 2,
@@ -289,31 +289,31 @@ class ElemCalc:
 
         formula_str = 'C{c}H{h}'.format(c=elem_dct['C'], h=elem_dct['H'])
 
-        if 'N' in elem_dct.keys():
+        if 'N' in list(elem_dct.keys()):
             if elem_dct['N'] == 1:
                 formula_str += 'N'
             elif elem_dct['N'] > 1:
                 formula_str += 'N%i' % elem_dct['N']
 
-        if 'O' in elem_dct.keys():
+        if 'O' in list(elem_dct.keys()):
             if elem_dct['O'] == 1:
                 formula_str += 'O'
             elif elem_dct['O'] > 1:
                 formula_str += 'O%i' % elem_dct['O']
 
-        if 'P' in elem_dct.keys():
+        if 'P' in list(elem_dct.keys()):
             if elem_dct['P'] == 1:
                 formula_str += 'P'
             elif elem_dct['P'] > 1:
                 formula_str += 'P%i' % elem_dct['P']
 
-        if 'Na' in elem_dct.keys():
+        if 'Na' in list(elem_dct.keys()):
             if elem_dct['Na'] == 1:
                 formula_str += 'Na'
             elif elem_dct['Na'] > 1:
                 formula_str += 'Na%i' % elem_dct['Na']
 
-        if 'K' in elem_dct.keys():
+        if 'K' in list(elem_dct.keys()):
             if elem_dct['K'] == 1:
                 formula_str += 'K'
             elif elem_dct['K'] > 1:
@@ -325,13 +325,13 @@ class ElemCalc:
             formula_str += '-'
         elif charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
             formula_str += '+'
-        # print ('letssee if you manage to get out from this one')
+        # print ('lets see if you manage to get out from this one')
         return formula_str, elem_dct
 
     def get_exactmass(self, elem_dct):
 
         mono_mz = 0.0
-        for _elem in elem_dct.keys():
+        for _elem in list(elem_dct.keys()):
             mono_mz += elem_dct[_elem] * self.periodic_table_dct[_elem][0][0]
 
         return round(mono_mz, 6)
@@ -349,6 +349,6 @@ if __name__ == '__main__':
     for usr_abbr in usr_bulk_abbr_lst:
         for _charge in charge_lst:
             usr_formula, usr_elem_dct = abbr2formula.get_formula(usr_abbr, charge=_charge)
-            print(usr_abbr, _charge)
+            print((usr_abbr, _charge))
             print(usr_elem_dct)
             print(usr_formula)

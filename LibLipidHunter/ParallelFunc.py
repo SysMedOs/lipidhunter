@@ -18,8 +18,7 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import division
-import ConfigParser as configparser
+from six.moves import configparser
 from numba import int32, float32, float64, vectorize
 
 

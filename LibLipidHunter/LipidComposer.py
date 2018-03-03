@@ -18,7 +18,7 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import print_function
+
 
 import itertools
 
@@ -150,7 +150,7 @@ class LipidComposer:
 
             # backbone creation for the different PL
             lyso_base_elem_dct = self.lipid_hg_elem_dct[lipid_type]
-            for _e in self.glycerol_bone_elem_dct.keys():
+            for _e in list(self.glycerol_bone_elem_dct.keys()):
                 lyso_base_elem_dct[_e] += self.glycerol_bone_elem_dct[_e]
 
             # the element here is with no Hydroxyl on sn1 and sn2, here a [M-H]- is already considered
@@ -159,7 +159,7 @@ class LipidComposer:
             if lipid_type in ['PC', 'SM']:
                 lyso_base_mz -= (12.0 + 2 * 1.0078250321)  # LPC loss one -CH3 from HG (one H already remove above)
 
-            for _lyso_ion in lyso_type_dct.keys():
+            for _lyso_ion in list(lyso_type_dct.keys()):
                 if lipid_type in ['PC', 'SM']:
 
                     if lyso_type_dct[_lyso_ion] == 'EXACTMASS':
@@ -456,10 +456,10 @@ class LipidComposer:
             _sn1_info_dct = abbr_parser.get_fa_info(_sn1_abbr)
             _sn2_info_dct = abbr_parser.get_fa_info(_sn2_abbr)
 
-            for _sn1_k in _sn1_info_dct.keys():
+            for _sn1_k in list(_sn1_info_dct.keys()):
                 _lipid_dct['SN1_' + _sn1_k] = _sn1_info_dct[_sn1_k]
 
-            for _sn2_k in _sn1_info_dct.keys():
+            for _sn2_k in list(_sn1_info_dct.keys()):
                 _lipid_dct['SN2_' + _sn2_k] = _sn2_info_dct[_sn2_k]
             # TODO (georgia.angelidou@uni-leipzig.de): SM, Cer
             if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
@@ -499,7 +499,7 @@ class LipidComposer:
 
             _lipid_dct['FORMULA'] = _lipid_formula
             _lipid_dct['EXACTMASS'] = elem_calc.get_exactmass(_lipid_elem_dct)
-            for _elem_k in _lipid_elem_dct.keys():
+            for _elem_k in list(_lipid_elem_dct.keys()):
                 _lipid_dct['M_' + _elem_k] = _lipid_elem_dct[_elem_k]
 
             # charged
