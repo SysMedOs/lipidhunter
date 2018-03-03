@@ -1260,7 +1260,7 @@ class Ui_MainWindow(object):
         self.tab_a_lipidclass_cmb.setItemText(5, QtGui.QApplication.translate("MainWindow", "Phosphatidylglycerol (PG) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_lipidclass_cmb.setItemText(6, QtGui.QApplication.translate("MainWindow", "Phosphatidylinositol (PI) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+Na]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
         self.label_16.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level ppm:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_ms2threshold_spb_2.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
@@ -1452,5 +1452,7 @@ class Ui_MainWindow(object):
         self.label_58.setText(QtGui.QApplication.translate("MainWindow", "SysMedOS Project : ", None, QtGui.QApplication.UnicodeUTF8))
         self.tabframe.setTabText(self.tabframe.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "About LipidHunter", None, QtGui.QApplication.UnicodeUTF8))
         self.link_uni_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>LipidHunter (C) 2016-2018 | <a href=\"http://www.zv.uni-leipzig.de/\"><span style=\" color:#ff8c00;\">University of Leipzig</span></a> | <a href=\"http://research.uni-leipzig.de/bioanalytik/\"><span style=\" color:#ff8c00;\">AG Bioanalytik</span></a> | <a href=\"https://home.uni-leipzig.de/fedorova/\"><span style=\" color:#ff8c00;\">Fedorova Research Group</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-
-import LipidHunter_rcc
+try:
+    import LibLipidHunter.LipidHunter_rcc
+except ImportError:  # for python 2.7.14
+    import LipidHunter_rcc

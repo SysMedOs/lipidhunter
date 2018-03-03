@@ -18,13 +18,12 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import print_function
-
-import ConfigParser as configparser
 import getopt
 import os.path
 import sys
 import time
+
+from six.moves import configparser
 
 # required to perform multiprocessing
 import multiprocessing
@@ -97,11 +96,11 @@ def main(argv):
         print('Error: cmd_lipidhunter.py -i <input LipidHunter configuration file in .txt format>')
         sys.exit(1)
 
-    if len(cfg_params_dct.keys()) > 0:
+    if len(list(cfg_params_dct.keys())) > 0:
         start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
         cfg_params_dct['hunter_start_time'] = start_time_str
         print('Sart to process... ', start_time_str)
-        t, log_lst = huntlipids(cfg_params_dct, error_lst=[])
+        t, log_lst, export_df = huntlipids(cfg_params_dct, error_lst=[])
         if len(log_lst) > 0:
             for err in log_lst:
                 print('Error:', err)

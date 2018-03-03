@@ -23,7 +23,6 @@ from __future__ import print_function
 
 import pandas as pd
 import matplotlib
-# matplotlib.use('Qt4Agg')
 matplotlib.use('agg')
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
@@ -33,9 +32,9 @@ import matplotlib.patches as patches
 
 
 def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
-                 formula_charged, charge, save_img_as=None, img_type='png', dpi=300,
+                 formula_charged, charge, core_count, save_img_as=None, img_type='png', dpi=300,
                  ms1_precision=50e-6):
-    print('Start to plot')
+    print(core_count, 'Start to plot')
 
     ms2_pr_mz = mz_se['MS2_PR_mz']
     ms1_obs = mz_se['MS1_obs_mz']
@@ -48,8 +47,6 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     obs_fa_df = ident_info_dct['OBS_FA']
     obs_lyso_df = ident_info_dct['OBS_LYSO']
     obs_ident_df = ident_info_dct['IDENT']
-    # print('obs_ident_df')
-    # print(obs_ident_df[['discrete_abbr', 'mz', 'i', 'obs_rank_type', 'obs_rank']])
 
     isotope_score = isotope_score_info_dct['isotope_score']
     isotope_checker_dct = isotope_score_info_dct['isotope_checker_dct']
@@ -99,9 +96,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             ms1_top1000_i = sorted(ms1_df['i'].values.tolist(), reverse=True)[499]
             ms1_plot_th = min(m1_obs_i, 3 * ms1_min, ms1_max * 0.01, 1000, ms1_top1000_i)
             ms1_plot_th = max(ms1_plot_th, ms1_top1000_i)
-            print(m1_obs_i, 3 * ms1_min, ms1_max * 0.01, 1000, ms1_top1000_i)
+            print(core_count, m1_obs_i, 3 * ms1_min, ms1_max * 0.01, 1000, ms1_top1000_i)
             ms1_df = ms1_df.query('i >= %f' % ms1_plot_th)
-            print('Plot full MS1 with abs intensity filter > %f' % ms1_plot_th)
+            print(core_count, 'Plot full MS1 with abs intensity filter > %f' % ms1_plot_th)
         if ms2_df['i'].max() >= 1000 and ms2_df.shape[0] >= 500:
             ms2_min = ms2_df['i'].min()
             ms2_max = ms2_df['i'].max()
@@ -110,22 +107,21 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             ms2_min_lst = [3 * ms2_min, ms2_max * 0.01, 10, ms2_top1000_i]
             ms2_plot_th = max(min(ms2_min_lst), ms2_top1000_i)
 
-            print(ms2_min_lst)
+            print(core_count, ms2_min_lst)
             ms2_plot_th -= 1
             if ms2_plot_th > 0:
                 ms2_df = ms2_df.query('i >= %f' % ms2_plot_th)
-                print('Plot full MS/MS with abs intensity filter > %f' % ms2_plot_th)
+                print(core_count, 'Plot full MS/MS with abs intensity filter > %f' % ms2_plot_th)
 
         _msms_low_df = ms2_df.query('mz <= 400')
         _msms_high_df = ms2_df.query('mz > 400')
         _msms_high_df = _msms_high_df.query('mz < %.4f' % (ms2_pr_mz + 1))
 
-        print ('Start looking for MS2 PR m/z %f @ MS1 best PR m/z %f with lib m/z %f'
+        print(core_count, 'Start looking for MS2 PR m/z %f @ MS1 best PR m/z %f with lib m/z %f'
                % (ms2_pr_mz, ms1_obs, lib_mz))
 
         # Generate A4 image in landscape
-        fig, pic_array = plt.subplots(nrows=3, ncols=2, figsize=(11.692, 8.267), sharex=False,
-                                      sharey=False)
+        fig, pic_array = plt.subplots(nrows=3, ncols=2, figsize=(11.692, 8.267), sharex=False, sharey=False)
         # Make better spacing between subplots
         plt.tight_layout()
         xic_pic = pic_array[0, 0]
@@ -158,7 +154,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # add annotation
         _ms_pkl_top_df = ms1_df.sort_values(by='i', ascending=False).head(10)
-        _ms_pkl_top_peak_list = zip(_ms_pkl_top_df['mz'].values.tolist(), _ms_pkl_top_df['i'].values.tolist())
+        _ms_pkl_top_peak_list = list(zip(_ms_pkl_top_df['mz'].values.tolist(), _ms_pkl_top_df['i'].values.tolist()))
         for _ms_pkl_top_peak in _ms_pkl_top_peak_list:
             _ms_pkl_top_peak_str = '%.4f' % _ms_pkl_top_peak[0]
             _ms_pkl_top_peak_y = _ms_pkl_top_peak[1]
@@ -224,7 +220,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         opt_box_lst = []
 
         # isotope region | highlight the 2nd isotope
-        if 2 in isotope_checker_dct.keys():
+        if 2 in list(isotope_checker_dct.keys()):
             m2_dct = isotope_checker_dct[2]
             m2_theo_mz = m2_dct['theo_mz']
             m2_theo_i = m2_dct['theo_i']
@@ -248,8 +244,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                              color='#ff6600', fontsize=6)
             ms_zoom_pic.text(m2_obs_mz + 0.04, m2_obs_i, '%.4f' % m2_obs_mz, color='magenta', fontsize=6)
 
-        if len(m2_checker_dct.keys()) > 0:
-            for _mh2 in m2_checker_dct.keys():
+        if len(list(m2_checker_dct.keys())) > 0:
+            for _mh2 in list(m2_checker_dct.keys()):
                 mh2_dct = m2_checker_dct[_mh2]
                 mh2_theo_mz = mh2_dct['theo_mz']
                 mh2_theo_i = mh2_dct['theo_i']
@@ -309,6 +305,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         xic_pic.set_xlabel("Scan time (min)", fontsize=10, labelpad=-1)
         xic_pic.set_ylabel("Intensity", fontsize=10)
         xic_pic.set_xlim([xic_rt_min, xic_rt_max])
+        xic_pic.set_ylim([0, max(xic_i_lst) * 1.1])
 
         # prepare DataFrame for msms zoomed plot
         # plot color markers for zoomed MS2 first. Then overlay with zoomed spectra. Plot full ms2 in the last step.
@@ -320,7 +317,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                              'Score': obs_info_df['RANK_SCORE'].values.tolist()})
         _ident_table_df.sort_values(by=['Score'], ascending=False, inplace=True)
         _ident_table_df.drop_duplicates(subset=['Proposed_structure', 'Score'], keep='first', inplace=True)
-        ident_table_vals = map(list, _ident_table_df.values)
+        ident_table_vals = list(map(list, _ident_table_df.values))
         ident_col_width_lst = [0.6, 0.15]
         ident_table = msms_pic.table(cellText=ident_table_vals, colWidths=ident_col_width_lst,
                                      colLabels=ident_col_labels, loc='upper center', cellLoc='center')
@@ -335,7 +332,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                               'ppm': obs_fa_df['obs_ppm'].values.tolist(),
                                               'i (%)': obs_fa_df['obs_i_r'].values.tolist()})
             _fa_table_df = _fa_table_df.reindex(columns=_fa_col_labels)
-            _fa_table_vals = map(list, _fa_table_df.values)
+            _fa_table_vals = list(map(list, _fa_table_df.values))
             _fa_col_width_lst = [0.03, 0.125, 0.10, 0.06, 0.06]
             _fa_table = msms_low_pic.table(cellText=_fa_table_vals, colWidths=_fa_col_width_lst,
                                            colLabels=_fa_col_labels, loc='upper left', cellLoc='center')
@@ -352,7 +349,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                                 'ppm': obs_lyso_df['obs_ppm'].values.tolist(),
                                                 'i (%)': obs_lyso_df['obs_i_r'].values.tolist()})
             _lyso_table_df = _lyso_table_df.reindex(columns=_lyso_col_labels)
-            _lyso_table_vals = map(list, _lyso_table_df.values)
+            _lyso_table_vals = list(map(list, _lyso_table_df.values))
             _lyso_col_width_lst = [0.03, 0.175, 0.10, 0.06, 0.06]
             _lyso_table = msms_high_pic.table(cellText=_lyso_table_vals, colWidths=_lyso_col_width_lst,
                                               colLabels=_lyso_col_labels, loc='upper center', cellLoc='center')
@@ -400,13 +397,18 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # remove identified FA
         ident_peak_lst = obs_ident_df['obs_abbr'].values.tolist()
+        # ident_peak_lst2 = obs_ident_df2['obs_abbr'].values.tolist()
+        ident_peak_lst.sort()
+        ident_peak_lst = set(ident_peak_lst)
         frag_idx_lst = []
         nl_idx_lst = []
         for _idx, _ion_se in obs_fa_df.iterrows():
+            # if _ion_se['obs_abbr'] in ident_peak_lst:
             if _ion_se['obs_abbr'] in ident_peak_lst:
                 frag_idx_lst.append(_idx)
         obs_fa_df = obs_fa_df.drop(frag_idx_lst)
         for _idx, _ion_se in obs_lyso_df.iterrows():
+            # if _ion_se['obs_abbr'] in ident_peak_lst:
             if _ion_se['obs_abbr'] in ident_peak_lst:
                 nl_idx_lst.append(_idx)
         obs_lyso_df = obs_lyso_df.drop(nl_idx_lst)
@@ -457,6 +459,23 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                color=(1.0, 0.6, 0.0, 1), rotation=60)
 
         # plot all identified peaks
+        # for _idx, _ident_se in obs_ident_df.iterrows():
+        #     _ident_mz = _ident_se['mz']
+        #     _ident_i = _ident_se['i']
+        #
+        #     if _ident_mz <= 400:
+        #         _sub_plot = msms_low_pic
+        #         _ident_i_r = _ident_i * 1.025
+        #     else:
+        #         _sub_plot = msms_high_pic
+        #         _ident_i_r = _ident_i * 1.075
+        #
+        #     markerline, stemlines, baseline = _sub_plot.stem([_ident_mz], [_ident_i_r], markerfmt=' ')
+        #     plt.setp(stemlines, color=(0, 0.7, 1.0, 0.4), linewidth=3)
+        #     markerline, stemlines, baseline = msms_pic.stem([_ident_mz], [_ident_i], markerfmt=' ')
+        #     plt.setp(stemlines, color=(0, 0.7, 1.0, 0.7), linewidth=3)
+        #     _sub_plot.text(_ident_mz, _ident_i_r, _ident_se['obs_label'], txt_props,
+        #                    fontsize=8, color=(0, 0.6, 1.0, 1.0), rotation=60, weight='bold')
         for _idx, _ident_se in obs_ident_df.iterrows():
             _ident_mz = _ident_se['mz']
             _ident_i = _ident_se['i']
@@ -474,9 +493,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             plt.setp(stemlines, color=(0, 0.7, 1.0, 0.7), linewidth=3)
             _sub_plot.text(_ident_mz, _ident_i_r, _ident_se['obs_label'], txt_props,
                            fontsize=8, color=(0, 0.6, 1.0, 1.0), rotation=60, weight='bold')
-
         # add specific ion info
-        if 'OTHER_FRAG' in specific_dct.keys():
+        if 'OTHER_FRAG' in list(specific_dct.keys()):
             other_frag_df = specific_dct['OTHER_FRAG']
             for _idx, _frag_se in other_frag_df.iterrows():
                 _frag_mz = _frag_se['mz']
@@ -489,7 +507,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.7), linewidth=3)
                 msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, fontsize=7, color=(1.0, 0.6, 0.0, 1))
 
-        if 'OTHER_NL' in specific_dct.keys():
+        if 'OTHER_NL' in list(specific_dct.keys()):
             other_nl_df = specific_dct['OTHER_NL']
             for _idx, _nl_se in other_nl_df.iterrows():
                 _nl_mz = _nl_se['mz']
@@ -502,7 +520,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 plt.setp(stemlines, color=(1.0, 0.8, 0.0, 0.7), linewidth=3)
                 msms_high_pic.text(_nl_mz, _nl_i_r, _nl_class, fontsize=7, color=(1.0, 0.6, 0.0, 1))
 
-        if 'TARGET_FRAG' in specific_dct.keys():
+        if 'TARGET_FRAG' in list(specific_dct.keys()):
             target_frag_df = specific_dct['TARGET_FRAG']
             for _idx, _frag_se in target_frag_df.iterrows():
                 _frag_mz = _frag_se['mz']
@@ -516,7 +534,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, fontsize=8, color=(0.4, 0.7, 0.4, 1.0),
                                   weight='bold')
 
-        if 'TARGET_NL' in specific_dct.keys():
+        if 'TARGET_NL' in list(specific_dct.keys()):
             target_nl_df = specific_dct['TARGET_NL']
             for _idx, _nl_se in target_nl_df.iterrows():
                 _nl_mz = _nl_se['mz']
@@ -544,14 +562,14 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_low_pic.set_title(msms_low_str, color='b', fontsize=10, y=0.98)
         msms_high_pic.set_title(msms_high_str, color='b', fontsize=10, y=0.98)
 
-        print ('>>> >>> >>> try to plot >>> >>> >>>')
+        print(core_count, '>>> >>> >>> try to plot >>> >>> >>>')
         try:
             plt.savefig(save_img_as, type=img_type, dpi=dpi)
-            print ('=====> Image saved as: %s' % save_img_as)
+            print(core_count, '=====> Image saved as: %s' % save_img_as)
             img_name_end = ''
         except IOError:
             plt.savefig('%s-2.%s' % (save_img_as[:-4], img_type), type=img_type, dpi=dpi)
-            print ('=====> Image saved as: %s' % save_img_as)
+            print(core_count, '=====> Image saved as: %s' % save_img_as)
             img_name_end = '-2'
         plt.close()
         isotope_checker = 0
@@ -560,5 +578,5 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     else:
         img_name_end = ''
         isotope_checker = 1
-        print ('!!! Failed to save Image !!!')
+        print(core_count, '!!! Failed to save Image !!!')
         return isotope_checker, isotope_score, img_name_end

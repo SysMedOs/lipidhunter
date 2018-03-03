@@ -18,6 +18,7 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
+from __future__ import division
 from __future__ import print_function
 
 from operator import itemgetter
@@ -116,7 +117,7 @@ class LogPageCreator(object):
                            'hg_ppm', 'hg_th', 'ms2_hginfopeak_threshold',
                            'core_number', 'max_ram', 'img_type', 'img_dpi', 'ms_max', 'tag_all_sn']
 
-            param_key_lst = params.keys()
+            param_key_lst = list(params.keys())
             disp_cfg_lst = []
 
             for _key in cfg_sum_lst:
@@ -199,7 +200,7 @@ class LogPageCreator(object):
                 _log_info_df.index += 1
                 _log_info_groups = _log_info_df.groupby(['MS1_log_mz', 'Proposed_structures', 'Charge',
                                                          'MS2_scan_time'])
-                _log_info_groups_key_lst = _log_info_groups.groups.keys()
+                _log_info_groups_key_lst = list(_log_info_groups.groups.keys())
                 _log_info_groups_key_lst = sorted(_log_info_groups_key_lst, key=itemgetter(0, 1, 3))
                 # _log_info_groups_key_lst = sorted(_log_info_groups_key_lst, key=lambda x: x[0])
 
@@ -225,17 +226,19 @@ class LogPageCreator(object):
                     plot_df_cols = []
                     if self.lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
-                                        'SN1_[FA-H]- i (%)', 'SN2_[FA-H]- i (%)',
-                                        '[LPL(SN1)-H]- i (%)', '[LPL(SN2)-H]- i (%)',
-                                        '[LPL(SN1)-H2O-H]- i (%)', '[LPL(SN2)-H2O-H]- i (%)']
+                                        'SN1_[FA-H]-_i_per', 'SN2_[FA-H]-_i_per',
+                                        '[LPL(SN1)-H]-_i_per', '[LPL(SN2)-H]-_i_per',
+                                        '[LPL(SN1)-H2O-H]-_i_per', '[LPL(SN2)-H2O-H]-_i_per']
                     elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
-                        pass
-                        # TODO(zhixu.ni@uni-leipzig.de): @Georgia add TG here please :)
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'SN1_[FA-H2O+H]+_i_per',
+                                        'SN2_[FA-H2O+H]+_i_per', 'SN3_[FA-H2O+H]+_i_per', '[M-(SN1)+H]+_i_per',
+                                        '[M-(SN2)+H]+_i_per', '[M-(SN3)+H]+_i_per', '[MG(SN1)-H2O+H]+_i_per',
+                                        '[MG(SN2)-H2O+H]+_i_per', '[MG(SN3)-H2O+H]+_i_per']
                     else:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
-                                        'SN1_[FA-H]- i (%)', 'SN2_[FA-H]- i (%)',
-                                        '[LPL(SN1)-H]- i (%)', '[LPL(SN2)-H]- i (%)',
-                                        '[LPL(SN1)-H2O-H]- i (%)', '[LPL(SN2)-H2O-H]- i (%)']
+                                        'SN1_[FA-H]-i_per', 'SN2_[FA-H]-i_per',
+                                        '[LPL(SN1)-H]-i_per', '[LPL(SN2)-H]-i_per',
+                                        '[LPL(SN1)-H2O-H]-i_per', '[LPL(SN2)-H2O-H]-i_per']
 
                     peak_info_df = pd.DataFrame(_subgroup_df, columns=plot_df_cols)
 

@@ -26,8 +26,10 @@ import re
 import pandas as pd
 import pymzml
 
-from ParallelFunc import ppm_window_para
-
+try:
+    from LibLipidHunter.ParallelFunc import ppm_window_para
+except ImportError:  # for python 2.7.14
+    from ParallelFunc import ppm_window_para
 
 def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10,
                  ms1_precision=50e-6, ms2_precision=500e-6, vendor='waters', ms1_max=0):
@@ -98,8 +100,8 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
     spec_dct = {}
 
-    ms2_function_range_lst = range(2, dda_top + 1)
-    function_range_lst = range(1, dda_top + 1)
+    ms2_function_range_lst = list(range(2, dda_top + 1))
+    function_range_lst = list(range(1, dda_top + 1))
 
     ms1_xic_df = pd.DataFrame()
 
@@ -112,7 +114,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
         for _spectrum in spec_obj:
             pr_mz = 0
 
-            if ims_obo in _spectrum.keys():
+            if ims_obo in list(_spectrum.keys()):
                 try:
                     if len(_spectrum.peaks) > 4:
                         not_empty_spec = 1
@@ -123,7 +125,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
             else:
                 not_empty_spec = 1
 
-            if not_empty_spec == 1 and spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
+            if not_empty_spec == 1 and spec_title_obo in list(_spectrum.keys()) and scan_rt_obo in list(_spectrum.keys()):
                 _spectrum_title = _spectrum[spec_title_obo]
                 _scan_rt = float(_spectrum[scan_rt_obo])
                 scan_info_checker = scan_info_re.match(_spectrum_title)
@@ -199,7 +201,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
         dda_rank_idx = 0
         for _spectrum in spec_obj:
             pr_mz = 0
-            if spec_title_obo in _spectrum.keys() and scan_rt_obo in _spectrum.keys():
+            if spec_title_obo in list(_spectrum.keys()) and scan_rt_obo in list(_spectrum.keys()):
                 # _spectrum_title = _spectrum[spec_title_obo]
                 _scan_rt = float(_spectrum[scan_rt_obo])
                 ms_level = _spectrum[_spec_level_obo]
@@ -277,11 +279,11 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
         _tmp_mz_scan_info_df.is_copy = False
 
         if _tmp_mz_scan_info_df.shape[0] == 1:
-            ms2_spec_idx = _tmp_mz_scan_info_df.get_value(_tmp_mz_scan_info_df.index[0], 'spec_index')
-            ms2_dda_idx = _tmp_mz_scan_info_df.get_value(_tmp_mz_scan_info_df.index[0], 'dda_event_idx')
-            ms2_function = _tmp_mz_scan_info_df.get_value(_tmp_mz_scan_info_df.index[0], 'DDA_rank')
-            ms2_scan_id = _tmp_mz_scan_info_df.get_value(_tmp_mz_scan_info_df.index[0], 'scan_number')
-            ms2_rt = _tmp_mz_scan_info_df.get_value(_tmp_mz_scan_info_df.index[0], 'scan_time')
+            ms2_spec_idx = _tmp_mz_scan_info_df.at[_tmp_mz_scan_info_df.index[0], 'spec_index']
+            ms2_dda_idx = _tmp_mz_scan_info_df.at[_tmp_mz_scan_info_df.index[0], 'dda_event_idx']
+            ms2_function = _tmp_mz_scan_info_df.at[_tmp_mz_scan_info_df.index[0], 'DDA_rank']
+            ms2_scan_id = _tmp_mz_scan_info_df.at[_tmp_mz_scan_info_df.index[0], 'scan_number']
+            ms2_rt = _tmp_mz_scan_info_df.at[_tmp_mz_scan_info_df.index[0], 'scan_time']
 
             print('%.6f @ DDA#: %.0f | Total scan id: %.0f | DDA_Rank: %.0f | Scan ID: %.0f | RT: %.4f'
                   % (mz, ms2_dda_idx, ms2_spec_idx, ms2_function, ms2_scan_id, ms2_rt))
@@ -359,7 +361,7 @@ def get_xic_from_pl(xic_ms1_lst, ms1_xic_df, xic_ppm):
 
     xic_ms1_l_lst = ppm_window_para(xic_ms1_lst, -1 * xic_ppm)
     xic_ms1_h_lst = ppm_window_para(xic_ms1_lst, xic_ppm)
-    xic_ms_info_lst = zip(xic_ms1_lst, xic_ms1_l_lst, xic_ms1_h_lst)
+    xic_ms_info_lst = list(zip(xic_ms1_lst, xic_ms1_l_lst, xic_ms1_h_lst))
 
     for _xic_mz_info in xic_ms_info_lst:
         _xic_mz = _xic_mz_info[0]

@@ -19,9 +19,10 @@
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 from __future__ import division
-import ConfigParser as configparser
-from numba import int32, float32, float64, vectorize
+from __future__ import print_function
 
+from six.moves import configparser
+from numba import int32, float32, float64, vectorize
 
 # setup weight factor
 # load configurations
