@@ -18,7 +18,9 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from six.moves import configparser
+from __future__ import division
+from __future__ import print_function
+
 import glob
 import multiprocessing
 import multiprocessing.pool
@@ -27,6 +29,7 @@ import re
 import time
 
 from PySide import QtCore, QtGui
+from six.moves import configparser
 
 from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
 from LibLipidHunter.Hunter_Core import huntlipids
@@ -465,6 +468,9 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 else:
                     self.ui.tab_a_statusrun_pte.appendPlainText('!! Sorry, an error has occurred, '
                                                                 'please check your settings !!')
+                    if len(error_log_lst) > 0:
+                        for err in error_log_lst:
+                            self.ui.tab_a_statusrun_pte.appendPlainText(str(err) + '\n')
 
     def a_save_cfg(self):
         a_save_cfg_path = QtGui.QFileDialog.getSaveFileName(caption='Save file', filter='.txt')
@@ -633,78 +639,39 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         tot_num = len(loaded_cfg_lst)
         run_counter = 1
 
-        multi_mode_idx = self.ui.tab_b_mutlimode_cmb.currentIndex()
-
         os.chdir(self.lipidhunter_cwd)
 
-        if multi_mode_idx == 1:  # multi mode
+        for _cfg in loaded_cfg_lst:
 
-            cfg_dct_lst = []
-            for cfg_file in loaded_cfg_lst:
-                hunter_param_dct, cfg_error = self.b_read_cfg(cfg_file)
-                if len(cfg_error) > 0:
-                    self.ui.tab_b_statusrun_pte.insertPlainText(str(cfg_error))
-                if 'vendor' in list(hunter_param_dct.keys()):
-                    hunter_param_dct['batch_cfg_file'] = cfg_file
-                    hunter_param_dct['core_number'] = sub_max_core
-                    hunter_param_dct['max_ram'] = sub_max_ram
-                    cfg_dct_lst.append(hunter_param_dct)
-                else:
-                    hunter_param_dct['batch_cfg_file'] = ''
-
-            if len(cfg_dct_lst) > max_process:
-                sub_part_lst = list(*(iter(cfg_dct_lst),) * max_process)
-            else:
-                sub_part_lst = [cfg_dct_lst]
-
-            tot_part = len(sub_part_lst)
-            part_num = 1
-            for sub_cfg_lst in sub_part_lst:
-                sub_cfg_lst = [x for x in sub_cfg_lst if x is not None]
-                parallel_pool = multiprocessing.pool.ThreadPool(max_process)
-                hunter_results_lst = []
-                hunter_log_lst = []
-                core_worker_count = 1
-                for _cfg_dct in sub_cfg_lst:
-                    time.sleep(1)
-                    self.ui.tab_b_statusrun_pte.insertPlainText('Start Batch %i / %i file %i / %i ...\n'
-                                                                % (part_num, tot_part, core_worker_count, max_process))
-                    self.ui.tab_b_statusrun_pte.insertPlainText('>>> processing...\n')
-
-                    start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-                    _cfg_dct['hunter_start_time'] = start_time_str
-                    try:
-                        os.chdir(_cfg_dct['hunter_folder'])
-                    except IOError:
-                        print('LipidHunter folder path in configuration is not correct')
-                    if not os.path.exists(hunter_param_dct['img_output_folder_str']):
-                        os.makedirs(hunter_param_dct['img_output_folder_str'])
-                    param_log_output_path_str = (hunter_param_dct['img_output_folder_str'] +
-                                                 '/LipidHunter_Params-Log_%s.txt' % hunter_param_dct[
-                                                     'hunter_start_time'])
-                    try:
-                        config = configparser.ConfigParser()
-                        with open(param_log_output_path_str, 'w') as usr_param_cfg:
-                            config.add_section('parameters')
-                            for param in list(hunter_param_dct.keys()):
-                                config.set('parameters', str(param), str(hunter_param_dct[param]))
-                            config.write(usr_param_cfg)
-                    except IOError:
-                        self.ui.tab_b_statusrun_pte.appendPlainText('!!! Failed to save parameter log file:')
-                        self.ui.tab_b_statusrun_pte.appendPlainText(param_log_output_path_str)
-                        self.ui.tab_b_statusrun_pte.appendPlainText('\n')
+            self.ui.tab_b_statusrun_pte.insertPlainText('Start processing...\n%s\n' % _cfg)
+            hunter_param_dct, cfg_error = self.b_read_cfg(_cfg)
+            if len(cfg_error) > 0:
+                self.ui.tab_b_statusrun_pte.insertPlainText(str(cfg_error))
+            if 'vendor' in list(hunter_param_dct.keys()):
+                hunter_param_dct['batch_cfg_file'] = _cfg
+                hunter_param_dct['core_number'] = sub_max_core
+                hunter_param_dct['max_ram'] = sub_max_ram
+                start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+                hunter_param_dct['hunter_start_time'] = start_time_str
+                os.chdir(hunter_param_dct['hunter_folder'])
+                try:
+                    os.chdir(hunter_param_dct['hunter_folder'])
+                except IOError:
+                    print('LipidHunter folder path in configuration is not correct')
+                if not os.path.exists(hunter_param_dct['img_output_folder_str']):
+                    os.makedirs(hunter_param_dct['img_output_folder_str'])
+                param_log_output_path_str = (hunter_param_dct['img_output_folder_str'] +
+                                             '/LipidHunter_Params-Log_%s.txt' % hunter_param_dct[
+                                                 'hunter_start_time'])
+                try:
+                    config = configparser.ConfigParser()
+                    with open(param_log_output_path_str, 'w') as usr_param_cfg:
+                        config.add_section('parameters')
+                        for param in list(hunter_param_dct.keys()):
+                            config.set('parameters', str(param), str(hunter_param_dct[param]))
+                        config.write(usr_param_cfg)
                     log_lst = []
-                    tot_run_time, log_lst, export_df = parallel_pool.apply_async(huntlipids, args=(_cfg_dct, log_lst))
-
-                    core_worker_count += 1
-                    hunter_results_lst.append(tot_run_time)
-                    hunter_log_lst.append(log_lst)
-
-                parallel_pool.close()
-                parallel_pool.join()
-
-                for hunter_time in hunter_results_lst:
-
+                    hunter_time, log_lst, export_df = huntlipids(hunter_param_dct, error_lst=log_lst)
                     run_time = str(hunter_time)
                     if isinstance(run_time, str):
                         self.ui.tab_b_statusrun_pte.appendPlainText('>>> %s' % run_time)
@@ -714,55 +681,14 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                     else:
                         self.ui.tab_b_statusrun_pte.insertPlainText(
                             '!! Failed to process batch mode configure file:\n Please check settings!!')
-
-                part_num += 1
-
-        else:  # single mode
-            for _cfg in loaded_cfg_lst:
-
-                self.ui.tab_b_statusrun_pte.insertPlainText('Start processing...\n%s\n' % _cfg)
-                hunter_param_dct, cfg_error = self.b_read_cfg(_cfg)
-                if len(cfg_error) > 0:
-                    self.ui.tab_b_statusrun_pte.insertPlainText(str(cfg_error))
-                if 'vendor' in list(hunter_param_dct.keys()):
-                    hunter_param_dct['batch_cfg_file'] = _cfg
-                    hunter_param_dct['core_number'] = sub_max_core
-                    hunter_param_dct['max_ram'] = sub_max_ram
-                    start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-                    hunter_param_dct['hunter_start_time'] = start_time_str
-                    os.chdir(hunter_param_dct['hunter_folder'])
-                    try:
-                        os.chdir(hunter_param_dct['hunter_folder'])
-                    except IOError:
-                        print('LipidHunter folder path in configuration is not correct')
-                    if not os.path.exists(hunter_param_dct['img_output_folder_str']):
-                        os.makedirs(hunter_param_dct['img_output_folder_str'])
-                    param_log_output_path_str = (hunter_param_dct['img_output_folder_str'] +
-                                                 '/LipidHunter_Params-Log_%s.txt' % hunter_param_dct[
-                                                     'hunter_start_time'])
-                    try:
-                        config = configparser.ConfigParser()
-                        with open(param_log_output_path_str, 'w') as usr_param_cfg:
-                            config.add_section('parameters')
-                            for param in list(hunter_param_dct.keys()):
-                                config.set('parameters', str(param), str(hunter_param_dct[param]))
-                            config.write(usr_param_cfg)
-                        log_lst = []
-                        hunter_time, log_lst, export_df = huntlipids(hunter_param_dct, error_lst=log_lst)
-                        run_time = str(hunter_time)
-                        if isinstance(run_time, str):
-                            self.ui.tab_b_statusrun_pte.appendPlainText('>>> %s' % run_time)
-                            self.ui.tab_b_statusrun_pte.appendPlainText('FINISHED with file %i / %i\n' %
-                                                                        (run_counter, tot_num))
-                            run_counter += 1
-                        else:
-                            self.ui.tab_b_statusrun_pte.insertPlainText(
-                                '!! Failed to process batch mode configure file:\n Please check settings!!')
-                    except IOError:
-                        self.ui.tab_b_statusrun_pte.appendPlainText('!! Failed to save parameter log files !!')
-                else:
-                    self.ui.tab_b_statusrun_pte.insertPlainText(
-                        '!! Failed read batch mode configure files:\n %s \n Please check settings!!' % _cfg)
+                        if len(log_lst) > 0:
+                            for err in log_lst:
+                                self.ui.tab_b_statusrun_pte.appendPlainText(str(err) + '\n')
+                except IOError:
+                    self.ui.tab_b_statusrun_pte.appendPlainText('!! Failed to save parameter log files !!')
+            else:
+                self.ui.tab_b_statusrun_pte.insertPlainText(
+                    '!! Failed read batch mode configure files:\n %s \n Please check settings!!' % _cfg)
 
     def c_set_default_cfg(self):
         config = configparser.ConfigParser()

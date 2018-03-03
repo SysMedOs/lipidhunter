@@ -18,11 +18,12 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from six.moves import configparser
 import getopt
 import os.path
 import sys
 import time
+
+from six.moves import configparser
 
 # required to perform multiprocessing
 import multiprocessing

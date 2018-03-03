@@ -23,11 +23,10 @@ from __future__ import print_function
 
 import getopt
 import math
+from multiprocessing import Pool
 import os
 import sys
 import time
-from itertools import count
-from multiprocessing import Pool
 
 import pandas as pd
 
@@ -385,9 +384,19 @@ def huntlipids(param_dct, error_lst):
     spec_key_num = len(found_spec_key_lst)
     print('spec_key_num', spec_key_num)
     lipid_part_key_lst = []
-    if spec_key_num >= (usr_core_num * 10):
-        # lipid_part_len = int(math.ceil(spec_key_num / usr_core_num))
-        lipid_part_len = usr_core_num * 10  # set each core try to plot max 10 images, so no core will wait long
+
+    if 2 < usr_core_num <= 4:
+        split_seg = 8
+    elif 4 < usr_core_num <= 6:
+        split_seg = 4
+    elif 6 < usr_core_num:
+        split_seg = 2
+    else:
+        split_seg = 16
+
+    if spec_key_num >= (usr_core_num * split_seg):
+
+        lipid_part_len = usr_core_num * split_seg  # set each core try to plot 2 to 8 images, so no core will wait long
         print('lipid_part_len', lipid_part_len)
         lipid_part_lst = [found_spec_key_lst[k: k + lipid_part_len] for k in range(0, len(found_spec_key_lst),
                                                                                    lipid_part_len)]
@@ -476,8 +485,9 @@ def huntlipids(param_dct, error_lst):
         if part_tot == 1:
             print('>>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
         else:
-            print('>>> Start multiprocessing to get Score ==> Part %i / %i --> Max Number of Cores: %i' %
-                  (part_counter, part_tot, usr_core_num))
+            print('>>> Start multiprocessing to get Score ==> Part %i / %i '
+                  '--> Max Number of Cores: %i | x%i Features each'
+                  % (part_counter, part_tot, usr_core_num, split_seg))
         part_counter += 1
 
         # Start multiprocessing to get rank score
@@ -651,25 +661,25 @@ if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
     core_count = 3
-    max_ram = 6
+    max_ram = 5  # int only
 
     # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo', 'TG_thermo_NH4']
 
     # Modify usr_test_lst according to full_test_lst to run the supported built in tests
-    usr_test_lst = ['TG_thermo']
+    usr_test_lst = ['PC_waters']
 
     # define default ranges of each test
-    mz_range_pl_waters = [700, 900]  # [700, 900]
-    rt_range_pl_waters = [24, 26]  # [24, 26]
+    mz_range_pl_waters = [650, 950]  # [650, 950]
+    rt_range_pl_waters = [24, 27]  # max [24, 27]
 
     # mz_range_pl_thermo = [700, 900]  # [700, 900]
-    # rt_range_pl_thermo = [25, 27]  # [25, 27]
+    # rt_range_pl_thermo = [25, 27]  # max [24, 27]
 
-    mz_range_tg_waters = [800, 1000]  # [800, 1000]
-    rt_range_tg_waters = [14, 16]  # [14, 16]
+    mz_range_tg_waters = [700, 1200]  # [700, 1200]
+    rt_range_tg_waters = [9, 15]  # max [9, 15]
 
-    mz_range_tg_thermo = [738, 742]  # [800, 1000]
-    rt_range_tg_thermo = [22.0, 24.0]  # [22, 24]
+    mz_range_tg_thermo = [700, 1200]  # [700, 1200]
+    rt_range_tg_thermo = [15, 25]  # max [15, 25]
 
     # define default parameters of each vendor
     # waters
@@ -799,26 +809,35 @@ if __name__ == '__main__':
 
     t0 = time.time()
 
-    for test_key in list(usr_test_dct.keys()):
-        test_dct = usr_test_dct[test_key]
-        t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-        lipid_class = test_dct['lipid_type']
-        cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
-                   'xlsx_output_path_str': r'D:../Test/results/%s_%s.xlsx' % (test_key, t_str),
-                   'hunter_folder': r'D:/project_lipidhunter/lipidhunterdev', 'img_type': u'png', 'img_dpi': 300,
-                   'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True, 'fast_isotope': False,
-                   'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
+    t_sum_lst = []
 
-        test_dct.update(cfg_dct)
+    for test_key in usr_test_lst:
+        if test_key in list(usr_test_dct.keys()):
+            test_dct = usr_test_dct[test_key]
+            t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+            lipid_class = test_dct['lipid_type']
+            cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
+                       'xlsx_output_path_str': r'D:../Test/results/%s_%s.xlsx' % (test_key, t_str),
+                       'hunter_folder': r'D:/project_lipidhunter/lipidhunterdev', 'img_type': u'png', 'img_dpi': 300,
+                       'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True,
+                       'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
 
-        print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
+            test_dct.update(cfg_dct)
 
-        t, log_lst, export_df = huntlipids(test_dct, log_lst)
-        if t is not False:
-            print(t)
-            print('>>>>>>>>>>>>>>>> PASSED TEST: %s <<<<<<<<<<<<<<<<\n' % test_key)
-        else:
-            print('>>>>>>>>!!!!!!!! PASSED FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
+            print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
+
+            t, log_lst, export_df = huntlipids(test_dct, log_lst)
+            if t is not False:
+                print('>>>>>>>>>>>>>>>> TEST PASSED: %s in %.3f Sec <<<<<<<<<<<<<<<<\n' % (test_key, t))
+                t_sum_lst.append((test_key, 'PASSED', '%.3f Sec' % t, 'Identified: %i' % export_df.shape[0]))
+            else:
+                print('>>>>>>>>!!!!!!!! TEST FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
+                t_sum_lst.append((test_key, 'FAILED', '', 'Identified: 0'))
 
     t_end = time.time() - t0
-    print('|||||||||||||||| ALL TEST FINISHED in %.3f Sec |||||||||||||||| ' % t_end)
+    print('Test run in plan: ', ', '.join(usr_test_lst))
+    print('With Max Core = %i and RAM = %i GB' % (core_count, max_ram))
+    if len(t_sum_lst) > 0:
+        for t_info in t_sum_lst:
+            print('    '.join(t_info))
+    print('\n=============== ALL TEST FINISHED in %.3f Sec ===============' % t_end)

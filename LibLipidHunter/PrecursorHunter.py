@@ -18,13 +18,15 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-import math
-import sys
+from __future__ import division
+from __future__ import print_function
 
-import pandas as pd
+import math
 from multiprocessing import Pool
 
-from .ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
+import pandas as pd
+
+from LibLipidHunter.ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
 
 
 def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max):
@@ -120,7 +122,7 @@ class PrecursorHunter(object):
 
     def get_matched_pr(self, scan_info_df, spectra_pl, ms1_max=0, core_num=4, max_ram=8):
 
-        print('Start match precursors!!!!')
+        print('>>>>>>>> Start match precursors!!!!')
 
         pr_window = self.param_dct['pr_window']
 
@@ -162,12 +164,13 @@ class PrecursorHunter(object):
         lpp_info_groups = self.lpp_info_df.groupby(['Lib_mz', 'Formula'])
         all_group_key_lst = list(lpp_info_groups.groups.keys())
         sub_len = int(math.ceil(len(all_group_key_lst) / core_num))
-        core_key_list = [all_group_key_lst[k: k+sub_len] for k in range(0, len(all_group_key_lst), sub_len)]
+        core_key_list = [all_group_key_lst[k: k + sub_len] for k in range(0, len(all_group_key_lst), sub_len)]
 
         spectra_pl_idx_lst = sorted(spectra_pl.items.values.tolist())
 
         if len(spectra_pl_idx_lst) >= (max_ram * 50):
-            sub_pl_group_lst = [spectra_pl_idx_lst[s: s+sub_len] for s in range(0, len(spectra_pl_idx_lst),
+            print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
+            sub_pl_group_lst = [spectra_pl_idx_lst[s: s + (max_ram * 40)] for s in range(0, len(spectra_pl_idx_lst),
                                                                                 max_ram * 40)]
         else:
             sub_pl_group_lst = [spectra_pl_idx_lst]
