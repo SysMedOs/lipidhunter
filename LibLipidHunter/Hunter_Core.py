@@ -562,14 +562,20 @@ def huntlipids(param_dct, error_lst):
 
     # Merge multiprocessing results
     for lipid_info_result in lipid_info_results_lst:
-        try:
-            tmp_lipid_info_df = lipid_info_result.get()
-        except (KeyError, SystemError, ValueError):
-            tmp_lipid_info_df = 'error'
-            print('!!error!!--> This segment receive no Lipid identified.')
-        if isinstance(tmp_lipid_info_df, str):
-            pass
+        if usr_core_num > 1:
+            try:
+                tmp_lipid_info_df = lipid_info_result.get()
+            except (KeyError, SystemError, ValueError, TypeError):
+                tmp_lipid_info_df = 'error'
+                print('!!error!!--> This segment receive no Lipid identified.')
+            if isinstance(tmp_lipid_info_df, str):
+                pass
+            else:
+                if isinstance(tmp_lipid_info_df, pd.DataFrame):
+                    if tmp_lipid_info_df.shape[0] > 0:
+                        output_df = output_df.append(tmp_lipid_info_df)
         else:
+            tmp_lipid_info_df = lipid_info_result
             if isinstance(tmp_lipid_info_df, pd.DataFrame):
                 if tmp_lipid_info_df.shape[0] > 0:
                     output_df = output_df.append(tmp_lipid_info_df)
@@ -674,13 +680,13 @@ def huntlipids(param_dct, error_lst):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 3
+    core_count = 1
     max_ram = 5  # int only
 
     # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
     # Modify usr_test_lst according to full_test_lst to run the supported built in tests
-    usr_test_lst = ['TG_thermo_NH4']
+    usr_test_lst = ['PC_waters', 'PE_waters']
 
     # define default ranges of each test
     mz_range_pl_waters = [650, 950]  # [650, 950]

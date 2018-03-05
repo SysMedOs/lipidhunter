@@ -140,11 +140,11 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # ms spectrum start
         if vendor == 'waters':
-            ms_pic.plot(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=0.5, markerfmt=' ')
+            ms_pic.plot(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=1)
         elif vendor == 'thermo':
             ms_pic.stem(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=0.5, markerfmt=' ')
         else:
-            ms_pic.plot(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=0.5, markerfmt=' ')
+            ms_pic.plot(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=1)
 
         markerline, stemlines, baseline = ms_pic.stem([ms1_pr_mz], dash_i, markerfmt=' ')
         plt.setp(stemlines, color='#00ccff', linewidth=5, alpha=0.3)
@@ -191,13 +191,13 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         if vendor == 'waters':
             ms_zoom_pic.plot(ms_zoom_df['mz'].values.tolist(), ms_zoom_df['i'].values.tolist(),
-                             'grey', lw=0.5, markerfmt=' ', zorder=1)
+                             'grey', lw=1, zorder=1)
         elif vendor == 'thermo':
             ms_zoom_pic.stem(ms_zoom_df['mz'].values.tolist(), ms_zoom_df['i'].values.tolist(),
                              'grey', lw=0.5, markerfmt=' ', zorder=1)
         else:
             ms_zoom_pic.plot(ms_zoom_df['mz'].values.tolist(), ms_zoom_df['i'].values.tolist(),
-                             'grey', lw=0.5, markerfmt=' ', zorder=1)
+                             'grey', lw=1, zorder=1)
 
         markerline, stemlines, baseline = ms_zoom_pic.stem([ms1_pr_mz], [ms1_pr_i],
                                                            'magenta', markerfmt='D', zorder=20)

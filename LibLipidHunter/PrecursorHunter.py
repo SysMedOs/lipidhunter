@@ -244,12 +244,18 @@ class PrecursorHunter(object):
 
         #  Merge multiprocessing results
         for pr_info_result in pr_info_results_lst:
-            try:
-                sub_df = pr_info_result.get()
+
+            if self.param_dct['core_number'] > 1:
+                try:
+                    sub_df = pr_info_result.get()
+                    if sub_df.shape[0] > 0:
+                        ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
+                except (KeyError, SystemError, ValueError, TypeError):
+                    pass
+            else:
+                sub_df = pr_info_result
                 if sub_df.shape[0] > 0:
                     ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
-            except (KeyError, SystemError, ValueError):
-                pass
 
         # End multiprocessing
 
