@@ -223,13 +223,15 @@ def huntlipids(param_dct, error_lst):
 
     # remove bad precursors
     checked_info_df = pd.DataFrame()
-    for _idx, _check_scan_se in usr_scan_info_df.iterrows():
-        _dda_rank = _check_scan_se['DDA_rank']
-        _scan_id = _check_scan_se['scan_number']
-        _tmp_usr_df = ms1_obs_pr_df.query('DDA_rank == %f and scan_number == %f' % (_dda_rank, _scan_id))
+    dda_rank = usr_scan_info_df['DDA_rank']
+    scan_id = usr_scan_info_df['scan_number']
+    scan_rank_lst = zip(dda_rank, scan_id)
+    for scan_info in scan_rank_lst:
+        _tmp_usr_df = ms1_obs_pr_df.query('DDA_rank == %f and scan_number == %f' % (scan_info[0], scan_info[1]))
         checked_info_df = checked_info_df.append(_tmp_usr_df)
 
     checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'])
+
 
     ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
@@ -396,13 +398,13 @@ def huntlipids(param_dct, error_lst):
     lipid_part_key_lst = []
 
     if 2 < usr_core_num <= 4:
-        split_seg = 8
-    elif 4 < usr_core_num <= 6:
-        split_seg = 4
-    elif 6 < usr_core_num:
-        split_seg = 2
-    else:
         split_seg = 16
+    elif 4 < usr_core_num <= 6:
+        split_seg = 8
+    elif 6 < usr_core_num:
+        split_seg = 4
+    else:
+        split_seg = 32
 
     if spec_key_num >= (usr_core_num * split_seg):
 
@@ -489,7 +491,7 @@ def huntlipids(param_dct, error_lst):
         key_frag_dct = {}
 
     print('... Key FRAG Dict Generated ...')
-
+    lipid_info_results_lst = []
     for lipid_sub_key_lst in lipid_part_key_lst:
 
         if part_tot == 1:
@@ -503,7 +505,7 @@ def huntlipids(param_dct, error_lst):
         # Start multiprocessing to get rank score
         if usr_core_num > 1:
             parallel_pool = Pool(usr_core_num)
-            lipid_info_results_lst = []
+
             core_worker_count = 1
             for lipid_sub_lst in lipid_sub_key_lst:
                 if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
@@ -529,18 +531,6 @@ def huntlipids(param_dct, error_lst):
             parallel_pool.close()
             parallel_pool.join()
 
-            for lipid_info_result in lipid_info_results_lst:
-                try:
-                    tmp_lipid_info_df = lipid_info_result.get()
-                except (KeyError, SystemError, ValueError):
-                    tmp_lipid_info_df = 'error'
-                    print('!!error!!--> This segment receive no Lipid identified.')
-                if isinstance(tmp_lipid_info_df, str):
-                    pass
-                else:
-                    if isinstance(tmp_lipid_info_df, pd.DataFrame):
-                        if tmp_lipid_info_df.shape[0] > 0:
-                            output_df = output_df.append(tmp_lipid_info_df)
         else:
             print('Using single core mode...')
             core_worker_count = 1
@@ -568,7 +558,21 @@ def huntlipids(param_dct, error_lst):
                         pass
                     else:
                         if tmp_lipid_info_df.shape[0] > 0:
-                            output_df = output_df.append(tmp_lipid_info_df)
+                            lipid_info_results_lst.append(tmp_lipid_info_df)
+
+    # Merge multiprocessing results
+    for lipid_info_result in lipid_info_results_lst:
+        try:
+            tmp_lipid_info_df = lipid_info_result.get()
+        except (KeyError, SystemError, ValueError):
+            tmp_lipid_info_df = 'error'
+            print('!!error!!--> This segment receive no Lipid identified.')
+        if isinstance(tmp_lipid_info_df, str):
+            pass
+        else:
+            if isinstance(tmp_lipid_info_df, pd.DataFrame):
+                if tmp_lipid_info_df.shape[0] > 0:
+                    output_df = output_df.append(tmp_lipid_info_df)
 
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
@@ -673,7 +677,7 @@ if __name__ == '__main__':
     core_count = 3
     max_ram = 5  # int only
 
-    # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo', 'TG_thermo_NH4']
+    # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
     # Modify usr_test_lst according to full_test_lst to run the supported built in tests
     usr_test_lst = ['TG_thermo_NH4']

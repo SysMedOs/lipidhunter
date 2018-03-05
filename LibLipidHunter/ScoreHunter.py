@@ -662,7 +662,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                                                                              _usr_formula_charged, _usr_charge,
                                                                              core_count,
                                                                              save_img_as=img_name, img_type=img_typ,
-                                                                             dpi=img_dpi,
+                                                                             dpi=img_dpi, vendor=usr_vendor,
                                                                              ms1_precision=usr_ms1_precision)
 
                         print(core_count, '==> check for output -->')
