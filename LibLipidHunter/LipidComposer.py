@@ -18,15 +18,21 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-
+from __future__ import division
+from __future__ import print_function
 
 import itertools
 
 import pandas as pd
 
-from LibLipidHunter.LipidNomenclature import NameParserFA
-from LibLipidHunter.AbbrElemCalc import ElemCalc
-from LibLipidHunter.ParallelFunc import ppm_window_para
+try:
+    from LibLipidHunter.LipidNomenclature import NameParserFA
+    from LibLipidHunter.AbbrElemCalc import ElemCalc
+    from LibLipidHunter.ParallelFunc import ppm_window_para
+except ImportError:  # for python 2.7.14
+    from LipidNomenclature import NameParserFA
+    from AbbrElemCalc import ElemCalc
+    from ParallelFunc import ppm_window_para
 
 
 class LipidComposer:

@@ -18,12 +18,19 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-import pandas as pd
+from __future__ import division
+from __future__ import print_function
+
 import re
 
-from LibLipidHunter.IsotopeHunter import IsotopeHunter
-from LibLipidHunter.PanelPlotter import plot_spectra
+import pandas as pd
 
+try:
+    from LibLipidHunter.IsotopeHunter import IsotopeHunter
+    from LibLipidHunter.PanelPlotter import plot_spectra
+except ImportError:  # for python 2.7.14
+    from IsotopeHunter import IsotopeHunter
+    from PanelPlotter import plot_spectra
 
 def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='waters', exp_mode='LC-MS'):
     ms2_max_i = ms2_df['i'].max()
@@ -236,6 +243,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
     lite_info_df['sn1_found'] = 0
     lite_info_df['sn2_found'] = 0
 
+    # TODO (georgia.angelidou@uni-leipzig.de): Check and rename unused dicts
     ident_peak_dct = {}
     ident_peak_dct2 = {}
     ident_peak_dct3 = {'discrete_abbr': [], 'obs_label': [], 'i': [], 'mz': [], 'obs_abbr': [], 'obs_rank_type': [],
@@ -306,7 +314,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
         for obs_type in list(obs_dct.keys()):
 
-            _obs_df = obs_dct[obs_type][0]
+            _obs_df = pd.DataFrame(obs_dct[obs_type][0])
             _obs_lst = obs_dct[obs_type][1]
             _obs_drop_idx = []
 
@@ -316,7 +324,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                 lite_info_df.loc[:, '%s_RANK' % _obs] = 10  # set to Rank 10 +1 , so the score will be 0
                 lite_info_df.loc[:, '%s_WEIGHT' % _obs] = weight_dct['%s' % _obs]['Weight']
 
-                _obs_df2 = _obs_df.copy()
+                _obs_df2 = pd.DataFrame(_obs_df)
                 if _obs_df2.shape[0] == 0:
                     _obs_df2 = pd.DataFrame({'i': [], 'mz': [], 'lib_mz': [], 'obs_mz': [], 'obs_i_r': [],
                                              'obs_ppm': [], 'obs_ppm_abs': [], 'obs_abbr': [], 'obs_label': [],
@@ -522,7 +530,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
     charge_mode = param_dct['charge_mode']
     output_folder = param_dct['img_output_folder_str']
     usr_ms2_th = param_dct['ms2_th']
-    usr_hg_th = param_dct['hg_th']
+    # usr_hg_th = param_dct['hg_th']
     usr_ms1_precision = param_dct['ms_ppm'] * 1e-6
     # usr_ms2_ppm = param_dct['ms2_ppm']
     usr_hg_ppm = param_dct['hg_ppm']
