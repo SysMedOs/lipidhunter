@@ -73,6 +73,19 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_b_maxsubcore_spb.setValue(3)
         self.ui.tab_b_maxsubram_spb.setValue(5)
 
+        # Progress dialog
+        self.worker = Worker()
+        self.thread = QtCore.QThread()
+        self.worker.moveToThread(self.thread)
+        self.worker.workRequested.connect(self.thread.start)
+        self.thread.started.connect(self.worker.run_hunter)
+        self.worker.finished.connect(self.dlg_on_finish)
+        self.progress_dlg = QtGui.QProgressDialog("Progress", "cancel", 0, 10)
+        self.progress_dlg.setCancelButton(None)
+        self.worker.relay.connect(self.dlg_update_progress)
+
+        self.hunter_run_time = ''
+
         # slots for tab a
         QtCore.QObject.connect(self.ui.tab_a_lipidclass_cmb, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.a_lipid_class_fa_list)
         QtCore.QObject.connect(self.ui.tab_a_loadxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.a_load_xlsx)
@@ -89,7 +102,8 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_b_addcfg_pb, QtCore.SIGNAL("clicked()"), self.b_load_batchcfg)
         QtCore.QObject.connect(self.ui.tab_b_addcfgfolder_pb, QtCore.SIGNAL("clicked()"), self.b_load_batchcfgfolder)
         QtCore.QObject.connect(self.ui.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_b_infiles_pte.clear)
-        QtCore.QObject.connect(self.ui.tab_b_runbatch_pb, QtCore.SIGNAL("clicked()"), self.b_run_batchmode)
+        # QtCore.QObject.connect(self.ui.tab_b_runbatch_pb, QtCore.SIGNAL("clicked()"), self.b_run_batchmode)
+        QtCore.QObject.connect(self.ui.tab_b_runbatch_pb, QtCore.SIGNAL("clicked()"), self.dlg_runhunter)
         # # slots for tab c
         QtCore.QObject.connect(self.ui.tab_c_falistpl_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_pl)
         QtCore.QObject.connect(self.ui.tab_c_falisttg_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_tg)
@@ -801,6 +815,116 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def c_load_scorecfg_tg(self):
         file_info_str = 'MS Excel files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_scorecfgtg_le)
+
+    def dlg_on_finish(self):
+        self.hunter_run_time = self.worker.get_runtime()
+        self.thread.quit()
+        self.worker.reset_runtime()
+
+    def dlg_update_progress(self, value):
+        self.progress.setValue(value)
+
+    def dlg_runhunter(self):
+        self.ui.tab_b_statusrun_pte.clear()
+
+        loaded_cfg_files = str(self.ui.tab_b_infiles_pte.toPlainText())
+        pre_loaded_cfg_lst = loaded_cfg_files.split('\n')
+
+        # max_process = self.ui.tab_b_maxbatch_spb.value()
+        sub_max_core = self.ui.tab_b_maxsubcore_spb.value()
+        sub_max_ram = self.ui.tab_b_maxsubram_spb.value()
+
+        loaded_cfg_lst = []
+        for f in pre_loaded_cfg_lst:
+            if len(f) > 4:
+                loaded_cfg_lst.append(f)
+
+        tot_num = len(loaded_cfg_lst)
+        run_counter = 1
+
+        os.chdir(self.lipidhunter_cwd)
+
+        for _cfg in loaded_cfg_lst:
+
+            self.ui.tab_b_statusrun_pte.insertPlainText('Start processing...\n%s\n' % _cfg)
+            hunter_param_dct, cfg_error = self.b_read_cfg(_cfg)
+            if len(cfg_error) > 0:
+                self.ui.tab_b_statusrun_pte.insertPlainText(str(cfg_error))
+            if 'vendor' in list(hunter_param_dct.keys()):
+                hunter_param_dct['batch_cfg_file'] = _cfg
+                hunter_param_dct['core_number'] = sub_max_core
+                hunter_param_dct['max_ram'] = sub_max_ram
+                start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+                hunter_param_dct['hunter_start_time'] = start_time_str
+                os.chdir(hunter_param_dct['hunter_folder'])
+                try:
+                    os.chdir(hunter_param_dct['hunter_folder'])
+                except IOError:
+                    print('LipidHunter folder path in configuration is not correct')
+                if not os.path.exists(hunter_param_dct['img_output_folder_str']):
+                    os.makedirs(hunter_param_dct['img_output_folder_str'])
+                param_log_output_path_str = (hunter_param_dct['img_output_folder_str'] +
+                                             '/LipidHunter_Params-Log_%s.txt' % hunter_param_dct[
+                                                 'hunter_start_time'])
+                try:
+                    config = configparser.ConfigParser()
+                    with open(param_log_output_path_str, 'w') as usr_param_cfg:
+                        config.add_section('parameters')
+                        for param in list(hunter_param_dct.keys()):
+                            config.set('parameters', str(param), str(hunter_param_dct[param]))
+                        config.write(usr_param_cfg)
+                    log_lst = []
+
+                    self.worker.request_work(hunter_param_dct)
+                    self.progress_dlg.setValue(0)
+
+                    run_time = str(self.hunter_run_time)
+                    if isinstance(run_time, str):
+                        self.ui.tab_b_statusrun_pte.appendPlainText('>>> %s' % run_time)
+                        self.ui.tab_b_statusrun_pte.appendPlainText('FINISHED with file %i / %i\n' %
+                                                                    (run_counter, tot_num))
+                        run_counter += 1
+                    else:
+                        self.ui.tab_b_statusrun_pte.insertPlainText(
+                            '!! Failed to process batch mode configure file:\n Please check settings!!')
+                        if len(log_lst) > 0:
+                            for err in log_lst:
+                                self.ui.tab_b_statusrun_pte.appendPlainText(str(err) + '\n')
+                except IOError:
+                    self.ui.tab_b_statusrun_pte.appendPlainText('!! Failed to save parameter log files !!')
+            else:
+                self.ui.tab_b_statusrun_pte.insertPlainText(
+                    '!! Failed read batch mode configure files:\n %s \n Please check settings!!' % _cfg)
+
+
+class Worker(QtCore.QObject):
+    workRequested = QtCore.Signal()
+    finished = QtCore.Signal()
+    relay = QtCore.Signal(int)
+
+    def __init__(self, parent=None):
+        super(Worker, self).__init__(parent)
+        self.param_dct = {}
+        self.hunter_time = ''
+
+    def request_work(self, hunter_param_dct):
+        self.workRequested.emit()
+        self.param_dct = hunter_param_dct
+
+    def run_hunter(self):
+
+        log_lst = []
+        hunter_time, log_lst, export_df = huntlipids(self.param_dct, error_lst=log_lst)
+        self.hunter_time = str(hunter_time)
+        self.param_dct = {}
+        self.finished.emit()
+
+    def get_runtime(self):
+        return self.hunter_time
+
+    def reset_runtime(self):
+        self.hunter_time = ''
+
 
 
 if __name__ == '__main__':

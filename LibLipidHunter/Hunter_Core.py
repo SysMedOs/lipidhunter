@@ -680,13 +680,13 @@ def huntlipids(param_dct, error_lst):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 1
+    core_count = 3
     max_ram = 5  # int only
 
     # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
     # Modify usr_test_lst according to full_test_lst to run the supported built in tests
-    usr_test_lst = ['PC_waters', 'PE_waters']
+    usr_test_lst = ['TG_thermo_NH4']
 
     # define default ranges of each test
     mz_range_pl_waters = [650, 950]  # [650, 950]
@@ -698,8 +698,8 @@ if __name__ == '__main__':
     mz_range_tg_waters = [700, 1200]  # [700, 1200]
     rt_range_tg_waters = [9, 15]  # max [9, 15]
 
-    mz_range_tg_thermo = [700, 1200]  # [700, 1200]
-    rt_range_tg_thermo = [15, 25]  # max [15, 25]
+    mz_range_tg_thermo = [600, 1200]  # [600, 1200]
+    rt_range_tg_thermo = [15, 28]  # max [15, 28]
 
     # define default parameters of each vendor
     # waters
@@ -712,13 +712,13 @@ if __name__ == '__main__':
     dda_top_waters = 6
 
     # thermo
-    ms_ppm_thermo = 10
-    ms2_ppm_thermo = 20
-    hg_ppm_thermo = 50
-    ms_th_thermo = 5000
-    ms2_th_thermo = 500
-    hg_th_thermo = 500
-    dda_top_thermo = 6
+    ms_ppm_thermo = 5  # 5
+    ms2_ppm_thermo = 20  # 20
+    hg_ppm_thermo = 20  # 20
+    ms_th_thermo = 10000  # 10000
+    ms2_th_thermo = 2000  # 2000
+    hg_th_thermo = 2000  # 2000
+    dda_top_thermo = 10  # 10
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'
@@ -823,36 +823,48 @@ if __name__ == '__main__':
         else:
             pass
 
-    print(usr_test_dct)
-
     log_lst = []
 
     t0 = time.time()
 
     t_sum_lst = []
 
-    for test_key in usr_test_lst:
-        if test_key in list(usr_test_dct.keys()):
-            test_dct = usr_test_dct[test_key]
-            t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-            lipid_class = test_dct['lipid_type']
-            cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
-                       'xlsx_output_path_str': r'D:../Test/results/%s_%s.xlsx' % (test_key, t_str),
-                       'hunter_folder': r'D:/project_lipidhunter/lipidhunterdev', 'img_type': u'png', 'img_dpi': 300,
-                       'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True,
-                       'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
+    # automatic identify the LipidHunter folder
+    hunter_folder = os.path.dirname(os.getcwd())
+    hunter_file_path = os.path.join(hunter_folder, 'LipidHunter.py')
 
-            test_dct.update(cfg_dct)
+    if os.path.isfile(hunter_file_path):
+        print('\nLipidHunter folder', hunter_folder, '\n')
+        print(usr_test_dct, '\n')
 
-            print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
+        for test_key in usr_test_lst:
+            if test_key in list(usr_test_dct.keys()):
+                test_dct = usr_test_dct[test_key]
+                t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+                lipid_class = test_dct['lipid_type']
+                cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
+                           'xlsx_output_path_str': r'D:../Test/results/%s_%s.xlsx' % (test_key, t_str),
+                           'hunter_folder': hunter_folder, 'img_type': u'png', 'img_dpi': 300,
+                           'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True,
+                           'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
 
-            t, log_lst, export_df = huntlipids(test_dct, log_lst)
-            if t is not False:
-                print('>>>>>>>>>>>>>>>> TEST PASSED: %s in %.3f Sec <<<<<<<<<<<<<<<<\n' % (test_key, t))
-                t_sum_lst.append((test_key, 'PASSED', '%.3f Sec' % t, 'Identified: %i' % export_df.shape[0]))
-            else:
-                print('>>>>>>>>!!!!!!!! TEST FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
-                t_sum_lst.append((test_key, 'FAILED', '', 'Identified: 0'))
+                test_dct.update(cfg_dct)
+
+                print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
+
+                t, log_lst, export_df = huntlipids(test_dct, log_lst)
+                if t is not False:
+                    print('>>>>>>>>>>>>>>>> TEST PASSED: %s in %.3f Sec <<<<<<<<<<<<<<<<\n' % (test_key, t))
+                    t_sum_lst.append((test_key, 'PASSED', '%.3f Sec' % t, 'Identified: %i' % export_df.shape[0]))
+                else:
+                    print('>>>>>>>>!!!!!!!! TEST FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
+                    t_sum_lst.append((test_key, 'FAILED', '', 'Identified: 0'))
+
+    else:
+        print('!!! Invalid LipidHunter folder', hunter_folder)
+        for test_key in usr_test_lst:
+            print('>>>>>>>>!!!!!!!! TEST FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
+            t_sum_lst.append((test_key, 'FAILED', '', 'Identified: 0'))
 
     t_end = time.time() - t0
     print('Test run in plan: ', ', '.join(usr_test_lst))

@@ -32,6 +32,7 @@ except ImportError:  # for python 2.7.14
     from IsotopeHunter import IsotopeHunter
     from PanelPlotter import plot_spectra
 
+
 def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='waters', exp_mode='LC-MS'):
     ms2_max_i = ms2_df['i'].max()
     ms2_precision = hg_ms2_ppm * 0.000001
@@ -60,6 +61,7 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='wat
             _frag_df.loc[:, 'LABEL'] = _frag_label
             _frag_df.loc[:, _frag_label] = 100 * _frag_df['i'] / ms2_max_i
             _target_frag_df = _target_frag_df.append(_frag_df.head(1))
+
     if other_frag_df.shape[0] > 0:
         for _i, _frag_se in other_frag_df.iterrows():
 
@@ -201,7 +203,7 @@ def get_all_fa_nl(fa_df, ms2_df, lyso_type_lst, lipid_type='LPL'):
     return obs_peaks_df.head(10)
 
 
-def get_all_frag(frag_calc_df, ms2_df, lipid_type, frag_type_lst):
+def get_all_frag(frag_calc_df, ms2_df, lipid_class, frag_type_lst):
     obs_peaks_df = pd.DataFrame()
     bp_i = ms2_df['i'].max()
 
