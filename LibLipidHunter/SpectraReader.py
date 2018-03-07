@@ -401,13 +401,15 @@ def get_spec_info(lpp_all_group_key_lst, checked_info_groups, usr_scan_info_df):
 
     return lpp_spec_info_dct
 
-# if __name__ == '__main__':
-#
-#     usr_mzml = r'test\CM_neg_30min.mzML'
-#     usr_dda_top = 12
-#     usr_rt_range = [25, 27]
-#
-#     usr_scan_info_df, usr_spec_pl = extract_mzml(usr_mzml, usr_rt_range, usr_dda_top)
-#
-#     print(usr_scan_info_df.head(5))
-#     print(usr_spec_pl.items)
+
+if __name__ == '__main__':
+
+    usr_mzml = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'
+    usr_dda_top = 12
+    usr_rt_range = [25, 27]
+
+    usr_scan_info_df, usr_spec_pl, usr_ms1_xic_df = extract_mzml(usr_mzml, usr_rt_range, usr_dda_top)
+
+    print(usr_scan_info_df.head(5))
+    print(usr_spec_pl.items)
+    print(usr_ms1_xic_df.head(5))
