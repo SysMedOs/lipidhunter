@@ -75,6 +75,8 @@ def huntlipids(param_dct, error_lst):
     :return:
     """
 
+    print('>>> hunter core start...')
+
     start_time = time.clock()
     lipidcomposer = LipidComposer()
 
@@ -128,8 +130,10 @@ def huntlipids(param_dct, error_lst):
 
     composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_type': usr_lipid_class,
                           'charge_mode': usr_charge, 'exact_position': 'FALSE'}
-    usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
-
+    try:
+        usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
+    except FileNotFoundError:
+        return False, ['Some files missing...', 'Please check your settings in the configuration file ...'], False
     # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
 
@@ -217,19 +221,21 @@ def huntlipids(param_dct, error_lst):
 
     if ms1_obs_pr_df is False:
         print('!! NO suitable precursor --> Check settings!!\n')
-        return False, False, False
+        return False, ['!! NO suitable precursor --> Check settings!!\n'], False
 
     print('=== ==> --> ms1 precursor matched')
 
     # remove bad precursors
     checked_info_df = pd.DataFrame()
-    for _idx, _check_scan_se in usr_scan_info_df.iterrows():
-        _dda_rank = _check_scan_se['DDA_rank']
-        _scan_id = _check_scan_se['scan_number']
-        _tmp_usr_df = ms1_obs_pr_df.query('DDA_rank == %f and scan_number == %f' % (_dda_rank, _scan_id))
+    dda_rank = usr_scan_info_df['DDA_rank']
+    scan_id = usr_scan_info_df['scan_number']
+    scan_rank_lst = zip(dda_rank, scan_id)
+    for scan_info in scan_rank_lst:
+        _tmp_usr_df = ms1_obs_pr_df.query('DDA_rank == %f and scan_number == %f' % (scan_info[0], scan_info[1]))
         checked_info_df = checked_info_df.append(_tmp_usr_df)
 
     checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'])
+
 
     ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
@@ -297,7 +303,7 @@ def huntlipids(param_dct, error_lst):
 
     if len(list(xic_dct.keys())) == 0:
         print('No precursor for XIC found')
-        return '!! NO suitable precursor --> Check settings!!\n'
+        return False, False, False
     else:
         print('=== ==> --> Number of XIC extracted: %i' % len(list(xic_dct.keys())))
 
@@ -396,13 +402,13 @@ def huntlipids(param_dct, error_lst):
     lipid_part_key_lst = []
 
     if 2 < usr_core_num <= 4:
-        split_seg = 8
-    elif 4 < usr_core_num <= 6:
-        split_seg = 4
-    elif 6 < usr_core_num:
-        split_seg = 2
-    else:
         split_seg = 16
+    elif 4 < usr_core_num <= 6:
+        split_seg = 8
+    elif 6 < usr_core_num:
+        split_seg = 4
+    else:
+        split_seg = 32
 
     if spec_key_num >= (usr_core_num * split_seg):
 
@@ -489,7 +495,7 @@ def huntlipids(param_dct, error_lst):
         key_frag_dct = {}
 
     print('... Key FRAG Dict Generated ...')
-
+    lipid_info_results_lst = []
     for lipid_sub_key_lst in lipid_part_key_lst:
 
         if part_tot == 1:
@@ -503,7 +509,7 @@ def huntlipids(param_dct, error_lst):
         # Start multiprocessing to get rank score
         if usr_core_num > 1:
             parallel_pool = Pool(usr_core_num)
-            lipid_info_results_lst = []
+
             core_worker_count = 1
             for lipid_sub_lst in lipid_sub_key_lst:
                 if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
@@ -529,18 +535,6 @@ def huntlipids(param_dct, error_lst):
             parallel_pool.close()
             parallel_pool.join()
 
-            for lipid_info_result in lipid_info_results_lst:
-                try:
-                    tmp_lipid_info_df = lipid_info_result.get()
-                except (KeyError, SystemError, ValueError):
-                    tmp_lipid_info_df = 'error'
-                    print('!!error!!--> This segment receive no Lipid identified.')
-                if isinstance(tmp_lipid_info_df, str):
-                    pass
-                else:
-                    if isinstance(tmp_lipid_info_df, pd.DataFrame):
-                        if tmp_lipid_info_df.shape[0] > 0:
-                            output_df = output_df.append(tmp_lipid_info_df)
         else:
             print('Using single core mode...')
             core_worker_count = 1
@@ -568,7 +562,27 @@ def huntlipids(param_dct, error_lst):
                         pass
                     else:
                         if tmp_lipid_info_df.shape[0] > 0:
-                            output_df = output_df.append(tmp_lipid_info_df)
+                            lipid_info_results_lst.append(tmp_lipid_info_df)
+
+    # Merge multiprocessing results
+    for lipid_info_result in lipid_info_results_lst:
+        if usr_core_num > 1:
+            try:
+                tmp_lipid_info_df = lipid_info_result.get()
+            except (KeyError, SystemError, ValueError, TypeError):
+                tmp_lipid_info_df = 'error'
+                print('!!error!!--> This segment receive no Lipid identified.')
+            if isinstance(tmp_lipid_info_df, str):
+                pass
+            else:
+                if isinstance(tmp_lipid_info_df, pd.DataFrame):
+                    if tmp_lipid_info_df.shape[0] > 0:
+                        output_df = output_df.append(tmp_lipid_info_df)
+        else:
+            tmp_lipid_info_df = lipid_info_result
+            if isinstance(tmp_lipid_info_df, pd.DataFrame):
+                if tmp_lipid_info_df.shape[0] > 0:
+                    output_df = output_df.append(tmp_lipid_info_df)
 
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
@@ -673,7 +687,7 @@ if __name__ == '__main__':
     core_count = 3
     max_ram = 5  # int only
 
-    # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo', 'TG_thermo_NH4']
+    # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
     # Modify usr_test_lst according to full_test_lst to run the supported built in tests
     usr_test_lst = ['TG_thermo_NH4']
@@ -688,8 +702,8 @@ if __name__ == '__main__':
     mz_range_tg_waters = [700, 1200]  # [700, 1200]
     rt_range_tg_waters = [9, 15]  # max [9, 15]
 
-    mz_range_tg_thermo = [700, 1200]  # [700, 1200]
-    rt_range_tg_thermo = [15, 25]  # max [15, 25]
+    mz_range_tg_thermo = [600, 1200]  # [600, 1200]
+    rt_range_tg_thermo = [15, 28]  # max [15, 28]
 
     # define default parameters of each vendor
     # waters
@@ -702,13 +716,13 @@ if __name__ == '__main__':
     dda_top_waters = 6
 
     # thermo
-    ms_ppm_thermo = 10
-    ms2_ppm_thermo = 20
-    hg_ppm_thermo = 50
-    ms_th_thermo = 5000
-    ms2_th_thermo = 500
-    hg_th_thermo = 500
-    dda_top_thermo = 6
+    ms_ppm_thermo = 5  # 5
+    ms2_ppm_thermo = 20  # 20
+    hg_ppm_thermo = 20  # 20
+    ms_th_thermo = 10000  # 10000
+    ms2_th_thermo = 2000  # 2000
+    hg_th_thermo = 2000  # 2000
+    dda_top_thermo = 10  # 10
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'
@@ -813,36 +827,48 @@ if __name__ == '__main__':
         else:
             pass
 
-    print(usr_test_dct)
-
     log_lst = []
 
     t0 = time.time()
 
     t_sum_lst = []
 
-    for test_key in usr_test_lst:
-        if test_key in list(usr_test_dct.keys()):
-            test_dct = usr_test_dct[test_key]
-            t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-            lipid_class = test_dct['lipid_type']
-            cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
-                       'xlsx_output_path_str': r'D:../Test/results/%s_%s.xlsx' % (test_key, t_str),
-                       'hunter_folder': r'D:/project_lipidhunter/lipidhunterdev', 'img_type': u'png', 'img_dpi': 300,
-                       'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True,
-                       'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
+    # automatic identify the LipidHunter folder
+    hunter_folder = os.path.dirname(os.getcwd())
+    hunter_file_path = os.path.join(hunter_folder, 'LipidHunter.py')
 
-            test_dct.update(cfg_dct)
+    if os.path.isfile(hunter_file_path):
+        print('\nLipidHunter folder', hunter_folder, '\n')
+        print(usr_test_dct, '\n')
 
-            print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
+        for test_key in usr_test_lst:
+            if test_key in list(usr_test_dct.keys()):
+                test_dct = usr_test_dct[test_key]
+                t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+                lipid_class = test_dct['lipid_type']
+                cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
+                           'xlsx_output_path_str': r'D:../Test/results/%s_%s.xlsx' % (test_key, t_str),
+                           'hunter_folder': hunter_folder, 'img_type': u'png', 'img_dpi': 300,
+                           'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True,
+                           'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
 
-            t, log_lst, export_df = huntlipids(test_dct, log_lst)
-            if t is not False:
-                print('>>>>>>>>>>>>>>>> TEST PASSED: %s in %.3f Sec <<<<<<<<<<<<<<<<\n' % (test_key, t))
-                t_sum_lst.append((test_key, 'PASSED', '%.3f Sec' % t, 'Identified: %i' % export_df.shape[0]))
-            else:
-                print('>>>>>>>>!!!!!!!! TEST FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
-                t_sum_lst.append((test_key, 'FAILED', '', 'Identified: 0'))
+                test_dct.update(cfg_dct)
+
+                print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
+
+                t, log_lst, export_df = huntlipids(test_dct, log_lst)
+                if t is not False:
+                    print('>>>>>>>>>>>>>>>> TEST PASSED: %s in %.3f Sec <<<<<<<<<<<<<<<<\n' % (test_key, t))
+                    t_sum_lst.append((test_key, 'PASSED', '%.3f Sec' % t, 'Identified: %i' % export_df.shape[0]))
+                else:
+                    print('>>>>>>>>!!!!!!!! TEST FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
+                    t_sum_lst.append((test_key, 'FAILED', '', 'Identified: 0'))
+
+    else:
+        print('!!! Invalid LipidHunter folder', hunter_folder)
+        for test_key in usr_test_lst:
+            print('>>>>>>>>!!!!!!!! TEST FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
+            t_sum_lst.append((test_key, 'FAILED', '', 'Identified: 0'))
 
     t_end = time.time() - t0
     print('Test run in plan: ', ', '.join(usr_test_lst))

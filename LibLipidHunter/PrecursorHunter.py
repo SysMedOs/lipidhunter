@@ -187,6 +187,7 @@ class PrecursorHunter(object):
         part_tot = len(sub_pl_group_lst)
         part_counter = 1
         opt_sub_pl_group_lst = []
+        pr_info_results_lst = []
         for sub_idx_lst in sub_pl_group_lst:
 
             if isinstance(sub_idx_lst, tuple) or isinstance(sub_idx_lst, list):
@@ -205,7 +206,7 @@ class PrecursorHunter(object):
                 if self.param_dct['core_number'] > 1:
                     part_counter += 1
                     parallel_pool = Pool(core_num)
-                    pr_info_results_lst = []
+
                     core_worker_count = 1
                     for core_list in core_key_list:
                         if isinstance(core_list, tuple) or isinstance(core_list, list):
@@ -225,13 +226,6 @@ class PrecursorHunter(object):
                     parallel_pool.close()
                     parallel_pool.join()
 
-                    for pr_info_result in pr_info_results_lst:
-                        try:
-                            sub_df = pr_info_result.get()
-                            if sub_df.shape[0] > 0:
-                                ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
-                        except (KeyError, SystemError, ValueError):
-                            pass
                 else:
                     print('Using single core mode...')
                     core_worker_count = 1
@@ -245,8 +239,23 @@ class PrecursorHunter(object):
                             sub_df = find_pr_info(scan_info_df, sub_pl, lpp_info_groups, core_list, ms1_th, ms1_ppm, ms1_max)
                             core_worker_count += 1
                             if sub_df.shape[0] > 0:
-                                ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
+                                pr_info_results_lst.append(sub_df)
                     part_counter += 1
+
+        #  Merge multiprocessing results
+        for pr_info_result in pr_info_results_lst:
+
+            if self.param_dct['core_number'] > 1:
+                try:
+                    sub_df = pr_info_result.get()
+                    if sub_df.shape[0] > 0:
+                        ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
+                except (KeyError, SystemError, ValueError, TypeError):
+                    pass
+            else:
+                sub_df = pr_info_result
+                if sub_df.shape[0] > 0:
+                    ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
 
         # End multiprocessing
 
