@@ -38,6 +38,8 @@ except ImportError:  # for python 2.7.14
     from LipidHunter_UI import Ui_MainWindow
     from Hunter_Core import huntlipids
 
+infoGlobal_str = ''
+
 
 class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, cwd=None):
@@ -79,12 +81,8 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.worker.moveToThread(self.thread)
         self.worker.workRequested.connect(self.thread.start)
         self.thread.started.connect(self.worker.run_hunter)
-        self.worker.finished.connect(self.dlg_on_finish)
-        self.progress_dlg = QtGui.QProgressDialog("Progress", "cancel", 0, 10)
-        self.progress_dlg.setCancelButton(None)
-        self.worker.relay.connect(self.dlg_update_progress)
-
-        self.hunter_run_time = ''
+        self.worker.finished.connect(self.worker_on_finish)
+        self.worker.info_update.connect(self.worker_info_update)
 
         # slots for tab a
         QtCore.QObject.connect(self.ui.tab_a_lipidclass_cmb, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.a_lipid_class_fa_list)
@@ -103,7 +101,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.ui.tab_b_addcfgfolder_pb, QtCore.SIGNAL("clicked()"), self.b_load_batchcfgfolder)
         QtCore.QObject.connect(self.ui.tab_b_clearall_pb, QtCore.SIGNAL("clicked()"), self.ui.tab_b_infiles_pte.clear)
         # QtCore.QObject.connect(self.ui.tab_b_runbatch_pb, QtCore.SIGNAL("clicked()"), self.b_run_batchmode)
-        QtCore.QObject.connect(self.ui.tab_b_runbatch_pb, QtCore.SIGNAL("clicked()"), self.dlg_runhunter)
+        QtCore.QObject.connect(self.ui.tab_b_runbatch_pb, QtCore.SIGNAL("clicked()"), self.worker_runhunter)
         # # slots for tab c
         QtCore.QObject.connect(self.ui.tab_c_falistpl_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_pl)
         QtCore.QObject.connect(self.ui.tab_c_falisttg_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_tg)
@@ -816,15 +814,19 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         file_info_str = 'MS Excel files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_scorecfgtg_le)
 
-    def dlg_on_finish(self):
-        self.hunter_run_time = self.worker.get_runtime()
+    def worker_on_finish(self):
         self.thread.quit()
-        self.worker.reset_runtime()
+        self.ui.tab_b_runbatch_pb.setText(QtGui.QApplication.translate('MainWindow',
+                                                                       'Run batch mode identification >>>', None,
+                                                                       QtGui.QApplication.UnicodeUTF8))
+        self.ui.tab_b_runbatch_pb.setEnabled(True)
+        self.ui.tab_a_runhunter_pb.setEnabled(True)
 
-    def dlg_update_progress(self, value):
-        self.progress.setValue(value)
-
-    def dlg_runhunter(self):
+    def worker_runhunter(self):
+        self.ui.tab_b_runbatch_pb.setText(QtGui.QApplication.translate('MainWindow', 'Hunting in batch mode ...', None,
+                                          QtGui.QApplication.UnicodeUTF8))
+        self.ui.tab_b_runbatch_pb.setEnabled(False)
+        self.ui.tab_a_runhunter_pb.setEnabled(False)
         self.ui.tab_b_statusrun_pte.clear()
 
         loaded_cfg_files = str(self.ui.tab_b_infiles_pte.toPlainText())
@@ -840,13 +842,15 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 loaded_cfg_lst.append(f)
 
         tot_num = len(loaded_cfg_lst)
-        run_counter = 1
+        run_counter = 0
 
         os.chdir(self.lipidhunter_cwd)
 
+        cfg_params_dct = {}
+        self.ui.tab_b_statusrun_pte.insertPlainText('>>> Hunter Start >>> Total run number: %i \n\n' % tot_num)
+
         for _cfg in loaded_cfg_lst:
 
-            self.ui.tab_b_statusrun_pte.insertPlainText('Start processing...\n%s\n' % _cfg)
             hunter_param_dct, cfg_error = self.b_read_cfg(_cfg)
             if len(cfg_error) > 0:
                 self.ui.tab_b_statusrun_pte.insertPlainText(str(cfg_error))
@@ -873,58 +877,97 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                         for param in list(hunter_param_dct.keys()):
                             config.set('parameters', str(param), str(hunter_param_dct[param]))
                         config.write(usr_param_cfg)
-                    log_lst = []
+                    run_counter += 1
 
-                    self.worker.request_work(hunter_param_dct)
-                    self.progress_dlg.setValue(0)
+                    cfg_params_dct[run_counter] = [hunter_param_dct, _cfg]
 
-                    run_time = str(self.hunter_run_time)
-                    if isinstance(run_time, str):
-                        self.ui.tab_b_statusrun_pte.appendPlainText('>>> %s' % run_time)
-                        self.ui.tab_b_statusrun_pte.appendPlainText('FINISHED with file %i / %i\n' %
-                                                                    (run_counter, tot_num))
-                        run_counter += 1
-                    else:
-                        self.ui.tab_b_statusrun_pte.insertPlainText(
-                            '!! Failed to process batch mode configure file:\n Please check settings!!')
-                        if len(log_lst) > 0:
-                            for err in log_lst:
-                                self.ui.tab_b_statusrun_pte.appendPlainText(str(err) + '\n')
                 except IOError:
                     self.ui.tab_b_statusrun_pte.appendPlainText('!! Failed to save parameter log files !!')
             else:
                 self.ui.tab_b_statusrun_pte.insertPlainText(
                     '!! Failed read batch mode configure files:\n %s \n Please check settings!!' % _cfg)
 
+        self.worker.request_work(cfg_params_dct, tot_num)
+
+    def worker_info_update(self):
+
+        back_info_str = self.worker.infoback()
+
+        self.ui.tab_b_statusrun_pte.insertPlainText(back_info_str)
+        self.ui.tab_b_statusrun_pte.insertPlainText('\n')
+        self.worker.reset_backinfo()
+
 
 class Worker(QtCore.QObject):
     workRequested = QtCore.Signal()
     finished = QtCore.Signal()
-    relay = QtCore.Signal(int)
+    info_update = QtCore.Signal(str)
 
     def __init__(self, parent=None):
         super(Worker, self).__init__(parent)
-        self.param_dct = {}
-        self.hunter_time = ''
+        self.cfg_params_dct = {}
+        self.run_count = 0
+        self.total_count = 0
+        self.info_str = ''
 
-    def request_work(self, hunter_param_dct):
+    def request_work(self, cfg_params_dct, total_count):
+
         self.workRequested.emit()
-        self.param_dct = hunter_param_dct
+        self.cfg_params_dct = cfg_params_dct
+        self.total_count = total_count
+
+    def reset_backinfo(self):
+
+        self.info_str = ''
+
+    def infoback(self):
+
+        return self.info_str
 
     def run_hunter(self):
 
         log_lst = []
-        hunter_time, log_lst, export_df = huntlipids(self.param_dct, error_lst=log_lst)
-        self.hunter_time = str(hunter_time)
-        self.param_dct = {}
+        cfg_key_lst = list(self.cfg_params_dct.keys())
+
+        for cfg_idx in cfg_key_lst:
+
+            _param_dct = self.cfg_params_dct[cfg_idx][0]
+            _cfg_path = self.cfg_params_dct[cfg_idx][1]
+            self.run_count = int(cfg_idx)
+            print('>>> Hunter worker started ...')
+
+            self.info_str = 'Start processing file:\n%s\n' % _cfg_path
+            self.infoback()
+            self.info_update.emit(self.info_str)
+
+            hunter_time, log_lst, export_df = huntlipids(_param_dct, error_lst=log_lst)
+
+            if isinstance(hunter_time, float):
+                run_time = '%.3f' % hunter_time
+                self.info_str = ('>>> FINISHED with file %i / %i in %s Sec ...\n'
+                                 % (cfg_idx, self.total_count, run_time))
+                self.infoback()
+                self.info_update.emit(self.info_str)
+
+            elif isinstance(hunter_time, str):
+                self.info_str = ('>>>FINISHED with file %i / %i in %s Sec ...\n'
+                                 % (cfg_idx, self.total_count, hunter_time))
+                self.infoback()
+                self.info_update.emit(self.info_str)
+
+            else:
+                self.info_str = '!! Failed to process batch mode configure file:\n Please check settings!!\n'
+                if len(log_lst) > 0:
+                    for err in log_lst:
+                        self.ui.tab_b_statusrun_pte.appendPlainText(str(err) + '\n')
+                self.infoback()
+                self.info_update.emit(self.info_str)
+
+        self.info_str = '>>> ALL FINISHED <<<'
+        self.infoback()
+        self.info_update.emit(self.info_str)
+
         self.finished.emit()
-
-    def get_runtime(self):
-        return self.hunter_time
-
-    def reset_runtime(self):
-        self.hunter_time = ''
-
 
 
 if __name__ == '__main__':

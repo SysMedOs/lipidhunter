@@ -75,6 +75,8 @@ def huntlipids(param_dct, error_lst):
     :return:
     """
 
+    print('>>> hunter core start...')
+
     start_time = time.clock()
     lipidcomposer = LipidComposer()
 
