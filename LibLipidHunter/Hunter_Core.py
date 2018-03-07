@@ -130,8 +130,10 @@ def huntlipids(param_dct, error_lst):
 
     composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_type': usr_lipid_class,
                           'charge_mode': usr_charge, 'exact_position': 'FALSE'}
-    usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
-
+    try:
+        usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
+    except FileNotFoundError:
+        return False, ['Some files missing...', 'Please check your settings in the configuration file ...'], False
     # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
 
@@ -219,7 +221,7 @@ def huntlipids(param_dct, error_lst):
 
     if ms1_obs_pr_df is False:
         print('!! NO suitable precursor --> Check settings!!\n')
-        return False, False, False
+        return False, ['!! NO suitable precursor --> Check settings!!\n'], False
 
     print('=== ==> --> ms1 precursor matched')
 
@@ -301,7 +303,7 @@ def huntlipids(param_dct, error_lst):
 
     if len(list(xic_dct.keys())) == 0:
         print('No precursor for XIC found')
-        return '!! NO suitable precursor --> Check settings!!\n'
+        return False, False, False
     else:
         print('=== ==> --> Number of XIC extracted: %i' % len(list(xic_dct.keys())))
 
