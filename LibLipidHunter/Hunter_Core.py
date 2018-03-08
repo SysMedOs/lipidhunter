@@ -39,6 +39,7 @@ try:
     from LibLipidHunter.LogPageCreator import LogPageCreator
     from LibLipidHunter.PrecursorHunter import PrecursorHunter
     from LibLipidHunter.ScoreHunter import get_lipid_info
+    from LibLipidHunter.PanelPlotter import save_img
 except ImportError:  # for python 2.7.14
     from LipidComposer import LipidComposer
     from SpectraReader import extract_mzml
@@ -48,6 +49,7 @@ except ImportError:  # for python 2.7.14
     from LogPageCreator import LogPageCreator
     from PrecursorHunter import PrecursorHunter
     from ScoreHunter import get_lipid_info
+    from PanelPlotter import save_img
 
 
 def huntlipids(param_dct, error_lst):
@@ -235,7 +237,6 @@ def huntlipids(param_dct, error_lst):
         checked_info_df = checked_info_df.append(_tmp_usr_df)
 
     checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'])
-
 
     ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
@@ -432,6 +433,11 @@ def huntlipids(param_dct, error_lst):
                                                                                      lipid_sub_len)]
         lipid_part_key_lst.append(lipid_sub_key_lst)
 
+    # lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
+    # lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
+    #                                                                              lipid_sub_len)]
+    # lipid_part_key_lst.append(lipid_sub_key_lst)
+
     part_tot = len(lipid_part_key_lst)
     print('part_tot', part_tot)
     print(lipid_part_key_lst)
@@ -496,6 +502,7 @@ def huntlipids(param_dct, error_lst):
 
     print('... Key FRAG Dict Generated ...')
     lipid_info_results_lst = []
+    lipid_info_img_lst = []
     for lipid_sub_key_lst in lipid_part_key_lst:
 
         if part_tot == 1:
@@ -568,9 +575,14 @@ def huntlipids(param_dct, error_lst):
     for lipid_info_result in lipid_info_results_lst:
         if usr_core_num > 1:
             try:
-                tmp_lipid_info_df = lipid_info_result.get()
+                tmp_lipid_info = lipid_info_result.get()
+                tmp_lipid_info_df = tmp_lipid_info[0]
+                # print(tmp_lipid_info_df)
+                tmp_lipid_img_lst = tmp_lipid_info[1]
+                # print(tmp_lipid_img_lst)
             except (KeyError, SystemError, ValueError, TypeError):
                 tmp_lipid_info_df = 'error'
+                tmp_lipid_img_lst = []
                 print('!!error!!--> This segment receive no Lipid identified.')
             if isinstance(tmp_lipid_info_df, str):
                 pass
@@ -578,11 +590,66 @@ def huntlipids(param_dct, error_lst):
                 if isinstance(tmp_lipid_info_df, pd.DataFrame):
                     if tmp_lipid_info_df.shape[0] > 0:
                         output_df = output_df.append(tmp_lipid_info_df)
+                        lipid_info_img_lst.extend(tmp_lipid_img_lst)
         else:
             tmp_lipid_info_df = lipid_info_result
             if isinstance(tmp_lipid_info_df, pd.DataFrame):
                 if tmp_lipid_info_df.shape[0] > 0:
                     output_df = output_df.append(tmp_lipid_info_df)
+
+    # print('lipid_info_img_lst')
+    # print(lipid_info_img_lst)
+    img_num = len(lipid_info_img_lst)
+    img_sub_len = int(math.ceil(img_num / usr_core_num))
+    img_sub_key_lst = [lipid_info_img_lst[k: k + img_sub_len] for k in range(0, img_num, img_sub_len)]
+
+    # Start multiprocessing to save img
+    if usr_core_num > 1:
+        parallel_pool = Pool(usr_core_num)
+
+        core_worker_count = 1
+        for img_sub_lst in img_sub_key_lst:
+            if isinstance(img_sub_lst, tuple) or isinstance(img_sub_lst, list):
+                if None in img_sub_lst:
+                    img_sub_lst = [x for x in img_sub_lst if x is not None]
+                else:
+                    pass
+                print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
+                if len(img_sub_lst) > 0:
+                    parallel_pool.apply_async(save_img, args=(img_sub_lst, core_worker_count))
+                    core_worker_count += 1
+
+        parallel_pool.close()
+        parallel_pool.join()
+
+    else:
+        print('Using single core mode...')
+        core_worker_count = 1
+        for lipid_sub_lst in lipid_sub_key_lst:
+            if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
+                if None in lipid_sub_lst:
+                    lipid_sub_lst = [x for x in lipid_sub_lst if x is not None]
+                else:
+                    pass
+                if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
+                    lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                else:
+                    lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
+                    lipid_sub_lst = tuple([lipid_sub_lst])
+                print('>>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
+                if len(list(lipid_sub_dct.keys())) > 0:
+                    tmp_lipid_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
+                                                       lipid_sub_lst, usr_weight_df, key_frag_dct,
+                                                       lipid_sub_dct, xic_dct, core_worker_count)
+                else:
+                    tmp_lipid_info_df = ''
+
+                core_worker_count += 1
+                if isinstance(tmp_lipid_info_df, str):
+                    pass
+                else:
+                    if tmp_lipid_info_df.shape[0] > 0:
+                        lipid_info_results_lst.append(tmp_lipid_info_df)
 
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
@@ -684,13 +751,13 @@ def huntlipids(param_dct, error_lst):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 3
+    core_count = 4
     max_ram = 5  # int only
 
     # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
     # Modify usr_test_lst according to full_test_lst to run the supported built in tests
-    usr_test_lst = ['TG_thermo_NH4']
+    usr_test_lst = ['PC_waters']
 
     # define default ranges of each test
     mz_range_pl_waters = [650, 950]  # [650, 950]

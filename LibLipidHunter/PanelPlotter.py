@@ -21,7 +21,9 @@
 from __future__ import division
 from __future__ import print_function
 
+import io
 import pandas as pd
+from PIL import Image
 import matplotlib
 matplotlib.use('agg')
 from matplotlib import pyplot as plt
@@ -121,7 +123,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                % (ms2_pr_mz, ms1_obs, lib_mz))
 
         # Generate A4 image in landscape
-        fig, pic_array = plt.subplots(nrows=3, ncols=2, figsize=(11.692, 8.267), sharex=False, sharey=False)
+        fig, pic_array = plt.subplots(nrows=3, ncols=2, figsize=(11.692, 8.267), sharex='none', sharey='none')
         # Make better spacing between subplots
         plt.tight_layout()
         xic_pic = pic_array[0, 0]
@@ -578,20 +580,23 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_high_pic.set_title(msms_high_str, color='b', fontsize=10, y=0.98)
 
         print(core_count, '>>> >>> >>> try to plot >>> >>> >>>')
-        try:
-            plt.savefig(save_img_as, type=img_type, dpi=dpi)
-            print(core_count, '=====> Image saved as: %s' % save_img_as)
-            img_name_end = ''
-        except IOError:
-            plt.savefig('%s-2.%s' % (save_img_as[:-4], img_type), type=img_type, dpi=dpi)
-            print(core_count, '=====> Image saved as: %s' % save_img_as)
-            img_name_end = '-2'
-        plt.close()
-        isotope_checker = 0
-        return isotope_checker, isotope_score, img_name_end
 
-    else:
-        img_name_end = ''
-        isotope_checker = 1
-        print(core_count, '!!! Failed to save Image !!!')
-        return isotope_checker, isotope_score, img_name_end
+        # plt.savefig(save_img_as, type=img_type, dpi=dpi)
+        # print(core_count, '=====> Image saved as: %s' % save_img_as)
+
+        buf = io.BytesIO()
+        plt.savefig(buf, type=img_type, dpi=dpi)
+        plt.close()
+
+        return buf
+
+
+def save_img(img_plt_lst, core_count):
+    print(core_count, '>>> Start to save images...')
+    for img in img_plt_lst:
+        img_buf = img[0]
+        img_buf.seek(0)
+        img_obj = Image.open(img_buf)
+        img_obj.save(img[1])
+        img_buf.close()
+    print(core_count, '>>> Finished to save images...')

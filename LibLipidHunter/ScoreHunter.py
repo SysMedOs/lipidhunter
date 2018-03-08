@@ -140,14 +140,14 @@ def get_all_fa_frag(fa_df, ms2_df, lipid_type):
         _q_tmp_df.is_copy = False
         if _q_tmp_df.shape[0] > 0:
             _q_tmp_df.loc[:, 'lib_mz'] = _fa_se['%s_MZ' % fa_mode]
-            _q_tmp_df.loc[:, 'obs_mz'] = _q_tmp_df['mz'].round(4)
+            _q_tmp_df.loc[:, 'obs_mz'] = round(_q_tmp_df['mz'], 4)
             _q_tmp_df.loc[:, 'obs_i_r'] = 100 * _q_tmp_df['i'] / bp_i
-            _q_tmp_df.loc[:, 'obs_i_r'] = _q_tmp_df['obs_i_r'].round(1)
+            _q_tmp_df.loc[:, 'obs_i_r'] = round(_q_tmp_df['obs_i_r'], 1)
             _q_tmp_df.loc[:, 'obs_ppm'] = 1e6 * (_q_tmp_df['mz'] - _q_tmp_df['lib_mz']) / _q_tmp_df['lib_mz']
             _q_tmp_df.loc[:, 'obs_ppm'] = _q_tmp_df['obs_ppm'].astype(int)
             _q_tmp_df.loc[:, 'obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
             _q_tmp_df.loc[:, 'obs_abbr'] = _fa_se['%s_ABBR' % fa_mode]
-            _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['lib_mz'].round(2)
+            _q_tmp_df.loc[:, 'obs_label'] = round(_q_tmp_df['lib_mz'], 2)
             _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_label'].astype(str)
             obs_peaks_df = obs_peaks_df.append(_q_tmp_df)
 
@@ -174,14 +174,14 @@ def get_all_fa_nl(fa_df, ms2_df, lyso_type_lst, lipid_type='LPL'):
             _q_tmp_df.is_copy = False
             if _q_tmp_df.shape[0] > 0:
                 _q_tmp_df.loc[:, 'lib_mz'] = _fa_se['%s_MZ' % lyso_typ]
-                _q_tmp_df.loc[:, 'obs_mz'] = _q_tmp_df['mz'].round(4)
+                _q_tmp_df.loc[:, 'obs_mz'] = round(_q_tmp_df['mz'], 4)
                 _q_tmp_df.loc[:, 'obs_i_r'] = 100 * _q_tmp_df['i'] / bp_i
-                _q_tmp_df.loc[:, 'obs_i_r'] = _q_tmp_df['obs_i_r'].round(1)
+                _q_tmp_df.loc[:, 'obs_i_r'] = round(_q_tmp_df['obs_i_r'], 1)
                 _q_tmp_df.loc[:, 'obs_ppm'] = 1e6 * (_q_tmp_df['mz'] - _q_tmp_df['lib_mz']) / _q_tmp_df['lib_mz']
                 _q_tmp_df.loc[:, 'obs_ppm'] = _q_tmp_df['obs_ppm'].astype(int)
                 _q_tmp_df.loc[:, 'obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
                 _q_tmp_df.loc[:, 'obs_abbr'] = _fa_se['%s_ABBR' % lyso_typ]
-                _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['lib_mz'].round(2)
+                _q_tmp_df.loc[:, 'obs_label'] = round(_q_tmp_df['lib_mz'], 2)
                 _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_label'].astype(str)
                 if lipid_type in ['TG'] and re.match(dg_fa_rgx, _fa_se['%s_ABBR' % lyso_typ]):
                     _fa_abbr_match = re.match(dg_fa_rgx, _fa_se['%s_ABBR' % lyso_typ])
@@ -214,14 +214,14 @@ def get_all_frag(frag_calc_df, ms2_df, lipid_class, frag_type_lst):
             _q_tmp_df.is_copy = False
             if _q_tmp_df.share[0] > 0:
                 _q_tmp_df.loc[:, 'lib_mz'] = _fa_se['%s_MZ' % frag_type]
-                _q_tmp_df.loc[:, 'obs_mz'] = _q_tmp_df['mz'].round(4)
+                _q_tmp_df.loc[:, 'obs_mz'] = round(_q_tmp_df['mz'], 4)
                 _q_tmp_df.loc[:, 'obs_i_r'] = 100 * _q_tmp_df['i'] / bp_i
-                _q_tmp_df.loc[:, 'obs_i_r'] = _q_tmp_df['obs_i_r'].round(1)
+                _q_tmp_df.loc[:, 'obs_i_r'] = round(_q_tmp_df['obs_i_r'], 1)
                 _q_tmp_df.loc[:, 'obs_ppm'] = 1e6 * (_q_tmp_df['mz'] - _q_tmp_df['lib_mz']) / _q_tmp_df['lib_mz']
                 _q_tmp_df.loc[:, 'obs_ppm'] = _q_tmp_df['obs_ppm'].astype(int)
                 _q_tmp_df.loc[:, 'obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
                 _q_tmp_df.loc[:, 'obs_abbr'] = _fa_se['%s_ABBR' % frag_type]
-                _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['lib_mz'].round(2)
+                _q_tmp_df.loc[:, 'obs_label'] = round(_q_tmp_df['lib_mz'], 2)
                 _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_label'].astype(str)
                 obs_peaks_df = obs_peaks_df.append(_q_tmp_df)
     if obs_peaks_df.shape[0] > 0:
@@ -463,8 +463,8 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
     if lipid_type in ['TG']:
         # TODO (georgia.angelidou@uni-leipzig.de): keep only the 2 decimenals
-        lite_info_df['RANK_SCORE'] = lite_info_df['RANK_SCORE'] * (
-            (lite_info_df['sn1_found'] + lite_info_df['sn2_found'] + lite_info_df['sn3_found']) / 3).round(2)
+        lite_info_df['RANK_SCORE'] = round(lite_info_df['RANK_SCORE'] * (
+                (lite_info_df['sn1_found'] + lite_info_df['sn2_found'] + lite_info_df['sn3_found']) / 3), 2)
 
     print(core_count, 'lite_info')
 
@@ -525,9 +525,8 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
 def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_list, usr_weight_df,
                    key_frag_dct, core_spec_dct, xic_dct, core_count):
-    
     core_count = 'Core_#%i' % core_count
-    
+
     usr_lipid_type = param_dct['lipid_type']
     charge_mode = param_dct['charge_mode']
     output_folder = param_dct['img_output_folder_str']
@@ -558,6 +557,8 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
     usr_weight_dct = usr_weight_df.to_dict(orient='index')
 
     tmp_df = pd.DataFrame()
+
+    img_plt_lst = []
 
     for group_key in core_list:
         _subgroup_df = checked_info_groups.get_group(group_key)
@@ -658,15 +659,6 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                                     r'/LipidHunter_Results_Figures_%s'
                                     % hunter_start_time_str + img_name_core)
 
-                        isotope_checker, isotope_score, img_n = plot_spectra(_usr_abbr_bulk, _samemz_se, xic_dct,
-                                                                             obs_info_dct, usr_spec_info_dct,
-                                                                             isotope_score_info_dct, specific_dct,
-                                                                             _usr_formula_charged, _usr_charge,
-                                                                             core_count,
-                                                                             save_img_as=img_name, img_type=img_typ,
-                                                                             dpi=img_dpi, vendor=usr_vendor,
-                                                                             ms1_precision=usr_ms1_precision)
-
                         print(core_count, '==> check for output -->')
 
                         obs_info_df['Proposed_structures'] = _usr_abbr_bulk
@@ -686,20 +678,24 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                         # obs_info_df['#Contaminated_peaks'] = (other_frag_count + other_nl_count)
                         obs_info_df['ppm'] = _exact_ppm
 
-                        # if any IO error while writing img output
-                        if img_n == '-2':
-                            obs_info_df['img_name'] = '%s-2.%s' % (img_name_core[1:-4], img_typ)
-                        else:
-                            obs_info_df['img_name'] = img_name_core[1:]
+                        obs_info_df['img_name'] = img_name_core[1:]
 
                         tmp_df = tmp_df.append(obs_info_df)
+
+                        buf = plot_spectra(_usr_abbr_bulk, _samemz_se, xic_dct, obs_info_dct, usr_spec_info_dct,
+                                           isotope_score_info_dct, specific_dct, _usr_formula_charged, _usr_charge,
+                                           core_count, save_img_as=img_name, img_type=img_typ,
+                                           dpi=img_dpi, vendor=usr_vendor, ms1_precision=usr_ms1_precision)
+                        img_plt_lst.append((buf, img_name))
 
     if tmp_df.shape[0] > 0:
         print(core_count, 'Size of the identified LPP_df %i, %i' % (tmp_df.shape[0], tmp_df.shape[1]))
         tmp_df.reset_index(drop=True, inplace=True)
         tmp_df.index += 1
+
     else:
         print(core_count, '!! Size of the identified LPP_df == 0')
         tmp_df = 'error'
 
-    return tmp_df
+    r_lst = (tmp_df, img_plt_lst)
+    return r_lst
