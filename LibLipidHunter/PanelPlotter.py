@@ -24,6 +24,7 @@ from __future__ import print_function
 import io
 import pandas as pd
 from PIL import Image
+import time
 import matplotlib
 matplotlib.use('agg')
 from matplotlib import pyplot as plt
@@ -36,7 +37,7 @@ import matplotlib.patches as patches
 def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
                  formula_charged, charge, core_count, save_img_as=None, img_type='png', dpi=300, vendor='waters',
                  ms1_precision=50e-6):
-    print(core_count, 'Start to plot')
+    print(core_count, '>>> Start to plot')
 
     ms2_pr_mz = mz_se['MS2_PR_mz']
     ms1_obs = mz_se['MS1_obs_mz']
@@ -579,16 +580,16 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_low_pic.set_title(msms_low_str, color='b', fontsize=10, y=0.98)
         msms_high_pic.set_title(msms_high_str, color='b', fontsize=10, y=0.98)
 
-        print(core_count, '>>> >>> >>> try to plot >>> >>> >>>')
+        # print(core_count, '>>> >>> >>> try to plot >>> >>> >>>')
 
-        # plt.savefig(save_img_as, type=img_type, dpi=dpi)
-        # print(core_count, '=====> Image saved as: %s' % save_img_as)
+        plt.savefig(save_img_as, type=img_type, dpi=dpi)
+        print(core_count, '=====> Image saved as: %s' % save_img_as)
 
-        buf = io.BytesIO()
-        plt.savefig(buf, type=img_type, dpi=dpi)
+        # buf = io.BytesIO()
+        # plt.savefig(buf, type=img_type, dpi=dpi)
         plt.close()
 
-        return buf
+        # return buf
 
 
 def save_img(img_plt_lst, core_count):
@@ -596,7 +597,31 @@ def save_img(img_plt_lst, core_count):
     for img in img_plt_lst:
         img_buf = img[0]
         img_buf.seek(0)
+        t0 = time.time()
         img_obj = Image.open(img_buf)
         img_obj.save(img[1])
         img_buf.close()
-    print(core_count, '>>> Finished to save images...')
+        t1 = time.time() - t0
+        print(t1)
+    print(core_count, '>>> Image saved ...')
+
+
+def gen_plot(param_dct_lst, core_count=1, img_type='png', dpi=300, vendor='waters', ms1_precision=50e-6):
+
+    core_count = 'Core #{core}'.format(core=core_count)
+
+    for param_dct in param_dct_lst:
+        abbr = param_dct['abbr']
+        mz_se = param_dct['mz_se']
+        xic_dct = param_dct['xic_dct']
+        ident_info_dct = param_dct['ident_info_dct']
+        spec_info_dct = param_dct['spec_info_dct']
+        isotope_score_info_dct = param_dct['isotope_score_info_dct']
+        specific_dct = param_dct['specific_dct']
+        formula_charged = param_dct['formula_charged']
+        charge = param_dct['charge']
+        save_img_as = param_dct['save_img_as']
+
+        plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
+                     formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
+                     dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)

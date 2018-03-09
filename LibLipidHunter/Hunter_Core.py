@@ -39,7 +39,7 @@ try:
     from LibLipidHunter.LogPageCreator import LogPageCreator
     from LibLipidHunter.PrecursorHunter import PrecursorHunter
     from LibLipidHunter.ScoreHunter import get_lipid_info
-    from LibLipidHunter.PanelPlotter import save_img
+    from LibLipidHunter.PanelPlotter import gen_plot
 except ImportError:  # for python 2.7.14
     from LipidComposer import LipidComposer
     from SpectraReader import extract_mzml
@@ -49,7 +49,7 @@ except ImportError:  # for python 2.7.14
     from LogPageCreator import LogPageCreator
     from PrecursorHunter import PrecursorHunter
     from ScoreHunter import get_lipid_info
-    from PanelPlotter import save_img
+    from PanelPlotter import gen_plot
 
 
 def huntlipids(param_dct, error_lst):
@@ -114,6 +114,8 @@ def huntlipids(param_dct, error_lst):
     # usr_ms2_hginfo_th = param_dct['ms2_hginfopeak_threshold']
     # usr_rank_mode = param_dct['rank_score']
     # usr_fast_isotope = param_dct['fast_isotope']
+    usr_dpi = param_dct['img_dpi']
+    usr_img_type = param_dct['img_type']
 
     hunter_start_time_str = param_dct['hunter_start_time']
 
@@ -402,36 +404,41 @@ def huntlipids(param_dct, error_lst):
     print('spec_key_num', spec_key_num)
     lipid_part_key_lst = []
 
-    if 2 < usr_core_num <= 4:
-        split_seg = 16
-    elif 4 < usr_core_num <= 6:
-        split_seg = 8
-    elif 6 < usr_core_num:
-        split_seg = 4
-    else:
-        split_seg = 32
+    # if 2 < usr_core_num <= 4:
+    #     split_seg = 16
+    # elif 4 < usr_core_num <= 6:
+    #     split_seg = 8
+    # elif 6 < usr_core_num:
+    #     split_seg = 4
+    # else:
+    #     split_seg = 32
+    #
+    # if spec_key_num >= (usr_core_num * split_seg):
+    #
+    #     lipid_part_len = usr_core_num * split_seg  # set each core try to plot 2 to 8 images, so no core will wait long
+    #     print('lipid_part_len', lipid_part_len)
+    #     lipid_part_lst = [found_spec_key_lst[k: k + lipid_part_len] for k in range(0, len(found_spec_key_lst),
+    #                                                                                lipid_part_len)]
+    #
+    #     for part_lst in lipid_part_lst:
+    #         if None in part_lst:
+    #             part_lst = [x for x in part_lst if x is not None]
+    #         lipid_sub_len = int(math.ceil(len(part_lst) / usr_core_num))
+    #         print('lipid_sub_len', lipid_sub_len)
+    #         lipid_sub_key_lst = [part_lst[k: k + lipid_sub_len] for k in range(0, len(part_lst), lipid_sub_len)]
+    #         print(lipid_sub_key_lst)
+    #         lipid_part_key_lst.append(lipid_sub_key_lst)
+    #
+    # else:
+    #     lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
+    #     lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
+    #                                                                                  lipid_sub_len)]
+    #     lipid_part_key_lst.append(lipid_sub_key_lst)
 
-    if spec_key_num >= (usr_core_num * split_seg):
-
-        lipid_part_len = usr_core_num * split_seg  # set each core try to plot 2 to 8 images, so no core will wait long
-        print('lipid_part_len', lipid_part_len)
-        lipid_part_lst = [found_spec_key_lst[k: k + lipid_part_len] for k in range(0, len(found_spec_key_lst),
-                                                                                   lipid_part_len)]
-
-        for part_lst in lipid_part_lst:
-            if None in part_lst:
-                part_lst = [x for x in part_lst if x is not None]
-            lipid_sub_len = int(math.ceil(len(part_lst) / usr_core_num))
-            print('lipid_sub_len', lipid_sub_len)
-            lipid_sub_key_lst = [part_lst[k: k + lipid_sub_len] for k in range(0, len(part_lst), lipid_sub_len)]
-            print(lipid_sub_key_lst)
-            lipid_part_key_lst.append(lipid_sub_key_lst)
-
-    else:
-        lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
-        lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
-                                                                                     lipid_sub_len)]
-        lipid_part_key_lst.append(lipid_sub_key_lst)
+    lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
+    lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
+                                                                                 lipid_sub_len)]
+    lipid_part_key_lst.append(lipid_sub_key_lst)
 
     # lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
     # lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
@@ -558,18 +565,9 @@ def huntlipids(param_dct, error_lst):
                         lipid_sub_lst = tuple([lipid_sub_lst])
                     print('>>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
                     if len(list(lipid_sub_dct.keys())) > 0:
-                        tmp_lipid_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
-                                                           lipid_sub_lst, usr_weight_df, key_frag_dct,
-                                                           lipid_sub_dct, xic_dct, core_worker_count)
-                    else:
-                        tmp_lipid_info_df = ''
-
-                    core_worker_count += 1
-                    if isinstance(tmp_lipid_info_df, str):
-                        pass
-                    else:
-                        if tmp_lipid_info_df.shape[0] > 0:
-                            lipid_info_results_lst.append(tmp_lipid_info_df)
+                        lipid_info_results_lst = get_lipid_info(param_dct, usr_fa_df, checked_info_df,
+                                                                checked_info_groups, lipid_sub_lst, usr_weight_df,
+                                                                key_frag_dct, lipid_sub_dct, xic_dct, core_worker_count)
 
     # Merge multiprocessing results
     for lipid_info_result in lipid_info_results_lst:
@@ -579,7 +577,8 @@ def huntlipids(param_dct, error_lst):
                 tmp_lipid_info_df = tmp_lipid_info[0]
                 # print(tmp_lipid_info_df)
                 tmp_lipid_img_lst = tmp_lipid_info[1]
-                # print(tmp_lipid_img_lst)
+                # print('tmp_lipid_img_lst')
+                # print(len(tmp_lipid_img_lst))
             except (KeyError, SystemError, ValueError, TypeError):
                 tmp_lipid_info_df = 'error'
                 tmp_lipid_img_lst = []
@@ -592,18 +591,22 @@ def huntlipids(param_dct, error_lst):
                         output_df = output_df.append(tmp_lipid_info_df)
                         lipid_info_img_lst.extend(tmp_lipid_img_lst)
         else:
-            tmp_lipid_info_df = lipid_info_result
+            tmp_lipid_info_df = lipid_info_results_lst[0]
+            tmp_lipid_img_lst = lipid_info_results_lst[1]
             if isinstance(tmp_lipid_info_df, pd.DataFrame):
                 if tmp_lipid_info_df.shape[0] > 0:
                     output_df = output_df.append(tmp_lipid_info_df)
+                    lipid_info_img_lst.extend(tmp_lipid_img_lst)
 
-    # print('lipid_info_img_lst')
-    # print(lipid_info_img_lst)
+    print('lipid_info_img_lst')
+    print(len(lipid_info_img_lst))
+
     img_num = len(lipid_info_img_lst)
     img_sub_len = int(math.ceil(img_num / usr_core_num))
     img_sub_key_lst = [lipid_info_img_lst[k: k + img_sub_len] for k in range(0, img_num, img_sub_len)]
 
     # Start multiprocessing to save img
+
     if usr_core_num > 1:
         parallel_pool = Pool(usr_core_num)
 
@@ -616,7 +619,8 @@ def huntlipids(param_dct, error_lst):
                     pass
                 print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
                 if len(img_sub_lst) > 0:
-                    parallel_pool.apply_async(save_img, args=(img_sub_lst, core_worker_count))
+                    parallel_pool.apply_async(gen_plot, args=(img_sub_lst, core_worker_count, usr_img_type, usr_dpi,
+                                                              usr_vendor, usr_ms1_precision))
                     core_worker_count += 1
 
         parallel_pool.close()
@@ -624,32 +628,15 @@ def huntlipids(param_dct, error_lst):
 
     else:
         print('Using single core mode...')
-        core_worker_count = 1
-        for lipid_sub_lst in lipid_sub_key_lst:
-            if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
-                if None in lipid_sub_lst:
-                    lipid_sub_lst = [x for x in lipid_sub_lst if x is not None]
+        for img_sub_lst in img_sub_key_lst:
+            if isinstance(img_sub_lst, tuple) or isinstance(img_sub_lst, list):
+                if None in img_sub_lst:
+                    img_sub_lst = [x for x in img_sub_lst if x is not None]
                 else:
                     pass
-                if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
-                    lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
-                else:
-                    lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
-                    lipid_sub_lst = tuple([lipid_sub_lst])
-                print('>>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
-                if len(list(lipid_sub_dct.keys())) > 0:
-                    tmp_lipid_info_df = get_lipid_info(param_dct, usr_fa_df, checked_info_df, checked_info_groups,
-                                                       lipid_sub_lst, usr_weight_df, key_frag_dct,
-                                                       lipid_sub_dct, xic_dct, core_worker_count)
-                else:
-                    tmp_lipid_info_df = ''
-
-                core_worker_count += 1
-                if isinstance(tmp_lipid_info_df, str):
-                    pass
-                else:
-                    if tmp_lipid_info_df.shape[0] > 0:
-                        lipid_info_results_lst.append(tmp_lipid_info_df)
+                print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
+                if len(img_sub_lst) > 0:
+                    gen_plot(img_sub_lst, core_worker_count, usr_img_type, usr_dpi,usr_vendor, usr_ms1_precision)
 
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
@@ -751,13 +738,13 @@ def huntlipids(param_dct, error_lst):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 4
+    core_count = 2
     max_ram = 5  # int only
 
     # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
     # Modify usr_test_lst according to full_test_lst to run the supported built in tests
-    usr_test_lst = ['PC_waters']
+    usr_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
     # define default ranges of each test
     mz_range_pl_waters = [650, 950]  # [650, 950]
