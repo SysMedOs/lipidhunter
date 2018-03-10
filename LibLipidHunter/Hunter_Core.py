@@ -404,46 +404,46 @@ def huntlipids(param_dct, error_lst):
     print('spec_key_num', spec_key_num)
     lipid_part_key_lst = []
 
-    # if 2 < usr_core_num <= 4:
-    #     split_seg = 16
-    # elif 4 < usr_core_num <= 6:
-    #     split_seg = 8
-    # elif 6 < usr_core_num:
-    #     split_seg = 4
-    # else:
-    #     split_seg = 32
-    #
-    # if spec_key_num >= (usr_core_num * split_seg):
-    #
-    #     lipid_part_len = usr_core_num * split_seg  # set each core try to plot 2 to 8 images, so no core will wait long
-    #     print('lipid_part_len', lipid_part_len)
-    #     lipid_part_lst = [found_spec_key_lst[k: k + lipid_part_len] for k in range(0, len(found_spec_key_lst),
-    #                                                                                lipid_part_len)]
-    #
-    #     for part_lst in lipid_part_lst:
-    #         if None in part_lst:
-    #             part_lst = [x for x in part_lst if x is not None]
-    #         lipid_sub_len = int(math.ceil(len(part_lst) / usr_core_num))
-    #         print('lipid_sub_len', lipid_sub_len)
-    #         lipid_sub_key_lst = [part_lst[k: k + lipid_sub_len] for k in range(0, len(part_lst), lipid_sub_len)]
-    #         print(lipid_sub_key_lst)
-    #         lipid_part_key_lst.append(lipid_sub_key_lst)
-    #
-    # else:
-    #     lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
-    #     lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
-    #                                                                                  lipid_sub_len)]
-    #     lipid_part_key_lst.append(lipid_sub_key_lst)
+    split_seg = 1
 
-    lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
-    lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
-                                                                                 lipid_sub_len)]
-    lipid_part_key_lst.append(lipid_sub_key_lst)
+    if spec_key_num > (usr_core_num * 24):
+
+        # Split tasks into few parts to avoid core waiting in multiprocessing
+        if usr_core_num * 24 < usr_core_num <= usr_core_num * 48:
+            split_seg = 2
+        elif usr_core_num * 48 < usr_core_num <= usr_core_num * 96:
+            split_seg = 3
+        elif usr_core_num * 96 < usr_core_num:
+            split_seg = 4
+        else:
+            split_seg = 1
+
+        lipid_part_len = int(math.ceil(spec_key_num / split_seg))
+        lipid_part_lst = [found_spec_key_lst[k: k + lipid_part_len] for k in range(0, spec_key_num,
+                                                                                   lipid_part_len)]
+        print('lipid_part_number: ', len(lipid_part_lst), ' lipid_part_len:', lipid_part_len)
+
+        for part_lst in lipid_part_lst:
+            if None in part_lst:
+                part_lst = [x for x in part_lst if x is not None]
+            lipid_sub_len = int(math.ceil(len(part_lst) / usr_core_num))
+            print('lipid_sub_len', lipid_sub_len)
+            lipid_sub_key_lst = [part_lst[k: k + lipid_sub_len] for k in range(0, len(part_lst), lipid_sub_len)]
+            print(lipid_sub_key_lst)
+            lipid_part_key_lst.append(lipid_sub_key_lst)
+
+    else:
+        lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
+        lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, spec_key_num,
+                                                                                     lipid_sub_len)]
+        lipid_part_key_lst.append(lipid_sub_key_lst)
 
     # lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
     # lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
     #                                                                              lipid_sub_len)]
     # lipid_part_key_lst.append(lipid_sub_key_lst)
+
+    print('lipid_part_number: ', len(lipid_part_key_lst), ' lipid_part_len:', len(lipid_part_key_lst[0]))
 
     part_tot = len(lipid_part_key_lst)
     print('part_tot', part_tot)
@@ -738,13 +738,13 @@ def huntlipids(param_dct, error_lst):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 2
+    core_count = 6
     max_ram = 5  # int only
 
     # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
     # Modify usr_test_lst according to full_test_lst to run the supported built in tests
-    usr_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
+    usr_test_lst = ['PC_waters']
 
     # define default ranges of each test
     mz_range_pl_waters = [650, 950]  # [650, 950]
