@@ -193,6 +193,8 @@ class Ui_MainWindow(object):
         self.tab_a_lipidclass_cmb.addItem("")
         self.tab_a_lipidclass_cmb.addItem("")
         self.tab_a_lipidclass_cmb.addItem("")
+        self.tab_a_lipidclass_cmb.addItem("")
+        self.tab_a_lipidclass_cmb.addItem("")
         self.horizontalLayout_7.addWidget(self.tab_a_lipidclass_cmb)
         spacerItem5 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_7.addItem(spacerItem5)
@@ -1347,6 +1349,12 @@ class Ui_MainWindow(object):
         self.tab_a_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow",
+                                                                              "Triacylglycerol (TG) [M+Na]+", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow",
+                                                                              "Diacylglycerol (DG) [M+NH4]+", None,
+                                                                              QtGui.QApplication.UnicodeUTF8))
         self.label_16.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level ppm:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_d_ms2threshold_spb_2.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level threshold:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_38.setText(QtGui.QApplication.translate("MainWindow", "Min relative intensity for scoring:", None, QtGui.QApplication.UnicodeUTF8))

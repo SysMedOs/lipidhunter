@@ -229,10 +229,15 @@ class LogPageCreator(object):
                                         'SN1_[FA-H]-_i_per', 'SN2_[FA-H]-_i_per',
                                         '[LPL(SN1)-H]-_i_per', '[LPL(SN2)-H]-_i_per',
                                         '[LPL(SN1)-H2O-H]-_i_per', '[LPL(SN2)-H2O-H]-_i_per']
-                    elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
+                    elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG'] and charge in ['[M+H]+', '[M+NH4]+']:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'SN1_[FA-H2O+H]+_i_per',
                                         'SN2_[FA-H2O+H]+_i_per', 'SN3_[FA-H2O+H]+_i_per', '[M-(SN1)+H]+_i_per',
                                         '[M-(SN2)+H]+_i_per', '[M-(SN3)+H]+_i_per', '[MG(SN1)-H2O+H]+_i_per',
+                                        '[MG(SN2)-H2O+H]+_i_per', '[MG(SN3)-H2O+H]+_i_per']
+                    elif self.lipid_type in ['TG'] and charge in ['[M+Na]+']:
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'SN1_[FA-H2O+H]+_i_per',
+                                        'SN2_[FA-H2O+H]+_i_per', 'SN3_[FA-H2O+H]+_i_per', '[M-(SN1)+Na]+_i_per',
+                                        '[M-(SN2)+Na]+_i_per', '[M-(SN3)+Na]+_i_per', '[MG(SN1)-H2O+H]+_i_per',
                                         '[MG(SN2)-H2O+H]+_i_per', '[MG(SN3)-H2O+H]+_i_per']
                     else:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
