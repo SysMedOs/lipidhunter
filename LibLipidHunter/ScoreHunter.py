@@ -524,7 +524,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
 
 def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_list, usr_weight_df,
-                   key_frag_dct, core_spec_dct, xic_dct, core_count):
+                   key_frag_dct, core_spec_dct, xic_dct, core_count, save_fig=True):
     core_count = 'Core_#%i' % core_count
 
     usr_lipid_type = param_dct['lipid_type']
@@ -681,14 +681,16 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                         obs_info_df['img_name'] = img_name_core[1:]
 
                         tmp_df = tmp_df.append(obs_info_df)
+                        if save_fig is True:
+                            img_param_dct = {'abbr': _usr_abbr_bulk, 'mz_se': _samemz_se, 'xic_dct': xic_dct,
+                                             'ident_info_dct': obs_info_dct, 'spec_info_dct': usr_spec_info_dct,
+                                             'isotope_score_info_dct': isotope_score_info_dct,
+                                             'specific_dct': specific_dct, 'formula_charged': _usr_formula_charged,
+                                             'charge': _usr_charge, 'save_img_as': img_name}
 
-                        img_param_dct = {'abbr': _usr_abbr_bulk, 'mz_se': _samemz_se, 'xic_dct': xic_dct,
-                                         'ident_info_dct': obs_info_dct, 'spec_info_dct': usr_spec_info_dct,
-                                         'isotope_score_info_dct': isotope_score_info_dct,
-                                         'specific_dct': specific_dct, 'formula_charged': _usr_formula_charged,
-                                         'charge': _usr_charge, 'save_img_as': img_name}
-
-                        img_plt_lst.append(img_param_dct.copy())
+                            img_plt_lst.append(img_param_dct.copy())
+                        else:
+                            pass
 
     if tmp_df.shape[0] > 0:
         print(core_count, 'Size of the identified LPP_df %i, %i' % (tmp_df.shape[0], tmp_df.shape[1]))
@@ -698,9 +700,11 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
     else:
         print(core_count, '!! Size of the identified LPP_df == 0')
         tmp_df = 'error'
-
-    print('img_plt_lst')
-    print(len(img_plt_lst))
+    if save_fig is True:
+        print('img_plt_lst')
+        print(len(img_plt_lst))
+    else:
+        img_plt_lst = []
 
     r_lst = (tmp_df, img_plt_lst)
     return r_lst
