@@ -263,8 +263,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
     elif lipid_type in ['TG'] and charge in ['[M+H]+', '[M+NH4]+']:
         frag_lst_fa = ['[FA-H2O+H]+']
         frag_lst = ['[MG-H2O+H]+']
-        frag_lst_dg = ['[M-(SN1-H2O)+H]+', '[M-(SN2-H2O)+H]+', '[M-(SN3-H2O)+H]+', '[M-(SN1)+H]+', '[M-(SN2)+H]+',
-                       '[M-(SN3)+H]+']
+        frag_lst_dg = ['[M-(SN1)+H]+', '[M-(SN2)+H]+', '[M-(SN3)+H]+']
     elif lipid_type in ['TG'] and charge in ['[M+Na]+']:
         frag_lst_fa = ['[FA-H2O+H]+']
         frag_lst = ['[MG-H2O+H]+']
@@ -325,6 +324,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         #            '[M-FA+Na]+': [obs_dg_frag_df, ['[M-(SN1)+Na]+', '[M-(SN2)+Na]+', '[M-(SN3)+Na]+']],
         #            '[M-(FA-H+Na)+H]+': [obs_dg_frag_df,
         #                                 ['[M-(SN1-H+Na)+H]+', '[M-(SN2-H+Na)+H]+', '[M-(SN3-H+Na)+H]+']]}
+        # TODO (georgia.angelidou@uni-leipzig.de): Need to include the fragments about [M-(SN-H+Na]+H]+
         obs_dct = {'[FA-H2O+H]+': [obs_dg_frag_df, ['SN1_[FA-H2O+H]+', 'SN2_[FA-H2O+H]+', 'SN3_[FA-H2O+H]+']],
                    '[MG-H2O+H]+': [obs_fa_nl_df, ['[MG(SN1)-H2O+H]+', '[MG(SN2)-H2O+H]+', '[MG(SN3)-H2O+H]+']],
                    '[M-FA+Na]+': [obs_dg_frag_df, ['[M-(SN1)+Na]+', '[M-(SN2)+Na]+', '[M-(SN3)+Na]+']]}
@@ -347,7 +347,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                 lite_info_df.loc[:, '%s_RANK' % _obs] = 10  # set to Rank 10 +1 , so the score will be 0
                 lite_info_df.loc[:, '%s_WEIGHT' % _obs] = weight_dct['%s' % _obs]['Weight']
 
-                _obs_df2 = pd.DataFrame(_obs_df)
+                _obs_df2 = pd.DataFrame(_obs_df).copy()
                 if _obs_df2.shape[0] == 0:
                     _obs_df2 = pd.DataFrame({'i': [], 'mz': [], 'lib_mz': [], 'obs_mz': [], 'obs_i_r': [],
                                              'obs_ppm': [], 'obs_ppm_abs': [], 'obs_abbr': [], 'obs_label': [],
@@ -359,7 +359,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                     _lipid_abbr_comp_dct = {}
                     _abbr = _lite_se['%s_ABBR' % _obs]
                     _lipid_abbr = _lite_se['DISCRETE_ABBR']
-                    print(core_count, _lipid_abbr)
+                    #print(core_count, _lipid_abbr)
                     # Part that check the intensities and change the score
                     # TODO (georgia.angelidou@uni-leipzig.de): need to be supported also for phospholipids
                     if lipid_type in ['TG']:
@@ -431,11 +431,12 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
                     try:
                         if _abbr in _obs_df['obs_abbr'].values:
-                            _rank_idx = _obs_df.loc[_obs_df['obs_abbr'] == _abbr].index[0]
-                            _i = _obs_df.loc[_rank_idx, 'i']
-                            _i_r = _obs_df.loc[_rank_idx, 'obs_i_r']
-                            _mz = _obs_df.loc[_rank_idx, 'mz']
-                            _label = _obs_df.loc[_rank_idx, 'obs_label']
+                            _rank_idx = _obs_df2.loc[_obs_df2['obs_abbr'] == _abbr].index[0]
+                            _rank_idx2 = _obs_df.loc[_obs_df['obs_abbr'] == _abbr].index[0]
+                            _i = _obs_df.loc[_rank_idx2, 'i']
+                            _i_r = _obs_df.loc[_rank_idx2, 'obs_i_r']
+                            _mz = _obs_df.loc[_rank_idx2, 'mz']
+                            _label = _obs_df.loc[_rank_idx2, 'obs_label']
                         else:
                             _rank_idx = 10
                             _i = 0
@@ -582,6 +583,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
     for group_key in core_list:
         _subgroup_df = checked_info_groups.get_group(group_key)
         _usr_abbr_bulk_lst = list(set(_subgroup_df['BULK_ABBR'].values.tolist()))
+        # TODO (georgia.angelidou@uni-leipzig.de): Here should be the control for the ms values to avoid problems
         usr_spec_info_dct = core_spec_dct[group_key]
         _samemz_se = _subgroup_df.iloc[0, :].squeeze()  # compress df to se for lipids with same bulk structures
         _usr_ms2_rt = _samemz_se['scan_time']
@@ -597,6 +599,13 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         _ms1_df = usr_spec_info_dct['ms1_df']
         _ms2_df = usr_spec_info_dct['ms2_df']
         _ms2_idx = usr_spec_info_dct['_ms2_spec_idx']
+
+        # TODO (georgia@uni-leipzig.de): keep in mind to include the other vendors also otherwise it can cause a problem
+        # This contor is done to avoid the problem with the conversion of the raw data from the proteome wizard for the files from Thermo
+        # Future can cause problems since maybe there will be cases where we can not see the precursor -indensity in this files.
+        # For this cases futher thinging is require
+        # Also can cause problems with the other lipid structures from the other lipids
+
 
         print(core_count, _usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged)
 
@@ -615,104 +624,114 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
             _score_ms2_df = pd.DataFrame()
             _score_ms2_hg_df = pd.DataFrame()
         if _ms1_pr_mz > 0.0 and _ms1_df.shape[0] > 0 and _ms2_df.shape[0] > 0 and _ms1_pr_i > 0.0:
+            if _ms2_df.query(' %f < mz < %f' % (_usr_ms2_pr_mz - 0.1, _usr_ms2_pr_mz + 0.1)).shape[0] > 0:
+                _th_pw_flag = 1
+            elif _ms2_df.query(' %f < mz < %f' % (_usr_ms2_pr_mz - 0.1, _usr_ms2_pr_mz + 0.1)).shape[
+                0] == 0 and usr_vendor == 'thermo':
+                _th_pw_flag = 0
+            else:
+                _th_pw_flag = 1
 
-            print(core_count, '>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
+            if _th_pw_flag == 1:
 
-            isotope_score_info_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
-                                                                      _usr_formula_charged, _ms1_df, core_count,
-                                                                      ms1_precision=usr_ms1_precision,
-                                                                      isotope_number=2,
-                                                                      only_c=usr_fast_isotope,
-                                                                      score_filter=usr_isotope_score_filter)
+                print(core_count, '>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
 
-            isotope_score = isotope_score_info_dct['isotope_score']
+                isotope_score_info_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
+                                                                          _usr_formula_charged, _ms1_df, core_count,
+                                                                          ms1_precision=usr_ms1_precision,
+                                                                          isotope_number=2,
+                                                                          only_c=usr_fast_isotope,
+                                                                          score_filter=usr_isotope_score_filter)
 
-            print(core_count, 'isotope_score: %f' % isotope_score)
-            if isotope_score >= usr_isotope_score_filter:
-                print(core_count, '>>> isotope_check PASSED! >>> >>> >>>')
-                print(core_count, '>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
-                _samemz_se.at['MS1_obs_mz'] = _ms1_pr_mz
-                _exact_ppm = 1e6 * (_ms1_pr_mz - _usr_mz_lib) / _usr_mz_lib
-                _samemz_se.at['ppm'] = _exact_ppm
-                _samemz_se.at['abs_ppm'] = abs(_exact_ppm)
-                print(core_count, 'Proposed_bulk_structure can be:', _usr_abbr_bulk_lst)
-                for _usr_abbr_bulk in _usr_abbr_bulk_lst:
-                    print(core_count, 'Now check_proposed_structure:', _usr_abbr_bulk)
+                isotope_score = isotope_score_info_dct['isotope_score']
 
-                    matched_checker, obs_info_dct = get_rankscore(fa_df, checked_info_df, _usr_abbr_bulk, charge_mode,
-                                                                  _score_ms2_df, _ms2_idx, usr_lipid_type,
-                                                                  usr_weight_dct, core_count,
-                                                                  rankscore_filter=usr_rankscore_filter,
-                                                                  all_sn=usr_tag_all_sn)
+                print(core_count, 'isotope_score: %f' % isotope_score)
+                if isotope_score >= usr_isotope_score_filter:
+                    print(core_count, '>>> isotope_check PASSED! >>> >>> >>>')
+                    print(core_count, '>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
+                    _samemz_se.at['MS1_obs_mz'] = _ms1_pr_mz
+                    _exact_ppm = 1e6 * (_ms1_pr_mz - _usr_mz_lib) / _usr_mz_lib
+                    _samemz_se.at['ppm'] = _exact_ppm
+                    _samemz_se.at['abs_ppm'] = abs(_exact_ppm)
+                    print(core_count, 'Proposed_bulk_structure can be:', _usr_abbr_bulk_lst)
+                    for _usr_abbr_bulk in _usr_abbr_bulk_lst:
+                        print(core_count, 'Now check_proposed_structure:', _usr_abbr_bulk)
 
-                    obs_info_df = obs_info_dct['INFO']
-                    rank_score = obs_info_df['RANK_SCORE'].values.tolist()
+                        matched_checker, obs_info_dct = get_rankscore(fa_df, checked_info_df, _usr_abbr_bulk,
+                                                                      charge_mode,
+                                                                      _score_ms2_df, _ms2_idx, usr_lipid_type,
+                                                                      usr_weight_dct, core_count,
+                                                                      rankscore_filter=usr_rankscore_filter,
+                                                                      all_sn=usr_tag_all_sn)
 
-                    if matched_checker > 0:
-                        if len(key_frag_dct) > 0:
-                            specific_dct = get_specific_peaks(key_frag_dct, _usr_mz_lib, _score_ms2_hg_df,
-                                                              hg_ms2_ppm=usr_hg_ppm, vendor=usr_vendor,
-                                                              exp_mode=exp_mode)
-                        else:
-                            specific_dct = {}
+                        obs_info_df = obs_info_dct['INFO']
+                        rank_score = obs_info_df['RANK_SCORE'].values.tolist()
 
-                        print(core_count, 'Rank_score: --> passed', rank_score)
-                        print(core_count, obs_info_df[['BULK_ABBR', 'DISCRETE_ABBR', 'RANK_SCORE', 'scan_time']])
+                        if matched_checker > 0:
+                            if len(key_frag_dct) > 0:
+                                specific_dct = get_specific_peaks(key_frag_dct, _usr_mz_lib, _score_ms2_hg_df,
+                                                                  hg_ms2_ppm=usr_hg_ppm, vendor=usr_vendor,
+                                                                  exp_mode=exp_mode)
+                            else:
+                                specific_dct = {}
 
-                        # format abbr. for file names
-                        _save_abbr_bulk = _usr_abbr_bulk
-                        _save_abbr_bulk = _save_abbr_bulk.replace(r'(', r'[')
-                        _save_abbr_bulk = _save_abbr_bulk.replace(r')', r']')
-                        _save_abbr_bulk = _save_abbr_bulk.replace(r'<', r'[')
-                        _save_abbr_bulk = _save_abbr_bulk.replace(r'>', r']')
-                        _save_abbr_bulk = _save_abbr_bulk.replace(r':', r'-')
-                        _save_abbr_bulk = _save_abbr_bulk.replace(r'@', r'-')
-                        _save_abbr_bulk = _save_abbr_bulk.replace('\\', r'_')
-                        _save_abbr_bulk = _save_abbr_bulk.replace(r'/', r'_')
+                            print(core_count, 'Rank_score: --> passed', rank_score)
+                            print(core_count, obs_info_df[['BULK_ABBR', 'DISCRETE_ABBR', 'RANK_SCORE', 'scan_time']])
 
-                        img_name_core = ('/%.4f_rt%.3f_DDAtop%.0f_scan%.0f_%s.%s'
-                                         % (_usr_ms2_pr_mz, _usr_ms2_rt, _usr_ms2_dda_rank,
-                                            _usr_ms2_scan_id, _save_abbr_bulk, img_typ)
-                                         )
-                        img_name = (output_folder +
-                                    r'/LipidHunter_Results_Figures_%s'
-                                    % hunter_start_time_str + img_name_core)
+                            # format abbr. for file names
+                            _save_abbr_bulk = _usr_abbr_bulk
+                            _save_abbr_bulk = _save_abbr_bulk.replace(r'(', r'[')
+                            _save_abbr_bulk = _save_abbr_bulk.replace(r')', r']')
+                            _save_abbr_bulk = _save_abbr_bulk.replace(r'<', r'[')
+                            _save_abbr_bulk = _save_abbr_bulk.replace(r'>', r']')
+                            _save_abbr_bulk = _save_abbr_bulk.replace(r':', r'-')
+                            _save_abbr_bulk = _save_abbr_bulk.replace(r'@', r'-')
+                            _save_abbr_bulk = _save_abbr_bulk.replace('\\', r'_')
+                            _save_abbr_bulk = _save_abbr_bulk.replace(r'/', r'_')
 
-                        isotope_checker, isotope_score, img_n = plot_spectra(_usr_abbr_bulk, _samemz_se, xic_dct,
-                                                                             obs_info_dct, usr_spec_info_dct,
-                                                                             isotope_score_info_dct, specific_dct,
-                                                                             _usr_formula_charged, _usr_charge,
-                                                                             core_count,
-                                                                             save_img_as=img_name, img_type=img_typ,
-                                                                             dpi=img_dpi, vendor=usr_vendor,
-                                                                             ms1_precision=usr_ms1_precision)
+                            img_name_core = ('/%.4f_rt%.3f_DDAtop%.0f_scan%.0f_%s.%s'
+                                             % (_usr_ms2_pr_mz, _usr_ms2_rt, _usr_ms2_dda_rank,
+                                                _usr_ms2_scan_id, _save_abbr_bulk, img_typ)
+                                             )
+                            img_name = (output_folder +
+                                        r'/LipidHunter_Results_Figures_%s'
+                                        % hunter_start_time_str + img_name_core)
 
-                        print(core_count, '==> check for output -->')
+                            isotope_checker, isotope_score, img_n = plot_spectra(_usr_abbr_bulk, _samemz_se, xic_dct,
+                                                                                 obs_info_dct, usr_spec_info_dct,
+                                                                                 isotope_score_info_dct, specific_dct,
+                                                                                 _usr_formula_charged, _usr_charge,
+                                                                                 core_count,
+                                                                                 save_img_as=img_name, img_type=img_typ,
+                                                                                 dpi=img_dpi, vendor=usr_vendor,
+                                                                                 ms1_precision=usr_ms1_precision)
 
-                        obs_info_df['Proposed_structures'] = _usr_abbr_bulk
-                        obs_info_df['Bulk_identification'] = _usr_abbr_bulk
-                        # obs_info_df['Discrete_identification'] = _usr_abbr_bulk
-                        obs_info_df['Formula_neutral'] = _usr_formula
-                        obs_info_df['Formula_ion'] = _usr_formula_charged
-                        obs_info_df['Charge'] = _usr_charge
-                        obs_info_df['MS1_obs_mz'] = _ms1_pr_mz
-                        obs_info_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
-                        obs_info_df['Lib_mz'] = _usr_mz_lib
-                        obs_info_df['MS2_scan_time'] = _usr_ms2_rt
-                        obs_info_df['DDA#'] = _usr_ms2_dda_rank
-                        obs_info_df['MS2_PR_mz'] = _usr_ms2_pr_mz
-                        obs_info_df['Scan#'] = _usr_ms2_scan_id
-                        # obs_info_df['#Specific_peaks'] = (target_frag_count + target_nl_count)
-                        # obs_info_df['#Contaminated_peaks'] = (other_frag_count + other_nl_count)
-                        obs_info_df['ppm'] = _exact_ppm
+                            print(core_count, '==> check for output -->')
 
-                        # if any IO error while writing img output
-                        if img_n == '-2':
-                            obs_info_df['img_name'] = '%s-2.%s' % (img_name_core[1:-4], img_typ)
-                        else:
-                            obs_info_df['img_name'] = img_name_core[1:]
+                            obs_info_df['Proposed_structures'] = _usr_abbr_bulk
+                            obs_info_df['Bulk_identification'] = _usr_abbr_bulk
+                            # obs_info_df['Discrete_identification'] = _usr_abbr_bulk
+                            obs_info_df['Formula_neutral'] = _usr_formula
+                            obs_info_df['Formula_ion'] = _usr_formula_charged
+                            obs_info_df['Charge'] = _usr_charge
+                            obs_info_df['MS1_obs_mz'] = _ms1_pr_mz
+                            obs_info_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
+                            obs_info_df['Lib_mz'] = _usr_mz_lib
+                            obs_info_df['MS2_scan_time'] = _usr_ms2_rt
+                            obs_info_df['DDA#'] = _usr_ms2_dda_rank
+                            obs_info_df['MS2_PR_mz'] = _usr_ms2_pr_mz
+                            obs_info_df['Scan#'] = _usr_ms2_scan_id
+                            # obs_info_df['#Specific_peaks'] = (target_frag_count + target_nl_count)
+                            # obs_info_df['#Contaminated_peaks'] = (other_frag_count + other_nl_count)
+                            obs_info_df['ppm'] = _exact_ppm
 
-                        tmp_df = tmp_df.append(obs_info_df)
+                            # if any IO error while writing img output
+                            if img_n == '-2':
+                                obs_info_df['img_name'] = '%s-2.%s' % (img_name_core[1:-4], img_typ)
+                            else:
+                                obs_info_df['img_name'] = img_name_core[1:]
+
+                            tmp_df = tmp_df.append(obs_info_df)
 
     if tmp_df.shape[0] > 0:
         print(core_count, 'Size of the identified LPP_df %i, %i' % (tmp_df.shape[0], tmp_df.shape[1]))

@@ -535,6 +535,7 @@ def huntlipids(param_dct, error_lst):
         else:
             print('Using single core mode...')
             core_worker_count = 1
+            # lipid_sub_key_lst = [[(896.770715, 896.770227, 'C57H102NO6+', 23.339038, '[M+NH4]+')]]
             for lipid_sub_lst in lipid_sub_key_lst:
                 if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
                     if None in lipid_sub_lst:
@@ -620,6 +621,7 @@ def huntlipids(param_dct, error_lst):
                                 'i_[M+H]-sn3': 2, 'i_[MG(sn1)+H]-H2O': 2, 'i_[MG(sn2)+H]-H2O': 2,
                                 'i_[MG(sn3)+H]-H2O': 2}
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+Na]+']:
+            # TODO (georgia.angelidou@uni-leipzig.de): check why this can cause some problems with [MGSN1-H2O+H]+
             output_list = ['SN1_[FA-H2O+H]+_i', 'SN2_[FA-H2O+H]+_i', 'SN3_[FA-H2O+H]+_i', '[MG(SN1)-H2O+H]+_i',
                            '[MG(SN3)-H2O+H]+_i', '[MG(SN3)-H2O+H]+_i', '[M-(SN1)+Na]+_i', '[M-(SN2)+Na]+_i',
                            '[M-(SN3)+Na]+_i', '[M-(SN1-H+Na)+N]+_i', '[M-(SN2-H+Na)+H]+_i']
@@ -696,13 +698,13 @@ def huntlipids(param_dct, error_lst):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 3
+    core_count = 1
     max_ram = 5  # int only
 
     # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
     # Modify usr_test_lst according to full_test_lst to run the supported built in tests
-    usr_test_lst = ['TG_waters_NH4']
+    usr_test_lst = ['TG_thermo_NH4']
 
     # define default ranges of each test
     mz_range_pl_waters = [650, 950]  # [650, 950]
@@ -714,8 +716,8 @@ if __name__ == '__main__':
     mz_range_tg_waters = [700, 1200]  # [700, 1200]
     rt_range_tg_waters = [9, 15]  # max [9, 15]
 
-    mz_range_tg_thermo = [600, 1200]  # [600, 1200]
-    rt_range_tg_thermo = [20, 28]  # max [15, 28]
+    mz_range_tg_thermo = [894, 899]  # [600, 1200]
+    rt_range_tg_thermo = [23, 24]  # max [15, 28]
 
     # mz_range_tg_thermo = [842, 846]  # [600, 1200]
     # rt_range_tg_thermo = [22, 24]  # max [15, 28]
@@ -736,19 +738,19 @@ if __name__ == '__main__':
     hg_ppm_thermo = 50  # 20
     ms_th_thermo = 10000  # 10000
     ms2_th_thermo = 2000  # 2000
-    hg_th_thermo = 10  # 2000
-    dda_top_thermo = 10  # 10
+    hg_th_thermo = 2000  # 2000
+    dda_top_thermo = 10 # 10
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'
-    tg_mzml_thermo = r'D:\PhD\2018\Samples\Mike\Lipid_extraction_Comp\Folch\MS2\S3_17_43_M1.mzML'
+    tg_mzml_thermo = r'D:\PhD\2018\Samples\Angela\plasma\C30prototype\C30prototype.mzML'
 
     pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_PL.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
                    'score_cfg': r'../ConfigurationFiles/03-Score_weight_PL.xlsx'}
 
-    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG.xlsx',
+    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG_small.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
                    'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG.xlsx'}
 
@@ -869,8 +871,8 @@ if __name__ == '__main__':
                 test_dct = usr_test_dct[test_key]
                 t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                 lipid_class = test_dct['lipid_type']
-                cfg_dct = {'img_output_folder_str': r'D:\PhD\2018\LipidHunter\Mike\LipidCompa2017\Folch\12.3.2018/results/%s_%s' % (test_key, t_str),
-                           'xlsx_output_path_str': r'D:\PhD\2018\LipidHunter\Mike\LipidCompa2017\Folch\12.3.2018/results/%s_%s.xlsx' % (test_key, t_str),
+                cfg_dct = {'img_output_folder_str': r'D:\Programs_PhD\lipidhunterdev\Test/results3/%s_%s' % (test_key, t_str),
+                           'xlsx_output_path_str': r'D:\Programs_PhD\lipidhunterdev\Test/results3/%s_%s.xlsx' % (test_key, t_str),
                            'hunter_folder': hunter_folder, 'img_type': u'png', 'img_dpi': 300,
                            'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True,
                            'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
