@@ -96,7 +96,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
                                 subgroup_df.loc[:, 'abs_ppm'] = [abs(_ppm)] * len_df
 
                                 core_results_df = core_results_df.append(subgroup_df)
-                                print('core_results_df.shape', core_results_df.shape)
+                                # print('core_results_df.shape', core_results_df.shape)
                             else:
                                 pass
                                 # print('pr_info_df.shape[0] == 0')
@@ -113,7 +113,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
             pass
             # print('_tmp_scan_info_df.shape[0] = 0')
 
-    print(core_results_df.shape)
+    print('core_results_df.shape', core_results_df.shape)
 
     return core_results_df
 
@@ -172,10 +172,11 @@ class PrecursorHunter(object):
 
         spectra_pl_idx_lst = sorted(spectra_pl.items.values.tolist())
 
-        if len(spectra_pl_idx_lst) >= (max_ram * 50):
+        if len(spectra_pl_idx_lst) >= (max_ram * 64):
             print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
-            sub_pl_group_lst = [spectra_pl_idx_lst[s: s + (max_ram * 40)] for s in range(0, len(spectra_pl_idx_lst),
-                                                                                max_ram * 40)]
+            sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) / 2))
+            sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
+                                                                                          sub_group_len)]
         else:
             sub_pl_group_lst = [spectra_pl_idx_lst]
 
@@ -236,7 +237,8 @@ class PrecursorHunter(object):
                             else:
                                 pass
                             print('>>> >>> processing ......Part: %i subset: %i ' % (part_counter, core_worker_count))
-                            sub_df = find_pr_info(scan_info_df, sub_pl, lpp_info_groups, core_list, ms1_th, ms1_ppm, ms1_max)
+                            sub_df = find_pr_info(scan_info_df, sub_pl, lpp_info_groups, core_list, ms1_th,
+                                                  ms1_ppm, ms1_max)
                             core_worker_count += 1
                             if sub_df.shape[0] > 0:
                                 pr_info_results_lst.append(sub_df)
