@@ -37,7 +37,6 @@ import matplotlib.patches as patches
 def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
                  formula_charged, charge, core_count, save_img_as=None, img_type='png', dpi=300, vendor='waters',
                  ms1_precision=50e-6):
-    print(core_count, '>>> Start to plot')
 
     ms2_pr_mz = mz_se['MS2_PR_mz']
     ms1_obs = mz_se['MS1_obs_mz']
@@ -56,6 +55,10 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     m2_score = isotope_score_info_dct['m2_score']
     m2_checker_dct = isotope_score_info_dct['m2_checker_dct']
     deconv_lst = isotope_score_info_dct['deconv_lst']
+
+    print(core_count, '>>> Start to plot %s -> MS2 PR m/z %.4f @ MS1 best PR m/z %.4f with lib m/z %.4f'
+          % (abbr, ms2_pr_mz, ms1_obs, lib_mz))
+
     if len(deconv_lst) == 4:
         pass
     else:
@@ -99,7 +102,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             ms1_top1000_i = sorted(ms1_df['i'].values.tolist(), reverse=True)[499]
             ms1_plot_th = min(m1_obs_i, 3 * ms1_min, ms1_max * 0.01, 1000, ms1_top1000_i)
             ms1_plot_th = max(ms1_plot_th, ms1_top1000_i)
-            print(core_count, m1_obs_i, 3 * ms1_min, ms1_max * 0.01, 1000, ms1_top1000_i)
+            # print(core_count, m1_obs_i, 3 * ms1_min, ms1_max * 0.01, 1000, ms1_top1000_i)
             ms1_df = ms1_df.query('i >= %f' % ms1_plot_th)
             print(core_count, 'Plot full MS1 with abs intensity filter > %f' % ms1_plot_th)
         if ms2_df['i'].max() >= 1000 and ms2_df.shape[0] >= 500:
@@ -110,7 +113,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             ms2_min_lst = [3 * ms2_min, ms2_max * 0.01, 10, ms2_top1000_i]
             ms2_plot_th = max(min(ms2_min_lst), ms2_top1000_i)
 
-            print(core_count, ms2_min_lst)
+            # print(core_count, ms2_min_lst)
             ms2_plot_th -= 1
             if ms2_plot_th > 0:
                 ms2_df = ms2_df.query('i >= %f' % ms2_plot_th)
@@ -119,9 +122,6 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         _msms_low_df = ms2_df.query('mz <= 400')
         _msms_high_df = ms2_df.query('mz > 400')
         _msms_high_df = _msms_high_df.query('mz < %.4f' % (ms2_pr_mz + 1))
-
-        print(core_count, 'Start looking for MS2 PR m/z %f @ MS1 best PR m/z %f with lib m/z %f'
-               % (ms2_pr_mz, ms1_obs, lib_mz))
 
         # Generate A4 image in landscape
         fig, pic_array = plt.subplots(nrows=3, ncols=2, figsize=(11.692, 8.267), sharex='none', sharey='none')
@@ -580,30 +580,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_low_pic.set_title(msms_low_str, color='b', fontsize=10, y=0.98)
         msms_high_pic.set_title(msms_high_str, color='b', fontsize=10, y=0.98)
 
-        # print(core_count, '>>> >>> >>> try to plot >>> >>> >>>')
-
         plt.savefig(save_img_as, type=img_type, dpi=dpi)
         print(core_count, '=====> Image saved as: %s' % save_img_as)
-
-        # buf = io.BytesIO()
-        # plt.savefig(buf, type=img_type, dpi=dpi)
         plt.close()
-
-        # return buf
-
-
-def save_img(img_plt_lst, core_count):
-    print(core_count, '>>> Start to save images...')
-    for img in img_plt_lst:
-        img_buf = img[0]
-        img_buf.seek(0)
-        t0 = time.time()
-        img_obj = Image.open(img_buf)
-        img_obj.save(img[1])
-        img_buf.close()
-        t1 = time.time() - t0
-        print(t1)
-    print(core_count, '>>> Image saved ...')
 
 
 def gen_plot(param_dct_lst, core_count=1, img_type='png', dpi=300, vendor='waters', ms1_precision=50e-6):

@@ -205,16 +205,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     print('=== ==> --> ms1 precursor matched')
 
-    # remove bad precursors
-    checked_info_df = pd.DataFrame()
-    dda_rank = usr_scan_info_df['DDA_rank']
-    scan_id = usr_scan_info_df['scan_number']
-    scan_rank_lst = zip(dda_rank, scan_id)
-    for scan_info in scan_rank_lst:
-        _tmp_usr_df = ms1_obs_pr_df.query('DDA_rank == %f and scan_number == %f' % (scan_info[0], scan_info[1]))
-        checked_info_df = checked_info_df.append(_tmp_usr_df)
+    # remove bad precursors, keep the matched scans by DDA_rank and scan number
+    usr_scan_info_df['scan_checker'] = 10000 * usr_scan_info_df['scan_number'] + usr_scan_info_df['DDA_rank']
+    ms1_obs_pr_df['scan_checker'] = 10000 * ms1_obs_pr_df['scan_number'] + ms1_obs_pr_df['DDA_rank']
+    usr_scan_checker_lst = usr_scan_info_df['scan_checker'].tolist()
+    checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_checker_lst)]
 
-    checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'])
+    checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'], inplace=True)
 
     ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
@@ -414,11 +411,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, spec_key_num,
                                                                                      lipid_sub_len)]
         lipid_part_key_lst.append(lipid_sub_key_lst)
-
-    # lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
-    # lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
-    #                                                                              lipid_sub_len)]
-    # lipid_part_key_lst.append(lipid_sub_key_lst)
 
     print('lipid_part_number: ', len(lipid_part_key_lst), ' lipid_part_len:', len(lipid_part_key_lst[0]))
 
@@ -750,7 +742,7 @@ if __name__ == '__main__':
     # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
     # Modify usr_test_lst according to full_test_lst to run the supported built in tests
-    usr_test_lst = ['PC_waters']
+    usr_test_lst = ['TG_thermo_NH4']
 
     # define default ranges of each test
     mz_range_pl_waters = [650, 950]  # [650, 950]

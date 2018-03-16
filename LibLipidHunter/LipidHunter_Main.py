@@ -780,7 +780,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         os.chdir(self.lipidhunter_cwd)
 
         cfg_params_dct = {}
-        self.ui.tab_b_statusrun_pte.insertPlainText('>>> Hunter Start >>> Total run number: %i \n\n' % tot_num)
+        self.ui.tab_b_statusrun_pte.insertPlainText('>>> Hunter started ... Total run number: %i \n\n' % tot_num)
 
         for _cfg in loaded_cfg_lst:
 
@@ -845,9 +845,9 @@ class SingleWorker(QtCore.QObject):
     def run_hunter(self):
 
         log_lst = []
-        print('>>> Hunter single_worker started ...')
+        print('>>> Hunter single worker started ...')
         time.sleep(1)  # Wait for 3 sec to avoid overwriting the self.info_str
-        self.info_str = '>>> Start processing ... Please wait ...'
+        self.info_str = '>>> Hunter started ... Please wait ...\n'
         self.infoback()
         self.info_update.emit(self.info_str)
 
