@@ -864,35 +864,34 @@ class SingleWorker(QtCore.QObject):
             time.sleep(1)
             self.finished.emit()
 
+        err_info = ''
+        if isinstance(log_lst, list):
+            err_info = '\n'.join(log_lst)
+        else:
+            pass
+
         if hunter_time is not False:
 
             if isinstance(hunter_time, float):
                 time.sleep(1)
-                self.info_str = '\n>>> >>> >>> FINISHED in %.3f Sec <<< <<< <<<\n' % hunter_time
+                self.info_str = '%s\n>>> >>> >>> FINISHED in %.3f Sec <<< <<< <<<\n' % (err_info, hunter_time)
                 self.infoback()
                 self.info_update.emit(self.info_str)
             else:
                 if isinstance(hunter_time, str):
                     time.sleep(1)
-                    self.info_str = '\n>>> >>> >>> FINISHED in %s Sec <<< <<< <<<\n' % hunter_time
+                    self.info_str = '%s\n>>> >>> >>> FINISHED in %s Sec <<< <<< <<<\n' % (err_info, hunter_time)
                     self.infoback()
                     self.info_update.emit(self.info_str)
                 else:
                     time.sleep(1)
-                    self.info_str = '!! Sorry, an error has occurred, please check your settings !!\n\n'
+                    self.info_str = '%s\n!! Sorry, an error has occurred, please check your settings !!\n\n' % err_info
                     self.infoback()
                     self.info_update.emit(self.info_str)
-                    if len(log_lst) > 0:
-                        for err in log_lst:
-                            time.sleep(1)
-                            self.info_str = str(err) + '\n'
-                            self.infoback()
-                            self.info_update.emit(self.info_str)
-                            time.sleep(1)
-                            self.finished.emit()
+
         else:
             time.sleep(1)
-            self.info_str = '!! Sorry, an error has occurred, please check your settings !!\n\n'
+            self.info_str = '%s\n!! Sorry, an error has occurred, please check your settings !!\n\n' % err_info
             self.infoback()
             self.info_update.emit(self.info_str)
             time.sleep(1)
@@ -998,20 +997,27 @@ class BatchWorker(QtCore.QObject):
                     log_lst = False
                     export_df = False
 
+                err_info = ''
+                if isinstance(log_lst, list):
+                    err_info = '\n'.join(log_lst)
+                else:
+                    pass
+
                 if hunter_time is not False:
+
                     print('Hunter finished successfully ...')
                     if isinstance(hunter_time, float):
                         run_time = '%.3f' % hunter_time
                         time.sleep(1)
-                        self.info_str = ('>>> FINISHED with file # %i / %i in %s Sec ...\n\n'
-                                         % (cfg_idx, self.total_count, run_time))
+                        self.info_str = ('%s\n>>> FINISHED with file # %i / %i in %s Sec ...\n\n'
+                                         % (err_info, cfg_idx, self.total_count, run_time))
                         self.infoback()
                         self.info_update.emit(self.info_str)
 
                     elif isinstance(hunter_time, str):
                         time.sleep(1)
-                        self.info_str = ('>>>FINISHED with file # %i / %i in %s Sec ...\n\n'
-                                         % (cfg_idx, self.total_count, hunter_time))
+                        self.info_str = ('%s\n>>>FINISHED with file # %i / %i in %s Sec ...\n\n'
+                                         % (err_info, cfg_idx, self.total_count, hunter_time))
                         self.infoback()
                         self.info_update.emit(self.info_str)
 
@@ -1026,9 +1032,6 @@ class BatchWorker(QtCore.QObject):
                         self.info_update.emit(self.info_str)
 
                 else:
-                    err_info = ''
-                    for err in log_lst:
-                        err_info += err
                     time.sleep(1)
                     self.info_str = ('%s\n!! Failed to process batch mode configuration file ... skip this one ...\n\n'
                                      % err_info)

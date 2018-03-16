@@ -128,7 +128,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     try:
         usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
     except FileNotFoundError:
-        return False, ['Some files missing...', 'Please check your settings in the configuration file ...'], False
+        error_lst.append('Some files missing...')
+        error_lst.append('Please check your settings in the configuration file ...')
+        return False, error_lst, False
     # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
 
@@ -198,7 +200,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     if ms1_obs_pr_df is False:
         print('!! NO suitable precursor --> Check settings!!\n')
-        return False, ['!! NO suitable precursor --> Check settings!!\n'], False
+        error_lst.append('!! NO suitable precursor --> Check settings!!\n')
+        return False, error_lst, False
 
     print('=== ==> --> ms1 precursor matched')
 
@@ -278,8 +281,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     # print(xic_dct.keys())
 
     if len(list(xic_dct.keys())) == 0:
-        print('No precursor for XIC found')
-        return False, False, False
+        print('!! No precursor for XIC found !!')
+        error_lst.append('!! No precursor for XIC found !!\n')
+        return False, error_lst, False
     else:
         print('=== ==> --> Number of XIC extracted: %i' % len(list(xic_dct.keys())))
 
@@ -556,6 +560,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 tmp_lipid_info_df = 'error'
                 tmp_lipid_img_lst = []
                 print('!!error!!--> This segment receive no Lipid identified.')
+
             if isinstance(tmp_lipid_info_df, str):
                 pass
             else:
@@ -656,6 +661,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             final_output_df.to_excel('%s-%i%s' % (output_sum_xlsx[:-5], int(time.time()), '.xlsx'), index=False)
             print(output_sum_xlsx)
         print('=== ==> --> saved >>> >>> >>>')
+
+    else:
+        error_lst.append('!! Warning !! NO Lipid identified in this file.\n!! Please check your settings !!')
+        tot_run_time = time.clock() - start_time
+        print('!! Warning !!--> This file got no Lipid identified.')
+        print('>>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
+        return tot_run_time, error_lst, output_df
 
     # Start multiprocessing to save img
     if save_fig is True:
