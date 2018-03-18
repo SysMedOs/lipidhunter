@@ -21,7 +21,6 @@
 from __future__ import division
 from __future__ import print_function
 
-from functools import partial
 import getopt
 import math
 from multiprocessing import Pool
@@ -52,10 +51,6 @@ except ImportError:  # for python 2.7.14
     from ScoreHunter import get_lipid_info
     from PanelPlotter import gen_plot
 
-from tornado import gen
-from tornado import ioloop
-from tornado import queues
-
 
 def huntlipids(param_dct, error_lst, save_fig=True):
     """
@@ -79,7 +74,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         'hunter_folder': r'D:\lipidhunter',
                         'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300}
     :param(list) error_lst: empty list to store error info to display on GUI.
-    :param(bool) save_img: Can be set to False to skip image generation (not recommended).
+    :param(bool) save_fig: Can be set to False to skip image generation (not recommended).
     :return:
     """
 
@@ -544,8 +539,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                                                 key_frag_dct, lipid_sub_dct, xic_dct, core_worker_count)
 
     # Merge multiprocessing results
-    for lipid_info_result in lipid_info_results_lst:
-        if usr_core_num > 1:
+    if usr_core_num > 1:
+        for lipid_info_result in lipid_info_results_lst:
             try:
                 tmp_lipid_info = lipid_info_result.get()
                 tmp_lipid_info_df = tmp_lipid_info[0]
@@ -565,13 +560,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     if tmp_lipid_info_df.shape[0] > 0:
                         output_df = output_df.append(tmp_lipid_info_df)
                         lipid_info_img_lst.extend(tmp_lipid_img_lst)
-        else:
-            tmp_lipid_info_df = lipid_info_results_lst[0]
-            tmp_lipid_img_lst = lipid_info_results_lst[1]
-            if isinstance(tmp_lipid_info_df, pd.DataFrame):
-                if tmp_lipid_info_df.shape[0] > 0:
-                    output_df = output_df.append(tmp_lipid_info_df)
-                    lipid_info_img_lst.extend(tmp_lipid_img_lst)
+    else:
+        tmp_lipid_info_df = lipid_info_results_lst[0]
+        tmp_lipid_img_lst = lipid_info_results_lst[1]
+        if isinstance(tmp_lipid_info_df, pd.DataFrame):
+            if tmp_lipid_info_df.shape[0] > 0:
+                output_df = output_df.append(tmp_lipid_info_df)
+                lipid_info_img_lst = tmp_lipid_img_lst
 
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
@@ -666,74 +661,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         print('>>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
         return tot_run_time, error_lst, output_df
 
-    # # Start multiprocessing to save img
-    # if save_fig is True:
-    #     print('lipid_info_img_lst')
-    #     print(len(lipid_info_img_lst))
-    #
-    #     # keep stay in current working directory
-    #     current_path = os.getcwd()
-    #     if os.path.isdir(output_folder):
-    #         os.chdir(output_folder)
-    #         if os.path.isdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str):
-    #             print('... Output folder existed...')
-    #         else:
-    #             os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
-    #             print('... Output folder created...')
-    #     else:
-    #         os.mkdir(output_folder)
-    #         os.chdir(output_folder)
-    #         os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
-    #         print('... Output folder created...')
-    #     os.chdir(current_path)
-    #
-    #     # generate html files
-    #     log_pager = LogPageCreator(output_folder, hunter_start_time_str, param_dct)
-    #     log_pager.add_all_info(output_df)
-    #     log_pager.close_page()
-    #
-    #     img_num = len(lipid_info_img_lst)
-    #     img_sub_len = int(math.ceil(img_num / usr_core_num))
-    #     img_sub_key_lst = [lipid_info_img_lst[k: k + img_sub_len] for k in range(0, img_num, img_sub_len)]
-    #     if usr_core_num > 1:
-    #         parallel_pool = Pool(usr_core_num)
-    #
-    #         core_worker_count = 1
-    #         for img_sub_lst in img_sub_key_lst:
-    #             if isinstance(img_sub_lst, tuple) or isinstance(img_sub_lst, list):
-    #                 if None in img_sub_lst:
-    #                     img_sub_lst = [x for x in img_sub_lst if x is not None]
-    #                 else:
-    #                     pass
-    #                 print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-    #                 if len(img_sub_lst) > 0:
-    #                     parallel_pool.apply_async(gen_plot, args=(img_sub_lst, core_worker_count,
-    #                                                               usr_img_type, usr_dpi,
-    #                                                               usr_vendor, usr_ms1_precision))
-    #                     core_worker_count += 1
-    #
-    #         parallel_pool.close()
-    #         parallel_pool.join()
-    #
-    #     else:
-    #         print('Using single core mode...')
-    #         for img_sub_lst in img_sub_key_lst:
-    #             if isinstance(img_sub_lst, tuple) or isinstance(img_sub_lst, list):
-    #                 if None in img_sub_lst:
-    #                     img_sub_lst = [x for x in img_sub_lst if x is not None]
-    #                 else:
-    #                     pass
-    #                 print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-    #                 if len(img_sub_lst) > 0:
-    #                     gen_plot(img_sub_lst, core_worker_count, usr_img_type, usr_dpi, usr_vendor, usr_ms1_precision)
-    # else:
-    #     print('!!!!!! User skip image generation !!!!!!')
-
     # Start multiprocessing to save img
     if save_fig is True:
-        print('lipid_info_img_lst')
-        print(len(lipid_info_img_lst))
-
         # keep stay in current working directory
         current_path = os.getcwd()
         if os.path.isdir(output_folder):
@@ -756,12 +685,11 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         log_pager.close_page()
 
         if usr_core_num > 1:
+            parallel_pool = Pool(usr_core_num)
 
             img_num = len(lipid_info_img_lst)
             img_sub_len = int(math.ceil(img_num / usr_core_num))
             img_sub_key_lst = [lipid_info_img_lst[k: k + img_sub_len] for k in range(0, img_num, img_sub_len)]
-
-            parallel_pool = Pool(usr_core_num)
 
             core_worker_count = 1
             for img_sub_lst in img_sub_key_lst:
@@ -770,12 +698,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         img_sub_lst = [x for x in img_sub_lst if x is not None]
                     else:
                         pass
-                    img_params_dct = {'lipid_info_img_lst': img_sub_lst, 'usr_core_num': usr_core_num,
-                                      'usr_img_type': usr_img_type, 'usr_dpi': usr_dpi, 'usr_vendor': usr_vendor,
-                                      'usr_ms1_precision': usr_ms1_precision, 'core_worker_count': core_worker_count}
+                    # img_params_dct = {'lipid_info_img_lst': img_sub_lst, 'usr_core_num': usr_core_num,
+                    #                   'usr_img_type': usr_img_type, 'usr_dpi': usr_dpi, 'usr_vendor': usr_vendor,
+                    #                   'usr_ms1_precision': usr_ms1_precision, 'core_worker_count': core_worker_count}
                     print('>>> >>> Core #%i ==> ...... Generating output images ......' % core_worker_count)
                     if len(img_sub_lst) > 0:
-                        parallel_pool.apply_async(img_worker, args=(img_params_dct, core_worker_count))
+                        parallel_pool.apply_async(gen_plot, args=(img_sub_lst, core_worker_count, usr_img_type,
+                                                                  usr_dpi, usr_vendor, usr_ms1_precision))
                         core_worker_count += 1
 
             parallel_pool.close()
@@ -789,89 +718,22 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 else:
                     pass
                 if len(lipid_info_img_lst) > 0:
-                    img_params_dct = {'lipid_info_img_lst': lipid_info_img_lst, 'usr_core_num': 1,
-                                      'usr_img_type': usr_img_type, 'usr_dpi': usr_dpi, 'usr_vendor': usr_vendor,
-                                      'usr_ms1_precision': usr_ms1_precision, 'core_worker_count': 1}
-                    img_worker(img_params_dct, core_worker_count)
-
+                    gen_plot(lipid_info_img_lst, core_worker_count, usr_img_type, usr_dpi,
+                             usr_vendor, usr_ms1_precision)
     else:
         print('!!!!!! User skip image generation !!!!!!')
 
-    # img_params_dct = {'lipid_info_img_lst': lipid_info_img_lst, 'usr_core_num': usr_core_num,
-    #                   'usr_img_type': usr_img_type, 'usr_dpi': usr_dpi, 'usr_vendor': usr_vendor,
-    #                   'usr_ms1_precision': usr_ms1_precision}
-
-    # io_loop = ioloop.IOLoop.current()
-    # hunt_img_loop = partial(run_with_args, func=hunt_img, img_params_dct=img_params_dct)
-    # io_loop.run_sync(hunt_img_loop)
-
     tot_run_time = time.clock() - start_time
-
-    # tot_run_time = '%.2f Sec\n' % tot_run_time
 
     print('>>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
 
     return tot_run_time, error_lst, output_df
 
 
-def img_worker(img_params_dct, core_worker_count):
-    print('>>> Core # %i Image worker started ...' % core_worker_count)
-    io_loop = ioloop.IOLoop.current()
-    hunt_img_loop = partial(hunt_img_with_args, func=hunt_img, img_params_dct=img_params_dct)
-    io_loop.run_sync(hunt_img_loop)
-
-
-def hunt_img_with_args(func, img_params_dct):
-    return hunt_img(img_params_dct)
-
-
-@gen.coroutine
-def hunt_img(img_params_dct):
-
-    lipid_info_img_lst = img_params_dct['lipid_info_img_lst']
-    # usr_core_num = img_params_dct['usr_core_num']
-    usr_img_type = img_params_dct['usr_img_type']
-    usr_dpi = img_params_dct['usr_dpi']
-    usr_vendor = img_params_dct['usr_vendor']
-    usr_ms1_precision = img_params_dct['usr_ms1_precision']
-    core_count = img_params_dct['core_worker_count']
-
-    q = queues.Queue()
-    start = time.time()
-    fetching, fetched = set(), set()
-
-    for new_img in lipid_info_img_lst:
-        yield q.put(new_img)
-
-    @gen.coroutine
-    def get_img(worker_count):
-        current_img = yield q.get()
-        if current_img['save_img_as'] not in fetching:
-            fetching.add(current_img['save_img_as'])
-            print('Core: #', core_count, 'Sub worker Running: #', worker_count)
-            core_worker_count = 'Core #{core} - SubWorker #{worker}'.format(core=core_count, worker=worker_count)
-            yield gen_plot(current_img, core_worker_count, usr_img_type, usr_dpi, usr_vendor, usr_ms1_precision)
-            fetched.add(current_img['save_img_as'])
-        else:
-            pass
-        q.task_done()
-
-    @gen.coroutine
-    def worker(worker_count):
-        print('>>> Core #', core_count, 'Sub worker Started: #', worker_count)
-        yield get_img(worker_count)
-
-    # Start workers, then wait for the work queue to be empty.
-    for w_count in range(len(lipid_info_img_lst)):
-        worker(w_count)
-    yield q.join()
-    print('>>> Core #', core_count, 'Done in %d seconds, fetched %s images.' % (time.time() - start, len(fetched)))
-
-
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 4
+    core_count = 1
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
 
@@ -881,8 +743,8 @@ if __name__ == '__main__':
     usr_test_lst = ['PC_waters']
 
     # define default ranges of each test
-    mz_range_pl_waters = [800, 850]  # [650, 950]
-    rt_range_pl_waters = [26, 27]  # max [24, 27]
+    mz_range_pl_waters = [650, 950]  # [650, 950]
+    rt_range_pl_waters = [24, 27]  # max [24, 27]
 
     # mz_range_pl_thermo = [700, 900]  # [700, 900]
     # rt_range_pl_thermo = [25, 27]  # max [24, 27]
