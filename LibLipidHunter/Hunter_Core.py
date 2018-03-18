@@ -865,13 +865,13 @@ def hunt_img(img_params_dct):
     for w_count in range(len(lipid_info_img_lst)):
         worker(w_count)
     yield q.join()
-    print('Done in %d seconds, fetched %s images.' % (time.time() - start, len(fetched)))
+    print('>>> Core #', core_count, 'Done in %d seconds, fetched %s images.' % (time.time() - start, len(fetched)))
 
 
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 1
+    core_count = 4
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
 
@@ -881,8 +881,8 @@ if __name__ == '__main__':
     usr_test_lst = ['PC_waters']
 
     # define default ranges of each test
-    mz_range_pl_waters = [650, 950]  # [650, 950]
-    rt_range_pl_waters = [24, 27]  # max [24, 27]
+    mz_range_pl_waters = [800, 850]  # [650, 950]
+    rt_range_pl_waters = [26, 27]  # max [24, 27]
 
     # mz_range_pl_thermo = [700, 900]  # [700, 900]
     # rt_range_pl_thermo = [25, 27]  # max [24, 27]
