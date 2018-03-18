@@ -32,8 +32,10 @@ import matplotlib.patches as patches
 # import matplotlib as mpl
 # from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 # from matplotlib._png import read_png
+from tornado import gen
 
 
+@gen.coroutine
 def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
                  formula_charged, charge, core_count, save_img_as=None, img_type='png', dpi=300, vendor='waters',
                  ms1_precision=50e-6):
@@ -585,11 +587,28 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         plt.close()
 
 
-def gen_plot(param_dct_lst, core_count=1, img_type='png', dpi=300, vendor='waters', ms1_precision=50e-6):
+@gen.coroutine
+def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters', ms1_precision=50e-6):
 
-    core_count = 'Core #{core}'.format(core=core_count)
+    if isinstance(param_dct_lst, list):
+        for param_dct in param_dct_lst:
+            abbr = param_dct['abbr']
+            mz_se = param_dct['mz_se']
+            xic_dct = param_dct['xic_dct']
+            ident_info_dct = param_dct['ident_info_dct']
+            spec_info_dct = param_dct['spec_info_dct']
+            isotope_score_info_dct = param_dct['isotope_score_info_dct']
+            specific_dct = param_dct['specific_dct']
+            formula_charged = param_dct['formula_charged']
+            charge = param_dct['charge']
+            save_img_as = param_dct['save_img_as']
 
-    for param_dct in param_dct_lst:
+            plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
+                         formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
+                         dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
+
+    elif isinstance(param_dct_lst, dict):
+        param_dct = param_dct_lst
         abbr = param_dct['abbr']
         mz_se = param_dct['mz_se']
         xic_dct = param_dct['xic_dct']
@@ -604,3 +623,4 @@ def gen_plot(param_dct_lst, core_count=1, img_type='png', dpi=300, vendor='water
         plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
                      formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
                      dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
+
