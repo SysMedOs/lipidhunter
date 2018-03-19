@@ -701,8 +701,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         print(core_count, '!! Size of the identified LPP_df == 0')
         tmp_df = 'error'
     if save_fig is True:
-        print('img_plt_lst')
-        print(len(img_plt_lst))
+        print('img_plt_lst', len(img_plt_lst))
     else:
         img_plt_lst = []
 

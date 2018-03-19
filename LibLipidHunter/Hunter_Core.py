@@ -74,7 +74,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         'hunter_folder': r'D:\lipidhunter',
                         'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300}
     :param(list) error_lst: empty list to store error info to display on GUI.
-    :param(bool) save_img: Can be set to False to skip image generation (not recommended).
+    :param(bool) save_fig: Can be set to False to skip image generation (not recommended).
     :return:
     """
 
@@ -128,7 +128,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     try:
         usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
     except FileNotFoundError:
-        return False, ['Some files missing...', 'Please check your settings in the configuration file ...'], False
+        error_lst.append('Some files missing...')
+        error_lst.append('Please check your settings in the configuration file ...')
+        return False, error_lst, False
     # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
 
@@ -198,20 +200,18 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     if ms1_obs_pr_df is False:
         print('!! NO suitable precursor --> Check settings!!\n')
-        return False, ['!! NO suitable precursor --> Check settings!!\n'], False
+        error_lst.append('!! NO suitable precursor --> Check settings!!\n')
+        return False, error_lst, False
 
     print('=== ==> --> ms1 precursor matched')
 
-    # remove bad precursors
-    checked_info_df = pd.DataFrame()
-    dda_rank = usr_scan_info_df['DDA_rank']
-    scan_id = usr_scan_info_df['scan_number']
-    scan_rank_lst = zip(dda_rank, scan_id)
-    for scan_info in scan_rank_lst:
-        _tmp_usr_df = ms1_obs_pr_df.query('DDA_rank == %f and scan_number == %f' % (scan_info[0], scan_info[1]))
-        checked_info_df = checked_info_df.append(_tmp_usr_df)
+    # remove bad precursors, keep the matched scans by DDA_rank and scan number
+    usr_scan_info_df['scan_checker'] = 10000 * usr_scan_info_df['scan_number'] + usr_scan_info_df['DDA_rank']
+    ms1_obs_pr_df['scan_checker'] = 10000 * ms1_obs_pr_df['scan_number'] + ms1_obs_pr_df['DDA_rank']
+    usr_scan_checker_lst = usr_scan_info_df['scan_checker'].tolist()
+    checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_checker_lst)]
 
-    checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'])
+    checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'], inplace=True)
 
     ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
@@ -278,8 +278,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     # print(xic_dct.keys())
 
     if len(list(xic_dct.keys())) == 0:
-        print('No precursor for XIC found')
-        return False, False, False
+        print('!! No precursor for XIC found !!')
+        error_lst.append('!! No precursor for XIC found !!\n')
+        return False, error_lst, False
     else:
         print('=== ==> --> Number of XIC extracted: %i' % len(list(xic_dct.keys())))
 
@@ -411,11 +412,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                                                                      lipid_sub_len)]
         lipid_part_key_lst.append(lipid_sub_key_lst)
 
-    # lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
-    # lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, len(found_spec_key_lst),
-    #                                                                              lipid_sub_len)]
-    # lipid_part_key_lst.append(lipid_sub_key_lst)
-
     print('lipid_part_number: ', len(lipid_part_key_lst), ' lipid_part_len:', len(lipid_part_key_lst[0]))
 
     part_tot = len(lipid_part_key_lst)
@@ -543,8 +539,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                                                 key_frag_dct, lipid_sub_dct, xic_dct, core_worker_count)
 
     # Merge multiprocessing results
-    for lipid_info_result in lipid_info_results_lst:
-        if usr_core_num > 1:
+    if usr_core_num > 1:
+        for lipid_info_result in lipid_info_results_lst:
             try:
                 tmp_lipid_info = lipid_info_result.get()
                 tmp_lipid_info_df = tmp_lipid_info[0]
@@ -556,6 +552,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 tmp_lipid_info_df = 'error'
                 tmp_lipid_img_lst = []
                 print('!!error!!--> This segment receive no Lipid identified.')
+
             if isinstance(tmp_lipid_info_df, str):
                 pass
             else:
@@ -563,13 +560,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     if tmp_lipid_info_df.shape[0] > 0:
                         output_df = output_df.append(tmp_lipid_info_df)
                         lipid_info_img_lst.extend(tmp_lipid_img_lst)
-        else:
-            tmp_lipid_info_df = lipid_info_results_lst[0]
-            tmp_lipid_img_lst = lipid_info_results_lst[1]
-            if isinstance(tmp_lipid_info_df, pd.DataFrame):
-                if tmp_lipid_info_df.shape[0] > 0:
-                    output_df = output_df.append(tmp_lipid_info_df)
-                    lipid_info_img_lst.extend(tmp_lipid_img_lst)
+    else:
+        tmp_lipid_info_df = lipid_info_results_lst[0]
+        tmp_lipid_img_lst = lipid_info_results_lst[1]
+        if isinstance(tmp_lipid_info_df, pd.DataFrame):
+            if tmp_lipid_info_df.shape[0] > 0:
+                output_df = output_df.append(tmp_lipid_info_df)
+                lipid_info_img_lst = tmp_lipid_img_lst
 
     print('=== ==> --> Generate the output table')
     if output_df.shape[0] > 0:
@@ -657,11 +654,15 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             print(output_sum_xlsx)
         print('=== ==> --> saved >>> >>> >>>')
 
+    else:
+        error_lst.append('!! Warning !! NO Lipid identified in this file.\n!! Please check your settings !!')
+        tot_run_time = time.clock() - start_time
+        print('!! Warning !!--> This file got no Lipid identified.')
+        print('>>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
+        return tot_run_time, error_lst, output_df
+
     # Start multiprocessing to save img
     if save_fig is True:
-        print('lipid_info_img_lst')
-        print(len(lipid_info_img_lst))
-
         # keep stay in current working directory
         current_path = os.getcwd()
         if os.path.isdir(output_folder):
@@ -683,11 +684,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         log_pager.add_all_info(output_df)
         log_pager.close_page()
 
-        img_num = len(lipid_info_img_lst)
-        img_sub_len = int(math.ceil(img_num / usr_core_num))
-        img_sub_key_lst = [lipid_info_img_lst[k: k + img_sub_len] for k in range(0, img_num, img_sub_len)]
         if usr_core_num > 1:
             parallel_pool = Pool(usr_core_num)
+
+            img_num = len(lipid_info_img_lst)
+            img_sub_len = int(math.ceil(img_num / usr_core_num))
+            img_sub_key_lst = [lipid_info_img_lst[k: k + img_sub_len] for k in range(0, img_num, img_sub_len)]
 
             core_worker_count = 1
             for img_sub_lst in img_sub_key_lst:
@@ -696,10 +698,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         img_sub_lst = [x for x in img_sub_lst if x is not None]
                     else:
                         pass
-                    print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
+                    # img_params_dct = {'lipid_info_img_lst': img_sub_lst, 'usr_core_num': usr_core_num,
+                    #                   'usr_img_type': usr_img_type, 'usr_dpi': usr_dpi, 'usr_vendor': usr_vendor,
+                    #                   'usr_ms1_precision': usr_ms1_precision, 'core_worker_count': core_worker_count}
+                    print('>>> >>> Core #%i ==> ...... Generating output images ......' % core_worker_count)
                     if len(img_sub_lst) > 0:
-                        parallel_pool.apply_async(gen_plot, args=(img_sub_lst, core_worker_count, usr_img_type, usr_dpi,
-                                                                  usr_vendor, usr_ms1_precision))
+                        parallel_pool.apply_async(gen_plot, args=(img_sub_lst, core_worker_count, usr_img_type,
+                                                                  usr_dpi, usr_vendor, usr_ms1_precision))
                         core_worker_count += 1
 
             parallel_pool.close()
@@ -707,21 +712,18 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
         else:
             print('Using single core mode...')
-            for img_sub_lst in img_sub_key_lst:
-                if isinstance(img_sub_lst, tuple) or isinstance(img_sub_lst, list):
-                    if None in img_sub_lst:
-                        img_sub_lst = [x for x in img_sub_lst if x is not None]
-                    else:
-                        pass
-                    print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-                    if len(img_sub_lst) > 0:
-                        gen_plot(img_sub_lst, core_worker_count, usr_img_type, usr_dpi, usr_vendor, usr_ms1_precision)
+            if isinstance(lipid_info_img_lst, tuple) or isinstance(lipid_info_img_lst, list):
+                if None in lipid_info_img_lst:
+                    lipid_info_img_lst = [x for x in lipid_info_img_lst if x is not None]
+                else:
+                    pass
+                if len(lipid_info_img_lst) > 0:
+                    gen_plot(lipid_info_img_lst, core_worker_count, usr_img_type, usr_dpi,
+                             usr_vendor, usr_ms1_precision)
     else:
         print('!!!!!! User skip image generation !!!!!!')
 
     tot_run_time = time.clock() - start_time
-
-    # tot_run_time = '%.2f Sec\n' % tot_run_time
 
     print('>>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
 
@@ -731,7 +733,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 4
+    core_count = 1
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
 
