@@ -654,7 +654,6 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                             # obs_info_df['#Specific_peaks'] = (target_frag_count + target_nl_count)
                             # obs_info_df['#Contaminated_peaks'] = (other_frag_count + other_nl_count)
                             obs_info_df['ppm'] = _exact_ppm
-
                             obs_info_df['img_name'] = img_name_core[1:]
 
                             tmp_df = tmp_df.append(obs_info_df)

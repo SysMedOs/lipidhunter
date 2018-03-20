@@ -699,9 +699,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         log_pager.add_all_info(output_df)
         log_pager.close_page()
 
+
         if usr_core_num > 1:
             parallel_pool = Pool(usr_core_num)
-
             img_num = len(lipid_info_img_lst)
             img_sub_len = int(math.ceil(img_num / usr_core_num))
             img_sub_key_lst = [lipid_info_img_lst[k: k + img_sub_len] for k in range(0, img_num, img_sub_len)]

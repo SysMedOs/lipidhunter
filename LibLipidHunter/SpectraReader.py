@@ -255,6 +255,8 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                                                              'DDA_rank', 'scan_number', 'MS2_PR_mz'])
     scan_info_df.sort_values(by='scan_time', inplace=True)
     scan_info_df = scan_info_df.round({'MS2_PR_mz': 6})
+    int_col_lst = ['dda_event_idx', 'spec_index', 'DDA_rank', 'scan_number']
+    scan_info_df[int_col_lst] = scan_info_df[int_col_lst].astype(int)
     spec_pl = pd.Panel(data=spec_dct)
     print('=== ==> --> mzML extracted')
 
