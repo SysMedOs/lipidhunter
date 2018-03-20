@@ -1349,10 +1349,8 @@ class Ui_MainWindow(object):
         self.tab_a_lipidclass_cmb.setItemText(7, QtGui.QApplication.translate("MainWindow", "Phosphatidylserine (PS) [M-H]-", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_lipidclass_cmb.setItemText(8, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+H]+", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+NH4]+", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow",
-                                                                              "Triacylglycerol (TG) [M+Na]+", None,
-                                                                              QtGui.QApplication.UnicodeUTF8))
-        self.tab_a_lipidclass_cmb.setItemText(9, QtGui.QApplication.translate("MainWindow",
+        self.tab_a_lipidclass_cmb.setItemText(10, QtGui.QApplication.translate("MainWindow", "Triacylglycerol (TG) [M+Na]+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_a_lipidclass_cmb.setItemText(11, QtGui.QApplication.translate("MainWindow",
                                                                               "Diacylglycerol (DG) [M+NH4]+", None,
                                                                               QtGui.QApplication.UnicodeUTF8))
         self.label_16.setText(QtGui.QApplication.translate("MainWindow", "MS/MS level ppm:", None, QtGui.QApplication.UnicodeUTF8))
@@ -1424,7 +1422,9 @@ class Ui_MainWindow(object):
         self.tab_c_scorecfgtg_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_c_scorecfgpl_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>&quot;W<span style=\" font-size:11pt; vertical-align:sub;\">frag</span>&quot; for PL:</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_c_scorecfgtg_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>&quot;W<span style=\" font-size:11pt; vertical-align:sub;\">frag</span>&quot;  for TG:</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_falisttg_lb.setText(QtGui.QApplication.translate("MainWindow", "Default FA list for TG:", None, QtGui.QApplication.UnicodeUTF8))
+        # self.tab_c_falisttg_lb.setText(
+        #     QtGui.QApplication.translate("MainWindow", "Default FA list for TG:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_falisttg_lb.setText(QtGui.QApplication.translate("MainWindow", "Default FA list for TG/DG:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_c_falistpl_lb.setText(QtGui.QApplication.translate("MainWindow", "Default FA list for PL:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_c_falisttg_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.tabframe.setTabText(self.tabframe.indexOf(self.cfg_tab), QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))

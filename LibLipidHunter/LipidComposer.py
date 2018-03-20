@@ -50,7 +50,8 @@ class LipidComposer:
         self.lipid_hg_lst = ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'PIP', 'TG']
 
         self.lipid_hg_elem_dct = {'PA': pa_hg_elem, 'PC': pc_hg_elem, 'PE': pe_hg_elem, 'PG': pg_hg_elem,
-                                  'PI': pi_hg_elem, 'PS': ps_hg_elem, 'PIP': pip_hg_elem, 'TG': tg_hg_elem}
+                                  'PI': pi_hg_elem, 'PS': ps_hg_elem, 'PIP': pip_hg_elem, 'TG': tg_hg_elem,
+                                  'DG': tg_hg_elem}
 
         self.glycerol_bone_elem_dct = {'C': 3, 'H': 2}
         self.link_o_elem_dct = {'O': -1, 'H': 2}
@@ -72,7 +73,7 @@ class LipidComposer:
 
         header_lst = fa_df.columns.values.tolist()
 
-        if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
+        if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS']:
             if 'PL' in header_lst and 'FattyAcid' in header_lst:
                 pl_sn1_df = fa_df.query('PL == "T" and sn1 == "T"')
                 pl_sn2_df = fa_df.query('PL == "T" and sn2 == "T"')
@@ -93,7 +94,15 @@ class LipidComposer:
                 tg_sn3_lst = tg_sn3_df['FattyAcid'].tolist()
 
                 sn_units_lst = [tg_sn1_lst, tg_sn2_lst, tg_sn3_lst]
+        elif lipid_class in ['DG']:
+            if 'DG' in header_lst and 'FattyAcid' in header_lst:
+                dg_sn1_df = fa_df.query('TG == "T" and sn1 == "T"')
+                dg_sn2_df = fa_df.query('TG == "T" and sn2 == "T"')
 
+                dg_sn1_lst = dg_sn1_df['FattyAcid'].tolist()
+                dg_sn2_lst = dg_sn2_df['FattyAcid'].tolist()
+
+                sn_units_lst = [dg_sn1_lst, dg_sn2_lst]
         elif lipid_class in ['CL']:
             if 'CL' in header_lst and 'FattyAcid' in header_lst:
                 cl_sn1_df = fa_df.query('CL == "T" and sn1 == "T"')
@@ -214,6 +223,24 @@ class LipidComposer:
                                                                     ms2_ppm)
                 usr_fa_df['%s_Q' % _mg_ion] = (usr_fa_df['%s_MZ_LOW' % _mg_ion].astype(str) + ' <= mz <= ' + usr_fa_df[
                     '%s_MZ_HIGH' % _mg_ion].astype(str))
+        elif lipid_type in ['DG']:
+            mg_type_dct = {'[MG-H2O+H]+': 'EXACTMASS'}
+            mg_base_elem_dct = self.lipid_hg_elem_dct[lipid_type]
+
+            for _e in self.glycerol_bone_elem_dct.keys():
+                mg_base_elem_dct[_e] += self.glycerol_bone_elem_dct[_e]
+
+            # Calculate the rest of monoglycerol after the neutral loss of 2 FA in protonated form (one without Water)
+            mg_base_elem_dct = elem_calc.get_exactmass(mg_base_elem_dct) + 15.9949146221 + (3 * 1.0078250321)
+            for _mg_ion in mg_type_dct.keys():
+                usr_fa_df['%s_ABBR' % _mg_ion] = ('[MG(' + usr_fa_df['ABBR'].str.strip('FA') + ')-H2O+H]+')
+                usr_fa_df['%s_MZ' % _mg_ion] = mg_base_elem_dct + usr_fa_df[mg_type_dct[_mg_ion]]
+                usr_fa_df['%s_MZ_LOW' % _mg_ion] = ppm_window_para(usr_fa_df['%s_MZ' % _mg_ion].values.tolist(),
+                                                                   ms2_ppm * -1)
+                usr_fa_df['%s_MZ_HIGH' % _mg_ion] = ppm_window_para(usr_fa_df['%s_MZ' % _mg_ion].values.tolist(),
+                                                                    ms2_ppm)
+                usr_fa_df['%s_Q' % _mg_ion] = (usr_fa_df['%s_MZ_LOW' % _mg_ion].astype(str) + ' <= mz <= ' + usr_fa_df[
+                    '%s_MZ_HIGH' % _mg_ion].astype(str))
         else:
             # TODO (georgia.angelidou@uni-leipzig.de): SM
             pass
@@ -251,7 +278,7 @@ class LipidComposer:
 
         if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(sn_comb_lite_lst) > 0:
             for _comb_lite in sn_comb_lite_lst:
-                _lipid_abbr = '{pl}({sn1}_{sn2})'.format(pl=lipid_class, sn1=_comb_lite[0].strip('FA'),
+                _lipid_abbr = '{lt}({sn1}_{sn2})'.format(lt=lipid_class, sn1=_comb_lite[0].strip('FA'),
                                                          sn2=_comb_lite[1].strip('FA'))
                 lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'SN1': _comb_lite[0], 'SN2': _comb_lite[1],
                                                'DISCRETE_ABBR': _lipid_abbr}
@@ -490,6 +517,28 @@ class LipidComposer:
             lipid_dct['[M-(SN3-H+Na)+H]+_Q'] = (
                     lipid_dct['[M-(SN3-H+Na)+H]+_MZ_LOW'].astype(str) + ' <= mz <= ' + lipid_dct[
                 '[M-(SN3-H+Na)+H]+_MZ_HIGH'].astype(str))
+        elif m_class in ['DG']:
+            mg_str = 'MG'
+            lipid_dct['[MG(SN1)-H2O+H]+_ABBR'] = '[%s(%s)-H2O+H]+' % (mg_str, sn1_abbr)
+            lipid_dct['[MG(SN2)-H2O+H]+_ABBR'] = '[%s(%s)-H2O+H]+' % (mg_str, sn2_abbr)
+
+            lipid_dct['[MG(SN1)-H2O+H]+_MZ'] = round(sn1_exactmass + gly_mg_base_exactmass, 6)
+            lipid_dct['[MG(SN2)-H2O+H]+_MZ'] = round(sn2_exactmass + gly_mg_base_exactmass, 6)
+
+            lipid_dct['[MG(SN1)-H2O+H]+_MZ_LOW'] = ppm_window_para((sn1_exactmass + gly_mg_base_exactmass),
+                                                                   ms2_ppm * -1)
+            lipid_dct['[MG(SN1)-H2O+H]+_MZ_HIGH'] = ppm_window_para((sn1_exactmass + gly_mg_base_exactmass), ms2_ppm)
+            lipid_dct['[MG(SN1)-H2O+H]+_Q'] = (
+                    lipid_dct['[MG(SN1)-H2O+H]+_MZ_LOW'].astype(str) + ' <= mz <= ' +
+                    lipid_dct['[MG(SN1)-H2O+H]+_MZ_HIGH'].astype(str))
+
+            lipid_dct['[MG(SN2)-H2O+H]+_MZ_LOW'] = ppm_window_para((sn2_exactmass + gly_mg_base_exactmass),
+                                                                   ms2_ppm * -1)
+            lipid_dct['[MG(SN2)-H2O+H]+_MZ_HIGH'] = ppm_window_para((sn2_exactmass + gly_mg_base_exactmass), ms2_ppm)
+            lipid_dct['[MG(SN2)-H2O+H]+_Q'] = (
+                    lipid_dct['[MG(SN2)-H2O+H]+_MZ_LOW'].astype(str) + ' <= mz <= ' +
+                    lipid_dct['[MG(SN2)-H2O+H]+_MZ_HIGH'].astype(str))
+
         else:
             # TODO (georgia.angelidou@uni-leipzig.de: Info for sphingomyelins
             pass
@@ -587,23 +636,23 @@ class LipidComposer:
 
 
 if __name__ == '__main__':
-    fa_lst_file = r'../ConfigurationFiles/FA_Whitelist2.xlsx'
+    fa_lst_file = r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles/01-FA_Whitelist_TG.xlsx'
 
     # Note:
     # exact position means to consider the poition from the FA white list that the user give but,
     # in the case that the user define 2 different FA for both positions then:
     # When it is false it will give only one option
     # and when it is TRUE to give both compinations that these 2 FA an make (incase of phospholipids)
-    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'TG', 'charge_mode': '[M+Na]+',
+    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'DG', 'charge_mode': '[M+NH4]+',
                      'exact_position': 'FALSE'}
 
     composer = LipidComposer()
     usr_lipid_master_df = composer.compose_lipid(param_dct=usr_param_dct, ms2_ppm=50)
 
-    master_xlsx = r'../Temp/LipidMaster_Whitelist_TG.xlsx'
+    master_xlsx = r'../Temp/LipidMaster_Whitelist_TG[M+DG]+.xlsx'
     fa_xlsx = r'../Temp/LipidMaster_FAlist.xlsx'
 
-    calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_type'], r'../ConfigurationFiles/FA_Whitelist2.xlsx',
+    calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_type'], r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles/01-FA_Whitelist_TG.xlsx',
                                         ms2_ppm=50)
 
     print(calc_fa_df)

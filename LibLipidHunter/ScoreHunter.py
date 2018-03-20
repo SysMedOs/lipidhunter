@@ -269,6 +269,9 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         frag_lst = ['[MG-H2O+H]+']
         frag_lst_dg = ['[M-(SN1-H+Na)+H]+', '[M-(SN2-H+Na)+H]+', '[M-(SN3-H+Na)+H]+', '[M-(SN1)+Na]+', '[M-(SN2)+Na]+',
                        '[M-(SN3)+Na]+']
+    elif lipid_type in ['DG'] and charge in ['[M+NH4]+']:
+        frag_lst_fa = ['[FA-H2O+H]+']
+        frag_lst = ['[MG-H2O+H]+']
     else:
         # TODO (zhixu.ni@uni-leipzig.de): consider more situations here
         # TODO (georgia.angelidou@uni-leipzig.de): SM fragmentation pattern
@@ -315,6 +318,9 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         obs_dct = {'[FA-H2O+H]+': [obs_fa_frag_df, ['SN1_[FA-H2O+H]+', 'SN2_[FA-H2O+H]+', 'SN3_[FA-H2O+H]+']],
                    '[MG-H2O+H]+': [obs_fa_nl_df, ['[MG(SN1)-H2O+H]+', '[MG(SN2)-H2O+H]+', '[MG(SN3)-H2O+H]+']],
                    '[M-FA+H]+': [obs_dg_frag_df, ['[M-(SN1)+H]+', '[M-(SN2)+H]+', '[M-(SN3)+H]+']]}
+    elif lipid_type in ['DG'] and charge in ['[M+H]+', '[M+NH4]+']:
+        obs_dct = { '[FA-H2O+H]+': [obs_fa_frag_df, ['SN1_[FA-H2O+H]+', 'SN2_[FA-H2O+H]+']],
+                    '[MG-H2O+H]+': [obs_fa_nl_df, ['[MG(SN1)-H2O+H]+', '[MG(SN2)-H2O+H]+']]}
     elif lipid_type in ['TG'] and charge in ['[M+Na]+']:
         lite_info_df['sn3_found'] = 0
         obs_dg_frag_df = get_all_fa_nl(lite_info_df, ms2_df, frag_lst_dg, lipid_type)
@@ -527,7 +533,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
     # obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_dg_frag_df,
     #                 'IDENT': ident_peak_df, 'IDENT2': ident_peak_df2}
-    if lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS']:
+    if lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
         obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_fa_nl_df,
                         'IDENT': ident_peak_df2}
     else:
