@@ -757,7 +757,7 @@ if __name__ == '__main__':
     # ['TG', 'thermo', '[M+NH4]+']]
 
     #usr_test_lst = ['TG_thermo_NH4']
-    usr_test_lst = [['TG', 'sciex', '[M+NH4]+', 'TG_sciex_NH4']]
+    usr_test_lst = [['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4']]
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML' # Ni file
@@ -771,12 +771,12 @@ if __name__ == '__main__':
 
     tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG.xlsx'}
+                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG2.xlsx'}
 
     usr_test_dct = {}
     usr_test_dct_keys = []
     for usr_test in usr_test_lst:
-        _test_dct = {'rank_score_filter': 40, 'score_filter': 40, 'isotope_score_filter': 75.0, 'ms_max': 0,
+        _test_dct = {'rank_score_filter': 27.5, 'score_filter': 27.5, 'isotope_score_filter': 75.0, 'ms_max': 0,
                      'pr_window': 0.75, 'ms2_infopeak_threshold': 0.001, 'ms2_hginfopeak_threshold': 0.001}
         if usr_test[0] in ['PC', 'PE', 'PA', 'PG', 'PI', 'PS', 'PIP']:
             lipid_class = usr_test[0]
@@ -801,15 +801,15 @@ if __name__ == '__main__':
             charge = usr_test[2]
             if vendor == 'waters':
                 mzml = tg_mzml_waters
-                mz_range = [600, 1000]
-                rt_range = [9, 15] # max [9, 15]/ for Ni file the range should be above 27
+                mz_range = [700, 1000]
+                rt_range = [12.8, 15] # max [9, 15]/ for Ni file the range should be above 27
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
                 mz_range = [800, 900]
                 rt_range = [20, 24]
             elif vendor == 'sciex':
                 mzml = tg_mzml_SCIEXS
-                mz_range = [600, 1000]
+                mz_range = [900, 1000]
                 rt_range = [8, 13]
             elif vendor == 'agilent':
                 pass
@@ -877,7 +877,7 @@ if __name__ == '__main__':
                 _cfg_dct['ms2_ppm'] = 60
                 _cfg_dct['hg_ppm'] = 60
                 _cfg_dct['ms_th'] = 5000
-                _cfg_dct['ms2_th'] = 1000 # Can get 2000/1000/750/500 dependes how strict should be the identification
+                _cfg_dct['ms2_th'] = 100 # Can get 2000/1000/750/500 dependes how strict should be the identification
                 _cfg_dct['hg_th'] = 1000
                 _cfg_dct['dda_top'] = 15
                 ms_ppm_SCIEXS = 10
@@ -909,8 +909,8 @@ if __name__ == '__main__':
                 test_dct = usr_test_dct[test_key]
                 t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                 lipid_class = test_dct['lipid_type']
-                cfg_dct = {'img_output_folder_str': r'D:\Programs_PhD\lipidhunterdev\Test/results4/%s_%s' % (test_key, t_str),
-                           'xlsx_output_path_str': r'D:\Programs_PhD\lipidhunterdev\Test/results4/%s_%s.xlsx' % (test_key, t_str),
+                cfg_dct = {'img_output_folder_str': r'D:\Programs_PhD\lipidhunterdev\Test/results5/%s_%s' % (test_key, t_str),
+                           'xlsx_output_path_str': r'D:\Programs_PhD\lipidhunterdev\Test/results5/%s_%s.xlsx' % (test_key, t_str),
                            'hunter_folder': hunter_folder, 'img_type': u'png', 'img_dpi': 300,
                            'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True,
                            'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}

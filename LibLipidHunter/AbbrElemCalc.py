@@ -375,6 +375,68 @@ class ElemCalc:
 
         return round(mono_mz, 6)
 
+    # Function to calculate the posible precursor of [M+NH4]+ for TG and DG
+    # Current step is working for TG
+    # This is needed to understand if the precursos is true [M+H]+ or [M+Na]+ (given the users option)
+    def get_NH3_pos_mode(self, charge, mz_pr, amm_elem_dct):
+        mz_NH3_pr_H = ''  # The corespond mz of [M+NH4]+ if the given precursor corresponds to the [M+H]+
+        mz_NH3_pr_Na = ''  # The corespond mz of [M+NH4]+ if the given precursor corresponds to the [M+Na]+
+        if charge in ['[M+H]+']:
+            # Problem need to calculate the theoritical one and not according to the experimental identification
+            # mz_NH3_pr_H = mz_pr - self.periodic_table_dct['H'][0][0] + (4 * self.periodic_table_dct['H'][0][0]) + \
+            #               self.periodic_table_dct['N'][0][0]
+            mz_NH3_pr_H = amm_elem_dct['C'] * self.periodic_table_dct['C'][0][0] + amm_elem_dct['H'] * \
+                          self.periodic_table_dct['H'][0][0] + amm_elem_dct['O'] * self.periodic_table_dct['O'][0][0] + \
+                          self.periodic_table_dct['N'][0][0]
+            # If this precursor corresponds to the [M+Na]+ then to calculate the bulk identification which it will be different from the above
+            # We do the following calculations
+            # First remove the charge and the atoms which form the glycerol bond (Na, C3, H5)
+            # C3H5Na = 64.028895
+            mz_pr_Na = mz_pr - self.periodic_table_dct['Na'][0][0] - (self.periodic_table_dct['C'][0][0] * 3) - (
+                    self.periodic_table_dct['H'][0][0] * 5)
+            # Second Step: For TG Remove the 6O and the first C from the 3 FA and the last C with the 3 H from each
+            # O = 15.994915, C = 12, CH3 = 15.023475
+            # 6O, 3xC, 3xCH3 => C6H9O6 = 177.039915
+            mz_pr_Na = mz_pr_Na - (self.periodic_table_dct['O'][0][0] * 6) - (
+                    self.periodic_table_dct['C'][0][0] * 6) - (self.periodic_table_dct['H'][0][0] * 9)
+            mz_pr_Na = int(mz_pr_Na)
+            db_count_Na = 0
+            while (mz_pr_Na % 14 > 1):
+                db_count_Na = db_count_Na + 1
+                mz_pr_Na = mz_pr_Na - 26
+            c_count_Na = int(mz_pr_Na / 14) + 6 + db_count_Na * 2
+            tg_abbt_bulk_Na = 'TG(' + str(c_count_Na) + ':' + str(db_count_Na) + ')'
+            _mz_Na_formula, _mz_Na_elemdct = self.get_formula(tg_abbt_bulk_Na, '[M+Na]+')
+            mz_NH3_pr_Na = _mz_Na_elemdct['C'] * self.periodic_table_dct['C'][0][0] + (
+                    (_mz_Na_elemdct['H'] + 4) * self.periodic_table_dct['H'][0][0]) + _mz_Na_elemdct['O'] * \
+                           self.periodic_table_dct['O'][0][0] + self.periodic_table_dct['N'][0][0]
+            # Third step: the rest of the elements correspond to the CH2 * x and if DB to the (CHx2) * y (For 1DB == 2xCH)
+            # CH2 = 14.015650, CH = 13.007825
+            # Need to create a loop and make all the numbers integers
+            # elif charge in ['[M+Na]+']:
+            #     mz_NH3_pr_Na = mz_pr - self.periodic_table_dct['Na'][0][0] + (4 * self.periodic_table_dct['H'][0][0]) + \
+            #                    self.periodic_table_dct['N'][0][0]
+        elif charge in ['[M+Na]+']:
+            mz_NH3_pr_Na = amm_elem_dct['C'] * self.periodic_table_dct['C'][0][0] + amm_elem_dct['H'] * \
+                           self.periodic_table_dct['H'][0][0] + amm_elem_dct['O'] * self.periodic_table_dct['O'][0][0] + \
+                           self.periodic_table_dct['N'][0][0]
+            print (mz_pr)
+            C5H3= self.periodic_table_dct['H'][0][0] * 6  + self.periodic_table_dct['C'][0][0] *3
+            rest_sampl = self.periodic_table_dct['O'][0][0] *6 + self.periodic_table_dct['H'][0][0] *9 + self.periodic_table_dct['C'][0][0] * 6
+            mz_pr_H = mz_pr - C5H3 - rest_sampl
+            mz_pr_H = int(mz_pr_H)
+            db_count_H = 0
+            while (mz_pr_H % 14 > 1):
+                db_count_H = db_count_H + 1
+                mz_pr_H = mz_pr_H - 26
+            c_count_H = int(mz_pr_H / 14) + 6 + db_count_H * 2
+            tg_abbt_bulk_H = 'TG(' + str(c_count_H) + ':' + str(db_count_H) + ')'
+            _mz_H_formula, _mz_H_elemdct = self.get_formula(tg_abbt_bulk_H, '[M+H]+')
+            mz_NH3_pr_H = _mz_H_elemdct['C'] * self.periodic_table_dct['C'][0][0] + (_mz_H_elemdct['H'] + 3) * \
+                          self.periodic_table_dct['H'][0][0] + _mz_H_elemdct['O'] * self.periodic_table_dct['O'][0][0] + self.periodic_table_dct['N'][0][0]
+
+        return (mz_NH3_pr_H, mz_NH3_pr_Na)
+
 
 if __name__ == '__main__':
 

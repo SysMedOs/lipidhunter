@@ -414,7 +414,12 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
         msms_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
         msms_pic.set_ylabel("Intensity", fontsize=10)
-        msms_pic.set_xlim([min(ms2_df['mz'].values.tolist()) - 1, ms2_pr_mz + 20])
+        if min(ms2_df['mz'].values.tolist()) > 400:
+            msms_pic.set_xlim([min(ms2_df['mz'].values.tolist()) - 100, ms2_pr_mz + 20])
+        elif min(ms2_df['mz'].values.tolist()) - 10 > 0:
+            msms_pic.set_xlim([min(ms2_df['mz'].values.tolist()) - 10, ms2_pr_mz + 20])
+        else:
+            msms_pic.set_xlim([min(ms2_df['mz'].values.tolist()) - 1, ms2_pr_mz + 20])
         msms_pic.set_ylim([0, _msms_max * 1.5])
 
         if obs_ident_df is not False:
