@@ -22,7 +22,9 @@ from __future__ import division
 from __future__ import print_function
 
 import math
+import multiprocessing
 from multiprocessing import Pool
+from sys import platform
 
 import pandas as pd
 
@@ -33,7 +35,9 @@ except ImportError:  # for python 2.7
     from ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
 
 
-def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max):
+def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max,
+                 os_type='windows', queue=None):
+    print('... Matching precursors ...')
     core_results_df = pd.DataFrame()
     for group_key in sub_group_list:
         subgroup_df = lpp_info_groups.get_group(group_key).copy()
@@ -115,14 +119,18 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
 
     print('core_results_df.shape', core_results_df.shape)
 
-    return core_results_df
+    if os_type == 'linux_multi':
+        queue.put(core_results_df)
+    else:
+        return core_results_df
 
 
 class PrecursorHunter(object):
-    def __init__(self, lpp_info_df, param_dct):
+    def __init__(self, lpp_info_df, param_dct, os_type='windows'):
         self.lpp_info_df = lpp_info_df.copy()
         self.lpp_info_df.is_copy = False
         self.param_dct = param_dct
+        self.os_typ = os_type
 
     def get_matched_pr(self, scan_info_df, spectra_pl, ms1_max=0, core_num=4, max_ram=8):
 
@@ -206,26 +214,48 @@ class PrecursorHunter(object):
 
                 if self.param_dct['core_number'] > 1:
                     part_counter += 1
-                    parallel_pool = Pool(core_num)
+                    if self.os_typ == 'windows':
+                        parallel_pool = Pool(core_num)
 
-                    core_worker_count = 1
-                    for core_list in core_key_list:
-                        if isinstance(core_list, tuple) or isinstance(core_list, list):
-                            if None in core_list:
-                                core_list = [x for x in core_list if x is not None]
-                            else:
-                                pass
-                            print('>>> >>> ...... Core #%i ==> processing ......' % core_worker_count)
-                            pr_info_result = parallel_pool.apply_async(find_pr_info, args=(scan_info_df,
-                                                                                           sub_pl,
-                                                                                           lpp_info_groups,
-                                                                                           core_list, ms1_th,
-                                                                                           ms1_ppm, ms1_max))
-                            core_worker_count += 1
-                            pr_info_results_lst.append(pr_info_result)
+                        core_worker_count = 1
+                        for core_list in core_key_list:
+                            if isinstance(core_list, tuple) or isinstance(core_list, list):
+                                if None in core_list:
+                                    core_list = [x for x in core_list if x is not None]
+                                else:
+                                    pass
+                                print('>>> >>> ...... Core #%i ==> processing ......' % core_worker_count)
+                                pr_info_result = parallel_pool.apply_async(find_pr_info, args=(scan_info_df,
+                                                                                               sub_pl,
+                                                                                               lpp_info_groups,
+                                                                                               core_list, ms1_th,
+                                                                                               ms1_ppm, ms1_max))
+                                core_worker_count += 1
+                                pr_info_results_lst.append(pr_info_result)
 
-                    parallel_pool.close()
-                    parallel_pool.join()
+                        parallel_pool.close()
+                        parallel_pool.join()
+                    else:
+                        jobs = []
+                        queue = multiprocessing.Queue()
+                        core_worker_count = 1
+                        for core_list in core_key_list:
+                            if isinstance(core_list, tuple) or isinstance(core_list, list):
+                                if None in core_list:
+                                    core_list = [x for x in core_list if x is not None]
+                                else:
+                                    pass
+                                print('>>> >>> ...... Core #%i ==> processing ......' % core_worker_count)
+                                job = multiprocessing.Process(target=find_pr_info, args=(scan_info_df, sub_pl,
+                                                                                         lpp_info_groups, core_list,
+                                                                                         ms1_th, ms1_ppm, ms1_max,
+                                                                                         self.os_typ, queue))
+                                core_worker_count += 1
+                                jobs.append(job)
+                                job.start()
+                                pr_info_results_lst.append(queue.get())
+                        for j in jobs:
+                            j.join()
 
                 else:
                     print('Using single core mode...')
@@ -246,18 +276,23 @@ class PrecursorHunter(object):
 
         #  Merge multiprocessing results
         for pr_info_result in pr_info_results_lst:
-
             if self.param_dct['core_number'] > 1:
-                try:
-                    sub_df = pr_info_result.get()
-                    if sub_df.shape[0] > 0:
-                        ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
-                except (KeyError, SystemError, ValueError, TypeError):
-                    pass
+                if self.os_typ == 'windows':
+                    try:
+                        sub_df = pr_info_result.get()
+                        if sub_df.shape[0] > 0:
+                            ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
+                    except (KeyError, SystemError, ValueError, TypeError):
+                        pass
+                else:
+                    try:
+                        if pr_info_result.shape[0] > 0:
+                            ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
+                    except (KeyError, SystemError, ValueError, TypeError):
+                        pass
             else:
-                sub_df = pr_info_result
-                if sub_df.shape[0] > 0:
-                    ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
+                if pr_info_result.shape[0] > 0:
+                    ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
 
         # End multiprocessing
 
@@ -269,4 +304,3 @@ class PrecursorHunter(object):
 
         else:
             return False, False
-

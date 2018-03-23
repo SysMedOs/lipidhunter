@@ -32,16 +32,16 @@ class LogPageCreator(object):
     def __init__(self, output_folder, start_time, params):
         print(os.getcwd())
         self.output_folder = output_folder
-        self.output_img_folder = output_folder + r'\LipidHunter_Results_Figures_%s' % start_time
-        self.main_page = output_folder + r'\LipidHunter_Results_%s.html' % start_time
-        self.logo = r'LipidHunter_Results_Figures_%s\LipidHunter.ico' % start_time
-        _image_lst_page = r'LipidHunter_Results_Figures_%s\LipidHunter_Results_Figures_list.html' % start_time
-        _params_lst_page = r'LipidHunter_Results_Figures_%s\LipidHunter_Params_list.html' % start_time
-        _idx_lst_page = r'LipidHunter_Results_Figures_%s\LipidHunter_Identification_list.html' % start_time
-        self.image_lst_page = self.output_img_folder + r'\LipidHunter_Results_Figures_list.html'
-        self.params_lst_page = self.output_img_folder + r'\LipidHunter_Params_list.html'
-        self.idx_lst_page = self.output_img_folder + r'\LipidHunter_Identification_list.html'
-        self.cfg_sum_page = self.output_img_folder + r'\LipidHunter_Configuration_Summary.html'
+        self.output_img_folder = output_folder + r'/LipidHunter_Results_Figures_%s' % start_time
+        self.main_page = output_folder + r'/LipidHunter_Results_%s.html' % start_time
+        self.logo = r'LipidHunter_Results_Figures_%s/LipidHunter.ico' % start_time
+        _image_lst_page = r'LipidHunter_Results_Figures_%s/LipidHunter_Results_Figures_list.html' % start_time
+        _params_lst_page = r'LipidHunter_Results_Figures_%s/LipidHunter_Params_list.html' % start_time
+        _idx_lst_page = r'LipidHunter_Results_Figures_%s/LipidHunter_Identification_list.html' % start_time
+        self.image_lst_page = self.output_img_folder + r'/LipidHunter_Results_Figures_list.html'
+        self.params_lst_page = self.output_img_folder + r'/LipidHunter_Params_list.html'
+        self.idx_lst_page = self.output_img_folder + r'/LipidHunter_Identification_list.html'
+        self.cfg_sum_page = self.output_img_folder + r'/LipidHunter_Configuration_Summary.html'
 
         self.lipid_type = params['lipid_type']
         hunter_folder = params['hunter_folder']
