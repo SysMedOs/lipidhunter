@@ -357,7 +357,7 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
     return spec_info_dct
 
 
-def get_xic_from_pl(xic_ms1_lst, ms1_xic_df, xic_ppm):
+def get_xic_from_pl(xic_ms1_lst, ms1_xic_df, xic_ppm, os_type='windows', queue=None):
 
     ms1_xic_dct = {}
 
@@ -381,10 +381,14 @@ def get_xic_from_pl(xic_ms1_lst, ms1_xic_df, xic_ppm):
             _found_ms1_df.drop_duplicates(subset=['rt'], keep='first', inplace=True)
             # print('_found_ms1_df.shape', _found_ms1_df.shape)
             ms1_xic_dct[_xic_mz] = _found_ms1_df
-    return ms1_xic_dct
+
+    if os_type == 'linux_multi':
+        queue.put(ms1_xic_dct)
+    else:
+        return ms1_xic_dct
 
 
-def get_spec_info(lpp_all_group_key_lst, checked_info_groups, usr_scan_info_df):
+def get_spec_info(lpp_all_group_key_lst, checked_info_groups, scans_info_df, os_type='windows', queue=None):
     lpp_spec_info_dct = {}
     for group_key in lpp_all_group_key_lst:
         _subgroup_df = checked_info_groups.get_group(group_key)
@@ -394,14 +398,17 @@ def get_spec_info(lpp_all_group_key_lst, checked_info_groups, usr_scan_info_df):
         _usr_ms2_dda_rank = _samemz_se['DDA_rank']
         _usr_ms2_scan_id = _samemz_se['scan_number']
         _usr_mz_lib = _samemz_se['Lib_mz']
-        _tmp_chk_df = usr_scan_info_df.query('MS2_PR_mz == %.6f and DDA_rank == %i and scan_number == %i'
-                                             % (_usr_ms2_pr_mz, _usr_ms2_dda_rank, _usr_ms2_scan_id))
+        _tmp_chk_df = scans_info_df.query('MS2_PR_mz == %.6f and DDA_rank == %i and scan_number == %i'
+                                          % (_usr_ms2_pr_mz, _usr_ms2_dda_rank, _usr_ms2_scan_id))
         if _tmp_chk_df.shape[0] == 1:
             _tmp_info_dct = {'MS2_PR_mz': _usr_ms2_pr_mz, 'DDA_rank': _usr_ms2_dda_rank,
                              'scan_number': _usr_ms2_scan_id, 'Lib_mz': _usr_mz_lib}
             lpp_spec_info_dct[group_key] = _tmp_info_dct
 
-    return lpp_spec_info_dct
+    if os_type == 'linux_multi':
+        queue.put(lpp_spec_info_dct)
+    else:
+        return lpp_spec_info_dct
 
 
 if __name__ == '__main__':

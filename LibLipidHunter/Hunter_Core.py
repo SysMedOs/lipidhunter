@@ -23,9 +23,11 @@ from __future__ import print_function
 
 import getopt
 import math
+import multiprocessing
 from multiprocessing import Pool
 import os
 import sys
+from sys import platform
 import time
 
 import pandas as pd
@@ -115,10 +117,36 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     # usr_ms2_hginfo_th = param_dct['ms2_hginfopeak_threshold']
     # usr_rank_mode = param_dct['rank_score']
     # usr_fast_isotope = param_dct['fast_isotope']
+    if 'xic_ppm' in list(param_dct.keys()):
+        usr_xic_ppm = int(param_dct['xic_ppm'])
+    else:
+        usr_xic_ppm = usr_ms1_ppm
+
+    # parameters from settings tab
+    usr_core_num = param_dct['core_number']
+    usr_max_ram = param_dct['max_ram']
+
     usr_dpi = param_dct['img_dpi']
     usr_img_type = param_dct['img_type']
 
     hunter_start_time_str = param_dct['hunter_start_time']
+
+    if platform == "linux" or platform == "linux2":  # linux
+        if usr_core_num > 1:
+            os_typ = 'linux_multi'
+            print('=== ==> --> LipidHunter Running on >>> Linux with multiprocessing mode ...')
+        else:
+            os_typ = 'linux_single'
+            print('=== ==> --> LipidHunter Running on >>> Linux with single core mode ...')
+    elif platform == "win32":  # Windows
+        os_typ = 'windows'
+        print('=== ==> --> LipidHunter Running on >>> Windows ...')
+    else:
+        usr_core_num = 1
+        param_dct['core_number'] = 1
+        os_typ = 'linux_single'
+        print('=== ==> --> LipidHunter Running on >>> unoptimized system ... %s' % platform)
+        print('!! Force to use single core mode !!')
 
     print('=== ==> --> Start to process >>>')
     print('=== ==> --> Lipid class: %s >>>' % usr_lipid_class)
@@ -135,10 +163,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
 
     print('=== ==> --> Lipid Master table generated >>>', usr_lipid_master_df.shape)
-
-    # parameters from settings tab
-    usr_core_num = param_dct['core_number']
-    usr_max_ram = param_dct['max_ram']
 
     lipid_info_df = usr_lipid_master_df
 
@@ -174,7 +198,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     # TODO(zhixu.ni@uni-leipzig.de): Add more error to the error_lst.
 
-    pr_hunter = PrecursorHunter(lipid_info_df, param_dct)
+    pr_hunter = PrecursorHunter(lipid_info_df, param_dct, os_type=os_typ)
 
     output_df = pd.DataFrame()
 
@@ -232,45 +256,78 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     xic_dct = {}
 
     if usr_core_num > 1:
-        parallel_pool = Pool(usr_core_num)
         xic_results_lst = []
-        core_worker_count = 1
-        for core_list in core_key_list:
-            if isinstance(core_list, tuple) or isinstance(core_list, list):
-                if None in core_list:
-                    core_list = [x for x in core_list if x is not None]
-                else:
+
+        if os_typ == 'windows':
+            parallel_pool = Pool(usr_core_num)
+            queue = ''
+            worker_count = 1
+            for core_list in core_key_list:
+                if isinstance(core_list, tuple) or isinstance(core_list, list):
+                    if None in core_list:
+                        core_list = [x for x in core_list if x is not None]
+                    else:
+                        pass
+                    print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                    print(core_list)
+                    xic_result = parallel_pool.apply_async(get_xic_from_pl, args=(core_list, ms1_xic_df, usr_xic_ppm,
+                                                                                  os_typ, queue))
+                    worker_count += 1
+                    xic_results_lst.append(xic_result)
+
+            parallel_pool.close()
+            parallel_pool.join()
+
+            for xic_result in xic_results_lst:
+                try:
+                    sub_xic_dct = xic_result.get()
+                    if len(list(sub_xic_dct.keys())) > 0:
+                        xic_dct.update(sub_xic_dct)
+
+                except (KeyError, SystemError, ValueError):
                     pass
-                print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-                print(core_list)
-                xic_result = parallel_pool.apply_async(get_xic_from_pl, args=(core_list, ms1_xic_df, 500))
-                core_worker_count += 1
-                xic_results_lst.append(xic_result)
 
-        parallel_pool.close()
-        parallel_pool.join()
+        else:  # for linux
+            jobs = []
+            queue = multiprocessing.Queue()
+            worker_count = 1
+            for core_list in core_key_list:
+                if isinstance(core_list, tuple) or isinstance(core_list, list):
+                    if None in core_list:
+                        core_list = [x for x in core_list if x is not None]
+                    else:
+                        pass
+                    print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                    print(core_list)
+                    job = multiprocessing.Process(target=get_xic_from_pl, args=(core_list, ms1_xic_df, usr_xic_ppm,
+                                                                                os_typ, queue))
+                    worker_count += 1
+                    jobs.append(job)
+                    job.start()
+                    xic_results_lst.append(queue.get())
+            for j in jobs:
+                j.join()
 
-        for xic_result in xic_results_lst:
-            try:
-                sub_xic_dct = xic_result.get()
-                if len(list(sub_xic_dct.keys())) > 0:
-                    xic_dct.update(sub_xic_dct)
-
-            except (KeyError, SystemError, ValueError):
-                pass
+            for xic_result in xic_results_lst:
+                try:
+                    if len(list(xic_result.keys())) > 0:
+                        xic_dct.update(xic_result)
+                except (KeyError, SystemError, ValueError):
+                    pass
     else:
         print('Using single core mode...')
-        core_worker_count = 1
+        queue = ''
+        worker_count = 1
         for core_list in core_key_list:
             if isinstance(core_list, tuple) or isinstance(core_list, list):
                 if None in core_list:
                     core_list = [x for x in core_list if x is not None]
                 else:
                     pass
-                print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
+                print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
                 print(core_list)
-                sub_xic_dct = get_xic_from_pl(core_list, ms1_xic_df, 500)
-                core_worker_count += 1
+                sub_xic_dct = get_xic_from_pl(core_list, ms1_xic_df, usr_xic_ppm, os_typ, queue)
+                worker_count += 1
                 if len(list(sub_xic_dct.keys())) > 0:
                     xic_dct.update(sub_xic_dct)
 
@@ -298,35 +355,65 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     lipid_spec_info_dct = {}
 
     if usr_core_num > 1:
-        parallel_pool = Pool(usr_core_num)
         spec_results_lst = []
-        core_worker_count = 1
-        for _sub_lst in spec_sub_key_lst:
-            if isinstance(_sub_lst, tuple) or isinstance(_sub_lst, list):
-                if None in _sub_lst:
-                    _sub_lst = [x for x in _sub_lst if x is not None]
-                else:
-                    pass
-                print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-                spec_result = parallel_pool.apply_async(get_spec_info, args=(_sub_lst, checked_info_groups,
-                                                                             usr_scan_info_df))
-                core_worker_count += 1
-                spec_results_lst.append(spec_result)
 
-        parallel_pool.close()
-        parallel_pool.join()
+        if os_typ == 'windows':
+            parallel_pool = Pool(usr_core_num)
+            queue = ''
+            worker_count = 1
+            for _sub_lst in spec_sub_key_lst:
+                if isinstance(_sub_lst, tuple) or isinstance(_sub_lst, list):
+                    if None in _sub_lst:
+                        _sub_lst = [x for x in _sub_lst if x is not None]
+                    else:
+                        pass
+                    print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                    spec_result = parallel_pool.apply_async(get_spec_info, args=(_sub_lst, checked_info_groups,
+                                                                                 usr_scan_info_df, os_typ, queue))
+                    worker_count += 1
+                    spec_results_lst.append(spec_result)
 
-        for spec_result in spec_results_lst:
-            try:
-                sub_spec_dct = spec_result.get()
-                if len(list(sub_spec_dct.keys())) > 0:
-                    # lipid_spec_info_dct = dict(lipid_spec_info_dct, **sub_spec_dct)
-                    lipid_spec_info_dct.update(sub_spec_dct)
-            except (KeyError, SystemError, ValueError):
-                print('ValueError: must supply a tuple to get_group with multiple grouping keys')
+            parallel_pool.close()
+            parallel_pool.join()
+
+            for spec_result in spec_results_lst:
+                try:
+                    sub_spec_dct = spec_result.get()
+                    if len(list(sub_spec_dct.keys())) > 0:
+                        lipid_spec_info_dct.update(sub_spec_dct)
+                except (KeyError, SystemError, ValueError):
+                    print('ValueError: must supply a tuple to get_group with multiple grouping keys')
+
+        else:  # for linux
+            jobs = []
+            queue_spec = multiprocessing.Queue()
+            worker_count = 1
+            for _sub_lst in spec_sub_key_lst:
+                if isinstance(_sub_lst, tuple) or isinstance(_sub_lst, list):
+                    if None in _sub_lst:
+                        _sub_lst = [x for x in _sub_lst if x is not None]
+                    else:
+                        pass
+                    print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                    job = multiprocessing.Process(target=get_spec_info, args=(_sub_lst, checked_info_groups,
+                                                                              usr_scan_info_df, os_typ, queue_spec))
+                    worker_count += 1
+                    jobs.append(job)
+                    job.start()
+                    spec_results_lst.append(queue_spec.get())
+            for j in jobs:
+                j.join()
+
+            for spec_result in spec_results_lst:
+                try:
+                    if len(list(spec_result.keys())) > 0:
+                        lipid_spec_info_dct.update(spec_result)
+                except (KeyError, SystemError, ValueError):
+                    print('ValueError: must supply a tuple to get_group with multiple grouping keys')
     else:
         print('Using single core mode...')
-        core_worker_count = 1
+        queue = ''
+        worker_count = 1
         for _sub_lst in spec_sub_key_lst:
             if isinstance(_sub_lst, tuple) or isinstance(_sub_lst, list):
                 if None in _sub_lst:
@@ -344,9 +431,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         _sub_lst3 = _sub_lst3 + (_sub_lst,)
                         _sub_lst = _sub_lst3
 
-                print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-                sub_spec_dct = get_spec_info(_sub_lst, checked_info_groups, usr_scan_info_df)
-                core_worker_count += 1
+                print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                sub_spec_dct = get_spec_info(_sub_lst, checked_info_groups, usr_scan_info_df, os_typ, queue)
+                worker_count += 1
                 if len(list(sub_spec_dct.keys())) > 0:
                     lipid_spec_info_dct.update(sub_spec_dct)
                 # TODO (geprgia.angelidou@uni-leipzig.de): remove when the program works
@@ -408,8 +495,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     else:
         lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
-        lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, spec_key_num,
-                                                                                     lipid_sub_len)]
+        lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in range(0, spec_key_num, lipid_sub_len)]
         lipid_part_key_lst.append(lipid_sub_key_lst)
 
     print('lipid_part_number: ', len(lipid_part_key_lst), ' lipid_part_len:', len(lipid_part_key_lst[0]))
@@ -479,6 +565,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     print('... Key FRAG Dict Generated ...')
     lipid_info_results_lst = []
     lipid_info_img_lst = []
+    queue = ''
     for lipid_sub_key_lst in lipid_part_key_lst:
 
         if part_tot == 1:
@@ -491,36 +578,68 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
         # Start multiprocessing to get rank score
         if usr_core_num > 1:
-            parallel_pool = Pool(usr_core_num)
 
-            core_worker_count = 1
-            for lipid_sub_lst in lipid_sub_key_lst:
-                if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
-                    if None in lipid_sub_lst:
-                        lipid_sub_lst = [x for x in lipid_sub_lst if x is not None]
-                    else:
-                        pass
-                    if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
-                        lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
-                    else:
-                        lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
-                        lipid_sub_lst = tuple([lipid_sub_lst])
-                    print('>>> >>> Core #%i ==> ...... processing ......' % core_worker_count)
-                    if len(list(lipid_sub_dct.keys())) > 0:
-                        lipid_info_result = parallel_pool.apply_async(get_lipid_info,
-                                                                      args=(param_dct, usr_fa_df, checked_info_df,
-                                                                            checked_info_groups, lipid_sub_lst,
-                                                                            usr_weight_df, key_frag_dct, lipid_sub_dct,
-                                                                            xic_dct, core_worker_count, save_fig))
-                        lipid_info_results_lst.append(lipid_info_result)
-                        core_worker_count += 1
+            if os_typ == 'windows':
+                parallel_pool = Pool(usr_core_num)
 
-            parallel_pool.close()
-            parallel_pool.join()
+                worker_count = 1
+                for lipid_sub_lst in lipid_sub_key_lst:
+                    if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
+                        if None in lipid_sub_lst:
+                            lipid_sub_lst = [x for x in lipid_sub_lst if x is not None]
+                        else:
+                            pass
+                        if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
+                            lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                        else:
+                            lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
+                            lipid_sub_lst = tuple([lipid_sub_lst])
+                        print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                        if len(list(lipid_sub_dct.keys())) > 0:
+                            lipid_info_result = parallel_pool.apply_async(get_lipid_info,
+                                                                          args=(param_dct, usr_fa_df, checked_info_df,
+                                                                                checked_info_groups, lipid_sub_lst,
+                                                                                usr_weight_df, key_frag_dct,
+                                                                                lipid_sub_dct, xic_dct, worker_count,
+                                                                                save_fig, os_typ, queue))
+                            lipid_info_results_lst.append(lipid_info_result)
+                            worker_count += 1
+
+                parallel_pool.close()
+                parallel_pool.join()
+
+            else:  # for linux
+                jobs = []
+                queue = multiprocessing.Queue()
+                worker_count = 1
+                for lipid_sub_lst in lipid_sub_key_lst:
+                    if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
+                        if None in lipid_sub_lst:
+                            lipid_sub_lst = [x for x in lipid_sub_lst if x is not None]
+                        else:
+                            pass
+                        if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
+                            lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                        else:
+                            lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
+                            lipid_sub_lst = tuple([lipid_sub_lst])
+                        print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                        job = multiprocessing.Process(target=get_lipid_info, args=(param_dct, usr_fa_df,
+                                                                                   checked_info_df,
+                                                                                   checked_info_groups, lipid_sub_lst,
+                                                                                   usr_weight_df, key_frag_dct,
+                                                                                   lipid_sub_dct, xic_dct, worker_count,
+                                                                                   save_fig, os_typ, queue))
+                        worker_count += 1
+                        jobs.append(job)
+                        job.start()
+                        lipid_info_results_lst.append(queue.get())
+                for j in jobs:
+                    j.join()
 
         else:
             print('Using single core mode...')
-            core_worker_count = 1
+            worker_count = 1
             for lipid_sub_lst in lipid_sub_key_lst:
                 if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
                     if None in lipid_sub_lst:
@@ -532,26 +651,36 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     else:
                         lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
                         lipid_sub_lst = tuple([lipid_sub_lst])
-                    print('>>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, core_worker_count))
+                    print('>>> Part %i Subset #%i ==> ...... processing ......' % (part_counter, worker_count))
                     if len(list(lipid_sub_dct.keys())) > 0:
                         lipid_info_results_lst = get_lipid_info(param_dct, usr_fa_df, checked_info_df,
                                                                 checked_info_groups, lipid_sub_lst, usr_weight_df,
-                                                                key_frag_dct, lipid_sub_dct, xic_dct, core_worker_count)
+                                                                key_frag_dct, lipid_sub_dct, xic_dct, worker_count)
 
     # Merge multiprocessing results
     if usr_core_num > 1:
         for lipid_info_result in lipid_info_results_lst:
-            try:
-                tmp_lipid_info = lipid_info_result.get()
-                tmp_lipid_info_df = tmp_lipid_info[0]
-                # print(tmp_lipid_info_df)
-                tmp_lipid_img_lst = tmp_lipid_info[1]
-                # print('tmp_lipid_img_lst')
-                # print(len(tmp_lipid_img_lst))
-            except (KeyError, SystemError, ValueError, TypeError):
-                tmp_lipid_info_df = 'error'
-                tmp_lipid_img_lst = []
-                print('!!error!!--> This segment receive no Lipid identified.')
+            if os_typ == 'windows':
+                try:
+                    tmp_lipid_info = lipid_info_result.get()
+                    tmp_lipid_info_df = tmp_lipid_info[0]
+                    # print(tmp_lipid_info_df)
+                    tmp_lipid_img_lst = tmp_lipid_info[1]
+                    # print('tmp_lipid_img_lst')
+                    # print(len(tmp_lipid_img_lst))
+                except (KeyError, SystemError, ValueError, TypeError):
+                    tmp_lipid_info_df = 'error'
+                    tmp_lipid_img_lst = []
+                    print('!!error!!--> This segment receive no Lipid identified.')
+            else:  # for linux
+                try:
+                    tmp_lipid_info_df = lipid_info_result[0]
+                    tmp_lipid_img_lst = lipid_info_result[1]
+
+                except (KeyError, SystemError, ValueError, TypeError):
+                    tmp_lipid_info_df = 'error'
+                    tmp_lipid_img_lst = []
+                    print('!!error!!--> This segment receive no Lipid identified.')
 
             if isinstance(tmp_lipid_info_df, str):
                 pass
@@ -691,7 +820,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             img_sub_len = int(math.ceil(img_num / usr_core_num))
             img_sub_key_lst = [lipid_info_img_lst[k: k + img_sub_len] for k in range(0, img_num, img_sub_len)]
 
-            core_worker_count = 1
+            worker_count = 1
             for img_sub_lst in img_sub_key_lst:
                 if isinstance(img_sub_lst, tuple) or isinstance(img_sub_lst, list):
                     if None in img_sub_lst:
@@ -700,12 +829,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         pass
                     # img_params_dct = {'lipid_info_img_lst': img_sub_lst, 'usr_core_num': usr_core_num,
                     #                   'usr_img_type': usr_img_type, 'usr_dpi': usr_dpi, 'usr_vendor': usr_vendor,
-                    #                   'usr_ms1_precision': usr_ms1_precision, 'core_worker_count': core_worker_count}
-                    print('>>> >>> Core #%i ==> ...... Generating output images ......' % core_worker_count)
+                    #                   'usr_ms1_precision': usr_ms1_precision, 'worker_count': worker_count}
+                    print('>>> >>> Core #%i ==> ...... Generating output images ......' % worker_count)
                     if len(img_sub_lst) > 0:
-                        parallel_pool.apply_async(gen_plot, args=(img_sub_lst, core_worker_count, usr_img_type,
+                        parallel_pool.apply_async(gen_plot, args=(img_sub_lst, worker_count, usr_img_type,
                                                                   usr_dpi, usr_vendor, usr_ms1_precision))
-                        core_worker_count += 1
+                        worker_count += 1
 
             parallel_pool.close()
             parallel_pool.join()
@@ -718,7 +847,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 else:
                     pass
                 if len(lipid_info_img_lst) > 0:
-                    gen_plot(lipid_info_img_lst, core_worker_count, usr_img_type, usr_dpi,
+                    gen_plot(lipid_info_img_lst, worker_count, usr_img_type, usr_dpi,
                              usr_vendor, usr_ms1_precision)
     else:
         print('!!!!!! User skip image generation !!!!!!')
@@ -733,7 +862,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 1
+    core_count = 3
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
 
@@ -897,7 +1026,7 @@ if __name__ == '__main__':
                 t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                 lipid_class = test_dct['lipid_type']
                 cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
-                           'xlsx_output_path_str': r'D:../Test/results/%s_%s.xlsx' % (test_key, t_str),
+                           'xlsx_output_path_str': r'../Test/results/%s_%s.xlsx' % (test_key, t_str),
                            'hunter_folder': hunter_folder, 'img_type': u'png', 'img_dpi': 300,
                            'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True,
                            'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
