@@ -253,13 +253,6 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
     elif lipid_type in ['TG'] and charge in ['[M+H]+', '[M+NH4]+']:
         lite_info_df['sn3_found'] = 0
         obs_dg_frag_df = get_all_fa_nl(lite_info_df, ms2_df, frag_lst_dg, lipid_type)
-        # obs_dct = {'[FA-H2O+H]+': [obs_fa_frag_df, ['SN1_[FA-H2O+H]+', 'SN2_[FA-H2O+H]+', 'SN3_[FA-H2O+H]+']],
-        #            '[MG-H2O+H]+': [obs_fa_nl_df, ['[MG(SN1)-H2O+H]+', '[MG(SN2)-H2O+H]+', '[MG(SN3)-H2O+H]+']],
-        #            '[M-FA+H]+': [obs_dg_frag_df, ['[M-(SN1)+H]+', '[M-(SN2)+H]+', '[M-(SN3)+H]+']],
-        #            '[M-(FA-H2O)+H]+': [obs_dg_frag_df,
-        #                                ['[M-(SN1-H2O)+H]+', '[M-(SN2-H2O)+H]+', '[M-(SN3-H2O)+H]+']]}
-        #####
-        # there is an error with the [M-(SN1-H2O)+H]+ temporary deactivated
         obs_dct = {'[FA-H2O+H]+': [obs_fa_frag_df, ['SN1_[FA-H2O+H]+', 'SN2_[FA-H2O+H]+', 'SN3_[FA-H2O+H]+']],
                    '[MG-H2O+H]+': [obs_fa_nl_df, ['[MG(SN1)-H2O+H]+', '[MG(SN2)-H2O+H]+', '[MG(SN3)-H2O+H]+']],
                    '[M-FA+H]+': [obs_dg_frag_df, ['[M-(SN1)+H]+', '[M-(SN2)+H]+', '[M-(SN3)+H]+']]}
@@ -293,8 +286,6 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
             _obs_drop_idx = []
 
             for _obs in _obs_lst:
-
-                # default will change in a letter step
                 try:
                     lite_info_df.loc[:, '%s_RANK' % _obs] = 10  # set to Rank 10 +1 , so the score will be 0
                     lite_info_df.loc[:, '%s_WEIGHT' % _obs] = weight_dct['%s' % _obs]['Weight']
@@ -317,7 +308,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                     _lipid_abbr_comp_dct = {}
                     _abbr = _lite_se['%s_ABBR' % _obs]
                     _lipid_abbr = _lite_se['DISCRETE_ABBR']
-                    # print(core_count, _lipid_abbr)
+
                     # Part that check the intensities and change the score
                     # TODO (georgia.angelidou@uni-leipzig.de): need to be supported also for phospholipids
                     if lipid_type in ['TG']:
@@ -348,8 +339,6 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                             _fa_abbr = list(_lipid_abbr_comp_dct.keys())[list(_lipid_abbr_comp_dct.values()).index(3)]
                             if _fa_abbr in list(_obs_df2['fa_abbr']):
                                 _position_df = _obs_df2.loc[_obs_df2['fa_abbr'] == _fa_abbr]
-                                # _obs_df2.set_value(_position_df.index[0], 'i',
-                                #                    _obs_df2.loc[_position_df.index[0], 'i'] / 3)
                                 _obs_df2.at[_position_df.index[0], 'i'] = _obs_df2.loc[_position_df.index[0], 'i'] / 2
                                 _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
                                 _obs_df2.reset_index(inplace=True, drop=True)
@@ -360,7 +349,6 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                         _sn_total_count = 0
                         _sn1_count = lite_info_df.loc[_idx, 'sn1_found']
                         if _sn1_abbr in list(_obs_df2['fa_abbr']) and _sn1_count == 0:
-                            # lite_info_df.set_value(_idx, 'sn1_found', 1)
                             lite_info_df.at[_idx, 'sn1_found'] = 1
                             _sn_total_count = _sn_total_count + 1
                         _sn2_count = lite_info_df.loc[_idx, 'sn2_found']
@@ -404,6 +392,40 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                                 _obs_df2['obs_rank'] = _obs_df2.index + 1
                         else:
                             pass
+                    elif lipid_type in ['DG']:
+                        _sn1_abbr = _lite_se['SN1_ABBR']
+                        _sn2_abbr = _lite_se['SN2_ABBR']
+
+                        for _sn_abbr in [_sn1_abbr, _sn2_abbr]:
+                            if _sn_abbr in list(_lipid_abbr_comp_dct.keys()):
+                                _lipid_abbr_comp_dct[_sn_abbr] = _lipid_abbr_comp_dct[_sn_abbr] + 1
+                            else:
+                                _lipid_abbr_comp_dct[_sn_abbr] = 1
+                        if len(_lipid_abbr_comp_dct) == 1:
+                            _fa_abbr = list(_lipid_abbr_comp_dct.keys())[list(_lipid_abbr_comp_dct.values()).index(2)]
+                            if _fa_abbr in list(_obs_df2['fa_abbr']):
+                                _position_df = _obs_df2.loc[_obs_df2['fa_abbr'] == _fa_abbr]
+                                _obs_df2.at[_position_df.index[0], 'i'] = _obs_df2.loc[_position_df.index[0], 'i'] / 2
+                                _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
+                                _obs_df2.reset_index(inplace=True, drop=True)
+                                _obs_df2['obs_rank'] = _obs_df2.index + 1
+                        else:
+                            pass
+                        # _sn_total_count = 0
+                        # _sn1_count = lite_info_df.loc[_idx, 'sn1_found']
+                        # if _sn1_abbr in list(_obs_df2['fa_abbr']) and _sn1_count == 0:
+                        #     lite_info_df.at[_idx, 'sn1_found'] = 1
+                        #     _sn_total_count = _sn_total_count + 1
+                        # _sn2_count = lite_info_df.loc[_idx, 'sn2_found']
+                        # if _sn2_abbr in list(_obs_df2['fa_abbr']) and _sn2_count == 0:
+                        #     lite_info_df.at[_idx, 'sn2_found'] = 1
+                        #     _sn_total_count = _sn_total_count + 1
+                        #     print('sksks')
+                        # if all_sn is True and _sn_total_count < 2:
+                        #     lite_info_df.at[_idx, 'sn1_found'] = 0
+                        #     lite_info_df.at[_idx, 'sn2_found'] = 0
+                        # else:
+                        #     pass
 
                     try:
                         if _abbr in _obs_df['obs_abbr'].values:
@@ -463,6 +485,11 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         # TODO (georgia.angelidou@uni-leipzig.de): keep only the 2 decimenals
         lite_info_df['RANK_SCORE'] = round(lite_info_df['RANK_SCORE'] * (
                 (lite_info_df['sn1_found'] + lite_info_df['sn2_found'] + lite_info_df['sn3_found']) / 3), 2)
+    # elif lipid_type in ['DG']:
+    #     # lite_info_df['RANK_SCORE'] = round(
+    #     #     lite_info_df['RANK_SCORE'] * ((lite_info_df['sn1_found'] + lite_info_df['sn2_found']) / 2), 2)
+    #     lite_info_df['RANK_SCORE'] = round(
+    #             lite_info_df['RANK_SCORE'], 2)
 
     print(core_count, 'lite_info')
 
@@ -503,6 +530,8 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
     # obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_dg_frag_df,
     #                 'IDENT': ident_peak_df, 'IDENT2': ident_peak_df2}
+    obs_fa_frag_df['TYPE'] = 'FA'
+    obs_fa_nl_df['TYPE'] = 'MG'
     if lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
         obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_fa_nl_df,
                         'IDENT': ident_peak_df2}
@@ -511,9 +540,10 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         # probably put in the OBS_FA the MG an free FA and OBS_LYSO put the FA loss
         # obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_fa_nl_df,
         #                 'IDENT': ident_peak_df, 'IDENT2' : ident_peak_df2}
+
         obs_fa_frag_df = obs_fa_frag_df.append(obs_fa_nl_df)
         if obs_fa_frag_df.shape[0] > 0:
-            obs_fa_frag_df.sort_values(by='i', inplace=True)
+            # obs_fa_frag_df.sort_values(by='i', ascending=False, inplace=True)
             obs_fa_frag_df.reset_index(drop=True, inplace=True)
 
         obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_dg_frag_df,
@@ -580,11 +610,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         _ms2_df = usr_spec_info_dct['ms2_df']
         _ms2_idx = usr_spec_info_dct['_ms2_spec_idx']
 
-        # TODO (georgia@uni-leipzig.de): keep in mind to include the other vendors also otherwise it can cause a problem
-        # This contor is done to avoid the problem with the conversion of the raw data from the proteome wizard for the files from Thermo
-        # Future can cause problems since maybe there will be cases where we can not see the precursor -indensity in this files.
-        # For this cases futher thinging is require
-        # Also can cause problems with the other lipid structures from the other lipids
+
 
         print(core_count, _usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged)
         # _mz_amm_flag  = isotope_hunter.get_isotope_fragments(_ms1_df, )
@@ -603,17 +629,23 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
             _ms2_df = pd.DataFrame()
             _score_ms2_df = pd.DataFrame()
             _score_ms2_hg_df = pd.DataFrame()
-        # TODO (georgia.angeldou@uni-leipzig.de): why not to do this in an earlier step before all this calculation
-        # Below part is to avoid any possible problemss
-        if _ms1_pr_mz > 0.0 and _ms1_df.shape[0] > 0 and _ms2_df.shape[0] > 0 and _ms1_pr_i > 0.0:
-            if _ms2_df.query(' %f < mz < %f' % (_usr_ms2_pr_mz - 0.1, _usr_ms2_pr_mz + 0.1)).shape[0] > 0:
-                _th_pw_flag = 1
-            elif _ms2_df.query(' %f < mz < %f' % (_usr_ms2_pr_mz - 0.1, _usr_ms2_pr_mz + 0.1)).shape[
-                0] == 0 and usr_vendor == 'thermo':
-                _th_pw_flag = 0
-            else:
-                _th_pw_flag = 1
 
+        if _ms1_pr_mz > 0.0 and _ms1_df.shape[0] > 0 and _ms2_df.shape[0] > 0 and _ms1_pr_i > 0.0:
+            # TODO (georgia@uni-leipzig.de): keep in mind to include the other vendors also otherwise it can cause a problem
+            # This contor is done to avoid the problem with the conversion of the raw data from the proteome wizard for the files from Thermo
+            # Future can cause problems since maybe there will be cases where we can not see the precursor -indensity in this files.
+            # For this cases futher thinging is require
+            # Also can cause problems with the other lipid structures from the other lipids
+            # if _ms2_df.query(' %f < mz < %f' % (_usr_ms2_pr_mz - 0.1, _usr_ms2_pr_mz + 0.1)).shape[0] > 0:
+            #     _th_pw_flag = 1
+            # elif _ms2_df.query(' %f < mz < %f' % (_usr_ms2_pr_mz - 0.1, _usr_ms2_pr_mz + 0.1)).shape[
+            #     0] == 0 and usr_vendor == '':
+            #     # here the vendor should be thermo
+            #     # But now this control is deactivated
+            #     _th_pw_flag = 0
+            # else:
+            #     _th_pw_flag = 1
+            _th_pw_flag = 1
             if _th_pw_flag == 1:
 
                 print(core_count, '>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)

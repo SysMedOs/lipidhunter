@@ -32,16 +32,16 @@ class LogPageCreator(object):
     def __init__(self, output_folder, start_time, params):
         print(os.getcwd())
         self.output_folder = output_folder
-        self.output_img_folder = output_folder + r'\LipidHunter_Results_Figures_%s' % start_time
-        self.main_page = output_folder + r'\LipidHunter_Results_%s.html' % start_time
-        self.logo = r'LipidHunter_Results_Figures_%s\LipidHunter.ico' % start_time
-        _image_lst_page = r'LipidHunter_Results_Figures_%s\LipidHunter_Results_Figures_list.html' % start_time
-        _params_lst_page = r'LipidHunter_Results_Figures_%s\LipidHunter_Params_list.html' % start_time
-        _idx_lst_page = r'LipidHunter_Results_Figures_%s\LipidHunter_Identification_list.html' % start_time
-        self.image_lst_page = self.output_img_folder + r'\LipidHunter_Results_Figures_list.html'
-        self.params_lst_page = self.output_img_folder + r'\LipidHunter_Params_list.html'
-        self.idx_lst_page = self.output_img_folder + r'\LipidHunter_Identification_list.html'
-        self.cfg_sum_page = self.output_img_folder + r'\LipidHunter_Configuration_Summary.html'
+        self.output_img_folder = output_folder + r'/LipidHunter_Results_Figures_%s' % start_time
+        self.main_page = output_folder + r'/LipidHunter_Results_%s.html' % start_time
+        self.logo = r'LipidHunter_Results_Figures_%s/LipidHunter.ico' % start_time
+        _image_lst_page = r'LipidHunter_Results_Figures_%s/LipidHunter_Results_Figures_list.html' % start_time
+        _params_lst_page = r'LipidHunter_Results_Figures_%s/LipidHunter_Params_list.html' % start_time
+        _idx_lst_page = r'LipidHunter_Results_Figures_%s/LipidHunter_Identification_list.html' % start_time
+        self.image_lst_page = self.output_img_folder + r'/LipidHunter_Results_Figures_list.html'
+        self.params_lst_page = self.output_img_folder + r'/LipidHunter_Params_list.html'
+        self.idx_lst_page = self.output_img_folder + r'/LipidHunter_Identification_list.html'
+        self.cfg_sum_page = self.output_img_folder + r'/LipidHunter_Configuration_Summary.html'
 
         self.lipid_type = params['lipid_type']
         hunter_folder = params['hunter_folder']
@@ -229,7 +229,7 @@ class LogPageCreator(object):
                                         'SN1_[FA-H]-_i_per', 'SN2_[FA-H]-_i_per',
                                         '[LPL(SN1)-H]-_i_per', '[LPL(SN2)-H]-_i_per',
                                         '[LPL(SN1)-H2O-H]-_i_per', '[LPL(SN2)-H2O-H]-_i_per']
-                    elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG'] and charge in ['[M+H]+', '[M+NH4]+']:
+                    elif self.lipid_type in ['TG', 'TAG', 'MG', 'MAG'] and charge in ['[M+H]+', '[M+NH4]+']:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'SN1_[FA-H2O+H]+_i_per',
                                         'SN2_[FA-H2O+H]+_i_per', 'SN3_[FA-H2O+H]+_i_per', '[M-(SN1)+H]+_i_per',
                                         '[M-(SN2)+H]+_i_per', '[M-(SN3)+H]+_i_per', '[MG(SN1)-H2O+H]+_i_per',
@@ -239,6 +239,9 @@ class LogPageCreator(object):
                                         'SN2_[FA-H2O+H]+_i_per', 'SN3_[FA-H2O+H]+_i_per', '[M-(SN1)+Na]+_i_per',
                                         '[M-(SN2)+Na]+_i_per', '[M-(SN3)+Na]+_i_per', '[MG(SN1)-H2O+H]+_i_per',
                                         '[MG(SN2)-H2O+H]+_i_per', '[MG(SN3)-H2O+H]+_i_per']
+                    elif self.lipid_type in ['DG'] and charge in ['[M+H]+', '[M+NH4]+']:
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'SN1_[FA-H2O+H]+_i_per',
+                                        'SN2_[FA-H2O+H]+_i_per', '[MG(SN1)-H2O+H]+_i_per', '[MG(SN2)-H2O+H]+_i_per']
                     else:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
                                         'SN1_[FA-H]-i_per', 'SN2_[FA-H]-i_per',

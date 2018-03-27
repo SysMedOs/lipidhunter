@@ -613,6 +613,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             output_round_dct = {r'MS1_obs_mz': 4, r'lib_mz': 4, 'ppm': 2, 'MS2_scan_tima': 3, 'i_sn1': 2, 'i_sn2': 2,
                                 'I_sn3': 2, 'i_[M+Na]-sn1': 2, 'i_[M+Na]-sn2': 2, 'i_[M+Na]-sn3': 2,
                                 'i_[M+H]-sn1-H+Na': 2, 'i_[M+H]-sn2-H+Na': 2, 'i_[M+H]-sn3-H+Na': 2}
+        elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
+            output_list = ['SN1_[FA-H2O+H]+_i', 'SN2_[FA-H2O+H]+_i', '[MG(SN1)-H2O+H]+_i',
+                           '[MG(SN2)-H2O+H]+_i']
+            output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3, 'i_sn1': 2, 'i_sn2': 2,
+                                'i_[MG(sn1)+H]-H2O': 2, 'i_[MG(sn2)+H]-H2O': 2}
+
         else:
             output_list = ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
                            '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
@@ -646,6 +652,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                 'DDA#', 'Scan#', 'SN1_[FA-H2O+H]+_i', 'SN2_[FA-H2O+H]+_i', 'SN3_[FA-H2O+H]+_i',
                                  '[M-(SN1)+Na]+_i',
                                 '[M-(SN2)+Na]+_i', '[M-(SN3)+Na]+_i']
+        elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
+            # problem with the following key:  'SN2_[FA-H2O+H]_i',
+            output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
+                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', 'SN1_[FA-H2O+H]+_i', '[MG(SN1)-H2O+H]+_i',
+                                '[MG(SN2)-H2O+H]+_i']
         else:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',

@@ -283,7 +283,7 @@ class ElemCalc:
                 tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']
                 tmp_lipid_elem_dct['H'] += (
                         self.glycerol_bone_elem_dct['H'] + usr_lipid_info_dct['C'] * 2 - usr_lipid_info_dct[
-                    'DB'] * 2 + 1)
+                    'DB'] * 2 + 2)
 
                 return tmp_lipid_elem_dct
             else:
