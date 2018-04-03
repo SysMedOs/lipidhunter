@@ -30,6 +30,7 @@ import sys
 from sys import platform
 import time
 
+from numpy import int64
 import pandas as pd
 
 try:
@@ -230,18 +231,30 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     print('=== ==> --> ms1 precursor matched')
 
     # remove bad precursors, keep the matched scans by DDA_rank and scan number
-    usr_scan_info_df['scan_checker'] = 10000 * usr_scan_info_df['scan_number'] + usr_scan_info_df['DDA_rank']
-    ms1_obs_pr_df['scan_checker'] = 10000 * ms1_obs_pr_df['scan_number'] + ms1_obs_pr_df['DDA_rank']
+    # build unique identifier for each scan with scan_number00dda_rank use numpy.int64 to avoid large scan_number
+    usr_scan_info_df['scan_checker'] = ((10000 * usr_scan_info_df['scan_number'] + usr_scan_info_df['DDA_rank'])
+                                        .astype(int64))
+    ms1_obs_pr_df['scan_checker'] = ((10000 * usr_scan_info_df['scan_number'] + usr_scan_info_df['DDA_rank'])
+                                     .astype(int64))
+
     usr_scan_checker_lst = usr_scan_info_df['scan_checker'].tolist()
     checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_checker_lst)]
-
+    checked_info_df.is_copy = False
     checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'], inplace=True)
+
+    checked_info_df.sort_values(by=['Lib_mz', 'scan_time', 'MS2_PR_mz'], ascending=[True, True, True], inplace=True)
+    # print(checked_info_df.tail(5))
+    if checked_info_df.shape[0] == 0:
+        print('!! No identification in pre-match steps !!')
+        error_lst.append('!! No identification in pre-match steps !!\n')
+        return False, error_lst, False
+    else:
+        print('>>> features identified in the pre-match: ', checked_info_df.shape[0])
 
     ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
     print('ms1_xic_mz_lst', len(ms1_xic_mz_lst))
     print(ms1_xic_mz_lst)
-
     print('=== ==> --> Start to extract XIC')
     if len(ms1_xic_mz_lst) >= 3 * usr_core_num:
         sub_len = int(math.ceil(len(ms1_xic_mz_lst) / usr_core_num))
@@ -342,7 +355,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         print('=== ==> --> Number of XIC extracted: %i' % len(list(xic_dct.keys())))
 
     target_ident_lst = []
-    checked_info_df.sort_values(by=['Lib_mz', 'scan_time', 'MS2_PR_mz'], ascending=[True, True, True], inplace=True)
 
     print('=== ==> --> Start to Hunt for Lipids !!')
     checked_info_groups = checked_info_df.groupby(['Lib_mz', 'MS2_PR_mz', 'Formula', 'scan_time', 'Ion'])

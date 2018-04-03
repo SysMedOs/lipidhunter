@@ -215,12 +215,10 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         ms_pic = pic_array[1, 0]
         ms_pic.tick_params(axis='both', which='major', labelsize=10)
 
-        if vendor == 'waters':
+        if ms1_df.shape[0] > 800:
             ms_pic.plot(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=1)
-        elif vendor == 'thermo':
-            ms_pic.stem(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=0.5, markerfmt=' ')
         else:
-            ms_pic.plot(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=1)
+            ms_pic.stem(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=0.5, markerfmt=' ')
 
         _marker_line, _stem_lines, _base_line = ms_pic.stem([ms1_pr_mz], dash_i, markerfmt=' ')
         plt.setp(_stem_lines, color='#00ccff', linewidth=5, alpha=0.3)
