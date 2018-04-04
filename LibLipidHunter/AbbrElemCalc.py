@@ -75,7 +75,7 @@ class ElemCalc:
         bulk_fa_linker = ''
         bulk_fa_c = 0
         bulk_fa_db = 0
-        lyso_fa_linker_dct = {'sn1': '', 'sn2': ''}
+        lyso_fa_linker_dct = {'fa1': '', 'fa2': ''}
 
         # TODO(georgia.angelidou@uni-leipzig.de): consideration to put se elif statement
         if pl_checker.match(abbr):
@@ -416,6 +416,8 @@ class ElemCalc:
             # elif charge in ['[M+Na]+']:
             #     mz_NH3_pr_Na = mz_pr - self.periodic_table_dct['Na'][0][0] + (4 * self.periodic_table_dct['H'][0][0]) + \
             #                    self.periodic_table_dct['N'][0][0]
+            mz_NH4_H_form = 'C' + str(amm_elem_dct['C']) + 'H' + str(amm_elem_dct['H']) + 'O6N'
+            mz_NH4_Na_form = _mz_H_formula
         elif charge in ['[M+Na]+']:
             mz_NH3_pr_Na = amm_elem_dct['C'] * self.periodic_table_dct['C'][0][0] + amm_elem_dct['H'] * \
                            self.periodic_table_dct['H'][0][0] + amm_elem_dct['O'] * self.periodic_table_dct['O'][0][0] + \
@@ -434,8 +436,10 @@ class ElemCalc:
             _mz_H_formula, _mz_H_elemdct = self.get_formula(tg_abbt_bulk_H, '[M+H]+')
             mz_NH3_pr_H = _mz_H_elemdct['C'] * self.periodic_table_dct['C'][0][0] + (_mz_H_elemdct['H'] + 3) * \
                           self.periodic_table_dct['H'][0][0] + _mz_H_elemdct['O'] * self.periodic_table_dct['O'][0][0] + self.periodic_table_dct['N'][0][0]
+            mz_NH4_Na_form = 'C' + str(amm_elem_dct['C']) + 'H' + str(amm_elem_dct['H']) + 'O6N'
+            mz_NH4_H_form = 'C' + str(_mz_H_elemdct['C']) + 'H' + str((_mz_H_elemdct['H'] + 3)) + 'O6N'
 
-        return (mz_NH3_pr_H, mz_NH3_pr_Na)
+        return (mz_NH3_pr_H, mz_NH4_H_form, mz_NH3_pr_Na, mz_NH4_Na_form)
 
 
 if __name__ == '__main__':
