@@ -127,6 +127,7 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='wat
     return specific_ion_dct
 
 
+
 def get_all_fa_nl(fa_df, ms2_df, lyso_type_lst, lipid_type='LPL'):
     dg_fa_rgx = re.compile(r'\[M-\(*(FA\d{1,2}:\d)')
     # \[M\-(?:(FA\d{1,2}\:\d)|\((FA\d{1,2}\:\d).*\))\+(?:H|Na)\]\+    More strict regular expression
@@ -140,14 +141,14 @@ def get_all_fa_nl(fa_df, ms2_df, lyso_type_lst, lipid_type='LPL'):
             _q_tmp_df.is_copy = False
             if _q_tmp_df.shape[0] > 0:
                 _q_tmp_df.loc[:, 'lib_mz'] = _fa_se['%s_MZ' % lyso_typ]
-                _q_tmp_df.loc[:, 'obs_mz'] = round(_q_tmp_df['mz'], 4)
+                _q_tmp_df.loc[:, 'obs_mz'] = _q_tmp_df['mz']
                 _q_tmp_df.loc[:, 'obs_i_r'] = 100 * _q_tmp_df['i'] / bp_i
-                _q_tmp_df.loc[:, 'obs_i_r'] = round(_q_tmp_df['obs_i_r'], 1)
                 _q_tmp_df.loc[:, 'obs_ppm'] = 1e6 * (_q_tmp_df['mz'] - _q_tmp_df['lib_mz']) / _q_tmp_df['lib_mz']
                 _q_tmp_df.loc[:, 'obs_ppm'] = _q_tmp_df['obs_ppm'].astype(int)
                 _q_tmp_df.loc[:, 'obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
                 _q_tmp_df.loc[:, 'obs_abbr'] = _fa_se['%s_ABBR' % lyso_typ]
-                _q_tmp_df.loc[:, 'obs_label'] = round(_q_tmp_df['lib_mz'], 2)
+                _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['lib_mz']
+                _q_tmp_df = _q_tmp_df.round({'obs_mz': 4, 'obs_i_r': 1, 'obs_label': 2})
                 _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_label'].astype(str)
                 if lipid_type in ['TG'] and re.match(dg_fa_rgx, _fa_se['%s_ABBR' % lyso_typ]):
                     _fa_abbr_match = re.match(dg_fa_rgx, _fa_se['%s_ABBR' % lyso_typ])
@@ -155,6 +156,7 @@ def get_all_fa_nl(fa_df, ms2_df, lyso_type_lst, lipid_type='LPL'):
                     _q_tmp_df.loc[:, 'fa_abbr'] = _fa_abbr_lst[0]
                 else:
                     _q_tmp_df.loc[:, 'fa_abbr'] = _idx
+
                 obs_peaks_df = obs_peaks_df.append(_q_tmp_df)
 
     if obs_peaks_df.shape[0] > 0:
@@ -167,6 +169,7 @@ def get_all_fa_nl(fa_df, ms2_df, lyso_type_lst, lipid_type='LPL'):
         print('Warning: get_all_fa_frag report no NL peak found !!!')
 
     return obs_peaks_df.head(10)
+
 
 def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, lipid_type, weight_dct, core_count,
                   rankscore_filter=27.5, all_sn=True):
@@ -531,7 +534,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
 
 def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_list, usr_weight_df,
-                   key_frag_dct, core_spec_dct, xic_dct, core_count, save_fig=True):
+                   key_frag_dct, core_spec_dct, xic_dct, core_count, save_fig=True, os_type='windows', queue=None):
     core_count = 'Core_#%i' % core_count
 
     usr_lipid_type = param_dct['lipid_type']
@@ -797,4 +800,8 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         img_plt_lst = []
 
     r_lst = (tmp_df, img_plt_lst)
-    return r_lst
+
+    if os_type == 'linux_multi':
+        queue.put(r_lst)
+    else:
+        return r_lst
