@@ -682,7 +682,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.single_thread.quit()
         print('!! single_worker stopped !!')
         self.ui.tab_a_runhunter_pb.setText(QtGui.QApplication.translate('MainWindow', 'Hunt for lipids!', None,
-                                                                       QtGui.QApplication.UnicodeUTF8))
+                                                                        QtGui.QApplication.UnicodeUTF8))
         self.ui.tab_a_runhunter_pb.setEnabled(True)
         self.ui.tab_b_runbatch_pb.setEnabled(True)
 
@@ -949,10 +949,16 @@ class BatchWorker(QtCore.QObject):
             start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
             _param_dct['hunter_start_time'] = start_time_str
 
-            if not os.path.exists(_param_dct['img_output_folder_str']):
+            if not os.path.isdir(_param_dct['img_output_folder_str']):
                 os.makedirs(_param_dct['img_output_folder_str'])
-            param_log_output_path_str = (_param_dct['img_output_folder_str'] +
-                                         '/LipidHunter_Params-Log_%s.txt' % _param_dct['hunter_start_time'])
+                self.info_str = 'Output folder created...\n\n'
+                self.infoback()
+                self.info_update.emit(self.info_str)
+                print('Output folder created...')
+            output_folder_path = os.path.abspath(_param_dct['img_output_folder_str'])
+            log_file_name = 'LipidHunter_Params-Log_%s.txt' % _param_dct['hunter_start_time']
+            param_log_output_path_str = os.path.join(output_folder_path, log_file_name)
+
             try:
                 config = configparser.ConfigParser()
                 with open(param_log_output_path_str, 'w') as usr_param_cfg:

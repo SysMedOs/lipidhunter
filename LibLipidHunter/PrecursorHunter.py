@@ -36,8 +36,9 @@ except ImportError:  # for python 2.7
 
 
 def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max,
-                 os_type='windows', queue=None):
-    print('... Matching precursors ...')
+                 os_type='windows', queue=None, core_count=1):
+    core_count = 'Core #{core}'.format(core=core_count)
+    print(core_count, '... Matching precursors ...')
     core_results_df = pd.DataFrame()
     for group_key in sub_group_list:
         subgroup_df = lpp_info_groups.get_group(group_key).copy()
@@ -117,7 +118,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
             pass
             # print('_tmp_scan_info_df.shape[0] = 0')
 
-    print('core_results_df.shape', core_results_df.shape)
+    print(core_count, 'core_results_count', core_results_df.shape[0])
 
     if os_type == 'linux_multi':
         queue.put(core_results_df)
@@ -182,7 +183,7 @@ class PrecursorHunter(object):
 
         if len(spectra_pl_idx_lst) >= (max_ram * 64):
             print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
-            sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) / 2))
+            sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.5))
             sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
                                                                                           sub_group_len)]
         else:
@@ -203,7 +204,7 @@ class PrecursorHunter(object):
                 sub_idx_lst = [x for x in sub_idx_lst if x is not None]
                 opt_sub_pl_group_lst.append(sub_idx_lst)
                 sub_pl = spectra_pl.loc[sub_idx_lst, :, :]
-                print(sub_pl.items)
+                # print(sub_pl.items)
 
                 # Start multiprocessing
                 if part_tot == 1:
@@ -213,7 +214,6 @@ class PrecursorHunter(object):
                           (part_counter, part_tot, core_num))
 
                 if self.param_dct['core_number'] > 1:
-                    part_counter += 1
                     if self.os_typ == 'windows':
                         parallel_pool = Pool(core_num)
 
@@ -229,7 +229,8 @@ class PrecursorHunter(object):
                                                                                                sub_pl,
                                                                                                lpp_info_groups,
                                                                                                core_list, ms1_th,
-                                                                                               ms1_ppm, ms1_max))
+                                                                                               ms1_ppm, ms1_max,
+                                                                                               core_worker_count))
                                 core_worker_count += 1
                                 pr_info_results_lst.append(pr_info_result)
 
@@ -249,7 +250,8 @@ class PrecursorHunter(object):
                                 job = multiprocessing.Process(target=find_pr_info, args=(scan_info_df, sub_pl,
                                                                                          lpp_info_groups, core_list,
                                                                                          ms1_th, ms1_ppm, ms1_max,
-                                                                                         self.os_typ, queue))
+                                                                                         self.os_typ, queue,
+                                                                                         core_worker_count))
                                 core_worker_count += 1
                                 jobs.append(job)
                                 job.start()
@@ -268,31 +270,35 @@ class PrecursorHunter(object):
                                 pass
                             print('>>> >>> processing ......Part: %i subset: %i ' % (part_counter, core_worker_count))
                             sub_df = find_pr_info(scan_info_df, sub_pl, lpp_info_groups, core_list, ms1_th,
-                                                  ms1_ppm, ms1_max)
+                                                  ms1_ppm, ms1_max, core_worker_count)
                             core_worker_count += 1
                             if sub_df.shape[0] > 0:
                                 pr_info_results_lst.append(sub_df)
-                    part_counter += 1
 
-        #  Merge multiprocessing results
-        for pr_info_result in pr_info_results_lst:
-            if self.param_dct['core_number'] > 1:
-                if self.os_typ == 'windows':
-                    try:
-                        sub_df = pr_info_result.get()
-                        if sub_df.shape[0] > 0:
-                            ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
-                    except (KeyError, SystemError, ValueError, TypeError):
-                        pass
-                else:
-                    try:
+                #  Merge multiprocessing results
+                for pr_info_result in pr_info_results_lst:
+                    if self.param_dct['core_number'] > 1:
+                        if self.os_typ == 'windows':
+                            try:
+                                sub_df = pr_info_result.get()
+                                if sub_df.shape[0] > 0:
+                                    ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
+                            except (KeyError, SystemError, ValueError, TypeError):
+                                pass
+                        else:
+                            try:
+                                if pr_info_result.shape[0] > 0:
+                                    ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
+                            except (KeyError, SystemError, ValueError, TypeError):
+                                pass
+                    else:
                         if pr_info_result.shape[0] > 0:
                             ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
-                    except (KeyError, SystemError, ValueError, TypeError):
-                        pass
-            else:
-                if pr_info_result.shape[0] > 0:
-                    ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
+                if part_tot == 1:
+                    print('>>> Multiprocessing results merged ...' % core_num)
+                else:
+                    print('>>> Multiprocessing results merged ... Part %i / %i ...' % (part_counter, part_tot))
+                part_counter += 1
 
         # End multiprocessing
 

@@ -154,16 +154,50 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_type': usr_lipid_class,
                           'charge_mode': usr_charge, 'exact_position': 'FALSE'}
-    try:
-        usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
-    except FileNotFoundError:
-        error_lst.append('Some files missing...')
-        error_lst.append('Please check your settings in the configuration file ...')
-        return False, error_lst, False
+
+    existed_lipid_master_path = ''
+    use_existed_lipid_master = False
+    save_lipid_master_table = False
+    if 'debug_mode' in list(param_dct.keys()):
+        if param_dct['debug_mode'] == 'ON' and 'lipid_master_table' in list(param_dct.keys()):
+            existed_lipid_master_path = param_dct['lipid_master_table']
+            if os.path.isfile(existed_lipid_master_path):
+                use_existed_lipid_master = True
+            else:
+                print('Failed to load existed Lipid Master table: %s', existed_lipid_master_path)
+
+        if 'save_lipid_master_table' in list(param_dct.keys()):
+            if param_dct['save_lipid_master_table'] == 'CSV':
+                save_lipid_master_table = True
+
+    if use_existed_lipid_master is False:
+        try:
+            print('==> --> Start to generate Lipid Master Table ...')
+            usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
+            print('=== ==> --> Lipid Master Table generated >>>', usr_lipid_master_df.shape[0])
+
+        except FileNotFoundError:
+            error_lst.append('Some files missing...')
+            error_lst.append('Please check your settings in the configuration file ...')
+            return False, error_lst, False
+    else:
+        try:
+            print('Try to use existed Lipid Master table: %s' % existed_lipid_master_path)
+            usr_lipid_master_df = pd.read_csv(existed_lipid_master_path)
+            print('=== ==> --> Lipid Master table loaded >>>', usr_lipid_master_df.shape[0])
+        except Exception as e:
+            print(e)
+            error_lst.append(e)
+            return False, error_lst, False
+
+    if save_lipid_master_table is True:
+        log_master_name = 'Lipid_Master_%s.csv' % hunter_start_time_str
+        log_master_name = os.path.join(output_folder, log_master_name)
+        usr_lipid_master_df.to_csv(log_master_name)
+        print('==> --> Lipid Master table Saved as: ', log_master_name)
+
     # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
-
-    print('=== ==> --> Lipid Master table generated >>>', usr_lipid_master_df.shape)
 
     lipid_info_df = usr_lipid_master_df
 
@@ -235,18 +269,25 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     # remove bad precursors, keep the matched scans by DDA_rank and scan number
     # build unique identifier for each scan with scan_number00dda_rank use numpy.int64 to avoid large scan_number
-    usr_scan_info_df['scan_checker'] = ((10000 * usr_scan_info_df['scan_number'] + usr_scan_info_df['DDA_rank'])
-                                        .astype(int64))
-    ms1_obs_pr_df['scan_checker'] = ((10000 * usr_scan_info_df['scan_number'] + usr_scan_info_df['DDA_rank'])
-                                     .astype(int64))
+    # usr_scan_info_df['scan_checker'] = ((10000 * usr_scan_info_df['scan_number'] + usr_scan_info_df['DDA_rank'])
+    #                                     .astype(int64))
+    # ms1_obs_pr_df['scan_checker'] = ((10000 * ms1_obs_pr_df['scan_number'] + ms1_obs_pr_df['DDA_rank'])
+    #                                  .astype(int64))
+    usr_scan_info_df['scan_checker'] = (usr_scan_info_df['scan_number'].astype(int64).astype(str).str.
+                                        cat(usr_scan_info_df['DDA_rank'].astype(int64).astype(str), sep='_'))
+    ms1_obs_pr_df['scan_checker'] = (ms1_obs_pr_df['scan_number'].astype(int64).astype(str).str.
+                                     cat(ms1_obs_pr_df['DDA_rank'].astype(int64).astype(str).astype(str), sep='_'))
 
     usr_scan_checker_lst = usr_scan_info_df['scan_checker'].tolist()
     checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_checker_lst)]
+    print(ms1_obs_pr_df['scan_checker'].isin(usr_scan_checker_lst).head(20))
     checked_info_df.is_copy = False
-    checked_info_df.sort_values(by=['MS2_PR_mz', 'scan_number'], inplace=True)
-
-    checked_info_df.sort_values(by=['Lib_mz', 'scan_time', 'MS2_PR_mz'], ascending=[True, True, True], inplace=True)
-    # print(checked_info_df.tail(5))
+    checked_info_df.sort_values(by=['scan_checker', 'Lib_mz'], ascending=[True, True], inplace=True)
+    print(checked_info_df.tail(5))
+    usr_scan_info_df.to_csv(os.path.join(output_folder, 'usr_scan_info.csv'))
+    ms1_obs_pr_df.to_csv(os.path.join(output_folder, 'ms1_obs_pr_df.csv'))
+    checked_info_df.to_csv(os.path.join(output_folder, 'checked_info_df.csv'))
+    print('checked_info_df_0', checked_info_df.shape)
     if checked_info_df.shape[0] == 0:
         print('!! No identification in pre-match steps !!')
         error_lst.append('!! No identification in pre-match steps !!\n')
@@ -255,6 +296,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         print('>>> features identified in the pre-match: ', checked_info_df.shape[0])
 
     ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
+    usr_scan_info_df.to_csv(os.path.join(output_folder, 'usr_scan_info.csv'))
+    ms1_obs_pr_df.to_csv(os.path.join(output_folder, 'ms1_obs_pr_df.csv'))
+    checked_info_df.to_csv(os.path.join(output_folder, 'checked_info_df.csv'))
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
     print('ms1_xic_mz_lst', len(ms1_xic_mz_lst))
     print(ms1_xic_mz_lst)
@@ -360,10 +404,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     target_ident_lst = []
 
     print('=== ==> --> Start to Hunt for Lipids !!')
-    checked_info_groups = checked_info_df.groupby(['Lib_mz', 'MS2_PR_mz', 'Formula', 'scan_time', 'Ion'])
+    # checked_info_groups = checked_info_df.groupby(['Lib_mz', 'MS2_PR_mz', 'Formula', 'scan_time', 'Ion'])
+    checked_info_groups = checked_info_df.groupby(['Formula', 'scan_checker'])
     lipid_all_group_key_lst = list(checked_info_groups.groups.keys())
-    # lipid_all_group_key_lst = sorted(lipid_all_group_key_lst, key=lambda x: x[0])
-
+    usr_scan_info_df.to_csv(os.path.join(output_folder, 'usr_scan_info.csv'))
+    ms1_obs_pr_df.to_csv(os.path.join(output_folder, 'ms1_obs_pr_df.csv'))
+    checked_info_df.to_csv(os.path.join(output_folder, 'checked_info_df.csv'))
     spec_sub_len = int(math.ceil(len(lipid_all_group_key_lst) / usr_core_num))
     spec_sub_key_lst = [lipid_all_group_key_lst[k: k + spec_sub_len] for k in range(0, len(lipid_all_group_key_lst),
                                                                                     spec_sub_len)]
@@ -398,6 +444,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             for spec_result in spec_results_lst:
                 try:
                     sub_spec_dct = spec_result.get()
+                    print(sub_spec_dct)
                     if len(list(sub_spec_dct.keys())) > 0:
                         lipid_spec_info_dct.update(sub_spec_dct)
                 except (KeyError, SystemError, ValueError):
@@ -792,7 +839,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
-                                 '[M-(FA1)+Na]+_i',
+                                '[M-(FA1)+Na]+_i',
                                 '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i']
         elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
             # problem with the following key:  'SN2_[FA-H2O+H]_i',
@@ -853,7 +900,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         log_pager.add_all_info(output_df)
         log_pager.close_page()
 
-
         if usr_core_num > 1:
             parallel_pool = Pool(usr_core_num)
             img_num = len(lipid_info_img_lst)
@@ -906,18 +952,17 @@ if __name__ == '__main__':
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
 
-
     # full_test_lst = [['PC', 'waters'],['PE', 'waters'], ['TG', 'waters','[M+H]+'], ['TG', 'waters', '[M+NH4]+'],
     # ['TG', 'thermo', '[M+NH4]+']]
 
-    #usr_test_lst = ['TG_thermo_NH4']
     usr_test_lst = [['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4']]
 
     # set the default files
-    pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML' # Ni file
-    tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML' # Mile file
-    tg_mzml_thermo = r'D:\PhD\2018\Samples\Angela\plasma\C30prototype\C30prototype.mzML' # Angela
-    tg_mzml_SCIEXS = r'D:\PhD\2018\Samples\Metabolights\ST000662\MS2\20140613_HSL002_Positive_01.mzML' # Dataset
+    pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Ni file
+    tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Mile file
+    tg_mzml_thermo = r'D:\PhD\2018\Samples\Angela\plasma\C30prototype\C30prototype.mzML'  # Angela
+    tg_mzml_SCIEXS = r'D:\PhD\2018\Samples\Metabolights\ST000662\MS2\20140613_HSL002_Positive_01.mzML'  # Dataset
+    tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
     pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_PL.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
@@ -925,7 +970,7 @@ if __name__ == '__main__':
 
     tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG2.xlsx'}
+                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG.xlsx'}
 
     usr_test_dct = {}
     usr_test_dct_keys = []
@@ -942,7 +987,7 @@ if __name__ == '__main__':
             if vendor == 'waters':
                 mzml = pl_mzml_waters
                 mz_range = [650, 950]
-                rt_range = [24, 27]
+                rt_range = [24, 27]  # max [24, 27]
             else:
                 mzml = False
                 pass
@@ -956,11 +1001,11 @@ if __name__ == '__main__':
             if vendor == 'waters':
                 mzml = tg_mzml_waters
                 mz_range = [800, 1000]
-                rt_range = [9, 15] # max [9, 15]/ for Ni file the range should be above 27
+                rt_range = [9, 15]  # max [9, 15]
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
-                mz_range = [600, 1000]       # 850, 859
-                rt_range = [20, 28]     # 25.6, 25.8
+                mz_range = [600, 1000]  # 850, 859
+                rt_range = [20, 28]  # 25.6, 25.8
             elif vendor == 'sciex':
                 mzml = tg_mzml_SCIEXS
                 mz_range = [900, 1000]
@@ -986,7 +1031,7 @@ if __name__ == '__main__':
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
                 mz_range = [400, 800]
-                rt_range = [6,10]
+                rt_range = [6, 10]
             else:
                 mzml = False
 
@@ -1033,7 +1078,7 @@ if __name__ == '__main__':
                 _cfg_dct['ms2_ppm'] = 60
                 _cfg_dct['hg_ppm'] = 60
                 _cfg_dct['ms_th'] = 5000
-                _cfg_dct['ms2_th'] = 100 # Can get 2000/1000/750/500 dependes how strict should be the identification
+                _cfg_dct['ms2_th'] = 100  # Can get 2000/1000/750/500 depends how strict should be the identification
                 _cfg_dct['hg_th'] = 1000
                 _cfg_dct['dda_top'] = 15
                 ms_ppm_SCIEXS = 10
@@ -1046,7 +1091,7 @@ if __name__ == '__main__':
                 _cfg_dct['ms2_ppm'] = 100
                 _cfg_dct['hg_ppm'] = 100
                 _cfg_dct['ms_th'] = 1000
-                _cfg_dct['ms2_th'] = 10  # Can get 2000/1000/750/500 dependes how strict should be the identification
+                _cfg_dct['ms2_th'] = 10  # Can get 2000/1000/750/500 depends how strict should be the identification
                 _cfg_dct['hg_th'] = 10
                 _cfg_dct['dda_top'] = 4
 
