@@ -248,7 +248,9 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                         pr_mz_lst.append(pr_mz)
 
                         spec_idx += 1
-
+    else:
+        print ('No vendor with that name')
+        exit()
     scan_info_df = pd.DataFrame(data=scan_info_dct, columns=['dda_event_idx', 'spec_index', 'scan_time',
                                                              'DDA_rank', 'scan_number', 'MS2_PR_mz'])
     scan_info_df.sort_values(by='scan_time', inplace=True)

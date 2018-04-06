@@ -128,14 +128,18 @@ class LogPageCreator(object):
             params_li_str = ''.join(disp_cfg_lst)
 
             cfg_template = '''
-                           <html>\n<body>\n<style type="text/css">\n
-                           p {margin-left: 20px; text-decoration: none; font-family: sans-serif;}\n
-                           body {font-family: sans-serif;}\n table{width:100%;}\n
-                           table, th, td {font-size:14px;text-align: center; font-family: sans-serif;}\n
-                           th{background-color:#0066B2;color:white; margin:center;}\n
-                           a:link {text-decoration:none} a:hover{text-decoration:underline }\n
-                           ul\n </style>\n
-                           <h3><img src="LipidHunter.ico" height=30/>  LipidHunter</h3>\n
+                           <html>
+                           <style type="text/css">
+                           p {margin-left: 20px; text-decoration: none; font-family: sans-serif;}
+                           body {font-family: sans-serif;}\
+                           table{width:100%;}
+                           table, th, td {font-size:14px;text-align: center; font-family: sans-serif;}
+                           th{background-color:#0066B2;color:white; margin:center;}
+                           a:link {text-decoration:none} a:hover{text-decoration:underline }
+                           ul
+                           </style>
+                           <body>
+                           <h3><img src="LipidHunter.ico" height=30/>  LipidHunter</h3>
                            <hr> <h3>Parameters:</h3>\n<ul>\n
                            '''
             cfg_template += params_li_str
@@ -144,43 +148,69 @@ class LogPageCreator(object):
 
         with open(self.params_lst_page, 'w') as _params_page:
             _params_page.write('''
-                                <html>\n<body>\n<style type="text/css">\n
-                                p {margin-left: 20px; text-decoration: none; font-family: sans-serif;}\n
-                                body {font-family: sans-serif;}\n table{width:100%s;}\n
-                                table, th, td {font-size:14px;text-align: center; font-family: sans-serif;}\n
-                                th{background-color:#0066B2;color:white; margin:center;}\n
-                                a:link {text-decoration:none} a:hover{text-decoration:underline }\n
-                                ul {font-size:14px; width: 260px;}\n </style>\n
-                                <h3><img src="LipidHunter.ico" height=30/>  LipidHunter</h3><font size="1">\n
-                                <hr> <h3>Parameters:</h3>\n<ul>\n
-                                <li>Start time: %s</li>\n<li>Mode: %s %s</li>\n
-                                <li><i>m/z</i> range: %.1f - %.1f <i>m/z</i></li>\n<li>RT range: %.1f - %.1f min</li>\n
-                                <li>MS1 Threshold: %i</li>\n<li>MS2 Threshold: %i</li>\n
-                                <li>MS1 ppm: %i</li>\n<li>MS2 ppm: %i</li>\n
-                                <li>LipidHunter score > %.1f %s</li>\n<li>Isotope score > %.1f %s</li>\n</ul>\n<h4>
-                                <a href ="LipidHunter_Configuration_Summary.html" target ="_blank">
-                                View all parameters...</a><h4><hr>\n<h3>Lipid identification list:
-                                </h3><font size="1">\n<table>\n<thead>\n<tr style="text-align: center;">\n
-                                <th>ID#</th>\n<th> MS1_obs_mz </th>\n<th>RT(min)</th>\n<th>Discrete</th>\n
-                                <th>Score</th>\n
-                                </tr>\n</thead>\n</table>\n</body>\n</html>\n
-                                ''' % ('%', params['hunter_start_time'], self.lipid_type, params['charge_mode'],
+                                <html>
+                                <style type="text/css">
+                                p {margin-left: 20px; text-decoration: none; font-family: sans-serif;}
+                                body {font-family: sans-serif;}
+                                table{width:100%s;}
+                                table, th, td {font-size:14px;text-align: center; font-family: sans-serif;}
+                                th{background-color:#0066B2;color:white; margin:center;}
+                                a:link {text-decoration:none} a:hover{text-decoration:underline }
+                                ul {font-size:14px; width: 260px;}
+                                </style>
+                                <body>
+                                <h3><img src="LipidHunter.ico" height=30/>LipidHunter</h3><font size="1">
+                                <hr> 
+                                <h3>Parameters:</h3>
+                                <ul>
+                                <li>File Name: %s</li>
+                                <li>Start time: %s</li>
+                                <li>Mode: %s %s</li>
+                                <li><i>m/z</i> range: %.1f - %.1f <i>m/z</i></li>
+                                <li>RT range: %.1f - %.1f min</li>
+                                <li>MS1 Threshold: %i</li>
+                                <li>MS2 Threshold: %i</li>
+                                <li>MS1 ppm: %i</li>
+                                <li>MS2 ppm: %i</li>
+                                <li>LipidHunter score > %.1f %s</li>
+                                <li>Isotope score > %.1f %s</li>
+                                </ul>
+                                <h4><a href ="LipidHunter_Configuration_Summary.html" target ="_blank">
+                                View all parameters...</a><h4><hr>
+                                </body>
+                                </html>
+                                ''' % ('%', os.path.basename(params['mzml_path_str']), params['hunter_start_time'],
+                                       self.lipid_type, params['charge_mode'],
                                        params['mz_start'], params['mz_end'], params['rt_start'], params['rt_end'],
                                        params['ms_th'], params['ms2_th'], params['ms_ppm'], params['ms2_ppm'],
                                        params['rank_score_filter'], score_mode,
                                        params['isotope_score_filter'], isotope_score_mode))
-
         with open(self.idx_lst_page, 'w') as _idx_page:
             _idx_page.write('''
-                            <html>\n<body>\n<style type="text/css">\n
-                            p {margin-left: 20px; text-decoration: none; font-family: sans-serif;}\n
-                            body {background-color: #B1D3EC;font-family: sans-serif;}\n table{width:100%s;}\n
-                            table, th, td {font-size:14px;text-align: center; font-family: sans-serif;}\n
-                            th{background-color:#0066B2;color:white;margin:center;}\n
-                            tr:nth-child(even){background-color: #7C94A5;}\n
+                            <html>
+                            <style type="text/css">
+                            p {margin-left: 20px; text-decoration: none; font-family: sans-serif;}
+                            body {background-color: #B1D3EC;font-family: sans-serif;}
+                            table{width:100%s;}
+                            table, th, td {font-size:14px;text-align: center; font-family: sans-serif;}
+                            th{background-color:#0066B2;color:white;margin:center;}
+                            tr:nth-child(even){background-color: #7C94A5;}
                             a:link {text-decoration:none; color:black}a:hover{text-decoration:underline; color:black;}
-                            a:visited {text-decoration:none; color:black;}\n
-                            </style>\n<table>\n<tbody>
+                            a:visited {text-decoration:none; color:black;}
+                            </style>
+                            <body>
+                            <h3>Lipid identification list:</h3><font size="1">
+                            <table>
+                                <thead>
+                                <tr style="text-align: center;">
+                                <th>ID#</th>
+                                <th> MS1_obs_mz </th>
+                                <th>RT(min)</th>
+                                <th>Discrete</th>
+                                <th>Score</th>
+                                </tr>
+                                </thead>
+                            <tbody>
                             ''' % '%')
         try:
             shutil.copy('%s\LipidHunter.ico' % hunter_folder, self.output_img_folder)
@@ -226,21 +256,65 @@ class LogPageCreator(object):
                     plot_df_cols = []
                     if self.lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
-                                        'SN1_[FA-H]-_i_per', 'SN2_[FA-H]-_i_per',
-                                        '[LPL(SN1)-H]-_i_per', '[LPL(SN2)-H]-_i_per',
-                                        '[LPL(SN1)-H2O-H]-_i_per', '[LPL(SN2)-H2O-H]-_i_per']
-                    elif self.lipid_type in ['TG', 'TAG', 'DG', 'DAG', 'MG', 'MAG']:
-                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'SN1_[FA-H2O+H]+_i_per',
-                                        'SN2_[FA-H2O+H]+_i_per', 'SN3_[FA-H2O+H]+_i_per', '[M-(SN1)+H]+_i_per',
-                                        '[M-(SN2)+H]+_i_per', '[M-(SN3)+H]+_i_per', '[MG(SN1)-H2O+H]+_i_per',
-                                        '[MG(SN2)-H2O+H]+_i_per', '[MG(SN3)-H2O+H]+_i_per']
+                                        'FA1_[FA-H]-_i_per', 'FA2_[FA-H]-_i_per',
+                                        '[LPL(FA1)-H]-_i_per', '[LPL(FA2)-H]-_i_per',
+                                        '[LPL(FA1)-H2O-H]-_i_per', '[LPL(FA2)-H2O-H]-_i_per']
+                        peak_info_df = pd.DataFrame(_subgroup_df, columns=plot_df_cols)
+                        peak_info_df.rename(
+                            columns={'FA1_[FA-H]-_i_per': 'FA1_[FA-H]-_i (%)', 'FA2_[FA-H]-_i_per': 'FA2_[FA-H]-_i (%)',
+                                     '[LPL(FA1)-H]-_i_per': '[LPL(FA1)-H]-_i (%)',
+                                     '[LPL(FA2)-H]-_i_per': '[LPL(FA2)-H]-_i (%)',
+                                     '[LPL(FA1)-H2O-H]-_i_per': '[LPL(FA1)-H2O-H]-_i (%)',
+                                     '[LPL(FA2)-H2O-H]-_i_per': '[LPL(FA2)-H2O-H]-_i (%)'}, inplace=True)
+                    elif self.lipid_type in ['TG', 'TAG', 'MG', 'MAG'] and charge in ['[M+H]+', '[M+NH4]+']:
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'FA1_[FA-H2O+H]+_i_per',
+                                        'FA2_[FA-H2O+H]+_i_per', 'FA3_[FA-H2O+H]+_i_per', '[M-(FA1)+H]+_i_per',
+                                        '[M-(FA2)+H]+_i_per', '[M-(FA3)+H]+_i_per', '[MG(FA1)-H2O+H]+_i_per',
+                                        '[MG(FA2)-H2O+H]+_i_per', '[MG(FA3)-H2O+H]+_i_per']
+                        peak_info_df = pd.DataFrame(_subgroup_df, columns=plot_df_cols)
+                        peak_info_df.rename(
+                            columns={'FA1_[FA-H2O+H]+_i_per': 'FA1_[FA-H2O+H]+_i (%)',
+                                     'FA2_[FA-H2O+H]+_i_per': 'FA2_[FA-H2O+H]+_i (%)',
+                                     'FA3_[FA-H2O+H]+_i_per': 'FA3_[FA-H2O+H]+_i (%)',
+                                     '[M-(FA1)+H]+_i_per': '[M-(FA1)+H]+_i (%)',
+                                     '[M-(FA2)+H]+_i_per': '[M-(FA2)+H]+_i (%)',
+                                     '[M-(FA3)+H]+_i_per': '[M-(FA3)+H]+_i (%)',
+                                     '[MG(FA1)-H2O+H]+_i_per': '[MG(FA1)-H2O+H]+_i (%)',
+                                     '[MG(FA2)-H2O+H]+_i_per': '[MG(FA2)-H2O+H]+_i (%)',
+                                     '[MG(FA3)-H2O+H]+_i_per': '[MG(FA3)-H2O+H]+_i (%)'}, inplace=True)
+                    elif self.lipid_type in ['TG'] and charge in ['[M+Na]+']:
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'FA1_[FA-H2O+H]+_i_per',
+                                        'FA2_[FA-H2O+H]+_i_per', 'FA3_[FA-H2O+H]+_i_per', '[M-(FA1)+Na]+_i_per',
+                                        '[M-(FA2)+Na]+_i_per', '[M-(FA3)+Na]+_i_per', '[MG(FA1)-H2O+H]+_i_per',
+                                        '[MG(FA2)-H2O+H]+_i_per', '[MG(FA3)-H2O+H]+_i_per']
+                        peak_info_df = pd.DataFrame(_subgroup_df, columns=plot_df_cols)
+                        peak_info_df.rename(
+                            columns={'FA1_[FA-H2O+H]+_i_per': 'FA1_[FA-H2O+H]+_i (%)',
+                                     'FA2_[FA-H2O+H]+_i_per': 'FA2_[FA-H2O+H]+_i (%)',
+                                     'FA3_[FA-H2O+H]+_i_per': 'FA3_[FA-H2O+H]+_i (%)',
+                                     '[M-(FA1)+Na]+_i_per': '[M-(FA1)+Na]+_i (%)',
+                                     '[M-(FA2)+Na]+_i_per': '[M-(FA2)+Na]+_i (%)',
+                                     '[M-(FA3)+Na]+_i_per': '[M-(FA3)+Na]+_i (%)',
+                                     '[MG(FA1)-H2O+H]+_i_per': '[MG(FA1)-H2O+H]+_i (%)',
+                                     '[MG(FA2)-H2O+H]+_i_per': '[MG(FA2)-H2O+H]+_i (%)',
+                                     '[MG(FA3)-H2O+H]+_i_per': '[MG(FA3)-H2O+H]+_i (%)'}, inplace=True)
+                    elif self.lipid_type in ['DG'] and charge in ['[M+H]+', '[M+NH4]+']:
+                        plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'FA1_[FA-H2O+H]+_i_per',
+                                        'FA2_[FA-H2O+H]+_i_per', '[MG(FA1)-H2O+H]+_i_per', '[MG(FA2)-H2O+H]+_i_per']
+                        peak_info_df = pd.DataFrame(_subgroup_df, columns=plot_df_cols)
+                        peak_info_df.rename(
+                            columns={'FA1_[FA-H2O+H]+_i_per': 'FA1_[FA-H2O+H]+_i (%)',
+                                     'FA2_[FA-H2O+H]+_i_per': 'FA2_[FA-H2O+H]+_i (%)',
+                                     '[M-(FA1)+H]+_i_per': '[M-(FA1)+H]+_i (%)',
+                                     '[M-(FA2)+H]+_i_per': '[M-(FA2)+H]+_i (%)',
+                                     '[MG(FA1)-H2O+H]+_i_per': '[MG(FA1)-H2O+H]+_i (%)',
+                                     '[MG(FA2)-H2O+H]+_i_per': '[MG(FA2)-H2O+H]+_i (%)'}, inplace=True)
                     else:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
-                                        'SN1_[FA-H]-i_per', 'SN2_[FA-H]-i_per',
-                                        '[LPL(SN1)-H]-i_per', '[LPL(SN2)-H]-i_per',
-                                        '[LPL(SN1)-H2O-H]-i_per', '[LPL(SN2)-H2O-H]-i_per']
-
-                    peak_info_df = pd.DataFrame(_subgroup_df, columns=plot_df_cols)
+                                        'FA1_[FA-H]-i_per', 'FA2_[FA-H]-i_per',
+                                        '[LPL(FA1)-H]-i_per', '[LPL(FA2)-H]-i_per',
+                                        '[LPL(FA1)-H2O-H]-i_per', '[LPL(FA2)-H2O-H]-i_per']
+                        peak_info_df = pd.DataFrame(_subgroup_df, columns=plot_df_cols)
 
                     try:
                         table_buf_code = peak_info_df.to_html(float_format='%.1f', border=0, index=False)
@@ -251,8 +325,8 @@ class LogPageCreator(object):
                     _idx += 1  # set start from 0 to 1
 
                     img_title_str = ('{mz}_RT{rt:.3}_DDArank{dda}_Scan{scan}_{ident}_{f}_{chg}_score{score}'
-                                     .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
-                                             ident=ident_abbr, score=score, f=formula_ion, chg=charge))
+                        .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
+                                ident=ident_abbr, score=score, f=formula_ion, chg=charge))
                     img_info_lst = ['<a name="', '%i' % _idx, '"><h3>', '<a href="', img_path, '" target="blank">',
                                     img_title_str, '</a></h3></a>', '<a href="', img_path, '" target="blank">',
                                     '<img src="', img_path, '" height="800" /></a>', table_buf_code, '\n<hr>\n']

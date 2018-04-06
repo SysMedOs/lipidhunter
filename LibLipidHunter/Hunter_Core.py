@@ -193,6 +193,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             elif usr_charge == '[M+H]+':
                 lipid_info_df = lipid_info_df[
                     (mz_start <= lipid_info_df['[M+H]+_MZ']) & (lipid_info_df['[M+H]+_MZ'] <= mz_end)]
+            elif usr_charge == '[M+Na]+':
+                lipid_info_df = lipid_info_df[
+                    (mz_start <= lipid_info_df['[M+Na]+_MZ']) & (lipid_info_df['[M+Na]+_MZ'] <= mz_end)]
     else:
         error_lst.append('Lipid class or charge NOT supported.  User input lipid class = %s, charge = %s. '
                          % (usr_lipid_class, usr_charge))
@@ -365,7 +368,11 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     spec_sub_key_lst = [lipid_all_group_key_lst[k: k + spec_sub_len] for k in range(0, len(lipid_all_group_key_lst),
                                                                                     spec_sub_len)]
     lipid_spec_info_dct = {}
-
+    # TODO (georiga.angelidou@uni-leipzig.de): remember to remove
+    # spec_sub_key_lst = [[(847.67916, 847.680061, 'C53H92O6Na+', 22.063973, '[M+Na]+'),
+    #                      (847.67916, 847.679436, 'C53H92O6Na+', 22.598964, '[M+Na]+'),
+    #                      (847.67916, 847.679513, 'C53H92O6Na+', 22.409925, '[M+Na]+'),
+    #                      (847.67916, 847.67998, 'C53H92O6Na+', 22.235679, '[M+Na]+')]]
     if usr_core_num > 1:
         spec_results_lst = []
 
@@ -430,13 +437,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             if isinstance(_sub_lst, tuple) or isinstance(_sub_lst, list):
                 if None in _sub_lst:
                     _sub_lst = [x for x in _sub_lst if x is not None]
-                    # TODO (georgia.angelidou@uni-leipzig.de): remove when fix
-                    # # Check to avoid errors incase of only one identification
-                    # if isinstance(_sub_lst[0], float):
-                    #     _sub_lst2 = ()
-                    #     _sub_lst2 = _sub_lst2 + (_sub_lst,)
-                    #     _sub_lst = _sub_lst2
-
                 else:
                     if isinstance(_sub_lst[0], float):
                         _sub_lst3 = ()
@@ -448,9 +448,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 worker_count += 1
                 if len(list(sub_spec_dct.keys())) > 0:
                     lipid_spec_info_dct.update(sub_spec_dct)
-                # TODO (geprgia.angelidou@uni-leipzig.de): remove when the program works
-                # if len(sub_spec_dct.keys()) > 0:
-                #     lipid_spec_info_dct = dict(lipid_spec_info_dct, **sub_spec_dct)
+
             else:
                 pass
 
@@ -520,8 +518,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     # parse specific peak info
     pl_class_lst = ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'PIP']
     pl_neg_chg_lst = ['[M-H]-', '[M+HCOO]-', '[M+CH3COO]-']
-    tg_class_lst = ['TG']
-    tg_pos_chg_lst = ['[M+NH4]+', '[M+H]+']
+    tg_class_lst = ['TG', 'DG']
+    tg_pos_chg_lst = ['[M+NH4]+', '[M+H]+', '[M+Na]+']
     if usr_lipid_class in pl_class_lst and usr_charge in pl_neg_chg_lst:
         charge_mode = 'NEG'
         usr_key_frag_df = pd.read_excel(key_frag_cfg)
@@ -651,7 +649,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
         else:
             print('Using single core mode...')
+
             worker_count = 1
+
             for lipid_sub_lst in lipid_sub_key_lst:
                 if isinstance(lipid_sub_lst, tuple) or isinstance(lipid_sub_lst, list):
                     if None in lipid_sub_lst:
@@ -725,34 +725,48 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
         output_df.drop_duplicates(keep='first', inplace=True)
         output_header_lst = output_df.columns.values.tolist()
-
+        # TODO (georgia.angeldou@uni-leipzig.de): Add the info for the DG
         # TODO (zhixu.ni@uni-leipzig.de): check following if segment
         if usr_lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
-            output_list = ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
-                           '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
+            output_list = ['FA1_[FA-H]-_i', 'FA2_[FA-H]-_i', '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
+                           '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i']
             output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3,
-                                'i_sn1': 2, 'i_sn2': 2, 'i_[M-H]-sn1': 2, 'i_[M-H]-sn2': 2,
-                                'i_[M-H]-sn1-H2O': 2, 'i_[M-H]-sn2-H2O': 2
+                                'i_fa1': 2, 'i_fa2': 2, 'i_[M-H]-fa1': 2, 'i_[M-H]-fa2': 2,
+                                'i_[M-H]-fa1-H2O': 2, 'i_[M-H]-fa2-H2O': 2
                                 }
             # for _i_check in ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
             #                  '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']:
             #     if _i_check not in output_header_lst:
             #         output_df[_i_check] = 0.0
 
-        elif usr_lipid_class in ['TG']:
-            output_list = ['SN1_[FA-H2O+H]+_i', 'SN2_[FA-H2O+H]+_i', 'SN3_[FA-H2O+H]+_i', '[MG(SN1)-H2O+H]+_i',
-                           '[MG(SN2)-H2O+H]+_i', '[MG(SN3)-H2O+H]+_i', '[M-(SN1)+H]+', '[M-(SN2)+H]+_i',
-                           '[M-(SN3)+H]+_i']
+        elif usr_lipid_class in ['TG'] and usr_charge in ['[M+NH4]+', '[M+H]+']:
+            output_list = ['FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
+                           '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i', '[M-(FA1)+H]+', '[M-(FA2)+H]+_i',
+                           '[M-(FA3)+H]+_i']
             output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3,
-                                'i_sn1': 2, 'i_sn2': 2, 'i_sn3': 2, 'i_[M+H]-sn1': 2, 'i_[M+H]-sn2': 2,
-                                'i_[M+H]-sn3': 2, 'i_[MG(sn1)+H]-H2O': 2, 'i_[MG(sn2)+H]-H2O': 2,
-                                'i_[MG(sn3)+H]-H2O': 2}
+                                'i_fa1': 2, 'i_fa2': 2, 'i_fa3': 2, 'i_[M+H]-fa1': 2, 'i_[M+H]-fa2': 2,
+                                'i_[M+H]-fa3': 2, 'i_[MG(fa1)+H]-H2O': 2, 'i_[MG(fa2)+H]-H2O': 2,
+                                'i_[MG(fa3)+H]-H2O': 2}
+        elif usr_lipid_class in ['TG'] and usr_charge in ['[M+Na]+']:
+            # TODO (georgia.angelidou@uni-leipzig.de): check why this can cause some problems with [MGSN1-H2O+H]+
+            output_list = ['FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
+                           '[MG(FA3)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i', '[M-(FA1)+Na]+_i', '[M-(FA2)+Na]+_i',
+                           '[M-(FA3)+Na]+_i', '[M-(FA1-H+Na)+N]+_i', '[M-(FA2-H+Na)+H]+_i']
+            output_round_dct = {r'MS1_obs_mz': 4, r'lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3, 'i_fa1': 2, 'i_fa2': 2,
+                                'i_fa3': 2, 'i_[M+Na]-fa1': 2, 'i_[M+Na]-fa2': 2, 'i_[M+Na]-fa3': 2,
+                                'i_[M+H]-fa1-H+Na': 2, 'i_[M+H]-fa2-H+Na': 2, 'i_[M+H]-fa3-H+Na': 2}
+        elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
+            output_list = ['FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
+                           '[MG(FA2)-H2O+H]+_i']
+            output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3, 'i_fa1': 2, 'i_fa2': 2,
+                                'i_[MG(fa1)+H]-H2O': 2, 'i_[MG(fa2)+H]-H2O': 2}
+
         else:
-            output_list = ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
-                           '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
+            output_list = ['FA1_[FA-H]-_i', 'FA2_[FA-H]-_i', '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
+                           '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i']
             output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3,
-                                'i_sn1': 2, 'i_sn2': 2, 'i_[M-H]-sn1': 2, 'i_[M-H]-sn2': 2,
-                                'i_[M-H]-sn1-H2O': 2, 'i_[M-H]-sn2-H2O': 2
+                                'i_fa1': 2, 'i_fa2': 2, 'i_[M-H]-fa1': 2, 'i_[M-H]-fa2': 2,
+                                'i_[M-H]-fa1-H2O': 2, 'i_[M-H]-fa2-H2O': 2
                                 }
         for _i_check in output_list:
             if _i_check not in output_header_lst:
@@ -765,18 +779,32 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         output_df = output_df.round(output_round_dct)
 
         output_df.rename(columns={'#Contaminated_peaks': '#Unspecific_peaks'}, inplace=True)
-
-        if usr_lipid_class in ['TG']:
+        # TODO (georgia.angelidou@uni-leipzig.de): Add the DG section
+        if usr_lipid_class in ['TG'] and usr_charge in ['[M+H]+', '[M+NH4]+']:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'SN1_[FA-H2O+H]+_i', 'SN2_[FA-H2O+H]+_i', 'SN3_[FA-H2O+H]+_i',
-                                '[MG(SN1)-H2O+H]+_i', '[MG(SN2)-H2O+H]+_i', '[MG(SN3)-H2O+H]+_i', '[M-(SN1)+H]+_i',
-                                '[M-(SN2)+H]+_i', '[M-(SN3)+H]+_i']
+                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
+                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i', '[M-(FA1)+H]+_i',
+                                '[M-(FA2)+H]+_i', '[M-(FA3)+H]+_i']
+        elif usr_lipid_class in ['TG'] and usr_charge in ['[M+Na]+']:
+            # TODO (georgia.angelidou@uni-leipzig.de): need to solve the problem for the below sections
+            # '[MG(SN1)-H2O+H]+_i', '[MG(SN2)-H2O+H]+_i', '[MG(SN3)-H2O+H]+_i',
+            output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
+                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
+                                 '[M-(FA1)+Na]+_i',
+                                '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i']
+        elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
+            # problem with the following key:  'SN2_[FA-H2O+H]_i',
+            output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
+                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
+                                '[MG(FA2)-H2O+H]+_i']
         else:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
-                                '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']
+                                'DDA#', 'Scan#', 'FA1_[FA-H]-_i', 'FA2_[FA-H]-_i', '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
+                                '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i']
 
         final_output_df = output_df[output_short_lst]
         final_output_df = final_output_df.sort_values(by=['MS1_obs_mz', 'MS2_scan_time', 'RANK_SCORE'],
@@ -825,9 +853,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         log_pager.add_all_info(output_df)
         log_pager.close_page()
 
+
         if usr_core_num > 1:
             parallel_pool = Pool(usr_core_num)
-
             img_num = len(lipid_info_img_lst)
             img_sub_len = int(math.ceil(img_num / usr_core_num))
             img_sub_key_lst = [lipid_info_img_lst[k: k + img_sub_len] for k in range(0, img_num, img_sub_len)]
@@ -878,47 +906,18 @@ if __name__ == '__main__':
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
 
-    # full_test_lst = ['PC_waters', 'PE_waters', 'TG_waters', 'TG_waters_NH4', 'TG_thermo_NH4']
 
-    # Modify usr_test_lst according to full_test_lst to run the supported built in tests
-    usr_test_lst = ['PC_waters']
+    # full_test_lst = [['PC', 'waters'],['PE', 'waters'], ['TG', 'waters','[M+H]+'], ['TG', 'waters', '[M+NH4]+'],
+    # ['TG', 'thermo', '[M+NH4]+']]
 
-    # define default ranges of each test
-    mz_range_pl_waters = [650, 950]  # [650, 950]
-    rt_range_pl_waters = [24, 27]  # max [24, 27]
-
-    # mz_range_pl_thermo = [700, 900]  # [700, 900]
-    # rt_range_pl_thermo = [25, 27]  # max [24, 27]
-
-    mz_range_tg_waters = [700, 1200]  # [700, 1200]
-    rt_range_tg_waters = [9, 15]  # max [9, 15]
-
-    mz_range_tg_thermo = [600, 1200]  # [600, 1200]
-    rt_range_tg_thermo = [15, 28]  # max [15, 28]
-
-    # define default parameters of each vendor
-    # waters
-    ms_ppm_waters = 20
-    ms2_ppm_waters = 50
-    hg_ppm_waters = 200
-    ms_th_waters = 1000
-    ms2_th_waters = 10
-    hg_th_waters = 10
-    dda_top_waters = 6
-
-    # thermo
-    ms_ppm_thermo = 5  # 5
-    ms2_ppm_thermo = 20  # 20
-    hg_ppm_thermo = 20  # 20
-    ms_th_thermo = 10000  # 10000
-    ms2_th_thermo = 2000  # 2000
-    hg_th_thermo = 2000  # 2000
-    dda_top_thermo = 10  # 10
+    #usr_test_lst = ['TG_thermo_NH4']
+    usr_test_lst = [['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4']]
 
     # set the default files
-    pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'
-    tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'
-    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'
+    pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML' # Ni file
+    tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML' # Mile file
+    tg_mzml_thermo = r'D:\PhD\2018\Samples\Angela\plasma\C30prototype\C30prototype.mzML' # Angela
+    tg_mzml_SCIEXS = r'D:\PhD\2018\Samples\Metabolights\ST000662\MS2\20140613_HSL002_Positive_01.mzML' # Dataset
 
     pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_PL.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
@@ -926,61 +925,72 @@ if __name__ == '__main__':
 
     tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG.xlsx'}
+                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG2.xlsx'}
 
     usr_test_dct = {}
-
+    usr_test_dct_keys = []
     for usr_test in usr_test_lst:
         _test_dct = {'rank_score_filter': 27.5, 'score_filter': 27.5, 'isotope_score_filter': 75.0, 'ms_max': 0,
                      'pr_window': 0.75, 'ms2_infopeak_threshold': 0.001, 'ms2_hginfopeak_threshold': 0.001}
-        if usr_test[0] == 'P':
-            lipid_class = usr_test[0:2]
+        if usr_test[0] in ['PC', 'PE', 'PA', 'PG', 'PI', 'PS', 'PIP']:
+            lipid_class = usr_test[0]
             if lipid_class == 'PC':
                 charge = '[M+HCOO]-'
             else:
                 charge = '[M-H]-'
-            vendor = usr_test[-6:]
+            vendor = usr_test[1]
             if vendor == 'waters':
                 mzml = pl_mzml_waters
-                mz_range = mz_range_pl_waters
-                rt_range = rt_range_pl_waters
+                mz_range = [650, 950]
+                rt_range = [24, 27]
             else:
                 mzml = False
                 pass
 
             _test_dct.update(pl_base_dct)
 
-        elif usr_test[0] == 'T':
-            lipid_class = usr_test[0:2]
-            if usr_test[-6:] in ['waters', 'thermo']:
-                vendor = usr_test[-6:]
-                charge = '[M+H]+'
-            else:
-                if usr_test[-3:] == 'NH4':
-                    charge = '[M+NH4]+'
-                    usr_test_v = usr_test[: -4]
-                    if usr_test_v[-6:] in ['waters', 'thermo']:
-                        vendor = usr_test_v[-6:]
-                    else:
-                        charge = False
-                        vendor = False
-                else:
-                    charge = False
-                    vendor = False
-
+        elif usr_test[0] in ['TG']:
+            lipid_class = usr_test[0]
+            vendor = usr_test[1]
+            charge = usr_test[2]
             if vendor == 'waters':
                 mzml = tg_mzml_waters
-                mz_range = mz_range_tg_waters
-                rt_range = rt_range_tg_waters
+                mz_range = [800, 1000]
+                rt_range = [9, 15] # max [9, 15]/ for Ni file the range should be above 27
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
-                mz_range = mz_range_tg_thermo
-                rt_range = rt_range_tg_thermo
+                mz_range = [600, 1000]       # 850, 859
+                rt_range = [20, 28]     # 25.6, 25.8
+            elif vendor == 'sciex':
+                mzml = tg_mzml_SCIEXS
+                mz_range = [900, 1000]
+                rt_range = [8, 13]
+            elif vendor == 'agilent':
+                mzml = tg_mzml_agilent
+                mz_range = [600, 1000]
+                rt_range = [9, 13]
             else:
                 mzml = False
 
             _test_dct.update(tg_base_dct)
+        elif usr_test[0] in ['DG']:
+            # TODO (georgia.angelidou@uni-leipzig.de): remember to change the code below moer specific for DG
+            lipid_class = usr_test[0]
+            vendor = usr_test[1]
+            charge = usr_test[2]
 
+            if vendor == 'waters':
+                mzml = tg_mzml_waters
+                mz_range = [400, 800]
+                rt_range = [6, 10]
+            elif vendor == 'thermo':
+                mzml = tg_mzml_thermo
+                mz_range = [400, 800]
+                rt_range = [6,10]
+            else:
+                mzml = False
+
+            _test_dct.update(tg_base_dct)
         else:
 
             lipid_class = False
@@ -994,27 +1004,55 @@ if __name__ == '__main__':
                         'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1]}
 
             if vendor == 'waters':
-                _cfg_dct['ms_ppm'] = ms_ppm_waters
-                _cfg_dct['ms2_ppm'] = ms2_ppm_waters
-                _cfg_dct['hg_ppm'] = hg_ppm_waters
-                _cfg_dct['ms_th'] = ms_th_waters
-                _cfg_dct['ms2_th'] = ms2_th_waters
-                _cfg_dct['hg_th'] = hg_th_waters
-                _cfg_dct['dda_top'] = dda_top_waters
+                _cfg_dct['ms_ppm'] = 20
+                _cfg_dct['ms2_ppm'] = 50
+                _cfg_dct['hg_ppm'] = 200
+                _cfg_dct['ms_th'] = 750
+                _cfg_dct['ms2_th'] = 10
+                _cfg_dct['hg_th'] = 10
+                _cfg_dct['dda_top'] = 6
+
                 _test_dct.update(_cfg_dct)
-                usr_test_dct[usr_test] = _test_dct
+                usr_test_dct[usr_test[3]] = _test_dct
+                usr_test_dct_keys.append(usr_test[3])
 
             elif vendor == 'thermo':
-                _cfg_dct['ms_ppm'] = ms_ppm_thermo
-                _cfg_dct['ms2_ppm'] = ms2_ppm_thermo
-                _cfg_dct['hg_ppm'] = hg_ppm_thermo
-                _cfg_dct['ms_th'] = ms_th_thermo
-                _cfg_dct['ms2_th'] = ms2_th_thermo
-                _cfg_dct['hg_th'] = hg_th_thermo
-                _cfg_dct['dda_top'] = dda_top_thermo
+                _cfg_dct['ms_ppm'] = 5
+                _cfg_dct['ms2_ppm'] = 20
+                _cfg_dct['hg_ppm'] = 50
+                _cfg_dct['ms_th'] = 10000
+                _cfg_dct['ms2_th'] = 2000
+                _cfg_dct['hg_th'] = 2000
+                _cfg_dct['dda_top'] = 10
 
                 _test_dct.update(_cfg_dct)
-                usr_test_dct[usr_test] = _test_dct
+                usr_test_dct[usr_test[3]] = _test_dct
+                usr_test_dct_keys.append(usr_test[3])
+            elif vendor == 'sciex':
+                _cfg_dct['ms_ppm'] = 10
+                _cfg_dct['ms2_ppm'] = 60
+                _cfg_dct['hg_ppm'] = 60
+                _cfg_dct['ms_th'] = 5000
+                _cfg_dct['ms2_th'] = 100 # Can get 2000/1000/750/500 dependes how strict should be the identification
+                _cfg_dct['hg_th'] = 1000
+                _cfg_dct['dda_top'] = 15
+                ms_ppm_SCIEXS = 10
+
+                _test_dct.update(_cfg_dct)
+                usr_test_dct[usr_test[3]] = _test_dct
+                usr_test_dct_keys.append(usr_test[3])
+            elif vendor == 'agilent':
+                _cfg_dct['ms_ppm'] = 50
+                _cfg_dct['ms2_ppm'] = 100
+                _cfg_dct['hg_ppm'] = 100
+                _cfg_dct['ms_th'] = 1000
+                _cfg_dct['ms2_th'] = 10  # Can get 2000/1000/750/500 dependes how strict should be the identification
+                _cfg_dct['hg_th'] = 10
+                _cfg_dct['dda_top'] = 4
+
+                _test_dct.update(_cfg_dct)
+                usr_test_dct[usr_test[3]] = _test_dct
+                usr_test_dct_keys.append(usr_test[3])
         else:
             pass
 
@@ -1032,11 +1070,12 @@ if __name__ == '__main__':
         print('\nLipidHunter folder', hunter_folder, '\n')
         print(usr_test_dct, '\n')
 
-        for test_key in usr_test_lst:
+        for test_key in usr_test_dct_keys:
             if test_key in list(usr_test_dct.keys()):
                 test_dct = usr_test_dct[test_key]
                 t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                 lipid_class = test_dct['lipid_type']
+
                 cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
                            'xlsx_output_path_str': r'../Test/results/%s_%s.xlsx' % (test_key, t_str),
                            'hunter_folder': hunter_folder, 'img_type': u'png', 'img_dpi': 300,
@@ -1057,12 +1096,13 @@ if __name__ == '__main__':
 
     else:
         print('!!! Invalid LipidHunter folder', hunter_folder)
-        for test_key in usr_test_lst:
+        for test_key in usr_test_dct_keys:
             print('>>>>>>>>!!!!!!!! TEST FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
             t_sum_lst.append((test_key, 'FAILED', '', 'Identified: 0'))
 
     t_end = time.time() - t0
-    print('Test run in plan: ', ', '.join(usr_test_lst))
+
+    print('Test run in plan: ', ', '.join(usr_test_dct_keys))
     print('With Max Core = %i and RAM = %i GB' % (core_count, max_ram))
     if len(t_sum_lst) > 0:
         for t_info in t_sum_lst:
