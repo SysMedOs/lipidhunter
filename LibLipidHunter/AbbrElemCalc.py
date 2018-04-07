@@ -39,7 +39,7 @@ class ElemCalc:
 
         self.lipid_hg_elem_dct = {'PA': pa_hg_elem, 'PC': pc_hg_elem, 'PE': pe_hg_elem, 'PG': pg_hg_elem,
                                   'PI': pi_hg_elem, 'PS': ps_hg_elem, 'PIP': pip_hg_elem, 'TG': tg_hg_elem,
-                                  'FA': fa_hg_elem}
+                                  'FA': fa_hg_elem, 'DG': tg_hg_elem}
 
         self.glycerol_bone_elem_dct = {'C': 3, 'H': 2}
         self.link_o_elem_dct = {'O': -1, 'H': 2}
@@ -63,6 +63,7 @@ class ElemCalc:
         pl_checker = re.compile(r'(P[ACEGSI])([(])(.*)([)])')
         pip_checker = re.compile(r'(PIP)([(])(.*)([)])')
         tg_checker = re.compile(r'(TG)([(])(.*)([)])')
+        dg_checker = re.compile(r'(DG)([(])(.*)([)])')
         fa_checker = re.compile(r'(FA)(\d{1,2})([:])(\d{1,2})')
         fa_short_checker = re.compile(r'(\d{1,2})([:])(\d{1,2})')
         fa_o_checker = re.compile(r'(O-)(\d{1,2})([:])(\d)')
@@ -74,7 +75,7 @@ class ElemCalc:
         bulk_fa_linker = ''
         bulk_fa_c = 0
         bulk_fa_db = 0
-        lyso_fa_linker_dct = {'sn1': '', 'sn2': ''}
+        lyso_fa_linker_dct = {'fa1': '', 'fa2': ''}
 
         # TODO(georgia.angelidou@uni-leipzig.de): consideration to put se elif statement
         if pl_checker.match(abbr):
@@ -95,6 +96,11 @@ class ElemCalc:
             tg_typ_lst = tg_re_chk.groups()
             _pl_typ = tg_typ_lst[0]
             bulk_fa_typ = tg_typ_lst[2]
+        if dg_checker.match(abbr):
+            dg_re_chk = dg_checker.match(abbr)
+            dg_typ_lst = dg_re_chk.groups()
+            _pl_typ = dg_typ_lst[0]
+            bulk_fa_typ = dg_typ_lst[2]
         if fa_checker.match(abbr):
             # print('FA')
             _pl_typ = 'FA'
@@ -188,6 +194,28 @@ class ElemCalc:
                 bulk_fa_lst = fa_chk.groups()
                 bulk_fa_c = bulk_fa_lst[1]
                 bulk_fa_db = bulk_fa_lst[3]
+        elif _pl_typ in ['DG']:
+            if fa_short_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'A-A-'
+                lyso_fa_linker_dct = {'A': ''}
+                fa_chk = fa_short_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[0]
+                bulk_fa_db = bulk_fa_lst[2]
+            elif fa_o_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'O-A-'
+                lyso_fa_linker_dct = {'O': '', 'A': 'O-'}  # link of the other sn after NL of this sn
+                fa_chk = fa_o_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[1]
+                bulk_fa_db = bulk_fa_lst[3]
+            elif fa_p_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'P-A-'
+                lyso_fa_linker_dct = {'P': '', 'A': 'P-'}  # link of the other sn after NL of this sn
+                fa_chk = fa_p_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[1]
+                bulk_fa_db = bulk_fa_lst[3]
 
         bulk_fa_c = int(bulk_fa_c)
         bulk_fa_db = int(bulk_fa_db)
@@ -249,7 +277,15 @@ class ElemCalc:
                     tmp_lipid_elem_dct['O'] += -1
 
                 return tmp_lipid_elem_dct
+            elif lipid_type in ['DG']:
+                tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
+                tmp_lipid_elem_dct['O'] += 5
+                tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']
+                tmp_lipid_elem_dct['H'] += (
+                        self.glycerol_bone_elem_dct['H'] + usr_lipid_info_dct['C'] * 2 - usr_lipid_info_dct[
+                    'DB'] * 2 + 2)
 
+                return tmp_lipid_elem_dct
             else:
                 return {'C': 0, 'H': 0, 'O': 0, 'P': 0}
         else:
@@ -338,6 +374,72 @@ class ElemCalc:
             mono_mz += elem_dct[_elem] * self.periodic_table_dct[_elem][0][0]
 
         return round(mono_mz, 6)
+
+    # Function to calculate the posible precursor of [M+NH4]+ for TG and DG
+    # Current step is working for TG
+    # This is needed to understand if the precursos is true [M+H]+ or [M+Na]+ (given the users option)
+    def get_NH3_pos_mode(self, charge, mz_pr, amm_elem_dct):
+        mz_NH3_pr_H = ''  # The corespond mz of [M+NH4]+ if the given precursor corresponds to the [M+H]+
+        mz_NH3_pr_Na = ''  # The corespond mz of [M+NH4]+ if the given precursor corresponds to the [M+Na]+
+        if charge in ['[M+H]+']:
+            # Problem need to calculate the theoritical one and not according to the experimental identification
+            # mz_NH3_pr_H = mz_pr - self.periodic_table_dct['H'][0][0] + (4 * self.periodic_table_dct['H'][0][0]) + \
+            #               self.periodic_table_dct['N'][0][0]
+            mz_NH3_pr_H = amm_elem_dct['C'] * self.periodic_table_dct['C'][0][0] + amm_elem_dct['H'] * \
+                          self.periodic_table_dct['H'][0][0] + amm_elem_dct['O'] * self.periodic_table_dct['O'][0][0] + \
+                          self.periodic_table_dct['N'][0][0]
+            # If this precursor corresponds to the [M+Na]+ then to calculate the bulk identification which it will be different from the above
+            # We do the following calculations
+            # First remove the charge and the atoms which form the glycerol bond (Na, C3, H5)
+            # C3H5Na = 64.028895
+            mz_pr_Na = mz_pr - self.periodic_table_dct['Na'][0][0] - (self.periodic_table_dct['C'][0][0] * 3) - (
+                    self.periodic_table_dct['H'][0][0] * 5)
+            # Second Step: For TG Remove the 6O and the first C from the 3 FA and the last C with the 3 H from each
+            # O = 15.994915, C = 12, CH3 = 15.023475
+            # 6O, 3xC, 3xCH3 => C6H9O6 = 177.039915
+            mz_pr_Na = mz_pr_Na - (self.periodic_table_dct['O'][0][0] * 6) - (
+                    self.periodic_table_dct['C'][0][0] * 6) - (self.periodic_table_dct['H'][0][0] * 9)
+            mz_pr_Na = int(mz_pr_Na)
+            db_count_Na = 0
+            while (mz_pr_Na % 14 > 1):
+                db_count_Na = db_count_Na + 1
+                mz_pr_Na = mz_pr_Na - 26
+            c_count_Na = int(mz_pr_Na / 14) + 6 + db_count_Na * 2
+            tg_abbt_bulk_Na = 'TG(' + str(c_count_Na) + ':' + str(db_count_Na) + ')'
+            _mz_Na_formula, _mz_Na_elemdct = self.get_formula(tg_abbt_bulk_Na, '[M+Na]+')
+            mz_NH3_pr_Na = _mz_Na_elemdct['C'] * self.periodic_table_dct['C'][0][0] + (
+                    (_mz_Na_elemdct['H'] + 4) * self.periodic_table_dct['H'][0][0]) + _mz_Na_elemdct['O'] * \
+                           self.periodic_table_dct['O'][0][0] + self.periodic_table_dct['N'][0][0]
+            # Third step: the rest of the elements correspond to the CH2 * x and if DB to the (CHx2) * y (For 1DB == 2xCH)
+            # CH2 = 14.015650, CH = 13.007825
+            # Need to create a loop and make all the numbers integers
+            # elif charge in ['[M+Na]+']:
+            #     mz_NH3_pr_Na = mz_pr - self.periodic_table_dct['Na'][0][0] + (4 * self.periodic_table_dct['H'][0][0]) + \
+            #                    self.periodic_table_dct['N'][0][0]
+            mz_NH4_H_form = 'C' + str(amm_elem_dct['C']) + 'H' + str(amm_elem_dct['H']) + 'O6N'
+            mz_NH4_Na_form = _mz_H_formula
+        elif charge in ['[M+Na]+']:
+            mz_NH3_pr_Na = amm_elem_dct['C'] * self.periodic_table_dct['C'][0][0] + amm_elem_dct['H'] * \
+                           self.periodic_table_dct['H'][0][0] + amm_elem_dct['O'] * self.periodic_table_dct['O'][0][0] + \
+                           self.periodic_table_dct['N'][0][0]
+            print (mz_pr)
+            C5H3= self.periodic_table_dct['H'][0][0] * 6  + self.periodic_table_dct['C'][0][0] *3
+            rest_sampl = self.periodic_table_dct['O'][0][0] *6 + self.periodic_table_dct['H'][0][0] *9 + self.periodic_table_dct['C'][0][0] * 6
+            mz_pr_H = mz_pr - C5H3 - rest_sampl
+            mz_pr_H = int(mz_pr_H)
+            db_count_H = 0
+            while (mz_pr_H % 14 > 1):
+                db_count_H = db_count_H + 1
+                mz_pr_H = mz_pr_H - 26
+            c_count_H = int(mz_pr_H / 14) + 6 + db_count_H * 2
+            tg_abbt_bulk_H = 'TG(' + str(c_count_H) + ':' + str(db_count_H) + ')'
+            _mz_H_formula, _mz_H_elemdct = self.get_formula(tg_abbt_bulk_H, '[M+H]+')
+            mz_NH3_pr_H = _mz_H_elemdct['C'] * self.periodic_table_dct['C'][0][0] + (_mz_H_elemdct['H'] + 3) * \
+                          self.periodic_table_dct['H'][0][0] + _mz_H_elemdct['O'] * self.periodic_table_dct['O'][0][0] + self.periodic_table_dct['N'][0][0]
+            mz_NH4_Na_form = 'C' + str(amm_elem_dct['C']) + 'H' + str(amm_elem_dct['H']) + 'O6N'
+            mz_NH4_H_form = 'C' + str(_mz_H_elemdct['C']) + 'H' + str((_mz_H_elemdct['H'] + 3)) + 'O6N'
+
+        return (mz_NH3_pr_H, mz_NH4_H_form, mz_NH3_pr_Na, mz_NH4_Na_form)
 
 
 if __name__ == '__main__':

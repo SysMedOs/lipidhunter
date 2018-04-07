@@ -22,7 +22,7 @@ from __future__ import division
 from __future__ import print_function
 
 from six.moves import configparser
-from numba import int32, float32, float64, vectorize
+from numba import int32, int64, int16, float32, float64, vectorize
 
 # setup weight factor
 # load configurations
@@ -73,7 +73,7 @@ def pr_window_calc_para(mz, delta):
     return mz + delta
 
 
-@vectorize(([float64(float64, int32)]), target=para_target)
+@vectorize(([float64(float64, int64)]), target=para_target)
 def ppm_window_para(mz, ppm):
     return mz * (1 + 0.000001 * ppm)
 
