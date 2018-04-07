@@ -404,9 +404,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     # checked_info_groups = checked_info_df.groupby(['Lib_mz', 'MS2_PR_mz', 'Formula', 'scan_time', 'Ion'])
     checked_info_groups = checked_info_df.groupby(['Formula', 'scan_checker'])
     lipid_all_group_key_lst = list(checked_info_groups.groups.keys())
-    usr_scan_info_df.to_csv(os.path.join(output_folder, 'usr_scan_info.csv'))
-    ms1_obs_pr_df.to_csv(os.path.join(output_folder, 'ms1_obs_pr_df.csv'))
-    checked_info_df.to_csv(os.path.join(output_folder, 'checked_info_df.csv'))
     spec_sub_len = int(math.ceil(len(lipid_all_group_key_lst) / usr_core_num))
     spec_sub_key_lst = [lipid_all_group_key_lst[k: k + spec_sub_len] for k in range(0, len(lipid_all_group_key_lst),
                                                                                     spec_sub_len)]
@@ -578,8 +575,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     print('... Key FRAG Dict Generated ...')
 
     # Start multiprocessing to get rank score
-    lipid_info_results_lst = []
+
     lipid_info_img_lst = []
+
     if usr_core_num > 1:
 
         lipid_part_key_lst = []
@@ -625,6 +623,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         queue = ''
 
         for lipid_sub_key_lst in lipid_part_key_lst:
+
+            lipid_info_results_lst = []
 
             if part_tot == 1:
                 print('>>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
@@ -889,8 +889,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         log_pager.close_page()
 
         print('=== == --> start to generate images: image count %i' % len(lipid_info_img_lst))
-        for img_param_dct in lipid_info_img_lst:
-            print(img_param_dct['save_img_as'])
 
         if usr_core_num > 1:
             parallel_pool = Pool(usr_core_num)
@@ -912,6 +910,10 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     if len(img_sub_lst) > 0:
                         print('>>> >>> Core #%i ==> Generating output images ... image count: %i'
                               % (worker_count, len(img_sub_lst)))
+                        if 'debug_mode' in list(param_dct.keys()):
+                            if param_dct['debug_mode'] == 'ON':
+                                for img_param_dct in img_sub_lst:
+                                    print(img_param_dct['save_img_as'])
                         parallel_pool.apply_async(gen_plot, args=(img_sub_lst, worker_count, usr_img_type,
                                                                   usr_dpi, usr_vendor, usr_ms1_precision))
                         worker_count += 1
@@ -942,20 +944,23 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 3
+    core_count = 1
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
 
     # full_test_lst = [['PC', 'waters'],['PE', 'waters'], ['TG', 'waters','[M+H]+'], ['TG', 'waters', '[M+NH4]+'],
     # ['TG', 'thermo', '[M+NH4]+']]
 
-    usr_test_lst = [['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4']]
+    usr_test_lst = [
+        ['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4'],
+        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+    ]
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Ni file
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Mile file
-    tg_mzml_thermo = r'D:\PhD\2018\Samples\Angela\plasma\C30prototype\C30prototype.mzML'  # Angela
-    tg_mzml_SCIEXS = r'D:\PhD\2018\Samples\Metabolights\ST000662\MS2\20140613_HSL002_Positive_01.mzML'  # Dataset
+    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_2.mzML'  # Angela
+    tg_mzml_SCIEXS = r'../Test/mzML/20140613_HSL002_Positive_01.mzML'  # Dataset
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
     pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_PL.xlsx',
@@ -968,6 +973,8 @@ if __name__ == '__main__':
 
     usr_test_dct = {}
     usr_test_dct_keys = []
+    mz_range = [600, 1000]  # default
+    rt_range = [6, 10]  # default
     for usr_test in usr_test_lst:
         _test_dct = {'rank_score_filter': 27.5, 'score_filter': 27.5, 'isotope_score_filter': 75.0, 'ms_max': 0,
                      'pr_window': 0.75, 'ms2_infopeak_threshold': 0.001, 'ms2_hginfopeak_threshold': 0.001}

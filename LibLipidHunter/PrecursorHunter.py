@@ -295,7 +295,7 @@ class PrecursorHunter(object):
                         if pr_info_result.shape[0] > 0:
                             ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
                 if part_tot == 1:
-                    print('>>> Multiprocessing results merged ...' % core_num)
+                    print('>>> Multiprocessing results merged ...')
                 else:
                     print('>>> Multiprocessing results merged ... Part %i / %i ...' % (part_counter, part_tot))
                 part_counter += 1

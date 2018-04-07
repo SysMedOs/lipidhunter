@@ -181,7 +181,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
     ident_peak_dct = {'discrete_abbr': [], 'obs_label': [], 'i': [], 'mz': [], 'obs_abbr': [], 'obs_rank_type': [],
                       'obs_rank': []}
-    ident_peak_multIndex = [[], []]
+    ident_peak_multindex = [[], []]
     obs_dct = {}
     frag_lst_dg = []
     if lipid_type in ['PA', 'PE', 'PG', 'PI', 'PS'] and charge == '[M-H]-':
@@ -431,8 +431,8 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                         # ident_peak_dct[_abbr] = {'discrete_abbr': _lipid_abbr, 'obs_label': _label, 'i': _i,
                         #                          'mz': _mz, 'obs_abbr': _abbr, 'obs_rank_type': '%s_RANK' % _obs,
                         #                          'obs_rank': _rank_idx}
-                        ident_peak_multIndex[0].append(_abbr)  # Need the multIndex bec. TG more opt. with same bulk
-                        ident_peak_multIndex[1].append(_lipid_abbr)
+                        ident_peak_multindex[0].append(_abbr)  # Need the multIndex bec. TG more opt. with same bulk
+                        ident_peak_multindex[1].append(_lipid_abbr)
 
                         ident_peak_dct['discrete_abbr'].append(_lipid_abbr)
                         ident_peak_dct['obs_label'].append(_label)
@@ -442,7 +442,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                         ident_peak_dct['obs_rank_type'].append('%s_RANK' % _obs)
                         ident_peak_dct['obs_rank'].append(_rank_idx)
 
-                        print(core_count, _abbr)
+                        # print(core_count, _abbr)
                         _obs_drop_idx.append(_rank_idx)
 
                     else:
@@ -481,7 +481,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
             # TODO(zhixu.ni@uni-leipzig.de): @Georgia add TG here please :)
         lite_info_df.reset_index(drop=True, inplace=True)
         # ident_peak_df = pd.DataFrame(ident_peak_dct).T
-        tuples = list(zip(*ident_peak_multIndex))
+        tuples = list(zip(*ident_peak_multindex))
         ident_peak_index = pd.MultiIndex.from_tuples(tuples, names=['fragment_abbr', 'discrete_abbr'])
         ident_peak_df2 = pd.DataFrame(ident_peak_dct, index=ident_peak_index)
     else:
@@ -662,7 +662,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                             # TODO (georgia.angelidou@uni-leipzig.de): Need to check the reason why we do not get any output
                             _frag_mz_query_code2 = '%f <= mz <= %f' % (_mz_amm_Na_mz2 - 0.2, _mz_amm_Na_mz2 + 0.2)
                             if _ms1_df.query(_frag_mz_query_code).shape[0] > 0:
-                                print('Go and check line 613 from ScoreHunter.py to see what is going on')
+                                # print('Go and check line 613 from ScoreHunter.py to see what is going on')
                                 _mz_df_amm = _ms1_df.query(_frag_mz_query_code)
                                 _mz_df_amm.reset_index(inplace=True, drop=True)
                                 _mz_amm_i = _mz_df_amm.loc[0, 'i']
@@ -707,9 +707,6 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                             #     _mz_amm_iso_flag =1
                             else:
                                 _mz_amm_iso_flag = 0
-
-
-
 
                         else:
                             _mz_amm_iso_flag = 0
