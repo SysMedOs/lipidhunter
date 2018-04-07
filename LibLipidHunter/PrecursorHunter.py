@@ -35,9 +35,9 @@ except ImportError:  # for python 2.7
     from ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
 
 
-def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max,
-                 os_type='windows', queue=None, core_count=1):
-    core_count = 'Core #{core}'.format(core=core_count)
+def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max, core=1,
+                 os_type='windows', queue=None):
+    core_count = 'Core #{core}'.format(core=core)
     print(core_count, '... Matching precursors ...')
     core_results_df = pd.DataFrame()
     for group_key in sub_group_list:
@@ -230,7 +230,8 @@ class PrecursorHunter(object):
                                                                                                lpp_info_groups,
                                                                                                core_list, ms1_th,
                                                                                                ms1_ppm, ms1_max,
-                                                                                               core_worker_count))
+                                                                                               core_worker_count,
+                                                                                               self.os_typ))
                                 core_worker_count += 1
                                 pr_info_results_lst.append(pr_info_result)
 
@@ -250,8 +251,8 @@ class PrecursorHunter(object):
                                 job = multiprocessing.Process(target=find_pr_info, args=(scan_info_df, sub_pl,
                                                                                          lpp_info_groups, core_list,
                                                                                          ms1_th, ms1_ppm, ms1_max,
-                                                                                         self.os_typ, queue,
-                                                                                         core_worker_count))
+                                                                                         core_worker_count,
+                                                                                         self.os_typ, queue,))
                                 core_worker_count += 1
                                 jobs.append(job)
                                 job.start()
@@ -271,7 +272,6 @@ class PrecursorHunter(object):
                             print('>>> >>> processing ......Part: %i subset: %i ' % (part_counter, core_worker_count))
                             sub_df = find_pr_info(scan_info_df, sub_pl, lpp_info_groups, core_list, ms1_th,
                                                   ms1_ppm, ms1_max, core_worker_count)
-                            core_worker_count += 1
                             if sub_df.shape[0] > 0:
                                 pr_info_results_lst.append(sub_df)
 

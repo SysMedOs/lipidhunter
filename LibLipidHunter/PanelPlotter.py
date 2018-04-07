@@ -784,6 +784,8 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
     core_count = 'Core #{core}'.format(core=core_count)
 
     if isinstance(param_dct_lst, list):
+        img_counter = 1
+        tot_img_count = len(param_dct_lst)
         for param_dct in param_dct_lst:
             abbr = param_dct['abbr']
             mz_se = param_dct['mz_se']
@@ -795,7 +797,7 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
             formula_charged = param_dct['formula_charged']
             charge = param_dct['charge']
             save_img_as = param_dct['save_img_as']
-
+            print('%s ==> image: %i / %i' % (core_count, img_counter, tot_img_count))
             plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
                          formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
                          dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
