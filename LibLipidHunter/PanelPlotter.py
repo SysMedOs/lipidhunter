@@ -149,26 +149,30 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     obs_dg_na_df.reset_index(drop=True, inplace=True)
     obs_dg_na_idx = obs_lyso_df.index[obs_lyso_df['TYPE'] == 'NL_Na'].tolist()
 
-    for _idx, _ion_se in obs_fa_df.iterrows():
-        # if _ion_se['obs_abbr'] in ident_peak_lst:
-        if _ion_se['obs_abbr'] in ident_peak_lst and _ion_se['TYPE'] == 'FA':
-            frag_idx_lst.append(_idx)
-    for _idx, _ion_se in obs_mg_df.iterrows():
-        if _ion_se['obs_abbr'] in ident_peak_lst:
-            mg_idx_lst.append(_idx)
-    for _idx, _ion_se in obs_lyso_df.iterrows():
-        # if _ion_se['obs_abbr'] in ident_peak_lst:
-        if _ion_se['obs_abbr'] in ident_peak_lst and _ion_se['TYPE'] == 'NL':
-            nl_idx_lst.append(_idx)
-    for _idx, _ion_se in obs_dg_na_df.iterrows():
-        if _ion_se['obs_abbr'] in ident_peak_lst and _ion_se['TYPE'] == 'NL_Na':
-            dg_Na_idx_lst.append(_idx)
+    if isinstance(obs_fa_df, pd.DataFrame):
+        for _idx, _ion_se in obs_fa_df.iterrows():
+            # if _ion_se['obs_abbr'] in ident_peak_lst:
+            if _ion_se['obs_abbr'] in ident_peak_lst and _ion_se['TYPE'] == 'FA':
+                frag_idx_lst.append(_idx)
+    if isinstance(obs_mg_df, pd.DataFrame):
+        for _idx, _ion_se in obs_mg_df.iterrows():
+            if _ion_se['obs_abbr'] in ident_peak_lst:
+                mg_idx_lst.append(_idx)
+    if isinstance(obs_lyso_df, pd.DataFrame):
+        for _idx, _ion_se in obs_lyso_df.iterrows():
+            # if _ion_se['obs_abbr'] in ident_peak_lst:
+            if _ion_se['obs_abbr'] in ident_peak_lst and _ion_se['TYPE'] == 'NL':
+                nl_idx_lst.append(_idx)
+    if isinstance(obs_dg_na_df, pd.DataFrame):
+        for _idx, _ion_se in obs_dg_na_df.iterrows():
+            if _ion_se['obs_abbr'] in ident_peak_lst and _ion_se['TYPE'] == 'NL_Na':
+                dg_Na_idx_lst.append(_idx)
 
     # from the below we remove all of the MG for TG because there is another table for them
-    plt_obs_fa_df = obs_fa_df.drop(frag_idx_lst + obs_mg_idx)
-    plt_obs_mg_df = obs_mg_df.drop(mg_idx_lst)
-    plt_obs_lyso_df = obs_lyso_df.drop(nl_idx_lst + obs_dg_na_idx)
-    plt_obs_dg_na_df = obs_dg_na_df.drop(dg_Na_idx_lst)
+    plt_obs_fa_df = pd.DataFrame(obs_fa_df.drop(frag_idx_lst + obs_mg_idx))
+    plt_obs_mg_df = pd.DataFrame(obs_mg_df.drop(mg_idx_lst))
+    plt_obs_lyso_df = pd.DataFrame(obs_lyso_df.drop(nl_idx_lst + obs_dg_na_idx))
+    plt_obs_dg_na_df = pd.DataFrame(obs_dg_na_df.drop(dg_Na_idx_lst))
 
     # add specific ion info
     txt_props = {'ha': 'left', 'va': 'bottom'}
@@ -241,12 +245,10 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         ms_pic = pic_array[1, 0]
         ms_pic.tick_params(axis='both', which='major', labelsize=10)
 
-        if vendor == 'waters':
+        if ms1_df.shape[0] > 800:
             ms_pic.plot(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=1)
-        elif vendor == 'thermo':
-            ms_pic.stem(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=0.5, markerfmt=' ')
         else:
-            ms_pic.plot(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=1)
+            ms_pic.stem(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=0.5, markerfmt=' ')
 
         _marker_line, _stem_lines, _base_line = ms_pic.stem([ms1_pr_mz], dash_i, markerfmt=' ')
         plt.setp(_stem_lines, color='#00ccff', linewidth=5, alpha=0.3)
@@ -553,7 +555,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
 
-        if obs_ident_df is not False:
+        if isinstance(obs_ident_df, pd.DataFrame):
             low_obs_ident_df = obs_ident_df[obs_ident_df['mz'] <= 400]
             low_obs_ident_df.is_copy = False
             if low_obs_ident_df.shape[0] > 0:
@@ -570,7 +572,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
 
-        if plt_obs_fa_df is not False:
+        if isinstance(plt_obs_fa_df, pd.DataFrame):
             marker_l, stem_l, base_l = msms_low_pic.stem(plt_obs_fa_df['mz'], plt_obs_fa_df['i'], markerfmt=' ')
             plt.setp(stem_l, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
             for _i_f_idx, _frag_se in plt_obs_fa_df.iterrows():
@@ -580,7 +582,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                   color=(1.0, 0.6, 0.0, 1), rotation=60)
         else:
             pass
-        if plt_obs_mg_df is not False:
+
+        if isinstance(plt_obs_mg_df, pd.DataFrame):
             marker_l, stem_l, base_l = msms_low_pic.stem(plt_obs_mg_df['mz'], plt_obs_mg_df['i'], markerfmt=' ')
             plt.setp(stem_l, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
             for _i_f_idx, _frag_se in plt_obs_mg_df.iterrows():
@@ -591,7 +594,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
         # add specific ion info
-        if other_frag_df is not False:
+        if isinstance(other_frag_df, pd.DataFrame):
             marker_l, stem_l, base_l = msms_low_pic.stem(other_frag_df['mz'], other_frag_df['i'], markerfmt=' ')
             plt.setp(stem_l, color=(1.0, 0.8, 0.0, 0.5), linewidth=3)
             for _o_f_idx, _frag_se in other_frag_df.iterrows():
@@ -601,7 +604,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, fontsize=7, color=(1.0, 0.6, 0.0, 1))
         else:
             pass
-        if target_frag_df is not False:
+
+        if isinstance(target_frag_df, pd.DataFrame):
             marker_l, stem_l, base_l = msms_low_pic.stem(target_frag_df['mz'], target_frag_df['i'], markerfmt=' ')
             plt.setp(stem_l, color=(0.5, 0.8, 0.5, 0.6), linewidth=3)
             for _t_f_idx, _frag_se in target_frag_df.iterrows():
@@ -704,7 +708,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             msms_high_max = ms2_df['i'].max()
             msms_high_pic.set_ylim([0, msms_high_max * 1.25])
 
-        if obs_ident_df is not False:
+        if isinstance(obs_ident_df, pd.DataFrame):
             high_obs_ident_df = obs_ident_df[obs_ident_df['mz'] > 400]
             high_obs_ident_df.is_copy = False
             high_obs_ident_df['i_r'] = high_obs_ident_df['i'] * 1.025
@@ -722,7 +726,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
 
-        if plt_obs_lyso_df is not False:
+        if isinstance(plt_obs_lyso_df, pd.DataFrame):
             marker_l, stem_l, base_l = msms_high_pic.stem(plt_obs_lyso_df['mz'], plt_obs_lyso_df['i'], markerfmt=' ')
             plt.setp(stem_l, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
             for _i_nl_idx, _nl_se in plt_obs_lyso_df.iterrows():
@@ -732,10 +736,11 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                    color=(1.0, 0.6, 0.0, 1), rotation=60)
         else:
             pass
-        if plt_obs_dg_na_df is not False:
+
+        if isinstance(plt_obs_dg_na_df, pd.DataFrame):
             marker_l, stem_l, base_l = msms_high_pic.stem(plt_obs_dg_na_df['mz'], plt_obs_dg_na_df['i'], markerfmt=' ')
             plt.setp(stem_l, color=(1.0, 0.8, 0.0, 0.3), linewidth=3, alpha=0.4)
-            for _i_nl_idx, _nl_se in plt_obs_lyso_df.iterrows():
+            for _i_nl_idx, _nl_se in plt_obs_dg_na_df.iterrows():
                 _nl_mz = _nl_se['mz']
                 _nl_i_r = _nl_se['i_r']
                 msms_high_pic.text(_nl_mz, _nl_i_r, _nl_se['obs_label'], txt_props, fontsize=6,
@@ -743,7 +748,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
 
-        if other_nl_df is not False:
+        if isinstance(other_nl_df, pd.DataFrame):
             marker_l, stem_l, base_l = msms_high_pic.stem(other_nl_df['mz'], other_nl_df['i'], markerfmt=' ')
             plt.setp(stem_l, color=(1.0, 0.8, 0.0, 0.5), linewidth=3)
             for _o_nl_idx, _nl_se in other_nl_df.iterrows():
@@ -755,7 +760,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
 
-        if target_nl_df is not False:
+        if isinstance(target_nl_df, pd.DataFrame):
             marker_l, stem_l, base_l = msms_high_pic.stem(target_nl_df['mz'], target_nl_df['i_r'], markerfmt=' ')
             plt.setp(stem_l, color=(0.5, 0.8, 0.5, 0.6), linewidth=3)
             for _t_nl_idx, _nl_se in target_nl_df.iterrows():
@@ -769,23 +774,37 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         msms_high_str = 'MS/MS zoomed above m/z 400'
         msms_high_pic.set_title(msms_high_str, color='b', fontsize=10, y=0.98)
-
         # print(core_count, 'plot MSMS > 400 ', time.time() - _t_img_0)
 
-    tasks = [plot_msms(), plot_msms_low(), plot_msms_high(), plot_xic(), plot_ms(), plot_ms_zoom()]
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        for _task in tasks:
-            executor.submit(_task)
+    try:
+        tasks = [plot_msms(), plot_msms_low(), plot_msms_high(), plot_xic(), plot_ms(), plot_ms_zoom()]
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            for _task in tasks:
+                executor.submit(_task)
 
-    plt.savefig(save_img_as, type=img_type, dpi=dpi)
-    print(core_count, '=====> Image saved as: %s' % save_img_as)
-    plt.close()
+        plt.savefig(save_img_as, type=img_type, dpi=dpi)
+        print(core_count, '=====> Image saved as: %s' % save_img_as)
+        plt.close()
+    except Exception as e:
+        print(e)
+        print('Use single thread and try again ...')
+        plot_msms()
+        plot_msms_low()
+        plot_msms_high()
+        plot_xic()
+        plot_ms()
+        plot_ms_zoom()
+        plt.savefig(save_img_as, type=img_type, dpi=dpi)
+        print(core_count, '=====> Image saved as: %s' % save_img_as)
+        plt.close()
 
 
 def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters', ms1_precision=50e-6):
     core_count = 'Core #{core}'.format(core=core_count)
 
     if isinstance(param_dct_lst, list):
+        img_counter = 1
+        tot_img_count = len(param_dct_lst)
         for param_dct in param_dct_lst:
             abbr = param_dct['abbr']
             mz_se = param_dct['mz_se']
@@ -797,24 +816,32 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
             formula_charged = param_dct['formula_charged']
             charge = param_dct['charge']
             save_img_as = param_dct['save_img_as']
+            print('%s ==> image: %i / %i' % (core_count, img_counter, tot_img_count))
+            try:
+                plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
+                             formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
+                             dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
+            except Exception as e:
+                print(e)
 
-            plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
-                         formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
-                         dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
+            img_counter += 1
 
-    elif isinstance(param_dct_lst, dict):
-        param_dct = param_dct_lst
-        abbr = param_dct['abbr']
-        mz_se = param_dct['mz_se']
-        xic_dct = param_dct['xic_dct']
-        ident_info_dct = param_dct['ident_info_dct']
-        spec_info_dct = param_dct['spec_info_dct']
-        isotope_score_info_dct = param_dct['isotope_score_info_dct']
-        specific_dct = param_dct['specific_dct']
-        formula_charged = param_dct['formula_charged']
-        charge = param_dct['charge']
-        save_img_as = param_dct['save_img_as']
-
-        plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
-                     formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
-                     dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
+    else:
+        if isinstance(param_dct_lst, dict):
+            param_dct = param_dct_lst
+            abbr = param_dct['abbr']
+            mz_se = param_dct['mz_se']
+            xic_dct = param_dct['xic_dct']
+            ident_info_dct = param_dct['ident_info_dct']
+            spec_info_dct = param_dct['spec_info_dct']
+            isotope_score_info_dct = param_dct['isotope_score_info_dct']
+            specific_dct = param_dct['specific_dct']
+            formula_charged = param_dct['formula_charged']
+            charge = param_dct['charge']
+            save_img_as = param_dct['save_img_as']
+            try:
+                plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
+                             formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
+                             dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
+            except Exception as e:
+                print(e)

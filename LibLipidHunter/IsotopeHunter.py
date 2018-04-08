@@ -236,9 +236,9 @@ class IsotopeHunter(object):
 
         return base_m1_i, base_m2_i, base_m3_i
 
-    def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, core_count, isotope_number=2,
-                          ms1_precision=50e-6, pattern_tolerance=5, only_c=False, score_filter=75,
-                          decon=True, exp_mode='LC-MS'):
+    def get_isotope_score(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, core_count,
+                          ms1_precision=50e-6, only_c=False, score_filter=75,decon=True, exp_mode='LC-MS',
+                          isotope_number=2, pattern_tolerance=5):
 
         mz_delta = ms1_pr_mz * ms1_precision
         delta_13c = 1.0033548378
@@ -352,18 +352,13 @@ class IsotopeHunter(object):
             isotope_checker_dct = {}
             m2_checker_dct = {}
             m2_score = 0
-        # else:
-        #     isotope_score = 0
-        #     isotope_checker_dct = {}
-        #     m2_checker_dct = {}
-        #     m2_score = 0
 
         isotope_score_info_dct = {'isotope_score': isotope_score, 'isotope_checker_dct': isotope_checker_dct,
                                   'm2_score': m2_score, 'm2_checker_dct': m2_checker_dct,
                                   'deconv_lst': deconv_lst}
         return isotope_score_info_dct
 
-    def get_isotope_fragments(self, ms1_pr_mz, ms1_pr_i, formula, spec_df,
+    def get_isotope_fragments(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, core_count,
                               ms1_precision=50e-6, only_c=False,
                               decon=True, exp_mode='LC-MS'):
         # TODO (georgia.angelidou@uni-leipzig.de): Need to check the reason why we do not get any output
@@ -393,7 +388,7 @@ class IsotopeHunter(object):
             # M+3
             m3_base_abs = base_m3_i
 
-            print('Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
+            print(core_count, 'Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
                   % (m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs))
 
             deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs]
@@ -424,10 +419,8 @@ class IsotopeHunter(object):
             pass
         return isotope_flag
 
-    def get_isotope_fragments_sec(self, ms1_pr_mz, formula, spec_df,
-                              ms1_precision=50e-6, only_c=False,
-                              decon=True, exp_mode='LC-MS'):
-
+    def get_isotope_fragments_sec(self, ms1_pr_mz, ms1_pr_i, formula, spec_df, core_count, ms1_precision=50e-6,
+                                  only_c=False, decon=True, exp_mode='LC-MS'):
 
         mz_delta = ms1_pr_mz * ms1_precision
         delta_13c = 1.0033548378
@@ -455,7 +448,7 @@ class IsotopeHunter(object):
             # M+3
             m3_base_abs = base_m3_i
 
-            print('Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
+            print(core_count, 'Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
                   % (m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs))
 
             deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs]
@@ -485,6 +478,7 @@ class IsotopeHunter(object):
         else:
             pass
         return isotope_flag
+
 
 if __name__ == '__main__':
     # f = 'C39H67NO8P'  # PE(34:5)
