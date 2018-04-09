@@ -659,7 +659,7 @@ if __name__ == '__main__':
     master_xlsx = r'../Temp/LipidMaster_Whitelist_TG[M+Na]+.xlsx'
     fa_xlsx = r'../Temp/LipidMaster_FAlist.xlsx'
 
-    calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_type'], r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles/01-FA_Whitelist_TG.xlsx',
+    calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_type'], r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles/01-FA_Whitelist_TG-DG.xlsx',
                                         ms2_ppm=50)
 
     print(calc_fa_df)

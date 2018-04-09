@@ -176,7 +176,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
             print('=== ==> --> Lipid Master Table generated >>>', usr_lipid_master_df.shape[0])
 
-        except FileNotFoundError:
+        except Exception as e:
+            print(e)
+            error_lst.append(e)
             error_lst.append('Some files missing...')
             error_lst.append('Please check your settings in the configuration file ...')
             return False, error_lst, False
@@ -195,6 +197,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         log_master_name = os.path.join(output_folder, log_master_name)
         usr_lipid_master_df.to_csv(log_master_name)
         print('==> --> Lipid Master table Saved as: ', log_master_name)
+    else:
+        pass
 
     # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
@@ -233,6 +237,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     else:
         error_lst.append('Lipid class or charge NOT supported.  User input lipid class = %s, charge = %s. '
                          % (usr_lipid_class, usr_charge))
+
+    print('=== ==> --> Lipid Master table Ready ...')
 
     # TODO(zhixu.ni@uni-leipzig.de): Add more error to the error_lst.
 
@@ -964,11 +970,11 @@ if __name__ == '__main__':
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
     pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_PL.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions.xlsx',
                    'score_cfg': r'../ConfigurationFiles/03-Score_weight_PL.xlsx'}
 
-    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
+    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG-DG.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions.xlsx',
                    'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG.xlsx'}
 
     usr_test_dct = {}
