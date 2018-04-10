@@ -444,7 +444,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             for spec_result in spec_results_lst:
                 try:
                     sub_spec_dct = spec_result.get()
-                    print(sub_spec_dct)
+                    # print(sub_spec_dct)
                     if len(list(sub_spec_dct.keys())) > 0:
                         lipid_spec_info_dct.update(sub_spec_dct)
                 except (KeyError, SystemError, ValueError):

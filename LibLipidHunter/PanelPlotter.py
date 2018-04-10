@@ -236,7 +236,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         xic_pic.set_xlim([xic_rt_min, xic_rt_max])
         xic_pic.set_ylim([0, max(xic_i_lst) * 1.1])
         xic_title_str = 'XIC of m/z %.4f | @ m/z %.4f ppm=%.2f' % (ms1_pr_mz, lib_mz, ms1_pr_ppm)
-        xic_pic.set_title(xic_title_str, color='b', fontsize=10, y=0.98)
+        xic_pic.set_title(xic_title_str, color='b', fontsize=8, y=0.98)
         # print(core_count, 'plot XIC in ', time.time() - _t_img_0)
 
     def plot_ms():
@@ -270,7 +270,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             ms_pic.text(_ms_pkl_top_peak[0], _ms_pkl_top_peak_y, _ms_pkl_top_peak_str, fontsize=6)
 
         ms_title_str = 'MS @ %.3f min | %s' % (ms1_rt, abbr)
-        ms_pic.set_title(ms_title_str, color='b', fontsize=10, y=0.98)
+        ms_pic.set_title(ms_title_str, color='b', fontsize=8, y=0.98)
         # print(core_count, 'plot MS in ', time.time() - _t_img_0)
 
     def plot_ms_zoom():
@@ -414,7 +414,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         ms_zoom_pic.add_patch(m0_theo_box)
 
         ms_zoom_title_str = 'Theoretical isotopic distribution for %s %s' % (formula_charged, charge)
-        ms_zoom_pic.set_title(ms_zoom_title_str, color='b', fontsize=10, y=0.98)
+        ms_zoom_pic.set_title(ms_zoom_title_str, color='b', fontsize=8, y=0.98)
 
         # print(core_count, 'plot MS zoom in ', time.time() - _t_img_0)
 
@@ -487,7 +487,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         msms_title_str = ('MS/MS for m/z %.4f | DDA rank %d @ %.3f min' % (ms2_pr_mz, func_id, ms2_rt))
-        msms_pic.set_title(msms_title_str, color='b', fontsize=10, y=0.98)
+        msms_pic.set_title(msms_title_str, color='b', fontsize=8, y=0.98)
 
         # print(core_count, 'plot FULL MSMS in ', time.time() - _t_img_0)
 
@@ -619,7 +619,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # msms_low_pic.set_ylim([0, _msms_max * 1.5])
         msms_low_str = 'MS/MS zoomed below m/z 400'
-        msms_low_pic.set_title(msms_low_str, color='b', fontsize=10, y=0.98)
+        msms_low_pic.set_title(msms_low_str, color='b', fontsize=8, y=0.98)
 
         # print(core_count, 'plot MSMS <= 400 in ', time.time() - _t_img_0)
 
@@ -773,7 +773,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         msms_high_str = 'MS/MS zoomed above m/z 400'
-        msms_high_pic.set_title(msms_high_str, color='b', fontsize=10, y=0.98)
+        msms_high_pic.set_title(msms_high_str, color='b', fontsize=8, y=0.98)
         # print(core_count, 'plot MSMS > 400 ', time.time() - _t_img_0)
 
     try:
