@@ -146,6 +146,7 @@ def get_all_fa_nl(fa_df, ms2_df, lyso_type_lst, lipid_type='LPL'):
                 _q_tmp_df.loc[:, 'obs_ppm'] = _q_tmp_df['obs_ppm'].astype(int)
                 _q_tmp_df.loc[:, 'obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
                 _q_tmp_df.loc[:, 'obs_abbr'] = _fa_se['%s_ABBR' % lyso_typ]
+                _q_tmp_df.loc[:, 'obs_type'] = lyso_typ
                 _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['lib_mz']
                 _q_tmp_df = _q_tmp_df.round({'obs_mz': 4, 'obs_i_r': 1, 'obs_label': 2})
                 _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_label'].astype(str)
@@ -184,6 +185,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
     ident_peak_multindex = [[], []]
     obs_dct = {}
     frag_lst_dg = []
+    frag_lst_dg_w = []
     if lipid_type in ['PA', 'PE', 'PG', 'PI', 'PS'] and charge == '[M-H]-':
         frag_lst = ['[L%s-H]-' % lipid_type, '[L%s-H2O-H]-' % lipid_type]
         frag_lst_fa = ['[FA-H]-']
@@ -274,11 +276,12 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
     if len(list(obs_dct.keys())) > 0:
         # geo = ['[FA-H2O+H]+']
         for obs_type in list(obs_dct.keys()):
-            # for obs_type in geo:
-
+            _changed_fa_abbr_dct = {}
             _obs_df = pd.DataFrame(obs_dct[obs_type][0])
             _obs_lst = obs_dct[obs_type][1]
             _obs_drop_idx = []
+            _obs_df2 = pd.DataFrame(_obs_df).copy()
+            _obs_df2['obs_type'] = obs_type
 
             for _obs in _obs_lst:
                 try:
@@ -290,7 +293,6 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                     print('If you are using the correct file the contact with the developers of this program for help')
                     exit()
 
-                _obs_df2 = pd.DataFrame(_obs_df).copy()
                 if _obs_df2.shape[0] == 0:
                     _obs_df2 = pd.DataFrame({'i': [], 'mz': [], 'lib_mz': [], 'obs_mz': [], 'obs_i_r': [],
                                              'obs_ppm': [], 'obs_ppm_abs': [], 'obs_abbr': [], 'obs_label': [],
@@ -299,9 +301,9 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                 # Take by one each observation and then check for the the different position of the observed fragment
                 for _idx, _lite_se in lite_info_df.iterrows():
 
-                    _lipid_abbr_comp_dct = {}
                     _abbr = _lite_se['%s_ABBR' % _obs]
                     _lipid_abbr = _lite_se['DISCRETE_ABBR']
+                    _sum_fa_abbr_lst = []
 
                     # Part that check the intensities and change the score
                     # TODO (georgia.angelidou@uni-leipzig.de): need to be supported also for phospholipids
@@ -310,33 +312,77 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                         _fa2_abbr = _lite_se['FA2_ABBR']
                         _fa3_abbr = _lite_se['FA3_ABBR']
 
-                        for _sn_abbr in [_fa1_abbr, _fa2_abbr, _fa3_abbr]:
-                            if _sn_abbr in list(_lipid_abbr_comp_dct.keys()):
-                                _lipid_abbr_comp_dct[_sn_abbr] = _lipid_abbr_comp_dct[_sn_abbr] + 1
+                        _sum_fa_abbr_lst.append(_fa1_abbr)
+                        _sum_fa_abbr_lst.append(_fa2_abbr)
+                        _sum_fa_abbr_lst.append(_fa3_abbr)
+                        _unique_fa_abbr_lst = list(set(_sum_fa_abbr_lst))
+
+                        for _fa_abbr in _unique_fa_abbr_lst:
+                            _fa_count = _sum_fa_abbr_lst.count(_fa_abbr)
+
+                            if _fa_count == 2 and _fa_abbr not in list(_changed_fa_abbr_dct.keys()):
+
+                                if _fa_abbr in _obs_df2['fa_abbr'].tolist():
+
+                                    _pos_df = _obs_df2.query('fa_abbr == "%s" and obs_type == "%s"'
+                                                             % (_fa_abbr, obs_type))
+                                    if _fa_abbr == 'FA18:2':
+                                        print(_lipid_abbr, _unique_fa_abbr_lst, _fa_abbr, obs_type, _fa_count)
+                                        print('_obs_df2')
+                                        print(_obs_df2)
+                                        print(_changed_fa_abbr_dct)
+                                    if _pos_df.shape[0] > 0:
+                                        print(_fa_abbr, ' identified 2 times as: ',  obs_type, 'in ', _lipid_abbr,
+                                              'i:', _obs_df2.at[_pos_df.index[0], 'i'])
+                                        _obs_df2.at[_pos_df.index[0], 'i'] = _obs_df2.loc[_pos_df.index[0], 'i'] / 2
+                                        print(_fa_abbr, 'i_mod', _obs_df2.at[_pos_df.index[0], 'i'])
+                                        _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True],
+                                                             inplace=True)
+                                        _obs_df2.reset_index(inplace=True, drop=True)
+                                        _obs_df2['obs_rank'] = _obs_df2.index + 1
+                                        _changed_fa_abbr_dct[_fa_abbr] = [2, _obs_df2.at[_pos_df.index[0], 'i']]
+
+                                    else:
+                                        print('_pos_df empty')
+
+                            elif _fa_count == 3 and _fa_abbr not in list(_changed_fa_abbr_dct.keys()):
+                                if _fa_abbr in _obs_df2['fa_abbr'].tolist():
+                                    _pos_df = _obs_df2.query('fa_abbr == "%s" and obs_type == "%s"'
+                                                             % (_fa_abbr, obs_type))
+                                    print('_pos_df')
+                                    print(_pos_df)
+                                    if _pos_df.shape[0] > 0:
+                                        print(_fa_abbr, ' identified 3 times as: ', obs_type, 'in ', _lipid_abbr,
+                                              'i:', _obs_df2.at[_pos_df.index[0], 'i'])
+                                        _obs_df2.at[_pos_df.index[0], 'i'] = _obs_df2.loc[_pos_df.index[0], 'i'] / 3
+                                        print(_fa_abbr, 'i_mod', _obs_df2.at[_pos_df.index[0], 'i'])
+                                        _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True],
+                                                             inplace=True)
+                                        _obs_df2.reset_index(inplace=True, drop=True)
+                                        _obs_df2['obs_rank'] = _obs_df2.index + 1
+                                        _changed_fa_abbr_dct[_fa_abbr] = [3, _obs_df2.at[_pos_df.index[0], 'i']]
+
+                            elif _fa_count == 3 and _fa_abbr in list(_changed_fa_abbr_dct.keys()):
+                                if _fa_abbr in _obs_df2['fa_abbr'].tolist():
+                                    _pos_df = _obs_df2.query('fa_abbr == "%s" and obs_type == "%s"'
+                                                             % (_fa_abbr, obs_type))
+                                    print('_pos_df')
+                                    print(_pos_df)
+                                    if _pos_df.shape[0] > 0:
+                                        pre_mod = _changed_fa_abbr_dct[_fa_abbr][0]
+                                        pre_i = _changed_fa_abbr_dct[_fa_abbr][1]
+                                        _obs_df2.at[_pos_df.index[0], 'i'] = pre_mod * pre_i
+                                        print(_fa_abbr, ' identified 3 times as: ', obs_type, 'in ', _lipid_abbr,
+                                              'i:', pre_mod * pre_i)
+                                        _obs_df2.at[_pos_df.index[0], 'i'] = pre_mod * pre_i / 3
+                                        print(_fa_abbr, 'i_mod', _obs_df2.at[_pos_df.index[0], 'i'])
+                                        _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True],
+                                                             inplace=True)
+                                        _obs_df2.reset_index(inplace=True, drop=True)
+                                        _obs_df2['obs_rank'] = _obs_df2.index + 1
+                                        _changed_fa_abbr_dct[_fa_abbr] = [3, _obs_df2.at[_pos_df.index[0], 'i']]
                             else:
-                                _lipid_abbr_comp_dct[_sn_abbr] = 1
-
-                        if len(_lipid_abbr_comp_dct) == 2:
-
-                            _fa_abbr = list(_lipid_abbr_comp_dct.keys())[list(_lipid_abbr_comp_dct.values()).index(2)]
-                            if _fa_abbr in list(_obs_df2['fa_abbr']):
-                                _position_df = _obs_df2.loc[_obs_df2['fa_abbr'] == _fa_abbr]
-                                _obs_df2.at[_position_df.index[0], 'i'] = _obs_df2.loc[_position_df.index[0], 'i'] / 2
-                                _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
-                                _obs_df2.reset_index(inplace=True, drop=True)
-                                _obs_df2['obs_rank'] = _obs_df2.index + 1
-
-                        elif len(_lipid_abbr_comp_dct) == 1:
-
-                            _fa_abbr = list(_lipid_abbr_comp_dct.keys())[list(_lipid_abbr_comp_dct.values()).index(3)]
-                            if _fa_abbr in list(_obs_df2['fa_abbr']):
-                                _position_df = _obs_df2.loc[_obs_df2['fa_abbr'] == _fa_abbr]
-                                _obs_df2.at[_position_df.index[0], 'i'] = _obs_df2.loc[_position_df.index[0], 'i'] / 2
-                                _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
-                                _obs_df2.reset_index(inplace=True, drop=True)
-                                _obs_df2['obs_rank'] = _obs_df2.index + 1
-                        else:
-                            pass
+                                pass
                         # This part is to check if all of the FA where use for the predicted identification or not
                         _sn_total_count = 0
                         _fa1_count = lite_info_df.loc[_idx, 'fa1_found']
@@ -362,43 +408,61 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                             pass
 
                     elif lipid_type in ['PA', 'PC', 'PE', 'PG', 'PS', 'PI', 'PIP']:
-                        # TODO (georgia.angelidou@uni-leipzig.ge): to the above also for the phospholipids
                         _fa1_abbr = _lite_se['FA1_ABBR']
-                        _sn2_abbr = _lite_se['FA2_ABBR']
+                        _fa2_abbr = _lite_se['FA2_ABBR']
 
-                        for _sn_abbr in [_fa1_abbr, _sn2_abbr]:
-                            if _sn_abbr in list(_lipid_abbr_comp_dct.keys()):
-                                _lipid_abbr_comp_dct[_sn_abbr] = _lipid_abbr_comp_dct[_sn_abbr] + 1
+                        _sum_fa_abbr_lst.append(_fa1_abbr)
+                        _sum_fa_abbr_lst.append(_fa2_abbr)
+                        _unique_fa_abbr_lst = list(set(_sum_fa_abbr_lst))
+
+                        for _fa_abbr in _unique_fa_abbr_lst:
+                            _fa_count = _sum_fa_abbr_lst.count(_fa_abbr)
+
+                            if _fa_count == 2 and _fa_abbr not in list(_changed_fa_abbr_dct.keys()):
+                                if _fa_abbr in _obs_df2['fa_abbr'].tolist():
+                                    _pos_df = _obs_df2.query('fa_abbr == "%s" and obs_type == "%s"'
+                                                             % (_fa_abbr, obs_type))
+                                    print('_pos_df')
+                                    print(_pos_df)
+                                    if _pos_df.shape[0] > 0:
+                                        print(_fa_abbr, ' identified 2 times as: ', obs_type, 'in ', _lipid_abbr,
+                                              'i:', _obs_df2.at[_pos_df.index[0], 'i'])
+                                        _obs_df2.at[_pos_df.index[0], 'i'] = _obs_df2.loc[_pos_df.index[0], 'i'] / 2
+                                        print(_fa_abbr, 'i_mod', _obs_df2.at[_pos_df.index[0], 'i'])
+                                        _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True],
+                                                             inplace=True)
+                                        _obs_df2.reset_index(inplace=True, drop=True)
+                                        _obs_df2['obs_rank'] = _obs_df2.index + 1
+                                        _changed_fa_abbr_dct[_fa_abbr] = [2, _obs_df2.at[_pos_df.index[0], 'i']]
+
                             else:
-                                _lipid_abbr_comp_dct[_sn_abbr] = 1
+                                pass
 
-                        if len(_lipid_abbr_comp_dct) == 1:
-                            _fa_abbr = list(_lipid_abbr_comp_dct.keys())[list(_lipid_abbr_comp_dct.values()).index(2)]
-                            if _fa_abbr in list(_obs_df2['fa_abbr']):
-                                _position_df = _obs_df2.loc[_obs_df2['fa_abbr'] == _fa_abbr]
-                                _obs_df2.at[_position_df.index[0], 'i'] = _obs_df2.loc[_position_df.index[0], 'i'] / 2
-                                _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
-                                _obs_df2.reset_index(inplace=True, drop=True)
-                                _obs_df2['obs_rank'] = _obs_df2.index + 1
-                        else:
-                            pass
                     elif lipid_type in ['DG']:
                         _fa1_abbr = _lite_se['FA1_ABBR']
                         _fa2_abbr = _lite_se['FA2_ABBR']
 
-                        for _sn_abbr in [_fa1_abbr, _fa2_abbr]:
-                            if _sn_abbr in list(_lipid_abbr_comp_dct.keys()):
-                                _lipid_abbr_comp_dct[_sn_abbr] = _lipid_abbr_comp_dct[_sn_abbr] + 1
-                            else:
-                                _lipid_abbr_comp_dct[_sn_abbr] = 1
-                        if len(_lipid_abbr_comp_dct) == 1:
-                            _fa_abbr = list(_lipid_abbr_comp_dct.keys())[list(_lipid_abbr_comp_dct.values()).index(2)]
-                            if _fa_abbr in list(_obs_df2['fa_abbr']):
-                                _position_df = _obs_df2.loc[_obs_df2['fa_abbr'] == _fa_abbr]
-                                _obs_df2.at[_position_df.index[0], 'i'] = _obs_df2.loc[_position_df.index[0], 'i'] / 2
-                                _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
-                                _obs_df2.reset_index(inplace=True, drop=True)
-                                _obs_df2['obs_rank'] = _obs_df2.index + 1
+                        _sum_fa_abbr_lst.append(_fa1_abbr)
+                        _sum_fa_abbr_lst.append(_fa2_abbr)
+                        _unique_fa_abbr_lst = list(set(_sum_fa_abbr_lst))
+                        for _fa_abbr in _unique_fa_abbr_lst:
+                            _fa_count = _sum_fa_abbr_lst.count(_fa_abbr)
+                            if _fa_count == 2 and _fa_abbr not in list(_changed_fa_abbr_dct.keys()):
+                                if _fa_abbr in _obs_df2['fa_abbr'].tolist():
+                                    _pos_df = _obs_df2.query('fa_abbr == "%s" and obs_type == "%s"'
+                                                             % (_fa_abbr, obs_type))
+                                    print('_pos_df')
+                                    print(_pos_df)
+                                    if _pos_df.shape[0] > 0:
+                                        print(_fa_abbr, ' identified 2 times as: ', obs_type, 'in ', _lipid_abbr,
+                                              'i:', _obs_df2.at[_pos_df.index[0], 'i'])
+                                        _obs_df2.at[_pos_df.index[0], 'i'] = _obs_df2.loc[_pos_df.index[0], 'i'] / 2
+                                        print(_fa_abbr, 'i_mod', _obs_df2.at[_pos_df.index[0], 'i'])
+                                        _obs_df2.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True],
+                                                             inplace=True)
+                                        _obs_df2.reset_index(inplace=True, drop=True)
+                                        _obs_df2['obs_rank'] = _obs_df2.index + 1
+                                        _changed_fa_abbr_dct[_fa_abbr] = [2, _obs_df2.at[_pos_df.index[0], 'i']]
                         else:
                             pass
 
@@ -416,6 +480,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                             _i_r = 0
                             _mz = 0
                             _label = ''
+
                     except (IndexError, KeyError):
                         _rank_idx = 10
                         _i = 0
@@ -449,12 +514,19 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                         pass
                         # print(_obs, _abbr, 'Not Found!')
 
+                print('_obs_df2_final')
+                print(_obs_df2)
+
                 lite_info_df.loc[:, '%s_SCORE' % _obs] = ((10 - lite_info_df['%s_RANK' % _obs]) * 0.1
                                                           * lite_info_df['%s_WEIGHT' % _obs])
                 lite_info_df.loc[:, 'RANK_SCORE'] += lite_info_df['%s_SCORE' % _obs]
 
             _obs_drop_idx = list(set(_obs_drop_idx))
             obs_dct[obs_type].append(_obs_drop_idx)
+            # print(abbr_bulk, obs_type)
+            # print('_sum_fa_abbr_lst')
+            # print(_sum_fa_abbr_lst)
+            # print(_obs_df2)
 
     if lipid_type in ['TG']:
         # TODO (georgia.angelidou@uni-leipzig.de): keep only the 2 decimenals
@@ -469,7 +541,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
         lite_info_df = lite_info_df[lite_info_df['RANK_SCORE'] >= rankscore_filter]
         if lipid_type in ['PA', 'PE', 'PG', 'PI', 'PS'] and charge == '[M-H]-':
-            lite_info_df.loc[:, 'ident_rank'] = lite_info_df['FA1_[FA-H]-_RANK'] + lite_info_df['SN2_[FA-H]-_RANK']
+            lite_info_df.loc[:, 'ident_rank'] = lite_info_df['FA1_[FA-H]-_RANK'] + lite_info_df['FA2_[FA-H]-_RANK']
             lite_info_df.sort_values(by=['RANK_SCORE', 'ident_rank'], ascending=[False, True], inplace=True)
         elif lipid_type in ['TG', 'DG', 'MG'] and charge == '[M+NH4]+':
             # lite_info_df.loc[:, 'ident_rank'] = lite_info_df['SN1_[FA-H2O+H]+_RANK'] + lite_info_df[

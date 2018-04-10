@@ -529,11 +529,13 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             param_cfg_directory = os.path.dirname(param_cfg_path_str)
             if not os.path.exists(param_cfg_directory):
                 os.makedirs(param_cfg_directory)
-            abs_param_cfg_path_str, error_log = self.check_folder(param_cfg_path_str, 'Settings for batch mode')
+            abs_param_cfg_directory_str, error_log = self.check_folder(param_cfg_directory, 'Settings for batch mode')
             if len(error_log) > 0:
                 self.ui.tab_a_gencfg_pte.insertPlainText(error_log)
-            if abs_param_cfg_path_str != param_cfg_path_str:
-                self.ui.tab_a_gencfg_pte.insertPlainText('>>> try to save as: %s' % param_cfg_path_str)
+            if abs_param_cfg_directory_str != param_cfg_directory:
+                param_cfg_path = os.path.split(param_cfg_path_str)
+                param_cfg_path_str = os.path.join(abs_param_cfg_directory_str, param_cfg_path[1])
+                self.ui.tab_a_gencfg_pte.insertPlainText('>>> try to save as: %s\n' % param_cfg_path_str)
 
         except Exception as _err:
             print(_err)

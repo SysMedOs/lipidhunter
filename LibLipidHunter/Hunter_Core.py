@@ -958,8 +958,9 @@ if __name__ == '__main__':
     # ['TG', 'thermo', '[M+NH4]+']]
 
     usr_test_lst = [
-        ['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4'],
-        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        # ['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4'],
+        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        # ['PE', 'waters', '[M-H]-', 'PE_waters'],
     ]
 
     # set the default files
@@ -983,7 +984,8 @@ if __name__ == '__main__':
     rt_range = [6, 10]  # default
     for usr_test in usr_test_lst:
         _test_dct = {'rank_score_filter': 27.5, 'score_filter': 27.5, 'isotope_score_filter': 75.0, 'ms_max': 0,
-                     'pr_window': 0.75, 'ms2_infopeak_threshold': 0.001, 'ms2_hginfopeak_threshold': 0.001}
+                     'pr_window': 0.75, 'ms2_infopeak_threshold': 0.001, 'ms2_hginfopeak_threshold': 0.001,
+                     'debug': 'ON', 'save_lipid_master_table': 'CSV'}
         if usr_test[0] in ['PC', 'PE', 'PA', 'PG', 'PI', 'PS', 'PIP']:
             lipid_class = usr_test[0]
             if lipid_class == 'PC':
@@ -993,8 +995,8 @@ if __name__ == '__main__':
             vendor = usr_test[1]
             if vendor == 'waters':
                 mzml = pl_mzml_waters
-                mz_range = [650, 950]
-                rt_range = [24, 27]  # max [24, 27]
+                mz_range = [824, 830]  # 600, 1000
+                rt_range = [24.5, 25]  # max [24, 27]
             else:
                 mzml = False
                 pass
@@ -1007,19 +1009,19 @@ if __name__ == '__main__':
             charge = usr_test[2]
             if vendor == 'waters':
                 mzml = tg_mzml_waters
-                mz_range = [800, 1000]
+                mz_range = [800, 1000]  # 600, 1000
                 rt_range = [9, 15]  # max [9, 15]
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
-                mz_range = [600, 1000]  # 850, 859
+                mz_range = [600, 1000]  # 600, 1000
                 rt_range = [20, 28]  # 25.6, 25.8
             elif vendor == 'sciex':
                 mzml = tg_mzml_SCIEXS
-                mz_range = [900, 1000]
+                mz_range = [900, 1000]  # 600, 1000
                 rt_range = [8, 13]
             elif vendor == 'agilent':
                 mzml = tg_mzml_agilent
-                mz_range = [600, 1000]
+                mz_range = [600, 1000]  # 600, 1000
                 rt_range = [9, 13]
             else:
                 mzml = False
