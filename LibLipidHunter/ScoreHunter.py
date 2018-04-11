@@ -171,22 +171,88 @@ def get_all_fa_nl(fa_df, ms2_df, lyso_type_lst, lipid_type='LPL'):
     return obs_peaks_df.head(10)
 
 
-def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, all_sn=True):
+def prep_rankscore(obs_dct, obs_type, lipid_abbr, fa_multi_lst, fa_multi_dct, unique_fa_abbr_dct,
+                   all_sn=True):
+
+    changed_fa_abbr_dct = {}
+    pre_obs_df = pd.DataFrame(obs_dct[obs_type][0])
+    ident_fa_abbr_lst = []
+    # get top 10 only
+
+    if pre_obs_df.shape[0] > 0:
+
+        pre_obs_df = pre_obs_df[pre_obs_df['obs_i_r'] > 0]
+
+        if pre_obs_df.shape[0] > 10:
+            pre_obs_df = pre_obs_df.head(10)
+
+        post_obs_df = pd.DataFrame(pre_obs_df.copy())
+        post_obs_df['obs_type_calc'] = obs_type
+
+        for _fa_abbr in fa_multi_lst:
+            _fa_count = fa_multi_dct[_fa_abbr]
+
+            if _fa_abbr in post_obs_df['fa_abbr'].tolist():
+
+                _pos_df = post_obs_df.query('fa_abbr == "%s" and obs_type_calc == "%s"'
+                                            % (_fa_abbr, obs_type))
+
+                if _pos_df.shape[0] > 0:
+                    print(lipid_abbr, 'found', _fa_abbr, unique_fa_abbr_dct[_fa_abbr], obs_type)
+                    ident_fa_abbr_lst = unique_fa_abbr_dct[_fa_abbr]  # confirm identification
+                    print(ident_fa_abbr_lst)
+                    print(_fa_abbr, ' identified', _fa_count, 'times as: ', obs_type, 'in', lipid_abbr,
+                          'i:', post_obs_df.at[_pos_df.index[0], 'i'])
+                    if _fa_count == 2:
+                        post_obs_df.at[_pos_df.index[0], 'i'] = post_obs_df.loc[_pos_df.index[0], 'i'] / 2
+                    elif _fa_count == 3:
+                        post_obs_df.at[_pos_df.index[0], 'i'] = post_obs_df.loc[_pos_df.index[0], 'i'] / 3
+                    else:
+                        pass
+                    print(_fa_abbr, 'i_mod', post_obs_df.at[_pos_df.index[0], 'i'])
+                    post_obs_df.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True],
+                                            inplace=True)
+                    post_obs_df.reset_index(inplace=True, drop=True)
+                    post_obs_df['obs_rank'] = post_obs_df.index + 1
+                    changed_fa_abbr_dct[_fa_abbr] = [2, post_obs_df.at[_pos_df.index[0], 'i']]
+                else:
+                    print(_fa_abbr, 'Not identified as: ', obs_type)
+            else:
+                pass
+    else:
+        # print('!! post_obs_df is empty')
+        post_obs_df = pd.DataFrame()
+        # post_obs_df = pd.DataFrame({'i': [], 'mz': [], 'lib_mz': [], 'obs_mz': [], 'obs_i_r': [],
+        #                             'obs_ppm': [], 'obs_ppm_abs': [], 'obs_abbr': [], 'obs_label': [],
+        #                             'fa_abbr': [], 'obs_rank': [], 'obs_type_calc': []})
+
+    return post_obs_df, ident_fa_abbr_lst
+
+
+def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, rankscore_filter, all_sn=True):
+    print('Start to calc for rank score...')
     # Take by one each observation and then check for the the different position of the observed fragment
-    print('start calc_rankscore ...')
-    ident_peak_multindex = [[], []]
+    # ident_peak_dct = {'discrete_abbr': [], 'obs_label': [], 'i': [], 'mz': [], 'obs_abbr': [], 'obs_rank_type': [],
+    #                   'obs_rank': []}
+    # ident_peak_multindex = [[], []]
+    ident_peak_df = pd.DataFrame()
+
     lite_info_df['RANK_SCORE'] = 0
+    lite_info_df['OBS_SITES'] = 0
+
     for _idx, _lite_se in lite_info_df.iterrows():
 
         _lipid_abbr = _lite_se['DISCRETE_ABBR']
+
         # _score_calc_dct = {}
         _rank_score = 0
+        # print('_lipid_abbr', _lipid_abbr)
 
         # check if FA contribute to multiple sn --> i needs to be divided accordingly
         _sum_fa_abbr_lst = []
         _sum_fa_abbr_dct = {}
-        _unique_fa_abbr_dct = {}
         _ident_fa_abbr_lst = []
+        _unique_fa_abbr_dct = {}
         _fa_multi_dct = {}  # store multiple FA
 
         if lipid_class in ['TG']:
@@ -226,11 +292,12 @@ def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, all_sn=True):
             _unique_fa_abbr_lst = list(set(_sum_fa_abbr_lst))
 
         for _fa_abbr in _unique_fa_abbr_lst:
+
             _fa_count = _sum_fa_abbr_lst.count(_fa_abbr)
             _fa_abbr_sn_lst = []
             for _fa_sn in _fa_sn_lst:
                 if _sum_fa_abbr_dct[_fa_sn] == _fa_abbr:
-                    _fa_abbr_sn_lst.append(_fa_abbr)
+                    _fa_abbr_sn_lst.append(_fa_sn)
             if _fa_count > 1:
                 _fa_multi_dct[_fa_abbr] = _fa_count
 
@@ -239,209 +306,195 @@ def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, all_sn=True):
         _fa_multi_lst = list(_fa_multi_dct.keys())
 
         for obs_type in list(obs_dct.keys()):
-            _changed_fa_abbr_dct = {}
-            _pre_obs_df = pd.DataFrame(obs_dct[obs_type][0])
-
-            # get top 10 only
-
-            _pre_obs_df = _pre_obs_df[_pre_obs_df['obs_i_r'] > 0]
-            if _pre_obs_df.shape[0] > 10:
-                _pre_obs_df = _pre_obs_df.head(10)
-
             _obs_lst = obs_dct[obs_type][1]
-            _obs_drop_idx = []
-            _post_obs_df = pd.DataFrame(_pre_obs_df.copy())
-            _post_obs_df['obs_type_calc'] = obs_type
-            _post_obs_df['obs_site'] = ''
+            # print(_lipid_abbr, obs_type)
+            _post_obs_df, _found_fa_site_lst = prep_rankscore(obs_dct, obs_type, _lipid_abbr, _fa_multi_lst,
+                                                              _fa_multi_dct, _unique_fa_abbr_dct,
+                                                              all_sn=True)
+            _ident_fa_abbr_lst.extend(_found_fa_site_lst)
+            if len(_ident_fa_abbr_lst) > 0:
+                print(_lipid_abbr, '_ident_fa_abbr_lst', _ident_fa_abbr_lst)
+            if _post_obs_df.shape[0] > 0 and len(_ident_fa_abbr_lst) > 0:
+                _score_obs_df = _post_obs_df[_post_obs_df['fa_abbr'].isin(_unique_fa_abbr_lst)]
 
-            if _post_obs_df.shape[0] > 0:
-                print(obs_type, '_post_obs_df')
-                print(_post_obs_df)
-                for _fa_abbr in _fa_multi_lst:
-                    _fa_count = _fa_multi_dct[_fa_abbr]
+                if _score_obs_df.shape[0] > 0:
+                    _score_obs_df.is_copy = False
+                    _score_obs_df['fragment_abbr'] = _score_obs_df['obs_abbr']
+                    _score_obs_df['discrete_abbr'] = _lipid_abbr
+                    _score_obs_df['lipid_discrete_abbr'] = _lipid_abbr
+                    _score_obs_df.set_index(['fragment_abbr', 'lipid_discrete_abbr'], inplace=True)
+                    ident_peak_df = ident_peak_df.append(_score_obs_df)
+                    # print(_lipid_abbr, obs_type, '_score_obs_df')
+                    # print(_score_obs_df)
+                    _score_obs_abbr_lst = _score_obs_df['obs_abbr'].tolist()
+                    _score_obs_rank_lst = _score_obs_df['obs_rank'].tolist()
+                    _score_obs_i_lst = _score_obs_df['i'].tolist()
+                    _score_obs_i_r_lst = _score_obs_df['obs_i_r'].tolist()
 
-                    if _fa_abbr in _post_obs_df['fa_abbr'].tolist():
+                    for _obs in _obs_lst:
 
-                        _pos_df = _post_obs_df.query('fa_abbr == "%s" and obs_type_calc == "%s"'
-                                                     % (_fa_abbr, obs_type))
-                        print('_pos_df')
-                        print(_pos_df)
-
-                        if _pos_df.shape[0] > 0:
-                            _ident_fa_abbr_lst.extend(_unique_fa_abbr_dct[_fa_abbr])  # confirm identification
-                            print(_fa_abbr, ' identified', _fa_count, 'times as: ', obs_type, 'in ', _lipid_abbr,
-                                  'i:', _post_obs_df.at[_pos_df.index[0], 'i'])
-                            if _fa_count == 2:
-                                _post_obs_df.at[_pos_df.index[0], 'i'] = _post_obs_df.loc[_pos_df.index[0], 'i'] / 2
-                            elif _fa_count == 3:
-                                _post_obs_df.at[_pos_df.index[0], 'i'] = _post_obs_df.loc[_pos_df.index[0], 'i'] / 3
-                            else:
-                                pass
-                            print(_fa_abbr, 'i_mod', _post_obs_df.at[_pos_df.index[0], 'i'])
-                            _post_obs_df.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True],
-                                                     inplace=True)
-                            _post_obs_df.reset_index(inplace=True, drop=True)
-                            _post_obs_df['obs_rank'] = _post_obs_df.index + 1
-                            _changed_fa_abbr_dct[_fa_abbr] = [2, _post_obs_df.at[_pos_df.index[0], 'i']]
+                        try:
+                            _fa_wfactor = weight_dct['%s' % _obs]['Weight']
+                        except KeyError:
+                            _fa_wfactor = 0
+                            print(KeyError, 'Line 286 %s' % _obs)
+                            print('Check the settings if you are using the correct file '
+                                  'for the scoring system and try again')
+                            print('If you are using the correct file the contact '
+                                  'with the developers of this program for help')
+                            exit()
+                        _obs_abbr = _lite_se['%s_ABBR' % _obs]
+                        print(_lipid_abbr, _obs, _obs_abbr)
+                        if _obs_abbr in _score_obs_abbr_lst:
+                            _obs_idx = _score_obs_abbr_lst.index(_obs_abbr)
+                            _obs_rank = _score_obs_rank_lst[_obs_idx]
+                            _rank_score += ((11 - _obs_rank) * 0.1 * _fa_wfactor)
+                            lite_info_df.at[_idx, '%s_i' % _obs] = _score_obs_i_lst[_obs_idx]
+                            lite_info_df.at[_idx, '%s_i_per' % _obs] = _score_obs_i_r_lst[_obs_idx]
+                            lite_info_df.at[_idx, '%s_RANK' % _obs] = _obs_rank
+                            lite_info_df.at[_idx, '%s_SCORE' % _obs] = ((11 - _obs_rank) * 0.1 * _fa_wfactor)
                         else:
-                            print(_fa_abbr, 'Not identified as: ', obs_type)
-                    else:
-                        pass
-            else:
-                print('!! _post_obs_df is empty')
-                _post_obs_df = pd.DataFrame({'i': [], 'mz': [], 'lib_mz': [], 'obs_mz': [], 'obs_i_r': [],
-                                             'obs_ppm': [], 'obs_ppm_abs': [], 'obs_abbr': [], 'obs_label': [],
-                                             'fa_abbr': [], 'obs_rank': [], 'obs_type_calc': []})
-
-            print(obs_type, 'final_post_obs_df')
-            print(_post_obs_df)
-            _score_obs_df = _post_obs_df[_post_obs_df['fa_abbr'].isin(_unique_fa_abbr_lst)]
-            print(obs_type, '_score_obs_df')
-            print(_score_obs_df)
-            if _score_obs_df.shape[0] > 0:
-                _score_obs_abbr_lst = _score_obs_df['obs_abbr'].tolist()
-                _score_obs_rank_lst = _score_obs_df['obs_rank'].tolist()
-
-                for _obs in _obs_lst:
-
-                    try:
-                        _fa_wfactor = weight_dct['%s' % _obs]['Weight']
-                    except KeyError:
-                        _fa_wfactor = 0
-                        print(KeyError, 'Line 286 %s' % _obs)
-                        print('Check the settings if you are using the correct file '
-                              'for the scoring system and try again')
-                        print('If you are using the correct file the contact '
-                              'with the developers of this program for help')
-                        exit()
-                    _obs_abbr = _lite_se['%s_ABBR' % _obs]
-                    if _obs_abbr in _score_obs_abbr_lst:
-                        _obs_idx = _score_obs_abbr_lst.index(_obs_abbr)
-                        _obs_rank = _score_obs_rank_lst[_obs_idx]
-                        _rank_score += ((11 - _obs_rank) * 0.1 * _fa_wfactor)
-                        # _score_calc_dct[_obs_abbr] = {'RANK': _obs_rank, 'WEIGHT': _fa_wfactor, 'SCORE': _obs_score}
-                    else:
-                        pass
+                            pass
+                else:
+                    pass
             else:
                 pass
+        # _ident_fa_abbr_lst = list(set(_ident_fa_abbr_lst))
+        if _lipid_abbr in ['TG(12:0_14:0_16:0)', 'TG(14:0_14:0_14:0)']:
+            print(_lipid_abbr)
 
-        # _score_calc_df = pd.DataFrame(_score_calc_dct)
-        # print('_score_calc_df')
-        # print(_score_calc_df)
-        print('rank_score', _rank_score)
-        lite_info_df.at[_idx, 'RANK_SCORE'] = _rank_score
+            print('_ident_fa_abbr_lst', _ident_fa_abbr_lst)
+            lite_info_df.head()
 
-    print('lite_info_df')
-    print(lite_info_df)
+        # print(_lipid_abbr, 'rank_score', _rank_score)
+        if _rank_score > 0 and len(_ident_fa_abbr_lst) > 0:
+            print(_lipid_abbr, _rank_score)
+            lite_info_df.at[_idx, 'RANK_SCORE'] = _rank_score
+            lite_info_df.at[_idx, 'OBS_SITES'] = len(_ident_fa_abbr_lst)
 
-                    # for _obs in _obs_lst:
-                    #     _obs_abbr = _lite_se['%s_ABBR' % _obs]
-                    #     lite_info_df.loc[:, '%s_SCORE' % _obs] = ((10 - lite_info_df['%s_RANK' % _obs]) * 0.1
-                    #                                               * lite_info_df['%s_WEIGHT' % _obs])
-                    #     lite_info_df.loc[:, 'RANK_SCORE'] += lite_info_df['%s_SCORE' % _obs]
-                    #
-                    #     lite_info_df.at[_idx, '%s_RANK' % _obs] = _rank_idx
-                    #     lite_info_df.at[_idx, '%s_i' % _obs] = _i
-                    #     lite_info_df.at[_idx, '{obs}_i_per'.format(obs=_obs)] = _i_r
-                    #     # print(_obs_abbr, _rank_idx, _i)
-                    #     # ident_peak_dct[_obs_abbr] = {'discrete_abbr': _lipid_abbr, 'obs_label': _label, 'i': _i,
-                    #     #                          'mz': _mz, 'obs_abbr': _obs_abbr, 'obs_rank_type': '%s_RANK' % _obs,
-                    #     #                          'obs_rank': _rank_idx}
-                    #     ident_peak_multindex[0].append(_obs_abbr)  # Need the multIndex bec. TG more opt. with same bulk
-                    #     ident_peak_multindex[1].append(_lipid_abbr)
-                    #
-                    #     ident_peak_dct['discrete_abbr'].append(_lipid_abbr)
-                    #     ident_peak_dct['obs_label'].append(_label)
-                    #     ident_peak_dct['i'].append(_i)
-                    #     ident_peak_dct['mz'].append(_mz)
-                    #     ident_peak_dct['obs_abbr'].append(_obs_abbr)
-                    #     ident_peak_dct['obs_rank_type'].append('%s_RANK' % _obs)
-                    #     ident_peak_dct['obs_rank'].append(_rank_idx)
-                    #
-                    #     # print(core_count, _obs_abbr)
-                    #     _obs_drop_idx.append(_rank_idx)
+    if lipid_class in ['TG']:
+        lite_info_df['RANK_SCORE'] = (lite_info_df['RANK_SCORE'] * lite_info_df['OBS_SITES'] / 3).round(2)
+    else:
+        lite_info_df['RANK_SCORE'] = lite_info_df['RANK_SCORE'].round(2)
 
-                # This part is to check if all of the FA where use for the predicted identification or not
-                # _sn_total_count = 0
-                # _fa1_count = lite_info_df.loc[_idx, 'fa1_found']
-                # if _fa1_abbr in list(_post_obs_df['fa_abbr']) and _fa1_count == 0 and obs_type in ['[M-FA+H]+',
-                #                                                                                '[M-FA+Na]+']:
-                #     lite_info_df.at[_idx, 'fa1_found'] = 1
-                #     _sn_total_count = _sn_total_count + 1
-                # _fa2_count = lite_info_df.loc[_idx, 'fa2_found']
-                # if _fa2_abbr in list(_post_obs_df['fa_abbr']) and _fa2_count == 0 and obs_type in ['[M-FA+H]+',
-                #                                                                                '[M-FA+Na]+']:
-                #     lite_info_df.at[_idx, 'fa2_found'] = 1
-                #     _sn_total_count = _sn_total_count + 1
-                # _fa3_count = lite_info_df.loc[_idx, 'fa3_found']
-                # if _fa3_abbr in list(_post_obs_df['fa_abbr']) and _fa3_count == 0 and obs_type in ['[M-FA+H]+',
-                #                                                                                '[M-FA+Na]+']:
-                #     lite_info_df.at[_idx, 'fa3_found'] = 1
-                #     _sn_total_count = _sn_total_count + 1
-                # if all_sn is True and _sn_total_count < 3 and obs_type in ['[M-FA+H]+', '[M-FA+Na]+']:
-                #     lite_info_df.at[_idx, 'fa3_found'] = 0
-                #     lite_info_df.at[_idx, 'fa2_found'] = 0
-                #     lite_info_df.at[_idx, 'fa1_found'] = 0
-                # else:
-                #     pass
+    if lite_info_df.shape[0] > 0:
+        lite_info_df = lite_info_df[lite_info_df['RANK_SCORE'] >= rankscore_filter]
 
-            # try:
-            #     if _obs_abbr in _pre_obs_df['obs_abbr'].values:
-            #         _rank_idx = _post_obs_df.loc[_post_obs_df['obs_abbr'] == _obs_abbr].index[0]
-            #         _rank_idx2 = _pre_obs_df.loc[_pre_obs_df['obs_abbr'] == _obs_abbr].index[0]
-            #         _i = _pre_obs_df.loc[_rank_idx2, 'i']
-            #         _i_r = _pre_obs_df.loc[_rank_idx2, 'obs_i_r']
-            #         _mz = _pre_obs_df.loc[_rank_idx2, 'mz']
-            #         _label = _pre_obs_df.loc[_rank_idx2, 'obs_label']
-            #     else:
-            #         _rank_idx = 10
-            #         _i = 0
-            #         _i_r = 0
-            #         _mz = 0
-            #         _label = ''
-            #
-            # except (IndexError, KeyError):
-            #     _rank_idx = 10
-            #     _i = 0
-            #     _i_r = 0
-            #     _mz = 0
-            #     _label = ''
-            #
-            # if _rank_idx <= 10 and _i > 0:
-            #     lite_info_df.at[_idx, '%s_RANK' % _obs] = _rank_idx
-            #     lite_info_df.at[_idx, '%s_i' % _obs] = _i
-            #     lite_info_df.at[_idx, '{obs}_i_per'.format(obs=_obs)] = _i_r
-            #     # print(_obs_abbr, _rank_idx, _i)
-            #     # ident_peak_dct[_obs_abbr] = {'discrete_abbr': _lipid_abbr, 'obs_label': _label, 'i': _i,
-            #     #                          'mz': _mz, 'obs_abbr': _obs_abbr, 'obs_rank_type': '%s_RANK' % _obs,
-            #     #                          'obs_rank': _rank_idx}
-            #     ident_peak_multindex[0].append(_obs_abbr)  # Need the multIndex bec. TG more opt. with same bulk
-            #     ident_peak_multindex[1].append(_lipid_abbr)
-            #
-            #     ident_peak_dct['discrete_abbr'].append(_lipid_abbr)
-            #     ident_peak_dct['obs_label'].append(_label)
-            #     ident_peak_dct['i'].append(_i)
-            #     ident_peak_dct['mz'].append(_mz)
-            #     ident_peak_dct['obs_abbr'].append(_obs_abbr)
-            #     ident_peak_dct['obs_rank_type'].append('%s_RANK' % _obs)
-            #     ident_peak_dct['obs_rank'].append(_rank_idx)
-            #
-            #     # print(core_count, _obs_abbr)
-            #     _obs_drop_idx.append(_rank_idx)
-            #
-            # else:
-            #     pass
-            #     # print(_obs, _obs_abbr, 'Not Found!')
-        #
-        # print('Final _post_obs_df')
-        # print(_post_obs_df)
-        #
-        # lite_info_df.loc[:, '%s_SCORE' % _obs] = ((10 - lite_info_df['%s_RANK' % _obs]) * 0.1
-        #                                           * lite_info_df['%s_WEIGHT' % _obs])
-        # lite_info_df.loc[:, 'RANK_SCORE'] += lite_info_df['%s_SCORE' % _obs]
+    print('ident_peak_df')
+    print(ident_peak_df)
 
-        # _obs_drop_idx = list(set(_obs_drop_idx))
-        # obs_dct[obs_type].append(_obs_drop_idx)
+    ident_peak_df = ident_peak_df[ident_peak_df['discrete_abbr'].isin(lite_info_df['DISCRETE_ABBR'].tolist())]
+
+    return ident_peak_df, lite_info_df
+
+    # for _obs in _obs_lst:
+    #     _obs_abbr = _lite_se['%s_ABBR' % _obs]
+    #     lite_info_df.loc[:, '%s_SCORE' % _obs] = ((10 - lite_info_df['%s_RANK' % _obs]) * 0.1
+    #                                               * lite_info_df['%s_WEIGHT' % _obs])
+    #     lite_info_df.loc[:, 'RANK_SCORE'] += lite_info_df['%s_SCORE' % _obs]
+    #
+    #     lite_info_df.at[_idx, '%s_RANK' % _obs] = _rank_idx
+    #     lite_info_df.at[_idx, '%s_i' % _obs] = _i
+    #     lite_info_df.at[_idx, '{obs}_i_per'.format(obs=_obs)] = _i_r
+    #     # print(_obs_abbr, _rank_idx, _i)
+    #     # ident_peak_dct[_obs_abbr] = {'discrete_abbr': _lipid_abbr, 'obs_label': _label, 'i': _i,
+    #     #                          'mz': _mz, 'obs_abbr': _obs_abbr, 'obs_rank_type': '%s_RANK' % _obs,
+    #     #                          'obs_rank': _rank_idx}
+    #     ident_peak_multindex[0].append(_obs_abbr)  # Need the multIndex bec. TG more opt. with same bulk
+    #     ident_peak_multindex[1].append(_lipid_abbr)
+    #
+    #     ident_peak_dct['discrete_abbr'].append(_lipid_abbr)
+    #     ident_peak_dct['obs_label'].append(_label)
+    #     ident_peak_dct['i'].append(_i)
+    #     ident_peak_dct['mz'].append(_mz)
+    #     ident_peak_dct['obs_abbr'].append(_obs_abbr)
+    #     ident_peak_dct['obs_rank_type'].append('%s_RANK' % _obs)
+    #     ident_peak_dct['obs_rank'].append(_rank_idx)
+    #
+    #     # print(core_count, _obs_abbr)
+    #     _obs_drop_idx.append(_rank_idx)
+
+    # This part is to check if all of the FA where use for the predicted identification or not
+    # _sn_total_count = 0
+    # _fa1_count = lite_info_df.loc[_idx, 'fa1_found']
+    # if _fa1_abbr in list(_post_obs_df['fa_abbr']) and _fa1_count == 0 and obs_type in ['[M-FA+H]+',
+    #                                                                                '[M-FA+Na]+']:
+    #     lite_info_df.at[_idx, 'fa1_found'] = 1
+    #     _sn_total_count = _sn_total_count + 1
+    # _fa2_count = lite_info_df.loc[_idx, 'fa2_found']
+    # if _fa2_abbr in list(_post_obs_df['fa_abbr']) and _fa2_count == 0 and obs_type in ['[M-FA+H]+',
+    #                                                                                '[M-FA+Na]+']:
+    #     lite_info_df.at[_idx, 'fa2_found'] = 1
+    #     _sn_total_count = _sn_total_count + 1
+    # _fa3_count = lite_info_df.loc[_idx, 'fa3_found']
+    # if _fa3_abbr in list(_post_obs_df['fa_abbr']) and _fa3_count == 0 and obs_type in ['[M-FA+H]+',
+    #                                                                                '[M-FA+Na]+']:
+    #     lite_info_df.at[_idx, 'fa3_found'] = 1
+    #     _sn_total_count = _sn_total_count + 1
+    # if all_sn is True and _sn_total_count < 3 and obs_type in ['[M-FA+H]+', '[M-FA+Na]+']:
+    #     lite_info_df.at[_idx, 'fa3_found'] = 0
+    #     lite_info_df.at[_idx, 'fa2_found'] = 0
+    #     lite_info_df.at[_idx, 'fa1_found'] = 0
+    # else:
+    #     pass
+
+    # try:
+    #     if _obs_abbr in _pre_obs_df['obs_abbr'].values:
+    #         _rank_idx = _post_obs_df.loc[_post_obs_df['obs_abbr'] == _obs_abbr].index[0]
+    #         _rank_idx2 = _pre_obs_df.loc[_pre_obs_df['obs_abbr'] == _obs_abbr].index[0]
+    #         _i = _pre_obs_df.loc[_rank_idx2, 'i']
+    #         _i_r = _pre_obs_df.loc[_rank_idx2, 'obs_i_r']
+    #         _mz = _pre_obs_df.loc[_rank_idx2, 'mz']
+    #         _label = _pre_obs_df.loc[_rank_idx2, 'obs_label']
+    #     else:
+    #         _rank_idx = 10
+    #         _i = 0
+    #         _i_r = 0
+    #         _mz = 0
+    #         _label = ''
+    #
+    # except (IndexError, KeyError):
+    #     _rank_idx = 10
+    #     _i = 0
+    #     _i_r = 0
+    #     _mz = 0
+    #     _label = ''
+    #
+    # if _rank_idx <= 10 and _i > 0:
+    #     lite_info_df.at[_idx, '%s_RANK' % _obs] = _rank_idx
+    #     lite_info_df.at[_idx, '%s_i' % _obs] = _i
+    #     lite_info_df.at[_idx, '{obs}_i_per'.format(obs=_obs)] = _i_r
+    #     # print(_obs_abbr, _rank_idx, _i)
+    #     # ident_peak_dct[_obs_abbr] = {'discrete_abbr': _lipid_abbr, 'obs_label': _label, 'i': _i,
+    #     #                          'mz': _mz, 'obs_abbr': _obs_abbr, 'obs_rank_type': '%s_RANK' % _obs,
+    #     #                          'obs_rank': _rank_idx}
+    #     ident_peak_multindex[0].append(_obs_abbr)  # Need the multIndex bec. TG more opt. with same bulk
+    #     ident_peak_multindex[1].append(_lipid_abbr)
+    #
+    #     ident_peak_dct['discrete_abbr'].append(_lipid_abbr)
+    #     ident_peak_dct['obs_label'].append(_label)
+    #     ident_peak_dct['i'].append(_i)
+    #     ident_peak_dct['mz'].append(_mz)
+    #     ident_peak_dct['obs_abbr'].append(_obs_abbr)
+    #     ident_peak_dct['obs_rank_type'].append('%s_RANK' % _obs)
+    #     ident_peak_dct['obs_rank'].append(_rank_idx)
+    #
+    #     # print(core_count, _obs_abbr)
+    #     _obs_drop_idx.append(_rank_idx)
+    #
+    # else:
+    #     pass
+    #     # print(_obs, _obs_abbr, 'Not Found!')
+    #
+    # print('Final _post_obs_df')
+    # print(_post_obs_df)
+    #
+    # lite_info_df.loc[:, '%s_SCORE' % _obs] = ((10 - lite_info_df['%s_RANK' % _obs]) * 0.1
+    #                                           * lite_info_df['%s_WEIGHT' % _obs])
+    # lite_info_df.loc[:, 'RANK_SCORE'] += lite_info_df['%s_SCORE' % _obs]
+
+    # _obs_drop_idx = list(set(_obs_drop_idx))
+    # obs_dct[obs_type].append(_obs_drop_idx)
 
 
 def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, lipid_class, weight_dct, core_count,
@@ -453,8 +506,6 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
     lite_info_df['fa1_found'] = 0
     lite_info_df['fa2_found'] = 0
 
-    ident_peak_dct = {'discrete_abbr': [], 'obs_label': [], 'i': [], 'mz': [], 'obs_abbr': [], 'obs_rank_type': [],
-                      'obs_rank': []}
     obs_dct = {}
     frag_lst_dg = []
     frag_lst_dg_w = []
@@ -546,27 +597,18 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         print(core_count, 'Warning: No informative peak found !!!')
 
     if len(list(obs_dct.keys())) > 0:
-        calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, all_sn=True)
+        ident_peak_df2, lite_info_df = calc_rankscore(obs_dct, lite_info_df, lipid_class,
+                                                      weight_dct, rankscore_filter, all_sn=True)
         print('calc_rankscore')
-        print('calc_rankscore')
+    else:
+        ident_peak_df2 = pd.DataFrame()
+        lite_info_df = pd.DataFrame()
 
         # print(abbr_bulk, obs_type)
         # print('_sum_fa_abbr_lst')
         # print(_sum_fa_abbr_lst)
         # print(_obs_df2)
 
-    if lipid_class in ['TG']:
-        # TODO (georgia.angelidou@uni-leipzig.de): keep only the 2 decimenals
-        lite_info_df['RANK_SCORE'] = round(lite_info_df['RANK_SCORE'] * (
-                (lite_info_df['fa1_found'] + lite_info_df['fa2_found'] + lite_info_df['fa3_found']) / 3), 2)
-    else:
-        lite_info_df['RANK_SCORE'] = round(lite_info_df['RANK_SCORE'], 2)
-
-    print(core_count, 'lite_info')
-
-    if lite_info_df.shape[0] > 0:
-
-        lite_info_df = lite_info_df[lite_info_df['RANK_SCORE'] >= rankscore_filter]
         if lipid_class in ['PA', 'PE', 'PG', 'PI', 'PS'] and charge == '[M-H]-':
             lite_info_df.loc[:, 'ident_rank'] = lite_info_df['FA1_[FA-H]-_RANK'] + lite_info_df['FA2_[FA-H]-_RANK']
             lite_info_df.sort_values(by=['RANK_SCORE', 'ident_rank'], ascending=[False, True], inplace=True)
@@ -580,12 +622,12 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
             # TODO(zhixu.ni@uni-leipzig.de): @Georgia add TG here please :)
         lite_info_df.reset_index(drop=True, inplace=True)
         # ident_peak_df = pd.DataFrame(ident_peak_dct).T
-        tuples = list(zip(*ident_peak_multindex))
-        ident_peak_index = pd.MultiIndex.from_tuples(tuples, names=['fragment_abbr', 'discrete_abbr'])
-        ident_peak_df2 = pd.DataFrame(ident_peak_dct, index=ident_peak_index)
-    else:
-        ident_peak_df = pd.DataFrame()
-        ident_peak_df2 = pd.DataFrame()
+    #     tuples = list(zip(*ident_peak_multindex))
+    #     ident_peak_index = pd.MultiIndex.from_tuples(tuples, names=['fragment_abbr', 'discrete_abbr'])
+    #     ident_peak_df2 = pd.DataFrame(ident_peak_dct, index=ident_peak_index)
+    # else:
+    #     ident_peak_df = pd.DataFrame()
+    #     ident_peak_df2 = pd.DataFrame()
     if lite_info_df.shape[0] > 0 and ident_peak_df2.shape[0] > 0:
         matched_checker = 1
         checked_abbr_lst = lite_info_df['DISCRETE_ABBR'].values.tolist()

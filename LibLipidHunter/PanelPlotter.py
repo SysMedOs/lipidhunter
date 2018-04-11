@@ -248,7 +248,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         if ms1_df.shape[0] > 800:
             ms_pic.plot(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=1)
         else:
-            ms_pic.stem(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', lw=0.5, markerfmt=' ')
+            ms_pic.stem(ms1_df['mz'].values.tolist(), ms1_df['i'].values.tolist(), 'grey', markerfmt=' ')
 
         _marker_line, _stem_lines, _base_line = ms_pic.stem([ms1_pr_mz], dash_i, markerfmt=' ')
         plt.setp(_stem_lines, color='#00ccff', linewidth=5, alpha=0.3)
@@ -297,7 +297,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                              'grey', lw=1, zorder=1)
         elif vendor == 'thermo':
             ms_zoom_pic.stem(plt_ms_zoom_df['mz'].values.tolist(), plt_ms_zoom_df['i'].values.tolist(),
-                             'grey', lw=0.5, markerfmt=' ', zorder=1)
+                             'grey', markerfmt=' ', zorder=1)
         else:
             ms_zoom_pic.plot(plt_ms_zoom_df['mz'].values.tolist(), plt_ms_zoom_df['i'].values.tolist(),
                              'grey', lw=1, zorder=1)
@@ -546,7 +546,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         if _msms_low_df.shape[0] > 0:
             msms_low_pic.stem(_msms_low_df['mz'].values.tolist(),
                               _msms_low_df['i'].values.tolist(),
-                              'black', lw=2, markerfmt=' ')
+                              'black', markerfmt=' ')
             msms_low_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
             msms_low_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
             msms_low_pic.set_ylabel("Intensity", fontsize=10)
@@ -698,7 +698,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         if _msms_high_df.shape[0] > 0:
             msms_high_max = _msms_high_df['i'].max()
             msms_high_pic.stem(_msms_high_df['mz'].values.tolist(), _msms_high_df['i'].values.tolist(),
-                               'black', lw=4, markerfmt=' ')
+                               'black', markerfmt=' ')
             msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
             msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
             msms_high_pic.set_ylabel("Intensity", fontsize=10)
