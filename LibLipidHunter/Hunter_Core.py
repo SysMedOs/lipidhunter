@@ -238,15 +238,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         error_lst.append('Lipid class or charge NOT supported.  User input lipid class = %s, charge = %s. '
                          % (usr_lipid_class, usr_charge))
 
-    print('=== ==> --> Lipid Master table Ready ...')
-
     # TODO(zhixu.ni@uni-leipzig.de): Add more error to the error_lst.
 
     pr_hunter = PrecursorHunter(lipid_info_df, param_dct, os_type=os_typ)
 
     output_df = pd.DataFrame()
 
-    print('=== ==> --> Start to process')
+    print('=== ==> --> Start to process data ...')
     print('=== ==> --> Lipid class: %s' % usr_lipid_class)
 
     # generate the Weight factor df
@@ -750,6 +748,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 lipid_info_img_lst = tmp_lipid_img_lst
 
     print('=== ==> --> Generate the output table')
+    print('output_df.shape', output_df.shape)
     if output_df.shape[0] > 0:
         try:
             output_df = output_df.sort_values(by=['Lib_mz', 'Bulk_identification', 'MS2_scan_time', 'RANK_SCORE'],
@@ -959,14 +958,14 @@ if __name__ == '__main__':
 
     usr_test_lst = [
         # ['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4'],
-        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
-        # ['PE', 'waters', '[M-H]-', 'PE_waters'],
+        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        ['PE', 'waters', '[M-H]-', 'PE_waters'],
     ]
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Ni file
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Mile file
-    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_2.mzML'  # Angela
+    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Angela
     tg_mzml_SCIEXS = r'../Test/mzML/20140613_HSL002_Positive_01.mzML'  # Dataset
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
@@ -995,7 +994,7 @@ if __name__ == '__main__':
             vendor = usr_test[1]
             if vendor == 'waters':
                 mzml = pl_mzml_waters
-                mz_range = [824, 830]  # 600, 1000
+                mz_range = [820, 850]  # 600, 1000
                 rt_range = [24.5, 25]  # max [24, 27]
             else:
                 mzml = False

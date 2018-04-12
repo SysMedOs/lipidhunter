@@ -297,18 +297,18 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                              'grey', lw=1, zorder=1)
         elif vendor == 'thermo':
             ms_zoom_pic.stem(plt_ms_zoom_df['mz'].values.tolist(), plt_ms_zoom_df['i'].values.tolist(),
-                             'grey', markerfmt=' ', zorder=1)
+                             'grey', markerfmt=' ')  # zorder=1
         else:
             ms_zoom_pic.plot(plt_ms_zoom_df['mz'].values.tolist(), plt_ms_zoom_df['i'].values.tolist(),
                              'grey', lw=1, zorder=1)
 
         _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([ms1_pr_mz], [ms1_pr_i],
-                                                       'magenta', markerfmt='D', zorder=20)
+                                                       'magenta', markerfmt='D')  # zorder=20
         plt.setp(_marker_l, markerfacecolor='magenta', markeredgecolor='none', markeredgewidth=0,
                  markersize=6, alpha=0.8)
         ms_zoom_pic.text(ms1_pr_mz + 0.06, ms1_pr_i, '%.4f' % float(ms1_pr_mz),
                          color='magenta', fontsize=6)
-        _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([lib_mz], [ms1_pr_i], '--', markerfmt='o', zorder=21)
+        _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([lib_mz], [ms1_pr_i], '--', markerfmt='o')  # zorder=21
         plt.setp(_marker_l, markerfacecolor='#ff6600', markersize=6, markeredgewidth=0)
         plt.setp(_stem_l, color='#ff6600')
         ms_zoom_pic.text(lib_mz - 0.15, ms1_pr_i + ms_zoom_offset_i, '[M+0]', color='#ff6600', fontsize=6)
@@ -324,8 +324,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                         facecolor=(0, 0.8, 1.0, 0.6), edgecolor='none', zorder=1)
         ms_zoom_pic.add_patch(m1_theo_box)
 
-        _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([m1_theo_mz], [m1_theo_i], '--', markerfmt='o',
-                                                       zorder=22)
+        _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([m1_theo_mz], [m1_theo_i], '--', markerfmt='o') # zorder=22
         plt.setp(_stem_l, color='#ff6600')
         plt.setp(_marker_l, markerfacecolor='#ff6600', markersize=6, markeredgewidth=0)
         ms_zoom_pic.text(m1_theo_mz - 0.15, m1_theo_i + ms_zoom_offset_i, '[M+1]', color='#ff6600', fontsize=6)
@@ -350,8 +349,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                             facecolor=(0, 0.8, 1.0, 0.6), edgecolor='none', zorder=1)
             ms_zoom_pic.add_patch(m2_theo_box)
             opt_box_lst.append(ms_zoom_pic)
-            _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([m2_theo_mz], [m2_theo_i], '--', markerfmt='o',
-                                                           zorder=23)
+            _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([m2_theo_mz], [m2_theo_i], '--', markerfmt='o')  # zorder=23
             plt.setp(_stem_l, color='#ff6600', alpha=0.8)
             plt.setp(_marker_l, markerfacecolor='#ff6600', markersize=6, markeredgewidth=0, alpha=0.9)
             ms_zoom_pic.text(m2_theo_mz - 0.15, m2_theo_i + ms_zoom_offset_i, '[M+2]', color='#ff6600', fontsize=6)
@@ -380,7 +378,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                                  facecolor=(1.0, 0.0, 0.0, 0.6), edgecolor='none', zorder=1)
                 ms_zoom_pic.add_patch(mh2_theo_box)
                 _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([mh2_theo_mz], [mh2_theo_i], '--',
-                                                               markerfmt='o', zorder=24)
+                                                               markerfmt='o')  # zorder=24
                 plt.setp(_stem_l, color='red', alpha=0.8)
                 plt.setp(_marker_l, markerfacecolor='red', markersize=6, markeredgewidth=0, alpha=0.9)
                 if _mh2 == 0:
@@ -438,7 +436,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # plot MS/MS
         msms_pic.stem(ms2_df['mz'].values.tolist(), ms2_df['i'].values.tolist(),
-                      'black', markerfmt=' ', basefmt='k-', zorder=10)
+                      'black', markerfmt=' ', basefmt='k-')  # zorder=10
         msms_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
         msms_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
         msms_pic.set_ylabel("Intensity", fontsize=10)
@@ -503,7 +501,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             # Create a second table with the MG fragments for TG
             if obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_abbr'].shape[0] > 0:
                 _fa_table_df2 = pd.DataFrame(data={
-                    '#': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_rank'].values.tolist(),
+                    '#': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_rank'].astype(int).values.tolist(),
                     'identification': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_abbr'].values.tolist(),
                     'm/z': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_mz'].values.tolist(),
                     'ppm': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_ppm'].values.tolist(),
@@ -523,14 +521,14 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             # Create the table with the Free FA fragments for TG and PL
             if obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_abbr'].values.tolist():
                 _fa_table_df = pd.DataFrame(
-                    data={'#': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_rank'].values.tolist(),
+                    data={'#': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_rank'].astype(int).values.tolist(),
                           'identification': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_abbr'].values.tolist(),
                           'm/z': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_mz'].values.tolist(),
                           'ppm': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_ppm'].values.tolist(),
                           'i (%)': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_i_r'].values.tolist()})
                 _fa_table_df = _fa_table_df.reindex(columns=_fa_col_labels)
                 _fa_table_vals = list(map(list, _fa_table_df.values))
-                _fa_col_width_lst = [0.03, 0.125, 0.10, 0.06, 0.06]
+                _fa_col_width_lst = [0.03, 0.2, 0.10, 0.06, 0.06]
                 _fa_table = msms_low_pic.table(cellText=_fa_table_vals, colWidths=_fa_col_width_lst,
                                                colLabels=_fa_col_labels, loc='upper left', cellLoc='center')
 
@@ -635,7 +633,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             _lyso_col_labels = ('#', 'identification', 'm/z', 'ppm', 'i (%)')
             if obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_abbr'].shape[0] > 0:
                 _lyso_table_df2 = pd.DataFrame(
-                    data={'#': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_rank'].values.tolist(),
+                    data={'#': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_rank'].astype(int).values.tolist(),
                           'identification': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_abbr'].values.tolist(),
                           'm/z': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_mz'].values.tolist(),
                           'ppm': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_ppm'].values.tolist(),
@@ -661,7 +659,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 _lyso_table2 = False
             if obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_abbr'].shape[0] > 0:
                 _lyso_table_df = pd.DataFrame(
-                    data={'#': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_rank'].values.tolist(),
+                    data={'#': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_rank'].astype(int).values.tolist(),
                           'identification': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_abbr'].values.tolist(),
                           'm/z': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_mz'].values.tolist(),
                           'ppm': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_ppm'].values.tolist(),
