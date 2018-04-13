@@ -286,11 +286,11 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_checker_lst)]
     checked_info_df.is_copy = False
     checked_info_df.sort_values(by=['scan_checker', 'Lib_mz'], ascending=[True, True], inplace=True)
-    if 'debug_mode' in list(param_dct.keys()):
-        if param_dct['debug_mode'] == 'ON':
-            usr_scan_info_df.to_csv(os.path.join(output_folder, 'usr_scan_info.csv'))
-            ms1_obs_pr_df.to_csv(os.path.join(output_folder, 'ms1_obs_pr_df.csv'))
-            checked_info_df.to_csv(os.path.join(output_folder, 'checked_info_df.csv'))
+    # if 'debug_mode' in list(param_dct.keys()):
+    #     if param_dct['debug_mode'] == 'ON':
+    #         usr_scan_info_df.to_csv(os.path.join(output_folder, 'usr_scan_info.csv'))
+    #         ms1_obs_pr_df.to_csv(os.path.join(output_folder, 'ms1_obs_pr_df.csv'))
+    #         checked_info_df.to_csv(os.path.join(output_folder, 'checked_info_df.csv'))
 
     if checked_info_df.shape[0] == 0:
         print('!! No identification in pre-match steps !!')
