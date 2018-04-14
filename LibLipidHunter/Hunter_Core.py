@@ -949,7 +949,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 1
+    core_count = 3
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
 
@@ -957,15 +957,16 @@ if __name__ == '__main__':
     # ['TG', 'thermo', '[M+NH4]+']]
 
     usr_test_lst = [
+        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        # ['PE', 'waters', '[M-H]-', 'PE_waters'],
         # ['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4'],
-        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
-        ['PE', 'waters', '[M-H]-', 'PE_waters'],
     ]
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Ni file
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Mile file
-    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Angela
+    # tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Angela
+    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_2.mzML'  # Angela
     tg_mzml_SCIEXS = r'../Test/mzML/20140613_HSL002_Positive_01.mzML'  # Dataset
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
@@ -994,8 +995,8 @@ if __name__ == '__main__':
             vendor = usr_test[1]
             if vendor == 'waters':
                 mzml = pl_mzml_waters
-                mz_range = [820, 850]  # 600, 1000
-                rt_range = [24.5, 25]  # max [24, 27]
+                mz_range = [600, 1000]  # 600, 1000
+                rt_range = [24, 27]  # max [24, 27]
             else:
                 mzml = False
                 pass
