@@ -1375,10 +1375,14 @@ class Ui_MainWindow(object):
         self.runhunter_tabframe.setTabText(self.runhunter_tabframe.indexOf(self.savecfg_tab), QtGui.QApplication.translate("MainWindow", "Save parameters for batch mode", None, QtGui.QApplication.UnicodeUTF8))
         self.label_23.setText(QtGui.QApplication.translate("MainWindow", "Instrument vendor:", None, QtGui.QApplication.UnicodeUTF8))
         self.vendor_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "--- Please select ---", None, QtGui.QApplication.UnicodeUTF8))
-        self.vendor_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Thermo", None, QtGui.QApplication.UnicodeUTF8))
-        self.vendor_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "Waters", None, QtGui.QApplication.UnicodeUTF8))
-        self.vendor_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "SCIEX (experimental support)", None, QtGui.QApplication.UnicodeUTF8))
-        self.vendor_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Agilent (experimental support)", None, QtGui.QApplication.UnicodeUTF8))
+        self.vendor_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Agilent", None,
+                                                                    QtGui.QApplication.UnicodeUTF8))
+        self.vendor_cmb.setItemText(2, QtGui.QApplication.translate("MainWindow", "SCIEX", None,
+                                                                    QtGui.QApplication.UnicodeUTF8))
+        self.vendor_cmb.setItemText(3, QtGui.QApplication.translate("MainWindow", "Thermo", None,
+                                                                    QtGui.QApplication.UnicodeUTF8))
+        self.vendor_cmb.setItemText(4, QtGui.QApplication.translate("MainWindow", "Waters", None,
+                                                                    QtGui.QApplication.UnicodeUTF8))
         self.label_24.setText(QtGui.QApplication.translate("MainWindow", "Mode:", None, QtGui.QApplication.UnicodeUTF8))
         self.mode_lcms_rb.setText(QtGui.QApplication.translate("MainWindow", "LC-MS/MS", None, QtGui.QApplication.UnicodeUTF8))
         self.mode_static_rb.setText(QtGui.QApplication.translate("MainWindow", "Shotgun", None, QtGui.QApplication.UnicodeUTF8))
@@ -1425,7 +1429,7 @@ class Ui_MainWindow(object):
         self.tab_c_tag_all_fa_chb.setText(QtGui.QApplication.translate("MainWindow", "Favoured for TAG with all three residues identified", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_c_scorecfgtg_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_c_scorecfgpl_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>&quot;W<span style=\" font-size:11pt; vertical-align:sub;\">frag</span>&quot; for PL:</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_c_scorecfgtg_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>&quot;W<span style=\" font-size:11pt; vertical-align:sub;\">frag</span>&quot;  for TG:</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_c_scorecfgtg_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>&quot;W<span style=\" font-size:11pt; vertical-align:sub;\">frag</span>&quot;  for TG/DG:</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         # self.tab_c_falisttg_lb.setText(
         #     QtGui.QApplication.translate("MainWindow", "Default FA list for TG:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_c_falisttg_lb.setText(QtGui.QApplication.translate("MainWindow", "Default FA list for TG/DG:", None, QtGui.QApplication.UnicodeUTF8))

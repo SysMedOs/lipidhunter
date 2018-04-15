@@ -46,9 +46,9 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'06, March, 2018'
+        version_date = r'09, April, 2018'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
-                        r'LipidHunter Beta released date: {version_date}'
+                        r'LipidHunter 2 Beta >> released date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
         self.ui.version_lb.setText(QtGui.QApplication.translate("MainWindow", version_html, None,
                                                                 QtGui.QApplication.UnicodeUTF8))
@@ -66,12 +66,16 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.a_max_ms()
 
         # disable multi_mode in batch run
+        self.ui.label_65.hide()
+        self.ui.tab_a_launchgen_pb.hide()
         self.ui.tab_b_mutlimode_cmb.hide()
         self.ui.tab_b_maxbatch_lb.hide()
         self.ui.tab_b_maxbatch_spb.setValue(1)
         self.ui.tab_b_maxbatch_spb.hide()
         self.ui.tab_b_maxsubcore_spb.setValue(3)
         self.ui.tab_b_maxsubram_spb.setValue(5)
+        self.ui.tab_b_maxsubram_spb.setValue(5)
+        self.ui.tabframe.removeTab(3)
 
         # define single worker
         self.single_worker = SingleWorker()
@@ -143,16 +147,41 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         if len(user_cfg) > 2:
             options = config.options(user_cfg)
             if 'fa_white_list_cfg_pl' in options:
-                # self.ui.tab_a_loadxlsxpath_le.setText(config.get(user_cfg, 'fa_white_list_cfg_pl'))
-                self.ui.tab_c_falistpl_le.setText(config.get(user_cfg, 'fa_white_list_cfg_pl'))
+                pl_fawhitelist_path_str = config.get(user_cfg, 'fa_white_list_cfg_pl')
+                pl_fawhitelist_path_str, error_log = self.check_file(pl_fawhitelist_path_str, 'FA whitelist for PL')
+                if len(error_log) > 0:
+                    self.ui.tab_c_falistpl_le.setText(error_log)
+                else:
+                    self.ui.tab_c_falistpl_le.setText(pl_fawhitelist_path_str)
             if 'fa_white_list_cfg_tg' in options:
-                self.ui.tab_c_falisttg_le.setText(config.get(user_cfg, 'fa_white_list_cfg_tg'))
+                tg_fawhitelist_path_str = config.get(user_cfg, 'fa_white_list_cfg_tg')
+                tg_fawhitelist_path_str, error_log = self.check_file(tg_fawhitelist_path_str, 'FA whitelist for TG/DG')
+                if len(error_log) > 0:
+                    self.ui.tab_c_falisttg_le.setText(error_log)
+                else:
+                    self.ui.tab_c_falisttg_le.setText(tg_fawhitelist_path_str)
             if 'lipid_specific_cfg' in options:
-                self.ui.tab_c_hgcfg_le.setText(config.get(user_cfg, 'lipid_specific_cfg'))
+                lipid_specific_path_str = config.get(user_cfg, 'lipid_specific_cfg')
+                lipid_specific_path_str, error_log = self.check_file(lipid_specific_path_str, 'lipid_specific_cfg')
+                if len(error_log) > 0:
+                    self.ui.tab_c_hgcfg_le.setText(error_log)
+                else:
+                    self.ui.tab_c_hgcfg_le.setText(lipid_specific_path_str)
             if 'score_cfg_pl' in options:
                 self.ui.tab_c_scorecfgpl_le.setText(config.get(user_cfg, 'score_cfg_pl'))
+                pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_pl')
+                pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for PL')
+                if len(error_log) > 0:
+                    self.ui.tab_c_scorecfgpl_le.setText(error_log)
+                else:
+                    self.ui.tab_c_scorecfgpl_le.setText(pl_score_cfg_path_str)
             if 'score_cfg_tg' in options:
-                self.ui.tab_c_scorecfgtg_le.setText(config.get(user_cfg, 'score_cfg_tg'))
+                pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_tg')
+                pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for TG/DG')
+                if len(error_log) > 0:
+                    self.ui.tab_c_scorecfgtg_le.setText(error_log)
+                else:
+                    self.ui.tab_c_scorecfgtg_le.setText(pl_score_cfg_path_str)
             if 'score_mode' in options:
                 if config.get(user_cfg, 'score_mode').upper() in ['RANK', '']:
                     self.ui.tab_c_scoremode_cmb.setCurrentIndex(0)
@@ -262,21 +291,25 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
     @staticmethod
     def check_file(usr_path, info_str):
+        file_abs_path = ''
         try:
             if os.path.isfile(usr_path):
                 error_log = ''
+                file_abs_path = os.path.abspath(usr_path)
             else:
                 error_log = '!! Failed to load {_file} !!'.format(_file=info_str)
         except IOError:
             error_log = '!! Failed to load {_file} !!'.format(_file=info_str)
 
-        return error_log
+        return file_abs_path, error_log
 
     @staticmethod
     def check_folder(usr_path, info_str):
+        folder_abs_path = ''
         try:
             if os.path.isdir(usr_path):
                 error_log = ''
+                folder_abs_path = os.path.abspath(usr_path)
             else:
                 os.makedirs(usr_path)
                 print('Folder created... %s' % usr_path)
@@ -284,7 +317,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         except IOError:
             error_log = '!! Failed to open folder {_file} !!'.format(_file=info_str)
 
-        return error_log
+        return folder_abs_path, error_log
 
     def a_load_xlsx(self):
         file_info_str = 'FA white list files (*.xlsx *.XLSX)'
@@ -412,11 +445,32 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         img_typ = self.ui.tab_c_imagetype_cmb.currentText()[1:]
         img_dpi = self.ui.tab_c_dpi_spb.value()
 
-        error_log_lst.append(self.check_file(fawhitelist_path_str, 'FA whitelist'))
-        error_log_lst.append(self.check_file(mzml_path_str, 'mzML spectra'))
-        error_log_lst.append(self.check_file(lipid_specific_cfg, 'configuration for Phospholipids'))
-        error_log_lst.append(self.check_file(score_cfg, 'W_frag score configuration'))
-        error_log_lst.append(self.check_folder(img_output_folder_str, 'Output folder'))
+        fawhitelist_path_str, error_log = self.check_file(fawhitelist_path_str, 'FA whitelist')
+        if len(error_log) > 0:
+            error_log_lst.append(error_log)
+        lipid_specific_cfg, error_log = self.check_file(lipid_specific_cfg, 'configuration for Phospholipids')
+        if len(error_log) > 0:
+            error_log_lst.append(error_log)
+        score_cfg, error_log = self.check_file(score_cfg, 'W_frag score configuration')
+        if len(error_log) > 0:
+            error_log_lst.append(error_log)
+        abs_img_output_folder_str, error_log = self.check_folder(img_output_folder_str, 'Output folder')
+        if len(error_log) > 0:
+            error_log_lst.append(error_log)
+            self.ui.tab_a_saveimgfolder_le.setText(error_log)
+        else:
+            if abs_img_output_folder_str != img_output_folder_str:
+                self.ui.tab_a_saveimgfolder_le.setText(abs_img_output_folder_str)
+                error_log_lst.append('!! Image output folder not correct !!')
+                error_log_lst.append('>> Propose to save in folder: %s' % abs_img_output_folder_str)
+
+        if xlsx_output_path_str[-5:] == '.xlsx':
+            pass
+        else:
+            xlsx_output_path_str = '%s.xlsx' % xlsx_output_path_str
+            self.ui.tab_a_savexlsxpath_le.setText(xlsx_output_path_str)
+            error_log_lst.append('!! Excel output path not correct !!')
+            error_log_lst.append('>> Propose to save as: %s' % xlsx_output_path_str)
 
         usr_score_mode = self.ui.tab_c_scoremode_cmb.currentIndex()
         if usr_score_mode == 0:
@@ -465,27 +519,54 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_a_cfgpath_le.setText(a_save_cfg_str)
 
     def a_create_cfg(self):
+
+        param_cfg_path_str = str(self.ui.tab_a_cfgpath_le.text())
+        try:
+            if param_cfg_path_str[-4:] == '.txt':
+                pass
+            else:
+                param_cfg_path_str = '%s.txt' % param_cfg_path_str
+            param_cfg_directory = os.path.dirname(param_cfg_path_str)
+            if not os.path.exists(param_cfg_directory):
+                os.makedirs(param_cfg_directory)
+            abs_param_cfg_directory_str, error_log = self.check_folder(param_cfg_directory, 'Settings for batch mode')
+            if len(error_log) > 0:
+                self.ui.tab_a_gencfg_pte.insertPlainText(error_log)
+            if abs_param_cfg_directory_str != param_cfg_directory:
+                param_cfg_path = os.path.split(param_cfg_path_str)
+                param_cfg_path_str = os.path.join(abs_param_cfg_directory_str, param_cfg_path[1])
+                self.ui.tab_a_gencfg_pte.insertPlainText('>>> try to save as: %s\n' % param_cfg_path_str)
+
+        except Exception as _err:
+            print(_err)
+            self.ui.tab_a_gencfg_pte.insertPlainText('!!! Failed to save settings for batch mode !!!\n')
+            self.ui.tab_a_gencfg_pte.insertPlainText('!! Can not save settings to file !!\n')
+            self.ui.tab_a_gencfg_pte.insertPlainText(str(_err))
+
         hunter_param_dct, error_log_lst = self.a_get_params()
         error_log_lst = [_f for _f in error_log_lst if _f]
 
         if len(error_log_lst) > 0:
             print('Parameter error:', error_log_lst)
-            error_log_lst.append('!!! Please check your settings !!!')
+            error_log_lst.append('!!! Failed to save settings for batch mode !!!')
+            error_log_lst.append('>>> Please check your settings, and try to save again ...\n')
             self.ui.tab_a_gencfg_pte.appendPlainText('\n'.join(error_log_lst) + '\n')
         else:
-            param_cfg_path_str = str(self.ui.tab_a_cfgpath_le.text())
-            param_cfg_directory = os.path.dirname(param_cfg_path_str)
-            if not os.path.exists(param_cfg_directory):
-                os.makedirs(param_cfg_directory)
-            config = configparser.ConfigParser()
-            with open(param_cfg_path_str, 'w') as usr_param_cfg:
-                config.add_section('parameters')
-                for param in list(hunter_param_dct.keys()):
-                    config.set('parameters', str(param), str(hunter_param_dct[param]))
-                config.write(usr_param_cfg)
-                self.ui.tab_a_gencfg_pte.insertPlainText('>>> Configuration saved as:')
-                self.ui.tab_a_gencfg_pte.insertPlainText(param_cfg_path_str)
-                self.ui.tab_a_gencfg_pte.insertPlainText('\n')
+
+            try:
+
+                config = configparser.ConfigParser()
+                with open(param_cfg_path_str, 'w') as usr_param_cfg:
+                    config.add_section('parameters')
+                    for param in list(hunter_param_dct.keys()):
+                        config.set('parameters', str(param), str(hunter_param_dct[param]))
+                    config.write(usr_param_cfg)
+                    self.ui.tab_a_gencfg_pte.insertPlainText('>>> Successfully saved as: \n')
+                    self.ui.tab_a_gencfg_pte.insertPlainText(param_cfg_path_str)
+                    self.ui.tab_a_gencfg_pte.insertPlainText('\n')
+            except Exception as _err:
+                print(_err)
+                self.ui.tab_a_gencfg_pte.insertPlainText(str(_err))
 
     def b_set_multi_mode(self):
 
@@ -603,7 +684,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                                     cfg_params_dct[param] = False
                             else:
                                 cfg_params_dct[param] = _val
-                except configparser.Error as _cfg_e:
+                except Exception as _cfg_e:
                     print('ERROR', _cfg_e)
                     cfg_error += str(_cfg_e)
                     cfg_error += '\n'
@@ -853,7 +934,8 @@ class SingleWorker(QtCore.QObject):
 
         try:
             hunter_time, log_lst, export_df = huntlipids(self.params_dct, error_lst=log_lst)
-        except:
+        except Exception as _e:
+            print(_e)
             hunter_time = False
             log_lst = False
             export_df = False
@@ -998,7 +1080,8 @@ class BatchWorker(QtCore.QObject):
             if ready_to_run is True:
                 try:
                     hunter_time, log_lst, export_df = huntlipids(_param_dct, error_lst=log_lst)
-                except:
+                except Exception as _e:
+                    print(_e)
                     hunter_time = False
                     log_lst = False
                     export_df = False

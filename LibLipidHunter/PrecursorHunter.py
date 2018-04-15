@@ -147,31 +147,35 @@ class PrecursorHunter(object):
 
         ms1_obs_pr_df = pd.DataFrame()
         # print('ms1_obs_pr_df')
+        if self.lpp_info_df.shape[0] > 0:
+            if pl_class == 'PC':
+                if usr_charge in ['[M+HCOO]-', '[M+CH3COO]-']:
+                    lpp_mz_lst = self.lpp_info_df['%s_MZ' % usr_charge].values.tolist()
+                    self.lpp_info_df.loc[:, 'PR_MZ_LOW'] = pr_window_calc_para(lpp_mz_lst, -1 * pr_window)
+                    self.lpp_info_df.loc[:, 'PR_MZ_HIGH'] = pr_window_calc_para(lpp_mz_lst, pr_window)
+                    self.lpp_info_df.loc[:, 'MS1_MZ_LOW'] = ppm_window_para(lpp_mz_lst, -1 * ms1_ppm)
+                    self.lpp_info_df.loc[:, 'MS1_MZ_HIGH'] = ppm_window_para(lpp_mz_lst, ms1_ppm)
+                    self.lpp_info_df.loc[:, 'Formula'] = self.lpp_info_df['%s_FORMULA' % usr_charge].str.strip('-')
+                    self.lpp_info_df.loc[:, 'Ion'] = usr_charge
+                    self.lpp_info_df.loc[:, 'Lib_mz'] = self.lpp_info_df.loc[:, '%s_MZ' % usr_charge]
+                else:
+                    self.lpp_info_df = pd.DataFrame()
 
-        if pl_class == 'PC':
-            if usr_charge in ['[M+HCOO]-', '[M+CH3COO]-']:
+            else:
                 lpp_mz_lst = self.lpp_info_df['%s_MZ' % usr_charge].values.tolist()
                 self.lpp_info_df.loc[:, 'PR_MZ_LOW'] = pr_window_calc_para(lpp_mz_lst, -1 * pr_window)
                 self.lpp_info_df.loc[:, 'PR_MZ_HIGH'] = pr_window_calc_para(lpp_mz_lst, pr_window)
                 self.lpp_info_df.loc[:, 'MS1_MZ_LOW'] = ppm_window_para(lpp_mz_lst, -1 * ms1_ppm)
                 self.lpp_info_df.loc[:, 'MS1_MZ_HIGH'] = ppm_window_para(lpp_mz_lst, ms1_ppm)
-                self.lpp_info_df.loc[:, 'Formula'] = self.lpp_info_df['%s_FORMULA' % usr_charge].str.strip('-')
+                self.lpp_info_df.loc[:, 'Formula'] = self.lpp_info_df.loc[:, '%s_FORMULA' % usr_charge].str.strip('-')
                 self.lpp_info_df.loc[:, 'Ion'] = usr_charge
                 self.lpp_info_df.loc[:, 'Lib_mz'] = self.lpp_info_df.loc[:, '%s_MZ' % usr_charge]
-            else:
-                self.lpp_info_df = pd.DataFrame()
+
+            self.lpp_info_df.sort_values(by='PR_MZ_LOW', inplace=True)
 
         else:
-            lpp_mz_lst = self.lpp_info_df['%s_MZ' % usr_charge].values.tolist()
-            self.lpp_info_df.loc[:, 'PR_MZ_LOW'] = pr_window_calc_para(lpp_mz_lst, -1 * pr_window)
-            self.lpp_info_df.loc[:, 'PR_MZ_HIGH'] = pr_window_calc_para(lpp_mz_lst, pr_window)
-            self.lpp_info_df.loc[:, 'MS1_MZ_LOW'] = ppm_window_para(lpp_mz_lst, -1 * ms1_ppm)
-            self.lpp_info_df.loc[:, 'MS1_MZ_HIGH'] = ppm_window_para(lpp_mz_lst, ms1_ppm)
-            self.lpp_info_df.loc[:, 'Formula'] = self.lpp_info_df.loc[:, '%s_FORMULA' % usr_charge].str.strip('-')
-            self.lpp_info_df.loc[:, 'Ion'] = usr_charge
-            self.lpp_info_df.loc[:, 'Lib_mz'] = self.lpp_info_df.loc[:, '%s_MZ' % usr_charge]
-
-        self.lpp_info_df.sort_values(by='PR_MZ_LOW', inplace=True)
+            # no matched info --> exit
+            return False, False
 
         # Prepare for multiprocessing
         lpp_info_groups = self.lpp_info_df.groupby(['Lib_mz', 'Formula'])
