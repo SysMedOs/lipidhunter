@@ -195,6 +195,10 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     if save_lipid_master_table is True:
         log_master_name = 'Lipid_Master_%s.csv' % hunter_start_time_str
         log_master_name = os.path.join(output_folder, log_master_name)
+        if os.path.isdir(output_folder):
+            pass
+        else:
+            os.mkdir(os.path.abspath(output_folder))
         usr_lipid_master_df.to_csv(log_master_name)
         print('==> --> Lipid Master table Saved as: ', log_master_name)
     else:
@@ -827,14 +831,14 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                 '[M-(FA2)+H]+_i', '[M-(FA3)+H]+_i']
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+Na]+']:
             # TODO (georgia.angelidou@uni-leipzig.de): need to solve the problem for the below sections
-            # '[MG(SN1)-H2O+H]+_i', '[MG(SN2)-H2O+H]+_i', '[MG(SN3)-H2O+H]+_i',
+            # '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
                                 '[M-(FA1)+Na]+_i',
                                 '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i']
         elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
-            # problem with the following key:  'SN2_[FA-H2O+H]_i',
+            # problem with the following key:  'FA2_[FA-H2O+H]_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
@@ -958,15 +962,16 @@ if __name__ == '__main__':
 
     usr_test_lst = [
         ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
-        # ['PE', 'waters', '[M-H]-', 'PE_waters'],
-        # ['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4'],
+        ['PE', 'waters', '[M-H]-', 'PE_waters'],
+        # ['TG', 'waters', '[M+H]+', 'TG_waters'],
+        # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
+        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
     ]
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Ni file
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Mile file
-    # tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Angela
-    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_2.mzML'  # Angela
+    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Angela file
     tg_mzml_SCIEXS = r'../Test/mzML/20140613_HSL002_Positive_01.mzML'  # Dataset
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
@@ -984,8 +989,7 @@ if __name__ == '__main__':
     rt_range = [6, 10]  # default
     for usr_test in usr_test_lst:
         _test_dct = {'rank_score_filter': 27.5, 'score_filter': 27.5, 'isotope_score_filter': 75.0, 'ms_max': 0,
-                     'pr_window': 0.75, 'ms2_infopeak_threshold': 0.001, 'ms2_hginfopeak_threshold': 0.001,
-                     'debug': 'ON', 'save_lipid_master_table': 'CSV'}
+                     'pr_window': 0.75, 'ms2_infopeak_threshold': 0.001, 'ms2_hginfopeak_threshold': 0.001}
         if usr_test[0] in ['PC', 'PE', 'PA', 'PG', 'PI', 'PS', 'PIP']:
             lipid_class = usr_test[0]
             if lipid_class == 'PC':
@@ -1137,6 +1141,9 @@ if __name__ == '__main__':
                            'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
 
                 test_dct.update(cfg_dct)
+                test_dct['debug_mode'] = 'ON'
+                test_dct['save_lipid_master_table'] = 'CSV'
+                print(test_dct)
 
                 print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
 
