@@ -185,9 +185,19 @@ class PrecursorHunter(object):
 
         spectra_pl_idx_lst = sorted(spectra_pl.items.values.tolist())
 
-        if len(spectra_pl_idx_lst) >= (max_ram * 64):
+        if (max_ram * 64) <= len(spectra_pl_idx_lst) < (max_ram * 128):
             print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
             sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.5))
+            sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
+                                                                                          sub_group_len)]
+        elif (max_ram * 128) <= len(spectra_pl_idx_lst) < (max_ram * 256):
+            print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
+            sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.25))
+            sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
+                                                                                          sub_group_len)]
+        elif len(spectra_pl_idx_lst) >= (max_ram * 256):
+            print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
+            sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.1))
             sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
                                                                                           sub_group_len)]
         else:

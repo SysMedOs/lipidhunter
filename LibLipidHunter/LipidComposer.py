@@ -24,6 +24,7 @@ from __future__ import print_function
 import itertools
 
 import pandas as pd
+from natsort import natsorted, ns
 
 try:
     from LibLipidHunter.LipidNomenclature import NameParserFA
@@ -261,15 +262,17 @@ class LipidComposer:
             sn_comb_lst = []
 
         sn_comb_lite_lst = []
-        sn_comb_rm_lst = []
+        # sn_comb_rm_lst = []
 
         if position is False:
             for _comb in sn_comb_lst:
-                _rev_comb = tuple(sorted(list(_comb)))
+                # _rev_comb = tuple(sorted(list(_comb)))
+                _rev_comb = tuple(natsorted(list(_comb)))
                 if _comb not in sn_comb_lite_lst and _rev_comb not in sn_comb_lite_lst:
                     sn_comb_lite_lst.append(_comb)
                 else:
-                    sn_comb_rm_lst.append(_comb)
+                    pass
+                    # sn_comb_rm_lst.append(_comb)
                     # sn_comb_rm_lst.append(_rev_comb)
         else:
             sn_comb_lite_lst = sn_comb_lst
@@ -613,7 +616,11 @@ class LipidComposer:
                                                          db=lipid_comb_dct[_lipid]['M_DB'])
             elif lipid_class in ['SM']:
                 # TODO(georgia.angelidou@uni-leipzi.de): sphingomyelin support
-                pass
+                lipid_bulk_str = '{pl}({c}:{db})'.format(pl=lipid_class,
+                                                         c=_fa1_info_dct['C'] + _fa2_info_dct['C'],
+                                                         db=lipid_comb_dct[_lipid]['M_DB'])
+            else:
+                lipid_bulk_str = ''
 
             _lipid_dct['BULK_ABBR'] = lipid_bulk_str
 
