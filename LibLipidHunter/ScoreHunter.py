@@ -271,7 +271,7 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                     fa_to_site_dct[_fa_abbr] = _tmp_site_lst
 
             # !! IMPORTANT HERE !!
-            if lipid_class in ['TG']:
+            if lipid_class in ['TG', 'DG']:
                 # default obs_type in post_obs_df for TG is with FA1/FA2/FA3
                 # e.g. ['[M-(FA1)+H]+', '[M-(FA2)+H]+', '[M-(FA3)+H]+']
                 # TG use lite_info_df for get_all_fa_nl

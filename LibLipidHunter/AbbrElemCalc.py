@@ -375,9 +375,9 @@ class ElemCalc:
 
         return round(mono_mz, 6)
 
-    # Function to calculate the posible precursor of [M+NH4]+ for TG and DG
+    # Function to calculate the possible precursor of [M+NH4]+ for TG and DG
     # Current step is working for TG
-    # This is needed to understand if the precursos is true [M+H]+ or [M+Na]+ (given the users option)
+    # This is needed to understand if the precursors is true [M+H]+ or [M+Na]+ (given the users option)
     def get_NH3_pos_mode(self, charge, mz_pr, amm_elem_dct):
         mz_NH3_pr_H = ''  # The corespond mz of [M+NH4]+ if the given precursor corresponds to the [M+H]+
         mz_NH3_pr_Na = ''  # The corespond mz of [M+NH4]+ if the given precursor corresponds to the [M+Na]+
@@ -416,8 +416,15 @@ class ElemCalc:
             # elif charge in ['[M+Na]+']:
             #     mz_NH3_pr_Na = mz_pr - self.periodic_table_dct['Na'][0][0] + (4 * self.periodic_table_dct['H'][0][0]) + \
             #                    self.periodic_table_dct['N'][0][0]
+
+            # TODO(georgia.angelidou@uni-leipzig.de): _mz_H_formula is used before ref, fix here!
+            # Temp add
+
             mz_NH4_H_form = 'C' + str(amm_elem_dct['C']) + 'H' + str(amm_elem_dct['H']) + 'O6N'
-            mz_NH4_Na_form = _mz_H_formula
+
+            # mz_NH4_Na_form = _mz_H_formula
+            mz_NH4_Na_form = 'C' + str(amm_elem_dct['C']) + 'H' + str(int(amm_elem_dct['H']) - 3) + 'O6Na'
+
         elif charge in ['[M+Na]+']:
             mz_NH3_pr_Na = amm_elem_dct['C'] * self.periodic_table_dct['C'][0][0] + amm_elem_dct['H'] * \
                            self.periodic_table_dct['H'][0][0] + amm_elem_dct['O'] * self.periodic_table_dct['O'][0][0] + \
@@ -438,6 +445,11 @@ class ElemCalc:
                           self.periodic_table_dct['H'][0][0] + _mz_H_elemdct['O'] * self.periodic_table_dct['O'][0][0] + self.periodic_table_dct['N'][0][0]
             mz_NH4_Na_form = 'C' + str(amm_elem_dct['C']) + 'H' + str(amm_elem_dct['H']) + 'O6N'
             mz_NH4_H_form = 'C' + str(_mz_H_elemdct['C']) + 'H' + str((_mz_H_elemdct['H'] + 3)) + 'O6N'
+
+        else:
+            # TODO(georgia.angelidou@uni-leipzig.de): mz_NH4_H_form & mz_NH4_Na_form used before ref, fix here!
+            mz_NH4_H_form = ''
+            mz_NH4_Na_form = ''
 
         return (mz_NH3_pr_H, mz_NH4_H_form, mz_NH3_pr_Na, mz_NH4_Na_form)
 
