@@ -223,6 +223,7 @@ class LogPageCreator(object):
             with open(self.idx_lst_page, 'a') as idx_page:
 
                 _log_info_df = ident_info_df
+                _log_info_df.is_copy = False
                 _log_info_df['MS1_log_mz'] = _log_info_df['MS1_obs_mz'].round(1)
                 _log_info_df = _log_info_df.sort_values(by=['MS1_log_mz', 'Proposed_structures', 'MS2_scan_time',
                                                             'RANK_SCORE'], ascending=[True, True, True, False])
@@ -325,8 +326,8 @@ class LogPageCreator(object):
                     _idx += 1  # set start from 0 to 1
 
                     img_title_str = ('{mz}_RT{rt:.3}_DDArank{dda}_Scan{scan}_{ident}_{f}_{chg}_score{score}'
-                        .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
-                                ident=ident_abbr, score=score, f=formula_ion, chg=charge))
+                                     .format(mz='%.4f' % ms1_pr_mz, rt=ms2_rt, dda=dda, scan=ms2_scan_id,
+                                             ident=ident_abbr, score=score, f=formula_ion, chg=charge))
                     img_info_lst = ['<a name="', '%i' % _idx, '"><h3>', '<a href="', img_path, '" target="blank">',
                                     img_title_str, '</a></h3></a>', '<a href="', img_path, '" target="blank">',
                                     '<img src="', img_path, '" height="800" /></a>', table_buf_code, '\n<hr>\n']

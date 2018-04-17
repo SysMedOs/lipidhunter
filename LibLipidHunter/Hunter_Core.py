@@ -176,7 +176,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
             print('=== ==> --> Lipid Master Table generated >>>', usr_lipid_master_df.shape[0])
 
-        except FileNotFoundError:
+        except Exception as e:
+            print(e)
+            error_lst.append(e)
             error_lst.append('Some files missing...')
             error_lst.append('Please check your settings in the configuration file ...')
             return False, error_lst, False
@@ -193,8 +195,14 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     if save_lipid_master_table is True:
         log_master_name = 'Lipid_Master_%s.csv' % hunter_start_time_str
         log_master_name = os.path.join(output_folder, log_master_name)
+        if os.path.isdir(output_folder):
+            pass
+        else:
+            os.mkdir(os.path.abspath(output_folder))
         usr_lipid_master_df.to_csv(log_master_name)
         print('==> --> Lipid Master table Saved as: ', log_master_name)
+    else:
+        pass
 
     # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
@@ -240,7 +248,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     output_df = pd.DataFrame()
 
-    print('=== ==> --> Start to process')
+    print('=== ==> --> Start to process data ...')
     print('=== ==> --> Lipid class: %s' % usr_lipid_class)
 
     # generate the Weight factor df
@@ -282,11 +290,11 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_checker_lst)]
     checked_info_df.is_copy = False
     checked_info_df.sort_values(by=['scan_checker', 'Lib_mz'], ascending=[True, True], inplace=True)
-    if 'debug_mode' in list(param_dct.keys()):
-        if param_dct['debug_mode'] == 'ON':
-            usr_scan_info_df.to_csv(os.path.join(output_folder, 'usr_scan_info.csv'))
-            ms1_obs_pr_df.to_csv(os.path.join(output_folder, 'ms1_obs_pr_df.csv'))
-            checked_info_df.to_csv(os.path.join(output_folder, 'checked_info_df.csv'))
+    # if 'debug_mode' in list(param_dct.keys()):
+    #     if param_dct['debug_mode'] == 'ON':
+    #         usr_scan_info_df.to_csv(os.path.join(output_folder, 'usr_scan_info.csv'))
+    #         ms1_obs_pr_df.to_csv(os.path.join(output_folder, 'ms1_obs_pr_df.csv'))
+    #         checked_info_df.to_csv(os.path.join(output_folder, 'checked_info_df.csv'))
 
     if checked_info_df.shape[0] == 0:
         print('!! No identification in pre-match steps !!')
@@ -438,7 +446,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             for spec_result in spec_results_lst:
                 try:
                     sub_spec_dct = spec_result.get()
-                    print(sub_spec_dct)
+                    # print(sub_spec_dct)
                     if len(list(sub_spec_dct.keys())) > 0:
                         lipid_spec_info_dct.update(sub_spec_dct)
                 except (KeyError, SystemError, ValueError):
@@ -744,6 +752,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 lipid_info_img_lst = tmp_lipid_img_lst
 
     print('=== ==> --> Generate the output table')
+    print('output_df.shape', output_df.shape)
     if output_df.shape[0] > 0:
         try:
             output_df = output_df.sort_values(by=['Lib_mz', 'Bulk_identification', 'MS2_scan_time', 'RANK_SCORE'],
@@ -822,14 +831,14 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                 '[M-(FA2)+H]+_i', '[M-(FA3)+H]+_i']
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+Na]+']:
             # TODO (georgia.angelidou@uni-leipzig.de): need to solve the problem for the below sections
-            # '[MG(SN1)-H2O+H]+_i', '[MG(SN2)-H2O+H]+_i', '[MG(SN3)-H2O+H]+_i',
+            # '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
                                 '[M-(FA1)+Na]+_i',
                                 '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i']
         elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
-            # problem with the following key:  'SN2_[FA-H2O+H]_i',
+            # problem with the following key:  'FA2_[FA-H2O+H]_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
@@ -944,7 +953,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 1
+    core_count = 3
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
 
@@ -952,23 +961,26 @@ if __name__ == '__main__':
     # ['TG', 'thermo', '[M+NH4]+']]
 
     usr_test_lst = [
-        ['TG', 'thermo', '[M+NH4]+', 'TG_waters_NH4'],
-        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        ['PE', 'waters', '[M-H]-', 'PE_waters'],
+        # ['TG', 'waters', '[M+H]+', 'TG_waters'],
+        # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
+        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
     ]
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Ni file
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Mile file
-    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_2.mzML'  # Angela
+    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Angela file
     tg_mzml_SCIEXS = r'../Test/mzML/20140613_HSL002_Positive_01.mzML'  # Dataset
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
     pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_PL.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions.xlsx',
                    'score_cfg': r'../ConfigurationFiles/03-Score_weight_PL.xlsx'}
 
-    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions_PL.xlsx',
+    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG-DG.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions.xlsx',
                    'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG.xlsx'}
 
     usr_test_dct = {}
@@ -987,7 +999,7 @@ if __name__ == '__main__':
             vendor = usr_test[1]
             if vendor == 'waters':
                 mzml = pl_mzml_waters
-                mz_range = [650, 950]
+                mz_range = [600, 1000]  # 600, 1000
                 rt_range = [24, 27]  # max [24, 27]
             else:
                 mzml = False
@@ -1001,19 +1013,19 @@ if __name__ == '__main__':
             charge = usr_test[2]
             if vendor == 'waters':
                 mzml = tg_mzml_waters
-                mz_range = [800, 1000]
+                mz_range = [800, 1000]  # 600, 1000
                 rt_range = [9, 15]  # max [9, 15]
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
-                mz_range = [600, 1000]  # 850, 859
+                mz_range = [600, 1000]  # 600, 1000
                 rt_range = [20, 28]  # 25.6, 25.8
             elif vendor == 'sciex':
                 mzml = tg_mzml_SCIEXS
-                mz_range = [900, 1000]
+                mz_range = [900, 1000]  # 600, 1000
                 rt_range = [8, 13]
             elif vendor == 'agilent':
                 mzml = tg_mzml_agilent
-                mz_range = [600, 1000]
+                mz_range = [600, 1000]  # 600, 1000
                 rt_range = [9, 13]
             else:
                 mzml = False
@@ -1129,6 +1141,9 @@ if __name__ == '__main__':
                            'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
 
                 test_dct.update(cfg_dct)
+                test_dct['debug_mode'] = 'ON'
+                test_dct['save_lipid_master_table'] = 'CSV'
+                print(test_dct)
 
                 print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
 
