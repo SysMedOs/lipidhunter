@@ -21,6 +21,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import os
 import re
 
 import pandas as pd
@@ -29,10 +30,12 @@ try:
     from LibLipidHunter.IsotopeHunter import IsotopeHunter
     from LibLipidHunter.AbbrElemCalc import ElemCalc
     from LibLipidHunter.PanelPlotter import plot_spectra
+    from LibLipidHunter.PanelPlotter import gen_plot
 except ImportError:  # for python 2.7.14
     from IsotopeHunter import IsotopeHunter
     from PanelPlotter import plot_spectra
     from AbbrElemCalc import ElemCalc
+    from PanelPlotter import gen_plot
 
 
 def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='waters', exp_mode='LC-MS'):
@@ -280,7 +283,16 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                 # default obs_type in post_obs_df for PL is with NO FA assignment
                 # e.g. ['[FA-H]-', '[LPE-H]-', '[LPE-H2O-H]-']
                 # PL use fa_df for get_all_fa_nl
-                post_obs_df['obs_type_calc'] = post_obs_df['obs_type']
+
+                if not post_obs_df.empty:
+                    if 'obs_type' in post_obs_df.columns.values.tolist():
+                        post_obs_df['obs_type_calc'] = post_obs_df['obs_type']
+                    else:
+                        print(obs_typ, 'post_obs_df["obs_type"].empty')
+                        break
+                else:
+                    print(obs_typ, 'post_obs_df.empty')
+                    break
 
             for _fa_abbr in unique_fa_abbr_lst:
                 _fa_ident = False
@@ -311,10 +323,10 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                                                                                                    'obs_i_r'] / 3)
                             else:
                                 pass
-                            # print(_fa_abbr, ' identified', _fa_count, 'times as: ', obs_typ,
-                            #       '@', fa_to_site_dct[_fa_abbr],
-                            #       'in', _lipid_abbr, '\ni:', post_obs_df.at[_pos_df.index[0], 'i'], '>>',
-                            #       'i_mod:', post_obs_df.at[_pos_df.index[0], 'i_mod'])
+                            print(_fa_abbr, ' identified', _fa_count, 'times as: ', obs_typ,
+                                  '@', fa_to_site_dct[_fa_abbr],
+                                  'in', _lipid_abbr, '\ni:', post_obs_df.at[_pos_df.index[0], 'i'], '>>',
+                                  'i_mod:', post_obs_df.at[_pos_df.index[0], 'i_mod'])
                         else:
                             pass
 
@@ -372,11 +384,11 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                             # _obs_idx = _score_fa_abbr_lst.index(_fa_abbr)
                             _obs_rank = _score_obs_rank_lst[_obs_idx]
 
-                            # print(_lipid_abbr, _fa_abbr, 'Weight Info', _obs_peak, fa_site_lst, _fa_wfactor,
-                            #       '_obs_rank', _obs_rank, 'idx', _obs_idx,
-                            #       'i', _score_obs_i_lst[_obs_idx],
-                            #       'i_r', _score_obs_i_r_lst[_obs_idx],
-                            #       ((11 - _obs_rank) * 0.1 * _fa_wfactor))
+                            print(_lipid_abbr, _fa_abbr, 'Weight Info', _obs_peak, fa_site_lst, _fa_wfactor,
+                                  '_obs_rank', _obs_rank, 'idx', _obs_idx,
+                                  'i', _score_obs_i_lst[_obs_idx],
+                                  'i_r', _score_obs_i_r_lst[_obs_idx],
+                                  ((11 - _obs_rank) * 0.1 * _fa_wfactor))
 
                             _rank_score += ((11 - _obs_rank) * 0.1 * _fa_wfactor)
                             _ident_peak_count += 1
@@ -464,7 +476,8 @@ def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, rankscore_fil
         if lipid_class in ['TG']:
             lite_info_df['RANK_SCORE'] = (lite_info_df['RANK_SCORE'] * lite_info_df['OBS_RESIDUES'] / 3).round(2)
         elif lipid_class in ['PA', 'PC', 'PE', 'PG', 'PS', 'PI', 'PIP', 'DG', 'SM']:
-            lite_info_df['RANK_SCORE'] = (lite_info_df['RANK_SCORE'] * lite_info_df['OBS_RESIDUES'] / 2).round(2)
+            # lite_info_df['RANK_SCORE'] = (lite_info_df['RANK_SCORE'] * lite_info_df['OBS_RESIDUES'] / 2).round(2)
+            lite_info_df['RANK_SCORE'] = lite_info_df['RANK_SCORE'].round(2)
         else:
             lite_info_df['RANK_SCORE'] = lite_info_df['RANK_SCORE'].round(2)
 
@@ -589,7 +602,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
     else:
         # TODO (georgia.angelidou@uni=leipzig.de): SM, Cer, HexCer
-        print(core_count, 'Warning: No informative peak found !!!')
+        print(core_count, lipid_class, charge, 'Warning: No informative peak found !!!')
 
     if len(list(obs_dct.keys())) > 0:
         post_ident_peak_df, lite_info_df = calc_rankscore(obs_dct, lite_info_df, lipid_class,
@@ -603,7 +616,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         lite_info_df.sort_values(by=['RANK_SCORE', 'DISCRETE_ABBR'], ascending=[False, True], inplace=True)
         lite_info_df.reset_index(drop=True, inplace=True)
     except Exception as _e:
-        print(_e)
+        print('lite_info_df.sort_values', _e)
         pass
 
     if lite_info_df.shape[0] > 0 and post_ident_peak_df.shape[0] > 0:
@@ -905,6 +918,25 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                                                  'charge': _usr_charge, 'save_img_as': img_name}
 
                                 img_plt_lst.append(img_param_dct.copy())
+
+                                # if 'debug_mode' in list(param_dct.keys()):
+                                #     if param_dct['debug_mode'] == 'ON':
+                                #         current_path = os.getcwd()
+                                #         if os.path.isdir(output_folder):
+                                #             os.chdir(output_folder)
+                                #             if os.path.isdir('LipidHunter_Results_Figures_%s'
+                                #                              % hunter_start_time_str):
+                                #                 print('... Output folder existed...')
+                                #             else:
+                                #                 os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
+                                #                 print('... Output folder created...')
+                                #         else:
+                                #             os.mkdir(output_folder)
+                                #             os.chdir(output_folder)
+                                #             os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
+                                #             print('... Output folder created...')
+                                #         os.chdir(current_path)
+                                #         gen_plot(img_param_dct, core_count, 'png', 300, usr_vendor, usr_ms1_precision)
                             else:
                                 pass
 

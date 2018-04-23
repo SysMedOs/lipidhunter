@@ -1141,8 +1141,8 @@ if __name__ == '__main__':
                            'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
 
                 test_dct.update(cfg_dct)
-                test_dct['debug_mode'] = 'ON'
-                test_dct['save_lipid_master_table'] = 'CSV'
+                # test_dct['debug_mode'] = 'ON'
+                # test_dct['save_lipid_master_table'] = 'CSV'
                 print(test_dct)
 
                 print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
