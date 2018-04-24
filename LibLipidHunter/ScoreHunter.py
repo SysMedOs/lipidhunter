@@ -60,14 +60,14 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='wat
 
         _frag_df = ms2_df.query(_frag_mz_query_code)
 
-        if _frag_df.shape[0] > 0:
+        if not _frag_df.empty:
             _frag_df = _frag_df.sort_values(by='i', ascending=False)
             _frag_df.loc[:, 'CLASS'] = _frag_class
             _frag_df.loc[:, 'LABEL'] = _frag_label
             _frag_df.loc[:, _frag_label] = 100 * _frag_df['i'] / ms2_max_i
             _target_frag_df = _target_frag_df.append(_frag_df.head(1))
 
-    if other_frag_df.shape[0] > 0:
+    if not other_frag_df.empty:
         for _i, _frag_se in other_frag_df.iterrows():
 
             _frag_mz = _frag_se['EXACTMASS']
@@ -77,7 +77,7 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='wat
 
             _frag_df = ms2_df.query(_frag_mz_query_code)
 
-            if _frag_df.shape[0] > 0:
+            if not _frag_df.empty:
                 _frag_df = _frag_df.sort_values(by='i', ascending=False)
                 _frag_df.loc[:, 'CLASS'] = _frag_class
                 _frag_df.loc[:, 'LABEL'] = _frag_label
@@ -94,7 +94,7 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='wat
 
         _nl_df = ms2_df.query(_nl_mz_query_code)
 
-        if _nl_df.shape[0] > 0:
+        if not _nl_df.empty:
             _nl_df = _nl_df.sort_values(by='i', ascending=False)
             _nl_df.loc[:, 'CLASS'] = _nl_class
             _nl_df.loc[:, 'LABEL'] = _nl_label
@@ -110,7 +110,7 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='wat
                                                 (mz_lib - _nl_mz) * (1 + ms2_precision))
         _nl_df = ms2_df.query(_nl_mz_query_code)
 
-        if _nl_df.shape[0] > 0:
+        if not _nl_df.empty:
             _nl_df = _nl_df.sort_values(by='i', ascending=False)
             _nl_df.loc[:, 'CLASS'] = _nl_class
             _nl_df.loc[:, 'LABEL'] = _nl_label
@@ -118,13 +118,13 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='wat
             _other_nl_df = _other_nl_df.append(_nl_df.head(1))
 
     specific_ion_dct = {}
-    if _target_frag_df.shape[0] > 0:
+    if not _target_frag_df.empty:
         specific_ion_dct['TARGET_FRAG'] = _target_frag_df
-    if _target_nl_df.shape[0] > 0:
+    if not _target_nl_df.empty:
         specific_ion_dct['TARGET_NL'] = _target_nl_df
-    if _other_frag_df.shape[0] > 0:
+    if not _other_frag_df.empty:
         specific_ion_dct['OTHER_FRAG'] = _other_frag_df
-    if _other_nl_df.shape[0] > 0:
+    if not _other_nl_df.empty:
         specific_ion_dct['OTHER_NL'] = _other_nl_df
 
     return specific_ion_dct
@@ -151,7 +151,7 @@ def get_all_fa_nl(fa_df, ms2_df, peak_type_lst, lipid_type='LPL'):
             _q_str = _fa_se['%s_Q' % peak_typ]
             _q_tmp_df = ms2_df.query(_q_str).copy()
             _q_tmp_df.is_copy = False
-            if _q_tmp_df.shape[0] > 0:
+            if not _q_tmp_df.empty:
                 _q_tmp_df.loc[:, 'lib_mz'] = _fa_se['%s_MZ' % peak_typ]
                 _q_tmp_df.loc[:, 'obs_mz'] = _q_tmp_df['mz']
                 _q_tmp_df.loc[:, 'obs_i_r'] = 100 * _q_tmp_df['i'] / bp_i
@@ -172,7 +172,7 @@ def get_all_fa_nl(fa_df, ms2_df, peak_type_lst, lipid_type='LPL'):
 
                 obs_peaks_df = obs_peaks_df.append(_q_tmp_df)
 
-    if obs_peaks_df.shape[0] > 0:
+    if not obs_peaks_df.empty:
         obs_peaks_df.sort_values(by=['obs_abbr', 'i', 'obs_ppm_abs'], ascending=[False, False, True], inplace=True)
         obs_peaks_df.drop_duplicates(subset=['obs_abbr'], keep='first', inplace=True)
         obs_peaks_df.sort_values(by=['i', 'obs_ppm_abs'], ascending=[False, True], inplace=True)
@@ -481,9 +481,9 @@ def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, rankscore_fil
         else:
             lite_info_df['RANK_SCORE'] = lite_info_df['RANK_SCORE'].round(2)
 
-    if lite_info_df.shape[0] > 0:
+    if not lite_info_df.empty:
         lite_info_df = lite_info_df[lite_info_df['RANK_SCORE'] >= rankscore_filter]
-    if ident_peak_df.shape[0] > 0:
+    if not ident_peak_df.empty:
         ident_peak_df = ident_peak_df[ident_peak_df['discrete_abbr'].isin(lite_info_df['DISCRETE_ABBR']
                                                                           .values.tolist())]
     # if not lite_info_df.empty:
@@ -618,8 +618,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
     except Exception as _e:
         print('lite_info_df.sort_values', _e)
         pass
-
-    if lite_info_df.shape[0] > 0 and post_ident_peak_df.shape[0] > 0:
+    if not lite_info_df.empty and not post_ident_peak_df.empty:
         matched_checker = 1
         checked_abbr_lst = lite_info_df['DISCRETE_ABBR'].values.tolist()
         post_ident_peak_df = post_ident_peak_df[post_ident_peak_df['discrete_abbr'].isin(checked_abbr_lst)]
@@ -642,14 +641,14 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         #                 'IDENT': ident_peak_df, 'IDENT2' : post_ident_peak_df}
         obs_fa_nl_df['TYPE'] = 'MG'
         obs_fa_frag_df = obs_fa_frag_df.append(obs_fa_nl_df)
-        if obs_fa_frag_df.shape[0] > 0:
+        if not obs_fa_frag_df.empty:
             # obs_fa_frag_df.sort_values(by='i', ascending=False, inplace=True)
             obs_fa_frag_df.reset_index(drop=True, inplace=True)
         if charge in ['[M+Na]+']:
             obs_dg_frag_df['TYPE'] = 'NL_Na'  # [M-(FA-H+Na)+H]+ fragments
             obs_dg_w_frag_df['TYPE'] = 'NL'  # [M-FA+Na]+ fragments
             obs_dg_frag_df = obs_dg_w_frag_df.append(obs_dg_frag_df)
-            if obs_dg_frag_df.shape[0] > 0:
+            if not obs_dg_frag_df.empty:
                 obs_dg_frag_df.reset_index(drop=True, inplace=True)
         else:
             obs_dg_frag_df['TYPE'] = 'NL'
@@ -736,7 +735,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
             _score_ms2_df = pd.DataFrame()
             _score_ms2_hg_df = pd.DataFrame()
 
-        if _ms1_pr_mz > 0.0 and _ms1_df.shape[0] > 0 and _ms2_df.shape[0] > 0 and _ms1_pr_i > 0.0:
+        if _ms1_pr_mz > 0.0 and not _ms1_df.empty and not _ms2_df.empty and _ms1_pr_i > 0.0:
             # TODO (georgia@uni-leipzig.de): keep in mind to include the other vendors also otherwise it can cause a problem
             # This contor is done to avoid the problem with the conversion of the raw data from the proteome wizard for the files from Thermo
             # Future can cause problems since maybe there will be cases where we can not see the precursor -indensity in this files.
@@ -790,7 +789,8 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                             _frag_mz_query_code = '%f <= mz <= %f' % (_mz_amm_mz2 - 0.2, _mz_amm_mz2 + 0.2)
                             # TODO (georgia.angelidou@uni-leipzig.de): Need to check the reason why we do not get any output
                             _frag_mz_query_code2 = '%f <= mz <= %f' % (_mz_amm_Na_mz2 - 0.2, _mz_amm_Na_mz2 + 0.2)
-                            if _ms1_df.query(_frag_mz_query_code).shape[0] > 0:
+
+                            if not _ms1_df.query(_frag_mz_query_code).empty:
                                 # print('Go and check line 613 from ScoreHunter.py to see what is going on')
                                 _mz_df_amm = _ms1_df.query(_frag_mz_query_code)
                                 _mz_df_amm.reset_index(inplace=True, drop=True)
@@ -805,7 +805,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                                 #     _mz_amm_iso_flag2 = 0
                             else:
                                 _mz_amm_i = 0
-                            if _ms1_df.query(_frag_mz_query_code2).shape[0] > 0:
+                            if not _ms1_df.query(_frag_mz_query_code2).empty:
                                 _mz_df_amm_Na = _ms1_df.query(_frag_mz_query_code2)
                                 _mz_df_amm_Na.reset_index(inplace=True, drop=True)
                                 _mz_amm_Na_i = _mz_df_amm_Na.loc[0, 'i']
@@ -940,7 +940,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                             else:
                                 pass
 
-    if tmp_df.shape[0] > 0:
+    if not tmp_df.empty:
         print(core_count, 'Size of the identified LPP_df %i, %i' % (tmp_df.shape[0], tmp_df.shape[1]))
         tmp_df.reset_index(drop=True, inplace=True)
         tmp_df.index += 1

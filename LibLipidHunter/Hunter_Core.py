@@ -729,7 +729,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     pass
                 else:
                     if isinstance(tmp_lipid_info_df, pd.DataFrame):
-                        if tmp_lipid_info_df.shape[0] > 0:
+                        if not tmp_lipid_info_df.empty:
                             output_df = output_df.append(tmp_lipid_info_df)
                             lipid_info_img_lst.extend(tmp_lipid_img_lst)
             if part_tot == 1:
@@ -748,13 +748,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         tmp_lipid_info_df = lipid_info_results_lst[0]
         tmp_lipid_img_lst = lipid_info_results_lst[1]
         if isinstance(tmp_lipid_info_df, pd.DataFrame):
-            if tmp_lipid_info_df.shape[0] > 0:
+            if not tmp_lipid_info_df.empty:
                 output_df = output_df.append(tmp_lipid_info_df)
                 lipid_info_img_lst = tmp_lipid_img_lst
 
     print('=== ==> --> Generate the output table')
     print('output_df.shape', output_df.shape)
-    if output_df.shape[0] > 0:
+    if not output_df.empty:
         try:
             output_df = output_df.sort_values(by=['Lib_mz', 'Bulk_identification', 'MS2_scan_time', 'RANK_SCORE'],
                                               ascending=[True, True, True, False])
@@ -962,11 +962,11 @@ if __name__ == '__main__':
     # ['TG', 'thermo', '[M+NH4]+']]
 
     usr_test_lst = [
-        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
-        ['PE', 'waters', '[M-H]-', 'PE_waters'],
+        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        # ['PE', 'waters', '[M-H]-', 'PE_waters'],
         # ['TG', 'waters', '[M+H]+', 'TG_waters'],
         # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
-        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
+        ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
     ]
 
     # set the default files
