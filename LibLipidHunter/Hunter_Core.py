@@ -173,8 +173,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     if use_existed_lipid_master is False:
         try:
             print('==> --> Start to generate Lipid Master Table ...')
+            t_lm_0 = time.time()
             usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
-            print('=== ==> --> Lipid Master Table generated >>>', usr_lipid_master_df.shape[0])
+            print('=== ==> --> Lipid Master Table generated >>> in %.2f sec' % (time.time() - t_lm_0))
 
         except Exception as e:
             print(e)

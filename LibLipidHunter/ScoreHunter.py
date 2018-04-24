@@ -323,10 +323,10 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                                                                                                    'obs_i_r'] / 3)
                             else:
                                 pass
-                            print(_fa_abbr, ' identified', _fa_count, 'times as: ', obs_typ,
-                                  '@', fa_to_site_dct[_fa_abbr],
-                                  'in', _lipid_abbr, '\ni:', post_obs_df.at[_pos_df.index[0], 'i'], '>>',
-                                  'i_mod:', post_obs_df.at[_pos_df.index[0], 'i_mod'])
+                            # print(_fa_abbr, ' identified', _fa_count, 'times as: ', obs_typ,
+                            #       '@', fa_to_site_dct[_fa_abbr],
+                            #       'in', _lipid_abbr, '\ni:', post_obs_df.at[_pos_df.index[0], 'i'], '>>',
+                            #       'i_mod:', post_obs_df.at[_pos_df.index[0], 'i_mod'])
                         else:
                             pass
 
@@ -384,11 +384,11 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                             # _obs_idx = _score_fa_abbr_lst.index(_fa_abbr)
                             _obs_rank = _score_obs_rank_lst[_obs_idx]
 
-                            print(_lipid_abbr, _fa_abbr, 'Weight Info', _obs_peak, fa_site_lst, _fa_wfactor,
-                                  '_obs_rank', _obs_rank, 'idx', _obs_idx,
-                                  'i', _score_obs_i_lst[_obs_idx],
-                                  'i_r', _score_obs_i_r_lst[_obs_idx],
-                                  ((11 - _obs_rank) * 0.1 * _fa_wfactor))
+                            # print(_lipid_abbr, _fa_abbr, 'Weight Info', _obs_peak, fa_site_lst, _fa_wfactor,
+                            #       '_obs_rank', _obs_rank, 'idx', _obs_idx,
+                            #       'i', _score_obs_i_lst[_obs_idx],
+                            #       'i_r', _score_obs_i_r_lst[_obs_idx],
+                            #       ((11 - _obs_rank) * 0.1 * _fa_wfactor))
 
                             _rank_score += ((11 - _obs_rank) * 0.1 * _fa_wfactor)
                             _ident_peak_count += 1
