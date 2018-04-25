@@ -177,19 +177,19 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     # add specific ion info
     txt_props = {'ha': 'left', 'va': 'bottom'}
     obs_ident_df['i_r'] = obs_ident_df['i'] * 1.025
-    if plt_obs_fa_df.shape[0] > 0:
+    if not plt_obs_fa_df.empty:
         plt_obs_fa_df['i_r'] = obs_fa_df['i'] * 1.025
     else:
         plt_obs_fa_df = False
-    if plt_obs_mg_df.shape[0] > 0:
+    if not plt_obs_mg_df.empty:
         plt_obs_mg_df['i_r'] = obs_mg_df['i'] * 1.025
     else:
         plt_obs_mg_df = False
-    if plt_obs_lyso_df.shape[0] > 0:
+    if not plt_obs_lyso_df.empty:
         plt_obs_lyso_df['i_r'] = obs_lyso_df['i'] * 1.075
     else:
         plt_obs_lyso_df = False
-    if plt_obs_dg_na_df.shape[0] > 0:
+    if not plt_obs_dg_na_df.empty:
         plt_obs_dg_na_df['i_r'] = obs_dg_na_df['i'] * 1.075
     else:
         plt_obs_dg_na_df = False
@@ -496,7 +496,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_low_pic.tick_params(axis='both', which='major', labelsize=10)
 
         # plot fa frag identification table
-        if obs_fa_df.shape[0] > 0:
+        if not obs_fa_df.empty:
             _fa_col_labels = ('#', 'identification', 'm/z', 'ppm', 'i (%)')
             # Create a second table with the MG fragments for TG
             if obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_abbr'].shape[0] > 0:
@@ -541,7 +541,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 _fa_table = False
 
         # msms spectrum zoomed < 400 start
-        if _msms_low_df.shape[0] > 0:
+        if not _msms_low_df.empty:
             msms_low_pic.stem(_msms_low_df['mz'].values.tolist(),
                               _msms_low_df['i'].values.tolist(),
                               'black', markerfmt=' ')
@@ -556,7 +556,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         if isinstance(obs_ident_df, pd.DataFrame):
             low_obs_ident_df = obs_ident_df[obs_ident_df['mz'] <= 400]
             low_obs_ident_df.is_copy = False
-            if low_obs_ident_df.shape[0] > 0:
+            if not low_obs_ident_df.empty:
                 marker_l, stem_l, base_l = msms_low_pic.stem(low_obs_ident_df['mz'],
                                                              low_obs_ident_df['i_r'], markerfmt=' ')
                 plt.setp(stem_l, color=(0, 0.7, 1.0, 0.4), linewidth=3)
@@ -629,7 +629,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # plot fa nl identification table
         # For TG in [M+Na]+ there will be 2 different plots in this section
-        if obs_lyso_df.shape[0] > 0:
+        if not obs_lyso_df.empty:
             _lyso_col_labels = ('#', 'identification', 'm/z', 'ppm', 'i (%)')
             if obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_abbr'].shape[0] > 0:
                 _lyso_table_df2 = pd.DataFrame(
@@ -693,7 +693,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 _lyso_table = False
 
         # msms spectrum zoomed > 400 start
-        if _msms_high_df.shape[0] > 0:
+        if not _msms_high_df.empty:
             msms_high_max = _msms_high_df['i'].max()
             msms_high_pic.stem(_msms_high_df['mz'].values.tolist(), _msms_high_df['i'].values.tolist(),
                                'black', markerfmt=' ')
@@ -710,7 +710,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             high_obs_ident_df = obs_ident_df[obs_ident_df['mz'] > 400]
             high_obs_ident_df.is_copy = False
             high_obs_ident_df['i_r'] = high_obs_ident_df['i'] * 1.025
-            if high_obs_ident_df.shape[0] > 0:
+            if not high_obs_ident_df.empty:
                 marker_l, stem_l, base_l = msms_high_pic.stem(high_obs_ident_df['mz'],
                                                               high_obs_ident_df['i_r'], markerfmt=' ')
                 plt.setp(stem_l, color=(0, 0.7, 1.0, 0.4), linewidth=3)

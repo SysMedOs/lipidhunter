@@ -49,7 +49,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
 
         _tmp_scan_info_df = scan_info_df.query(_pr_code).copy()
 
-        if _tmp_scan_info_df.shape[0] > 0:
+        if not _tmp_scan_info_df.empty:
 
             for idx, row in _tmp_scan_info_df.iterrows():
                 ms2_pr = row['MS2_PR_mz']
@@ -61,7 +61,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
                 _ms1_query_code = 'dda_event_idx == %i and DDA_rank == 0' % ms2_dda_idx
                 tmp_ms1_info_df = scan_info_df.query(_ms1_query_code).copy()
 
-                if tmp_ms1_info_df.shape[0] > 0:
+                if not tmp_ms1_info_df.empty:
 
                     ms1_spec_idx = tmp_ms1_info_df['spec_index'].values.tolist()[0]
 
@@ -78,12 +78,12 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
 
                         pr_ms1_df.is_copy = False
 
-                        if pr_ms1_df.shape[0] > 0:
+                        if not pr_ms1_df.empty:
 
                             pr_ms1_df.loc[:, 'ppm'] = ppm_calc_para(pr_ms1_df['mz'].values, same_mz_se['Lib_mz'])
                             pr_ms1_df.loc[:, 'abs_ppm'] = abs(pr_ms1_df.loc[:, 'ppm'])
                             pr_info_df = pr_ms1_df.query('abs_ppm <= %i' % ms1_ppm).copy()
-                            if pr_info_df.shape[0] > 0:
+                            if not pr_info_df.empty:
                                 pr_info_df.sort_values(by='i', ascending=False, inplace=True)
                                 pr_info_df.reset_index(drop=True, inplace=True)
                                 _ms1_mz = pr_info_df['mz'].values.tolist()[0]
@@ -137,6 +137,10 @@ class PrecursorHunter(object):
 
         print('>>>>>>>> Start match precursors!!!!')
 
+        if core_num > 4:
+            core_num = 4
+            print('Reduce to 4 cores to enhance the performance in this step...')
+
         pr_window = self.param_dct['pr_window']
 
         ms1_ppm = self.param_dct['ms_ppm']
@@ -147,7 +151,7 @@ class PrecursorHunter(object):
 
         ms1_obs_pr_df = pd.DataFrame()
         # print('ms1_obs_pr_df')
-        if self.lpp_info_df.shape[0] > 0:
+        if not self.lpp_info_df.empty:
             if pl_class == 'PC':
                 if usr_charge in ['[M+HCOO]-', '[M+CH3COO]-']:
                     lpp_mz_lst = self.lpp_info_df['%s_MZ' % usr_charge].values.tolist()
@@ -185,9 +189,19 @@ class PrecursorHunter(object):
 
         spectra_pl_idx_lst = sorted(spectra_pl.items.values.tolist())
 
-        if len(spectra_pl_idx_lst) >= (max_ram * 64):
+        if (max_ram * 64) <= len(spectra_pl_idx_lst) < (max_ram * 128):
             print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
             sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.5))
+            sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
+                                                                                          sub_group_len)]
+        elif (max_ram * 128) <= len(spectra_pl_idx_lst) < (max_ram * 256):
+            print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
+            sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.25))
+            sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
+                                                                                          sub_group_len)]
+        elif len(spectra_pl_idx_lst) >= (max_ram * 256):
+            print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
+            sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.1))
             sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
                                                                                           sub_group_len)]
         else:
@@ -276,38 +290,46 @@ class PrecursorHunter(object):
                             print('>>> >>> processing ......Part: %i subset: %i ' % (part_counter, core_worker_count))
                             sub_df = find_pr_info(scan_info_df, sub_pl, lpp_info_groups, core_list, ms1_th,
                                                   ms1_ppm, ms1_max, core_worker_count)
-                            if sub_df.shape[0] > 0:
+                            if not sub_df.empty:
                                 pr_info_results_lst.append(sub_df)
 
-                #  Merge multiprocessing results
-                for pr_info_result in pr_info_results_lst:
-                    if self.param_dct['core_number'] > 1:
-                        if self.os_typ == 'windows':
-                            try:
-                                sub_df = pr_info_result.get()
-                                if sub_df.shape[0] > 0:
-                                    ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
-                            except (KeyError, SystemError, ValueError, TypeError):
-                                pass
-                        else:
-                            try:
-                                if pr_info_result.shape[0] > 0:
-                                    ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
-                            except (KeyError, SystemError, ValueError, TypeError):
-                                pass
-                    else:
-                        if pr_info_result.shape[0] > 0:
-                            ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
-                if part_tot == 1:
-                    print('>>> Multiprocessing results merged ...')
-                else:
-                    print('>>> Multiprocessing results merged ... Part %i / %i ...' % (part_counter, part_tot))
                 part_counter += 1
+
+        #  Merge multiprocessing results
+        result_counter = 0
+        result_part_counter = 1
+        for pr_info_result in pr_info_results_lst:
+            if self.param_dct['core_number'] > 1:
+                if self.os_typ == 'windows':
+                    try:
+                        sub_df = pr_info_result.get()
+                        if not sub_df.empty:
+                            ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
+                    except (KeyError, SystemError, ValueError, TypeError):
+                        pass
+                else:
+                    try:
+                        if not pr_info_result.empty:
+                            ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
+                    except (KeyError, SystemError, ValueError, TypeError):
+                        pass
+            else:
+                if not pr_info_result.empty:
+                    ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
+
+            result_counter += 1
+            if result_counter > core_num * result_part_counter:
+                result_part_counter += 1
+
+            if part_tot == 1:
+                print('>>> Multiprocessing results merged ...')
+            else:
+                print('>>> Multiprocessing results merged ... Part %i / %i ...' % (result_part_counter, part_tot))
 
         # End multiprocessing
 
         print('ms1_obs_pr_df.shape', ms1_obs_pr_df.shape)
-        if ms1_obs_pr_df.shape[0] > 0:
+        if not ms1_obs_pr_df.empty:
             ms1_obs_pr_df = ms1_obs_pr_df.sort_values(by=['Lib_mz', 'abs_ppm'], ascending=[True, True])
             ms1_obs_pr_df = ms1_obs_pr_df.reset_index(drop=True)
             return ms1_obs_pr_df, opt_sub_pl_group_lst
