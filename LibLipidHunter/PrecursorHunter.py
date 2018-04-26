@@ -139,7 +139,7 @@ class PrecursorHunter(object):
 
         if core_num > 4:
             core_num = 4
-            print('Reduce to 4 cores to enhance the performance in this step...')
+            print('>>> Temporarily reduce to 4 cores to enhance the performance in this step...')
 
         pr_window = self.param_dct['pr_window']
 
@@ -192,25 +192,22 @@ class PrecursorHunter(object):
         if (max_ram * 64) <= len(spectra_pl_idx_lst) < (max_ram * 128):
             print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
             sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.5))
-            sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
-                                                                                          sub_group_len)]
         elif (max_ram * 128) <= len(spectra_pl_idx_lst) < (max_ram * 256):
             print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
             sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.25))
-            sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
-                                                                                          sub_group_len)]
         elif len(spectra_pl_idx_lst) >= (max_ram * 256):
             print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
             sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.1))
-            sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
-                                                                                          sub_group_len)]
-        else:
-            sub_pl_group_lst = [spectra_pl_idx_lst]
 
-        # print('core_key_list', len(core_key_list))
-        # print(core_key_list)
-        # print('sub_pl_group_lst', len(sub_pl_group_lst))
-        # print(sub_pl_group_lst)
+        else:
+            sub_group_len = len(spectra_pl_idx_lst)
+
+        print('Total Scans:', len(spectra_pl_idx_lst), 'Sub part scans:', sub_group_len)
+        if sub_group_len > 500:
+            print('>>> Set sub part scans to 500 to avoid Memory error ...')
+            sub_group_len = 500
+        sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
+                                                                                      sub_group_len)]
 
         part_tot = len(sub_pl_group_lst)
         part_counter = 1

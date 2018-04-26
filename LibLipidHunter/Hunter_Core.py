@@ -428,22 +428,20 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     # checked_info_df may become very large for TG in Thermo files, need to be divided for Multiprocessing
 
-    if lipid_all_scan_num > (usr_core_num * 250):
+    if lipid_all_scan_num > (usr_core_num * 100):
 
         # Split tasks into few parts to avoid core waiting in multiprocessing
-        if usr_core_num * 250 < lipid_all_scan_num <= usr_core_num * 500:
+        if usr_core_num * 200 < lipid_all_scan_num <= usr_core_num * 400:
             split_seg = 2
-        elif usr_core_num * 500 < lipid_all_scan_num <= usr_core_num * 750:
+        elif usr_core_num * 400 < lipid_all_scan_num:
             split_seg = 3
-        elif usr_core_num * 750 < lipid_all_scan_num:
-            split_seg = 4
         else:
-            split_seg = 1
+            split_seg = 2
 
         spec_part_len = int(math.ceil(lipid_all_scan_num / split_seg))
-        if spec_part_len > 250:
-            spec_part_len = 250
-            split_seg = int(math.ceil(lipid_all_scan_num / spec_part_len))
+        if spec_part_len > 200:
+            spec_part_len = 200
+            # split_seg = int(math.ceil(lipid_all_scan_num / spec_part_len))
 
         spec_part_lst = [lipid_all_scan_lst[k: k + spec_part_len] for k in range(0, lipid_all_scan_num,
                                                                                  spec_part_len)]
@@ -715,8 +713,16 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     else:
         lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
-        lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in
-                             range(0, spec_key_num, lipid_sub_len)]
+        pre_lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in
+                                 range(0, spec_key_num, lipid_sub_len)]
+        lipid_sub_key_lst = []
+        for _core_key_lst in pre_lipid_sub_key_lst:
+            _core_key_df = pd.DataFrame(_core_key_lst, columns=['Formula', 'scan_checker'])
+            _core_scan_lst = _core_key_df['scan_checker'].tolist()
+            _core_chk_info_df = checked_info_df[checked_info_df['scan_checker'].isin(_core_scan_lst)]
+            _core_chk_groups = _core_chk_info_df.groupby(['Formula', 'scan_checker'])
+
+            lipid_sub_key_lst.append((_core_key_lst, _core_chk_info_df, _core_chk_groups))
         lipid_part_key_lst.append(lipid_sub_key_lst)
 
     # print('lipid_part_number: ', len(lipid_part_key_lst), ' lipid_part_len:', len(lipid_part_key_lst[0]))
@@ -1083,6 +1089,7 @@ if __name__ == '__main__':
     core_count = 3
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
+    save_lipidmaster_table = True  # True --> export LipidMasterTable to output folder, False --> NO export
 
     # full_test_lst = [['PC', 'waters'],['PE', 'waters'], ['TG', 'waters','[M+H]+'], ['TG', 'waters', '[M+NH4]+'],
     # ['TG', 'thermo', '[M+NH4]+']]
@@ -1190,8 +1197,8 @@ if __name__ == '__main__':
 
             if vendor == 'waters':
                 _cfg_dct['ms_ppm'] = 20
-                _cfg_dct['ms2_ppm'] = 50
-                _cfg_dct['hg_ppm'] = 200
+                _cfg_dct['ms2_ppm'] = 30  # 50
+                _cfg_dct['hg_ppm'] = 100  # 200
                 _cfg_dct['ms_th'] = 750
                 _cfg_dct['ms2_th'] = 10
                 _cfg_dct['hg_th'] = 10
@@ -1268,8 +1275,9 @@ if __name__ == '__main__':
                            'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
 
                 test_dct.update(cfg_dct)
-                # test_dct['debug_mode'] = 'ON'
-                # test_dct['save_lipid_master_table'] = 'CSV'
+                if save_lipidmaster_table is True:
+                    test_dct['debug_mode'] = 'ON'
+                    test_dct['save_lipid_master_table'] = 'CSV'
                 print(test_dct)
 
                 print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)

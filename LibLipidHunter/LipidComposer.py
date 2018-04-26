@@ -325,31 +325,53 @@ class LipidComposer:
 
             if lipid_class in ['PC', 'PE']:
                 op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-') | (fa_combo_link_df['LINK'] == 'P-')]
-                op_link_df.is_copy = False
-                op_link_df.drop(columns=['LINK'], inplace=True)
-                op_link_df['DISCRETE_ABBR'] = (op_link_df['CLASS'] + '(' +
-                                               op_link_df['FA1'].str.strip('FA') + '_' +
-                                               op_link_df['FA2'].str.strip('FA') + ')')
-                op_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+                if not op_link_df.empty:
+                    op_link_df.is_copy = False
+                    op_link_df.drop(columns=['LINK'], inplace=True)
+                    op_link_df['DISCRETE_ABBR'] = (op_link_df['CLASS'] + '(' +
+                                                   op_link_df['FA1'].str.strip('FA') + '_' +
+                                                   op_link_df['FA2'].str.strip('FA') + ')')
+                    op_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
 
-                fa_combo_df = fa_link_df.append(op_link_df)
-                del op_link_df
+                    fa_combo_df = fa_link_df.append(op_link_df)
+                    del op_link_df
             else:
                 fa_combo_df = fa_link_df
 
             del fa_combo_link_df
             del fa_link_df
-
             print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
 
         elif lipid_class in ['TG']:
-            fa_combo_df.values.sort(kind='mergesort')  # safe sort by numpy
+            fa_combo_link_df = fa_combo_df
+            fa_combo_link_df.is_copy = False
+            fa_combo_link_df['LINK'] = fa_combo_link_df['FA1'].str[0:2]
+            fa_link_df = fa_combo_link_df[fa_combo_link_df['LINK'] == 'FA']
+
+            fa_link_df.is_copy = False
+            fa_link_df.drop(columns=['LINK'], inplace=True)
+            fa_link_df.values.sort(kind='mergesort')  # safe sort by numpy
+            fa_link_df['DISCRETE_ABBR'] = (fa_link_df['CLASS'] + '(' +
+                                           fa_link_df['FA1'].str.strip('FA') + '_' +
+                                           fa_link_df['FA2'].str.strip('FA') + '_' +
+                                           fa_link_df['FA3'].str.strip('FA') + ')')
+            fa_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+            op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-') | (fa_combo_link_df['LINK'] == 'P-')]
+            if not op_link_df.empty:
+                op_link_df.is_copy = False
+                op_link_df.drop(columns=['LINK'], inplace=True)
+                op_link_df['DISCRETE_ABBR'] = (op_link_df['CLASS'] + '(' +
+                                               op_link_df['FA1'].str.strip('FA') + '_' +
+                                               op_link_df['FA2'].str.strip('FA') + '_' +
+                                               op_link_df['FA3'].str.strip('FA') + ')')
+                op_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+                fa_combo_df = fa_link_df.append(op_link_df)
+                del op_link_df
+
+            del fa_link_df
+            del fa_combo_link_df
             print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
-            fa_combo_df['DISCRETE_ABBR'] = (fa_combo_df['CLASS'] + '(' +
-                                            fa_combo_df['FA1'].str.strip('FA') + '_' +
-                                            fa_combo_df['FA2'].str.strip('FA') + '_' +
-                                            fa_combo_df['FA3'].str.strip('FA') + ')')
-            fa_combo_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+
         elif lipid_class in ['CL']:
             fa_combo_df.values.sort(kind='mergesort')  # safe sort by numpy
             print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
@@ -359,8 +381,10 @@ class LipidComposer:
                                             fa_combo_df['FA3'].str.strip('FA') + '_' +
                                             fa_combo_df['FA4'].str.strip('FA') + ')')
             fa_combo_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+            print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
         else:
             fa_combo_df['DISCRETE_ABBR'] = ''
+            print('!! Warning !! Number of predicted lipids (exact position): 0')
 
         if position is False:
             print('... Use discrete form for identification ...')
@@ -689,12 +713,19 @@ class LipidComposer:
                 _lipid_dct['M_DB'] = _fa3_info_dct['DB'] + _fa2_info_dct['DB'] + _fa1_info_dct['DB']
                 # Note: For TG in the current default not consider the different lipids with other type of bond
                 # If stay like this need to be mention in somewhere for the user
-                lipid_bulk_str = '{pl}({c}:{db})'.format(pl=lipid_class,
-                                                         c=_fa1_info_dct['C'] + _fa2_info_dct['C'] + _fa3_info_dct['C'],
-                                                         db=lipid_comb_dct[_lipid]['M_DB'])
+                if _fa1_info_dct['LINK'] in ['FA', 'A']:
+                    lipid_bulk_str = '{tg}({c}:{db})'.format(tg=lipid_class,
+                                                             c=(_fa1_info_dct['C'] + _fa2_info_dct['C']
+                                                                + _fa3_info_dct['C']),
+                                                             db=lipid_comb_dct[_lipid]['M_DB'])
+                else:
+                    lipid_bulk_str = '{tg}({lk}{c}:{db})'.format(tg=lipid_class, lk=_fa1_info_dct['LINK'],
+                                                                 c=(_fa1_info_dct['C'] + _fa2_info_dct['C']
+                                                                    + _fa3_info_dct['C']),
+                                                                 db=lipid_comb_dct[_lipid]['M_DB'])
             elif lipid_class in ['SM']:
                 # TODO(georgia.angelidou@uni-leipzi.de): sphingomyelin support
-                lipid_bulk_str = '{pl}({c}:{db})'.format(pl=lipid_class,
+                lipid_bulk_str = '{sm}({c}:{db})'.format(sm=lipid_class,
                                                          c=_fa1_info_dct['C'] + _fa2_info_dct['C'],
                                                          db=lipid_comb_dct[_lipid]['M_DB'])
             else:
