@@ -148,7 +148,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                             else:
                                 _tmp_spec_df = _tmp_spec_df.query('%f <= i' % (ms1_threshold * 0.1))
                             _tmp_spec_df.is_copy = False
-                            if _tmp_spec_df.shape[0] > 0:
+                            if not _tmp_spec_df.empty:
                                 _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False)
                                 _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
                                 spec_dct[spec_idx] = _tmp_spec_df
@@ -218,7 +218,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                             else:
                                 _tmp_spec_df = _tmp_spec_df.query('%f <= i' % (ms1_threshold * 0.1))
                             _tmp_spec_df.is_copy = False
-                            if _tmp_spec_df.shape[0] > 0:
+                            if not _tmp_spec_df.empty:
                                 _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False)
                                 _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
                                 spec_dct[spec_idx] = _tmp_spec_df
@@ -233,7 +233,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                             dda_rank_idx += 1
                             pr_mz = _spectrum[scan_pr_mz_obo]
                             _ms2_temp_spec_df = _tmp_spec_df.query('i >= %f' % ms2_threshold)
-                            if _ms2_temp_spec_df.shape[0] > 0:
+                            if not _ms2_temp_spec_df.empty:
                                 spec_dct[spec_idx] = _ms2_temp_spec_df
                                 del _ms2_temp_spec_df
                             else:
@@ -294,7 +294,8 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
 
             # get spectra_df of corresponding MS survey scan
             tmp_ms1_info_df = scan_info_df.query('dda_event_idx == %i and DDA_rank == 0' % ms2_dda_idx)
-            if tmp_ms1_info_df.shape[0] > 0 and ms2_function <= function_max:
+
+            if not tmp_ms1_info_df.empty and ms2_function <= function_max:
                 ms1_spec_idx = tmp_ms1_info_df['spec_index'].values.tolist()[0]
                 ms1_rt = tmp_ms1_info_df['scan_time'].values.tolist()[0]
                 if ms1_spec_idx in spectra_pl.items:
@@ -309,11 +310,11 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
 
                     ms1_pr_df = ms1_df.query(ms1_pr_query).copy()
                     ms1_pr_df.is_copy = False
-                    if ms1_pr_df.shape[0] > 0:
+                    if not ms1_pr_df.empty:
                         ms1_pr_df.loc[:, 'mz_xic'] = ms1_pr_df['mz']
                         ms1_pr_df = ms1_pr_df.round({'mz': 6, 'mz_xic': 4})
                         ms1_pr_df = ms1_pr_df[ms1_pr_df['mz_xic'].isin(ms1_obs_mz_lst)]
-                        if ms1_pr_df.shape[0] > 0:
+                        if not ms1_pr_df.empty:
                             # print('Number of MS1 pr mz in list:', ms1_pr_df.shape[0])
                             ms1_pr_df['ppm'] = abs(1e6 * (ms1_pr_df['mz'] - mz_lib) / mz_lib)
                             # select best intensity in the precursor ppm range. Priority: i > ppm

@@ -24,6 +24,7 @@ from __future__ import print_function
 import itertools
 
 import pandas as pd
+from natsort import natsorted, ns
 
 try:
     from LibLipidHunter.LipidNomenclature import NameParserFA
@@ -248,51 +249,155 @@ class LipidComposer:
 
     def gen_all_comb(self, lipid_class, usr_fa_df, position=False):
 
-        sn_units_lst = self.calc_fa_df(lipid_class, usr_fa_df)
+        fa_units_lst = self.calc_fa_df(lipid_class, usr_fa_df)
 
-        if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(sn_units_lst) == 2:
-            sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1]))
+        if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG', 'SM'] and len(fa_units_lst) == 2:
+            fa_comb_lst = list(itertools.product(fa_units_lst[0], fa_units_lst[1]))
+            fa_df_header_lst = ['FA1', 'FA2']
             # lipid_template = '{}'
-        elif lipid_class == 'TG' and len(sn_units_lst) == 3:
-            sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2]))
-        elif lipid_class == 'CL' and len(sn_units_lst) == 4:
-            sn_comb_lst = list(itertools.product(sn_units_lst[0], sn_units_lst[1], sn_units_lst[2], sn_units_lst[3]))
+        elif lipid_class == 'TG' and len(fa_units_lst) == 3:
+            fa_comb_lst = list(itertools.product(fa_units_lst[0], fa_units_lst[1], fa_units_lst[2]))
+            fa_df_header_lst = ['FA1', 'FA2', 'FA3']
+        elif lipid_class == 'CL' and len(fa_units_lst) == 4:
+            fa_comb_lst = list(itertools.product(fa_units_lst[0], fa_units_lst[1], fa_units_lst[2], fa_units_lst[3]))
+            fa_df_header_lst = ['FA1', 'FA2', 'FA3', 'FA4']
         else:
-            sn_comb_lst = []
+            fa_comb_lst = []
+            fa_df_header_lst = []
 
-        sn_comb_lite_lst = []
-        sn_comb_rm_lst = []
+        # fa_comb_lite_lst = []
+        # # sn_comb_rm_lst = []
+        #
+        # print('fa_comb_lst count', len(fa_comb_lst))
+        #
+        # if position is False:
+        #     for _comb in fa_comb_lst:
+        #         # _rev_comb = tuple(sorted(list(_comb)))
+        #         _rev_comb = tuple(natsorted(list(_comb)))
+        #         if _comb not in fa_comb_lite_lst and _rev_comb not in fa_comb_lite_lst:
+        #             fa_comb_lite_lst.append(_comb)
+        #         else:
+        #             pass
+        #             # sn_comb_rm_lst.append(_comb)
+        #             # sn_comb_rm_lst.append(_rev_comb)
+        # else:
+        #     fa_comb_lite_lst = fa_comb_lst
+        #
+        # print('unique fa_comb_lite_lst count', len(fa_comb_lite_lst))
+        #
+        # lipid_comb_dct = {}
+        #
+        # if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(fa_comb_lite_lst) > 0:
+        #     for _comb_lite in fa_comb_lite_lst:
+        #         _lipid_abbr = '{lt}({fa1}_{fa2})'.format(lt=lipid_class, fa1=_comb_lite[0].strip('FA'),
+        #                                                  fa2=_comb_lite[1].strip('FA'))
+        #         lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'FA1': _comb_lite[0], 'FA2': _comb_lite[1],
+        #                                        'DISCRETE_ABBR': _lipid_abbr}
+        # elif lipid_class in ['TG'] and len(fa_comb_lite_lst) > 0:
+        #     for _comb_lite in fa_comb_lite_lst:
+        #         _lipid_abbr = '{pl}({fa1}_{fa2}_{fa3})'.format(pl=lipid_class, fa1=_comb_lite[0].strip('FA'),
+        #                                                        fa2=_comb_lite[1].strip('FA'),
+        #                                                        fa3=_comb_lite[2].strip('FA'))
+        #
+        #         lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'FA1': _comb_lite[0], 'FA2': _comb_lite[1],
+        #                                        'FA3': _comb_lite[2], 'DISCRETE_ABBR': _lipid_abbr}
+        # else:
+        #     # TODO (georgia.angelidou@uni-leipzig.de): SM posible composition
+        #     pass
+
+        fa_combo_df = pd.DataFrame(data=fa_comb_lst, columns=fa_df_header_lst)
+
+        fa_combo_df['CLASS'] = lipid_class
+        if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG', 'SM']:
+
+            fa_combo_link_df = fa_combo_df
+            fa_combo_link_df.is_copy = False
+            fa_combo_link_df['LINK'] = fa_combo_link_df['FA1'].str[0:2]
+            fa_link_df = fa_combo_link_df[fa_combo_link_df['LINK'] == 'FA']
+
+            fa_link_df.is_copy = False
+            fa_link_df.drop(columns=['LINK'], inplace=True)
+            fa_link_df.values.sort(kind='mergesort')  # safe sort by numpy
+            fa_link_df['DISCRETE_ABBR'] = (fa_link_df['CLASS'] + '(' +
+                                           fa_link_df['FA1'].str.strip('FA') + '_' +
+                                           fa_link_df['FA2'].str.strip('FA') + ')')
+            fa_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+
+            if lipid_class in ['PC', 'PE']:
+                op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-') | (fa_combo_link_df['LINK'] == 'P-')]
+                if not op_link_df.empty:
+                    op_link_df.is_copy = False
+                    op_link_df.drop(columns=['LINK'], inplace=True)
+                    op_link_df['DISCRETE_ABBR'] = (op_link_df['CLASS'] + '(' +
+                                                   op_link_df['FA1'].str.strip('FA') + '_' +
+                                                   op_link_df['FA2'].str.strip('FA') + ')')
+                    op_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+
+                    fa_combo_df = fa_link_df.append(op_link_df)
+                    del op_link_df
+            else:
+                fa_combo_df = fa_link_df
+
+            del fa_combo_link_df
+            del fa_link_df
+            print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
+
+        elif lipid_class in ['TG']:
+            fa_combo_link_df = fa_combo_df
+            fa_combo_link_df.is_copy = False
+            fa_combo_link_df['LINK'] = fa_combo_link_df['FA1'].str[0:2]
+            fa_link_df = fa_combo_link_df[fa_combo_link_df['LINK'] == 'FA']
+
+            fa_link_df.is_copy = False
+            fa_link_df.drop(columns=['LINK'], inplace=True)
+            fa_link_df.values.sort(kind='mergesort')  # safe sort by numpy
+            fa_link_df['DISCRETE_ABBR'] = (fa_link_df['CLASS'] + '(' +
+                                           fa_link_df['FA1'].str.strip('FA') + '_' +
+                                           fa_link_df['FA2'].str.strip('FA') + '_' +
+                                           fa_link_df['FA3'].str.strip('FA') + ')')
+            fa_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+            op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-') | (fa_combo_link_df['LINK'] == 'P-')]
+            if not op_link_df.empty:
+                op_link_df.is_copy = False
+                op_link_df.drop(columns=['LINK'], inplace=True)
+                op_link_df['DISCRETE_ABBR'] = (op_link_df['CLASS'] + '(' +
+                                               op_link_df['FA1'].str.strip('FA') + '_' +
+                                               op_link_df['FA2'].str.strip('FA') + '_' +
+                                               op_link_df['FA3'].str.strip('FA') + ')')
+                op_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+                fa_combo_df = fa_link_df.append(op_link_df)
+                del op_link_df
+
+            del fa_link_df
+            del fa_combo_link_df
+            print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
+
+        elif lipid_class in ['CL']:
+            fa_combo_df.values.sort(kind='mergesort')  # safe sort by numpy
+            print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
+            fa_combo_df['DISCRETE_ABBR'] = (fa_combo_df['CLASS'] + '(' +
+                                            fa_combo_df['FA1'].str.strip('FA') + '_' +
+                                            fa_combo_df['FA2'].str.strip('FA') + '_' +
+                                            fa_combo_df['FA3'].str.strip('FA') + '_' +
+                                            fa_combo_df['FA4'].str.strip('FA') + ')')
+            fa_combo_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+            print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
+        else:
+            fa_combo_df['DISCRETE_ABBR'] = ''
+            print('!! Warning !! Number of predicted lipids (exact position): 0')
 
         if position is False:
-            for _comb in sn_comb_lst:
-                _rev_comb = tuple(sorted(list(_comb)))
-                if _comb not in sn_comb_lite_lst and _rev_comb not in sn_comb_lite_lst:
-                    sn_comb_lite_lst.append(_comb)
-                else:
-                    sn_comb_rm_lst.append(_comb)
-                    # sn_comb_rm_lst.append(_rev_comb)
+            print('... Use discrete form for identification ...')
+            fa_combo_lite_df = fa_combo_df.drop_duplicates(subset=['DISCRETE_ABBR'], keep='first')
+            print('Number of predicted lipids (discrete form): ', fa_combo_lite_df.shape[0])
         else:
-            sn_comb_lite_lst = sn_comb_lst
+            fa_combo_lite_df = fa_combo_df
 
-        lipid_comb_dct = {}
+        fa_combo_lite_df.is_copy = False
+        fa_combo_lite_df['idx'] = fa_combo_lite_df['DISCRETE_ABBR']
+        fa_combo_lite_df.set_index('idx', drop=True, inplace=True)
 
-        if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(sn_comb_lite_lst) > 0:
-            for _comb_lite in sn_comb_lite_lst:
-                _lipid_abbr = '{lt}({fa1}_{fa2})'.format(lt=lipid_class, fa1=_comb_lite[0].strip('FA'),
-                                                         fa2=_comb_lite[1].strip('FA'))
-                lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'FA1': _comb_lite[0], 'FA2': _comb_lite[1],
-                                               'DISCRETE_ABBR': _lipid_abbr}
-        elif lipid_class in ['TG'] and len(sn_comb_lite_lst) > 0:
-            for _comb_lite in sn_comb_lite_lst:
-                _lipid_abbr = '{pl}({fa1}_{fa2}_{fa3})'.format(pl=lipid_class, fa1=_comb_lite[0].strip('FA'),
-                                                               fa2=_comb_lite[1].strip('FA'),
-                                                               fa3=_comb_lite[2].strip('FA'))
-
-                lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'FA1': _comb_lite[0], 'FA2': _comb_lite[1],
-                                               'FA3': _comb_lite[2], 'DISCRETE_ABBR': _lipid_abbr}
-        else:
-            # TODO (georgia.angelidou@uni-leipzig.de): SM posible composition
-            pass
+        lipid_comb_dct = fa_combo_lite_df.to_dict(orient='index')
 
         return lipid_comb_dct
 
@@ -608,12 +713,23 @@ class LipidComposer:
                 _lipid_dct['M_DB'] = _fa3_info_dct['DB'] + _fa2_info_dct['DB'] + _fa1_info_dct['DB']
                 # Note: For TG in the current default not consider the different lipids with other type of bond
                 # If stay like this need to be mention in somewhere for the user
-                lipid_bulk_str = '{pl}({c}:{db})'.format(pl=lipid_class,
-                                                         c=_fa1_info_dct['C'] + _fa2_info_dct['C'] + _fa3_info_dct['C'],
-                                                         db=lipid_comb_dct[_lipid]['M_DB'])
+                if _fa1_info_dct['LINK'] in ['FA', 'A']:
+                    lipid_bulk_str = '{tg}({c}:{db})'.format(tg=lipid_class,
+                                                             c=(_fa1_info_dct['C'] + _fa2_info_dct['C']
+                                                                + _fa3_info_dct['C']),
+                                                             db=lipid_comb_dct[_lipid]['M_DB'])
+                else:
+                    lipid_bulk_str = '{tg}({lk}{c}:{db})'.format(tg=lipid_class, lk=_fa1_info_dct['LINK'],
+                                                                 c=(_fa1_info_dct['C'] + _fa2_info_dct['C']
+                                                                    + _fa3_info_dct['C']),
+                                                                 db=lipid_comb_dct[_lipid]['M_DB'])
             elif lipid_class in ['SM']:
                 # TODO(georgia.angelidou@uni-leipzi.de): sphingomyelin support
-                pass
+                lipid_bulk_str = '{sm}({c}:{db})'.format(sm=lipid_class,
+                                                         c=_fa1_info_dct['C'] + _fa2_info_dct['C'],
+                                                         db=lipid_comb_dct[_lipid]['M_DB'])
+            else:
+                lipid_bulk_str = ''
 
             _lipid_dct['BULK_ABBR'] = lipid_bulk_str
 
