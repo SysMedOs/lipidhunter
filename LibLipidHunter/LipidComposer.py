@@ -367,6 +367,8 @@ class LipidComposer:
                 op_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
                 fa_combo_df = fa_link_df.append(op_link_df)
                 del op_link_df
+            else:
+                fa_combo_df = fa_link_df
 
             del fa_link_df
             del fa_combo_link_df

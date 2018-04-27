@@ -354,7 +354,9 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
 
                         try:
                             _fa_wfactor = weight_dct['%s' % _obs_peak]['Weight']
-                        except KeyError:
+                        except Exception as _e:
+                            print(_e)
+
                             _fa_wfactor = 0
                             # print(KeyError, 'Line 286 %s' % _obs_site)
                             print('Check the settings if you are using the correct file '
@@ -805,6 +807,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                                 #     _mz_amm_iso_flag2 = 0
                             else:
                                 _mz_amm_i = 0
+                                _mz_amm_iso_flag2 = 1
                             if not _ms1_df.query(_frag_mz_query_code2).empty:
                                 _mz_df_amm_Na = _ms1_df.query(_frag_mz_query_code2)
                                 _mz_df_amm_Na.reset_index(inplace=True, drop=True)

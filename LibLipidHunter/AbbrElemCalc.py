@@ -423,7 +423,7 @@ class ElemCalc:
             mz_NH4_H_form = 'C' + str(amm_elem_dct['C']) + 'H' + str(amm_elem_dct['H']) + 'O6N'
 
             # mz_NH4_Na_form = _mz_H_formula
-            mz_NH4_Na_form = 'C' + str(amm_elem_dct['C']) + 'H' + str(int(amm_elem_dct['H']) - 3) + 'O6Na'
+            mz_NH4_Na_form = 'C' + str(_mz_Na_elemdct['C']) + 'H' + str((_mz_Na_elemdct['H'] + 3)) + 'O6N'
 
         elif charge in ['[M+Na]+']:
             mz_NH3_pr_Na = amm_elem_dct['C'] * self.periodic_table_dct['C'][0][0] + amm_elem_dct['H'] * \
@@ -446,10 +446,7 @@ class ElemCalc:
             mz_NH4_Na_form = 'C' + str(amm_elem_dct['C']) + 'H' + str(amm_elem_dct['H']) + 'O6N'
             mz_NH4_H_form = 'C' + str(_mz_H_elemdct['C']) + 'H' + str((_mz_H_elemdct['H'] + 3)) + 'O6N'
 
-        else:
-            # TODO(georgia.angelidou@uni-leipzig.de): mz_NH4_H_form & mz_NH4_Na_form used before ref, fix here!
-            mz_NH4_H_form = ''
-            mz_NH4_Na_form = ''
+
 
         return (mz_NH3_pr_H, mz_NH4_H_form, mz_NH3_pr_Na, mz_NH4_Na_form)
 
