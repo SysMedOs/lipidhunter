@@ -680,15 +680,15 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     if spec_key_num > (usr_core_num * 24):
 
         # Split tasks into few parts to avoid core waiting in multiprocessing
-        if usr_core_num * 24 < spec_key_num <= usr_core_num * 48:
+        # Problem with the DG and phospholipids when run in 1 Core. Temporary solution
+        if usr_core_num * 24 < spec_key_num <= usr_core_num * 48 and lipid_class in ['TG']:
             split_seg = 2
-        elif usr_core_num * 48 < spec_key_num <= usr_core_num * 96:
+        elif usr_core_num * 48 < spec_key_num <= usr_core_num * 96 and lipid_class in ['TG']:
             split_seg = 3
-        elif usr_core_num * 96 < spec_key_num:
+        elif usr_core_num * 96 < spec_key_num and lipid_class in ['TG']:
             split_seg = 4
         else:
             split_seg = 1
-
         lipid_part_len = int(math.ceil(spec_key_num / split_seg))
         lipid_part_lst = [found_spec_key_lst[k: k + lipid_part_len] for k in range(0, spec_key_num,
                                                                                    lipid_part_len)]
@@ -864,25 +864,25 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     _chk_info_df = lipid_sub[1]
                     _chk_info_gp = lipid_sub[2]
 
-                    if None in lipid_sub_lst:
-                        lipid_sub_lst = [x for x in lipid_sub_lst if x is not None]
-                    else:
-                        pass
-                    if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
-                        lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
-                    else:
-                        lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
-                        lipid_sub_lst = tuple([lipid_sub_lst])
-                        worker_count = 1
-                        lipid_info_results_lst = get_lipid_info(param_dct, usr_fa_df, _chk_info_df,
-                                                                _chk_info_gp,  found_spec_key_lst, usr_weight_df,
-                                                                key_frag_dct, lipid_spec_dct, xic_dct, worker_count)
-                        tmp_lipid_info_df = lipid_info_results_lst[0]
-                        tmp_lipid_img_lst = lipid_info_results_lst[1]
-                        if isinstance(tmp_lipid_info_df, pd.DataFrame):
-                            if not tmp_lipid_info_df.empty:
-                                output_df = output_df.append(tmp_lipid_info_df)
-                                lipid_info_img_lst = tmp_lipid_img_lst
+                    # if None in lipid_sub_lst:
+                    #     lipid_sub_lst = [x for x in lipid_sub_lst if x is not None]
+                    # else:
+                    #     pass
+                    # if isinstance(lipid_sub_lst[0], tuple) or isinstance(lipid_sub_lst[0], list):
+                    #     lipid_sub_dct = {k: lipid_spec_dct[k] for k in lipid_sub_lst}
+                    # else:
+                    #     lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
+                    #     lipid_sub_lst = tuple([lipid_sub_lst])
+                    worker_count = 1
+                    lipid_info_results_lst = get_lipid_info(param_dct, usr_fa_df, _chk_info_df,
+                                                            _chk_info_gp,  found_spec_key_lst, usr_weight_df,
+                                                            key_frag_dct, lipid_spec_dct, xic_dct, worker_count)
+                    tmp_lipid_info_df = lipid_info_results_lst[0]
+                    tmp_lipid_img_lst = lipid_info_results_lst[1]
+                    if isinstance(tmp_lipid_info_df, pd.DataFrame):
+                        if not tmp_lipid_info_df.empty:
+                            output_df = output_df.append(tmp_lipid_info_df)
+                            lipid_info_img_lst = tmp_lipid_img_lst
 
     print('=== ==> --> Generate the output table')
     print('output_df.shape', output_df.shape)

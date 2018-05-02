@@ -316,8 +316,11 @@ class LipidComposer:
             fa_link_df = fa_combo_link_df[fa_combo_link_df['LINK'] == 'FA']
 
             fa_link_df.is_copy = False
-            fa_link_df.drop(columns=['LINK'], inplace=True)
-            fa_link_df.values.argsort(kind='mergesort')  # safe sort by numpy
+            fa_link_df.drop(columns=['LINK', 'CLASS'], inplace=True)
+            # fa_link_df.values.argsort(kind='mergesort')
+            # fa_link_df.drop(columns=['CLASS'], inplace=True)
+            fa_link_df.values.sort(kind='mergesort')  # safe sort by numpy
+            fa_link_df['CLASS'] = lipid_class
             fa_link_df['DISCRETE_ABBR'] = (fa_link_df['CLASS'] + '(' +
                                            fa_link_df['FA1'].str.strip('FA') + '_' +
                                            fa_link_df['FA2'].str.strip('FA') + ')')
@@ -350,7 +353,7 @@ class LipidComposer:
 
             fa_link_df.is_copy = False
             fa_link_df.drop(columns=['LINK'], inplace=True)
-            fa_link_df.values.argsort(kind='mergesort')  # safe sort by numpy
+            fa_link_df.values.sort(kind='mergesort')  # safe sort by numpy
             fa_link_df['DISCRETE_ABBR'] = (fa_link_df['CLASS'] + '(' +
                                            fa_link_df['FA1'].str.strip('FA') + '_' +
                                            fa_link_df['FA2'].str.strip('FA') + '_' +
@@ -375,7 +378,7 @@ class LipidComposer:
             print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
 
         elif lipid_class in ['CL']:
-            fa_combo_df.values.argsort(kind='mergesort')  # safe sort by numpy
+            fa_combo_df.values.sort(kind='mergesort')  # safe sort by numpy
             print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
             fa_combo_df['DISCRETE_ABBR'] = (fa_combo_df['CLASS'] + '(' +
                                             fa_combo_df['FA1'].str.strip('FA') + '_' +
