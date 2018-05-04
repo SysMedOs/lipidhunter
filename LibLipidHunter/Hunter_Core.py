@@ -239,6 +239,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             elif usr_charge == '[M+Na]+':
                 lipid_info_df = lipid_info_df[
                     (mz_start <= lipid_info_df['[M+Na]+_MZ']) & (lipid_info_df['[M+Na]+_MZ'] <= mz_end)]
+        if usr_lipid_class == 'DG':
+            if usr_charge == '[M+NH4]+':
+                lipid_info_df = lipid_info_df[
+                    (mz_start <= lipid_info_df['[M+NH4]+_MZ']) & (lipid_info_df['[M+NH4]+_MZ'] <= mz_end)]
+            elif usr_charge == '[M+H]+':
+                lipid_info_df = lipid_info_df[
+                    (mz_start <= lipid_info_df['[M+H]+_MZ']) & (lipid_info_df['[M+H]+_MZ'] <= mz_end)]
     else:
         error_lst.append('Lipid class or charge NOT supported.  User input lipid class = %s, charge = %s. '
                          % (usr_lipid_class, usr_charge))
@@ -680,12 +687,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     if spec_key_num > (usr_core_num * 24):
 
         # Split tasks into few parts to avoid core waiting in multiprocessing
-        # Problem with the DG and phospholipids when run in 1 Core. Temporary solution
-        if usr_core_num * 24 < spec_key_num <= usr_core_num * 48 and lipid_class in ['TG']:
+        # Problem with the 1 Core run. Temporary solution
+        if usr_core_num * 24 < spec_key_num <= usr_core_num * 48 and usr_core_num != 1:
             split_seg = 2
-        elif usr_core_num * 48 < spec_key_num <= usr_core_num * 96 and lipid_class in ['TG']:
+        elif usr_core_num * 48 < spec_key_num <= usr_core_num * 96 and usr_core_num != 1:
             split_seg = 3
-        elif usr_core_num * 96 < spec_key_num and lipid_class in ['TG']:
+        elif usr_core_num * 96 < spec_key_num and usr_core_num != 1:
             split_seg = 4
         else:
             split_seg = 1

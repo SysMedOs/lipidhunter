@@ -181,11 +181,18 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                     self.ui.tab_c_scorecfgpl_le.setText(pl_score_cfg_path_str)
             if 'score_cfg_tg' in options:
                 pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_tg')
-                pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for TG/DG')
+                pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for TG')
                 if len(error_log) > 0:
                     self.ui.tab_c_scorecfgtg_le.setText(error_log)
                 else:
                     self.ui.tab_c_scorecfgtg_le.setText(pl_score_cfg_path_str)
+            if 'score_cfg_dg' in options:
+                pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_dg')
+                pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for DG')
+                if len(error_log) > 0:
+                    self.ui.tab_c_scorecfgdg_le.setText(error_log)
+                else:
+                    self.ui.tab_c_scorecfgdg_le.setText(pl_score_cfg_path_str)
             if 'score_mode' in options:
                 if config.get(user_cfg, 'score_mode').upper() in ['RANK', '']:
                     self.ui.tab_c_scoremode_cmb.setCurrentIndex(0)
@@ -423,14 +430,14 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             _lipid_charge = ''
             error_log_lst.append('!! Please select a lipid class!!')
 
-        if _lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
-            score_cfg = self.ui.tab_c_scorecfgpl_le.text()
-        elif _lipid_class in ['TG', 'DG', 'MG']:
-            score_cfg = self.ui.tab_c_scorecfgtg_le.text()
-        else:
-            score_cfg = ''
-            error_log_lst.append('!! No Corresponding Score weight factor for selected lipid class!!')
-
+        # if _lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
+        #     score_cfg = self.ui.tab_a_loadscorecfg_le.text()
+        # elif _lipid_class in ['TG', 'DG', 'MG']:
+        #     score_cfg = self.ui.tab_a_loadscorecfg_le.text()
+        # else:
+        #     score_cfg = ''
+        #     error_log_lst.append('!! No Corresponding Score weight factor for selected lipid class!!')
+        score_cfg = self.ui.tab_a_loadscorecfg_le.text()
         fawhitelist_path_str = str(self.ui.tab_a_loadfalist_le.text())
         mzml_path_str = str(self.ui.tab_a_mzml_le.text())
         img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text()).strip(r'\/')
@@ -717,6 +724,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             config.set('settings', 'lipid_specific_cfg', self.ui.tab_c_hgcfg_le.text())
             config.set('settings', 'score_cfg_pl', self.ui.tab_c_scorecfgpl_le.text())
             config.set('settings', 'score_cfg_tg', self.ui.tab_c_scorecfgtg_le.text())
+            config.set('settings', 'score_cfg_dg', self.ui.tab_c_scorecfgdg_le.text())
 
             if self.ui.tab_c_scoremode_cmb.currentIndex() == 0:
                 config.set('settings', 'score_mode', 'RANK')

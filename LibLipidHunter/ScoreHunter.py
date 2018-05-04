@@ -359,10 +359,6 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
 
                             _fa_wfactor = 0
                             # print(KeyError, 'Line 286 %s' % _obs_site)
-                            print('Check the settings if you are using the correct file '
-                                  'for the scoring system and try again')
-                            print('If you are using the correct file the contact '
-                                  'with the developers of this program for help')
                             exit()
 
                         if not _score_obs_df.empty:
