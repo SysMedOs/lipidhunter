@@ -46,9 +46,9 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'09, April, 2018'
+        version_date = r'27, April, 2018'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
-                        r'LipidHunter 2 Beta >> released date: {version_date}'
+                        r'LipidHunter 2 Beta >> Released Date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
         self.ui.version_lb.setText(QtGui.QApplication.translate("MainWindow", version_html, None,
                                                                 QtGui.QApplication.UnicodeUTF8))
@@ -66,8 +66,8 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.a_max_ms()
 
         # disable multi_mode in batch run
-        self.ui.label_65.hide()
-        self.ui.tab_a_launchgen_pb.hide()
+        self.ui.tab_a_runhunter_pgb.hide()
+        self.ui.tab_b_runbatch_pgb.hide()
         self.ui.tab_b_mutlimode_cmb.hide()
         self.ui.tab_b_maxbatch_lb.hide()
         self.ui.tab_b_maxbatch_spb.setValue(1)
@@ -98,8 +98,9 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         # slots for tab a
         QtCore.QObject.connect(self.ui.tab_a_lipidclass_cmb, QtCore.SIGNAL("currentIndexChanged(const QString&)"),
                                self.a_lipid_class_fa_list)
-        QtCore.QObject.connect(self.ui.tab_a_loadxlsxpath_pb, QtCore.SIGNAL("clicked()"), self.a_load_xlsx)
-        QtCore.QObject.connect(self.ui.tab_a_launchgen_pb, QtCore.SIGNAL("clicked()"), self.a_go_generator)
+        QtCore.QObject.connect(self.ui.tab_a_loadfalist_pb, QtCore.SIGNAL("clicked()"), self.a_load_xlsx)
+        QtCore.QObject.connect(self.ui.tab_a_loadscorecfg_pb, QtCore.SIGNAL("clicked()"), self.a_loadscore_xlsx)
+        # QtCore.QObject.connect(self.ui.tab_a_launchgen_pb, QtCore.SIGNAL("clicked()"), self.a_go_generator)
         QtCore.QObject.connect(self.ui.tab_a_mzml_pb, QtCore.SIGNAL("clicked()"), self.a_load_mzml)
         QtCore.QObject.connect(self.ui.tab_a_saveimgfolder_pb, QtCore.SIGNAL("clicked()"), self.a_save_img2folder)
         QtCore.QObject.connect(self.ui.tab_a_msmax_chb, QtCore.SIGNAL("clicked()"), self.a_max_ms)
@@ -118,10 +119,13 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         # # slots for tab c
         QtCore.QObject.connect(self.ui.tab_c_falistpl_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_pl)
         QtCore.QObject.connect(self.ui.tab_c_falisttg_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_tg)
+        QtCore.QObject.connect(self.ui.tab_c_lmcalcfalist_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_lg)
         QtCore.QObject.connect(self.ui.tab_c_hgcfg_pb, QtCore.SIGNAL("clicked()"), self.c_load_hgcfg)
         QtCore.QObject.connect(self.ui.tab_c_scorecfgpl_pb, QtCore.SIGNAL("clicked()"), self.c_load_scorecfg_pl)
         QtCore.QObject.connect(self.ui.tab_c_scorecfgtg_pb, QtCore.SIGNAL("clicked()"), self.c_load_scorecfg_tg)
+        QtCore.QObject.connect(self.ui.tab_c_scorecfgdg_pb, QtCore.SIGNAL("clicked()"), self.c_load_scorecfg_dg)
         QtCore.QObject.connect(self.ui.tab_c_savesettings_pb, QtCore.SIGNAL("clicked()"), self.c_set_default_cfg)
+        QtCore.QObject.connect(self.ui.tab_c_lmexport_pb, QtCore.SIGNAL("clicked()"), self.c_lmexport)
 
         # load configurations
 
@@ -177,11 +181,18 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                     self.ui.tab_c_scorecfgpl_le.setText(pl_score_cfg_path_str)
             if 'score_cfg_tg' in options:
                 pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_tg')
-                pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for TG/DG')
+                pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for TG')
                 if len(error_log) > 0:
                     self.ui.tab_c_scorecfgtg_le.setText(error_log)
                 else:
                     self.ui.tab_c_scorecfgtg_le.setText(pl_score_cfg_path_str)
+            if 'score_cfg_dg' in options:
+                pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_dg')
+                pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for DG')
+                if len(error_log) > 0:
+                    self.ui.tab_c_scorecfgdg_le.setText(error_log)
+                else:
+                    self.ui.tab_c_scorecfgdg_le.setText(pl_score_cfg_path_str)
             if 'score_mode' in options:
                 if config.get(user_cfg, 'score_mode').upper() in ['RANK', '']:
                     self.ui.tab_c_scoremode_cmb.setCurrentIndex(0)
@@ -321,10 +332,14 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
     def a_load_xlsx(self):
         file_info_str = 'FA white list files (*.xlsx *.XLSX)'
-        self.open_file(file_info_str, self.ui.tab_a_loadxlsxpath_le)
+        self.open_file(file_info_str, self.ui.tab_a_loadfalist_le)
 
-    def a_go_generator(self):
-        self.ui.tabframe.setCurrentIndex(3)
+    def a_loadscore_xlsx(self):
+        file_info_str = 'Weight list files (*.xlsx *.XLSX)'
+        self.open_file(file_info_str, self.ui.tab_a_loadscorecfg_le)
+
+    # def a_go_generator(self):
+    #     self.ui.tabframe.setCurrentIndex(3)
 
     def a_load_mzml(self):
         file_info_str = 'mzML spectra files (*.mzML *.mzml)'
@@ -362,14 +377,24 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         pl_fa_cfg = self.ui.tab_c_falistpl_le.text()
         tg_fa_cfg = self.ui.tab_c_falisttg_le.text()
-        usr_fa_cfg = self.ui.tab_a_loadxlsxpath_le.text()
+        pl_score_cfg = self.ui.tab_c_scorecfgpl_le.text()
+        tg_score_cfg = self.ui.tab_c_scorecfgtg_le.text()
+        dg_score_cfg = self.ui.tab_c_scorecfgdg_le.text()
+        usr_fa_cfg = self.ui.tab_a_loadfalist_le.text()
+        usr_score_cfg = self.ui.tab_a_loadscorecfg_le.text()
 
         if _lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
             if usr_fa_cfg == '' or usr_fa_cfg == tg_fa_cfg:
-                self.ui.tab_a_loadxlsxpath_le.setText(pl_fa_cfg)
+                self.ui.tab_a_loadfalist_le.setText(pl_fa_cfg)
+            if usr_score_cfg == '' or usr_score_cfg == tg_score_cfg or usr_score_cfg == dg_score_cfg:
+                self.ui.tab_a_loadscorecfg_le.setText(pl_score_cfg)
         elif _lipid_class in ['TG', 'DG', 'MG']:
             if usr_fa_cfg == '' or usr_fa_cfg == pl_fa_cfg:
-                self.ui.tab_a_loadxlsxpath_le.setText(tg_fa_cfg)
+                self.ui.tab_a_loadfalist_le.setText(tg_fa_cfg)
+            if (usr_score_cfg == '' or usr_score_cfg == pl_score_cfg or usr_score_cfg == dg_score_cfg) and _lipid_class in ['TG']:
+                self.ui.tab_a_loadscorecfg_le.setText(tg_score_cfg)
+            elif (usr_score_cfg == '' or usr_score_cfg == pl_score_cfg or usr_score_cfg == tg_score_cfg) and _lipid_class in ['DG']:
+                self.ui.tab_a_loadscorecfg_le.setText(dg_score_cfg)
 
     def a_get_params(self):
 
@@ -405,15 +430,15 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             _lipid_charge = ''
             error_log_lst.append('!! Please select a lipid class!!')
 
-        if _lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
-            score_cfg = self.ui.tab_c_scorecfgpl_le.text()
-        elif _lipid_class in ['TG', 'DG', 'MG']:
-            score_cfg = self.ui.tab_c_scorecfgtg_le.text()
-        else:
-            score_cfg = ''
-            error_log_lst.append('!! No Corresponding Score weight factor for selected lipid class!!')
-
-        fawhitelist_path_str = str(self.ui.tab_a_loadxlsxpath_le.text())
+        # if _lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
+        #     score_cfg = self.ui.tab_a_loadscorecfg_le.text()
+        # elif _lipid_class in ['TG', 'DG', 'MG']:
+        #     score_cfg = self.ui.tab_a_loadscorecfg_le.text()
+        # else:
+        #     score_cfg = ''
+        #     error_log_lst.append('!! No Corresponding Score weight factor for selected lipid class!!')
+        score_cfg = self.ui.tab_a_loadscorecfg_le.text()
+        fawhitelist_path_str = str(self.ui.tab_a_loadfalist_le.text())
         mzml_path_str = str(self.ui.tab_a_mzml_le.text())
         img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text()).strip(r'\/')
         xlsx_output_path_str = str(self.ui.tab_a_savexlsxpath_le.text())
@@ -699,6 +724,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             config.set('settings', 'lipid_specific_cfg', self.ui.tab_c_hgcfg_le.text())
             config.set('settings', 'score_cfg_pl', self.ui.tab_c_scorecfgpl_le.text())
             config.set('settings', 'score_cfg_tg', self.ui.tab_c_scorecfgtg_le.text())
+            config.set('settings', 'score_cfg_dg', self.ui.tab_c_scorecfgdg_le.text())
 
             if self.ui.tab_c_scoremode_cmb.currentIndex() == 0:
                 config.set('settings', 'score_mode', 'RANK')
@@ -747,6 +773,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         file_info_str = 'FA white list files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_falisttg_le)
 
+    def c_load_falist_lg(self):
+        file_info_str = 'FA white list files (*.xlsx *.XLSX)'
+        self.open_file(file_info_str, self.ui.tab_c_lmcalcfalist_le)
+
     def c_load_hgcfg(self):
         file_info_str = 'MS Excel files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_hgcfg_le)
@@ -758,6 +788,16 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def c_load_scorecfg_tg(self):
         file_info_str = 'MS Excel files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_scorecfgtg_le)
+
+    def c_load_scorecfg_dg(self):
+        file_info_str = 'MS Excel files (*.xlsx *.XLSX)'
+        self.open_file(file_info_str, self.ui.tab_c_scorecfgdg_le)
+
+    def c_lmexport(self):
+        c_lmexport_path = QtGui.QFileDialog.getSaveFileName(caption='Save file', filter='.csv')
+        self.ui.tab_c_lmexport_le.clear()
+        c_lmexport_str = os.path.abspath(c_lmexport_path[0])
+        self.ui.tab_c_lmexport_le.setText(c_lmexport_str)
 
     def single_worker_on_finish(self):
         self.single_thread.quit()
@@ -1140,6 +1180,29 @@ class BatchWorker(QtCore.QObject):
         self.infoback()
         self.info_update.emit(self.info_str)
         self.finished.emit()
+
+
+class LipidMasterWorker(QtCore.QObject):
+    workRequested = QtCore.Signal()
+    finished = QtCore.Signal()
+    info_update = QtCore.Signal(str)
+
+    def __init__(self, parent=None):
+        super(LipidMasterWorker, self).__init__(parent)
+        self.lm_params_dct = {}
+        self.info_str = ''
+
+    def request_work(self, lm_params_dct):
+        """
+        Get parameters from Main window
+        :param(dict) lm_params_dct: a dict contains all configurations from all batch files
+        """
+        self.workRequested.emit()
+        self.lm_params_dct = lm_params_dct
+
+    def infoback(self):
+
+        return self.info_str
 
 
 if __name__ == '__main__':

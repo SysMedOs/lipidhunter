@@ -670,7 +670,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 if charge in ['[M+H]+', '[M+NH4]+'] and abbr[0:2] == 'TG':
                     _lyso_table = msms_high_pic.table(cellText=_lyso_table_vals, colWidths=_lyso_col_width_lst,
                                                       colLabels=_lyso_col_labels, loc='upper center', cellLoc='center',
-                                                      bbox=[0.4, 0.25, 0.5, 0.067*(len(_lyso_table_vals)+1)])
+                                                      bbox=[0.4, 1 - (0.067 * (len(_lyso_table_vals) + 1)), 0.5, 0.067*(len(_lyso_table_vals)+1)])
                 elif charge in ['[M+Na]+'] and abbr[0:2] == 'TG':
                     _lyso_table = msms_high_pic.table(cellText=_lyso_table_vals, colWidths=_lyso_col_width_lst,
                                                       colLabels=_lyso_col_labels, loc='upper left', cellLoc='center',
