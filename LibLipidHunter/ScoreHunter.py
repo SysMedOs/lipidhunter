@@ -354,13 +354,11 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
 
                         try:
                             _fa_wfactor = weight_dct['%s' % _obs_peak]['Weight']
-                        except KeyError:
+                        except Exception as _e:
+                            print(_e)
+
                             _fa_wfactor = 0
                             # print(KeyError, 'Line 286 %s' % _obs_site)
-                            print('Check the settings if you are using the correct file '
-                                  'for the scoring system and try again')
-                            print('If you are using the correct file the contact '
-                                  'with the developers of this program for help')
                             exit()
 
                         if not _score_obs_df.empty:
@@ -419,9 +417,19 @@ def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, rankscore_fil
     # Take by one each observation and then check for the the different position of the observed fragment
     # ident_peak_dct = {'discrete_abbr': [], 'obs_label': [], 'i': [], 'mz': [], 'obs_abbr': [], 'obs_rank_type': [],
     #                   'obs_rank': []}
+    lite_info_df2 = pd.DataFrame()
+    lite_info_df2['DISCRETE_ABBR'] = lite_info_df['DISCRETE_ABBR']
+    lite_info_df2['MS2_PR_mz'] = lite_info_df['MS2_PR_mz']
+    lite_info_df2['DDA_rank'] = lite_info_df['DDA_rank']
+    lite_info_df2['MS1_XIC_mz'] = lite_info_df['MS1_XIC_mz']
+    lite_info_df2['ppm'] = lite_info_df['ppm']
+    lite_info_df2['MS1_obs_mz'] = lite_info_df['MS1_obs_mz']
+    lite_info_df2['Lib_mz'] = lite_info_df['Lib_mz']
+    lite_info_df2['BULK_ABBR'] = lite_info_df['BULK_ABBR']
+    lite_info_df2['scan_time'] = lite_info_df['scan_time']
+    lite_info_df2['RANK_SCORE'] = 0.0
+    lite_info_df2['OBS_RESIDUES'] = 0
 
-    lite_info_df['RANK_SCORE'] = 0.0
-    lite_info_df['OBS_RESIDUES'] = 0
 
     if lipid_class in ['TG']:
         resi_site_lst = ['FA1_ABBR', 'FA2_ABBR', 'FA3_ABBR']
@@ -467,29 +475,29 @@ def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, rankscore_fil
         sliced_info_df = pd.DataFrame()
 
     if not sliced_info_df.empty:
-        ident_peak_df, lite_info_df = prep_rankscore(obs_dct, lite_info_df, sliced_info_df, weight_dct,
+        ident_peak_df, lite_info_df2 = prep_rankscore(obs_dct, lite_info_df2, sliced_info_df, weight_dct,
                                                      lipid_class=lipid_class)
     else:
         ident_peak_df = pd.DataFrame()
 
     if all_sn is True:
         if lipid_class in ['TG']:
-            lite_info_df['RANK_SCORE'] = (lite_info_df['RANK_SCORE'] * lite_info_df['OBS_RESIDUES'] / 3).round(2)
+            lite_info_df2['RANK_SCORE'] = (lite_info_df2['RANK_SCORE'] * lite_info_df2['OBS_RESIDUES'] / 3).round(2)
         elif lipid_class in ['PA', 'PC', 'PE', 'PG', 'PS', 'PI', 'PIP', 'DG', 'SM']:
             # lite_info_df['RANK_SCORE'] = (lite_info_df['RANK_SCORE'] * lite_info_df['OBS_RESIDUES'] / 2).round(2)
-            lite_info_df['RANK_SCORE'] = lite_info_df['RANK_SCORE'].round(2)
+            lite_info_df2['RANK_SCORE'] = lite_info_df2['RANK_SCORE'].round(2)
         else:
-            lite_info_df['RANK_SCORE'] = lite_info_df['RANK_SCORE'].round(2)
+            lite_info_df2['RANK_SCORE'] = lite_info_df2['RANK_SCORE'].round(2)
 
-    if not lite_info_df.empty:
-        lite_info_df = lite_info_df[lite_info_df['RANK_SCORE'] >= rankscore_filter]
+    if not lite_info_df2.empty:
+        lite_info_df2 = lite_info_df2[lite_info_df2['RANK_SCORE'] >= rankscore_filter]
     if not ident_peak_df.empty:
-        ident_peak_df = ident_peak_df[ident_peak_df['discrete_abbr'].isin(lite_info_df['DISCRETE_ABBR']
+        ident_peak_df = ident_peak_df[ident_peak_df['discrete_abbr'].isin(lite_info_df2['DISCRETE_ABBR']
                                                                           .values.tolist())]
     # if not lite_info_df.empty:
     #     print(lite_info_df[['BULK_ABBR', 'DISCRETE_ABBR', 'RANK_SCORE', 'scan_time', 'OBS_PEAKS']])
 
-    return ident_peak_df, lite_info_df
+    return ident_peak_df, lite_info_df2
 
 
 def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, lipid_class, weight_dct, core_count,
@@ -580,6 +588,21 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                                                   'FA2': '[M-(FA2)+H]+',
                                                   'FA3': '[M-(FA3)+H]+'}]}
     elif lipid_class in ['DG'] and charge in ['[M+H]+', '[M+NH4]+']:
+
+        if not obs_fa_frag_df.empty:
+            # TEMPORARY
+            _tmp_obs = obs_fa_nl_df
+            _tmp_obs['TYPE'] = 'NL'
+            obs_fa_frag_df['TYPE'] = 'FA'
+            _tmp_obs = _tmp_obs.append(obs_fa_frag_df)
+            _tmp_obs['mz_int'] = _tmp_obs['mz']
+            _tmp_obs.mz_int = _tmp_obs.mz_int.astype(int)
+            _tmp_obs.sort_values(by=['mz_int', 'TYPE'], ascending=[True, False], inplace=True)
+            _tmp_obs.drop_duplicates(subset=['mz_int'], keep='first', inplace=True)
+            obs_fa_frag_df = _tmp_obs[_tmp_obs['TYPE'] == 'FA'].drop(columns=['mz_int', 'TYPE'])
+            obs_fa_nl_df = _tmp_obs[_tmp_obs['TYPE'] == 'NL'].drop(columns=['mz_int', 'TYPE'])
+            del _tmp_obs
+
         obs_dct = {'[FA-H2O+H]+': [obs_fa_frag_df, {'FA1': 'FA1_[FA-H2O+H]+',
                                                     'FA2': 'FA2_[FA-H2O+H]+'}],
                    '[MG-H2O+H]+': [obs_fa_nl_df, {'FA1': '[MG(FA1)-H2O+H]+',
@@ -702,7 +725,9 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         _usr_abbr_bulk_lst = list(set(_subgroup_df['BULK_ABBR'].values.tolist()))
         # TODO (georgia.angelidou@uni-leipzig.de): Here should be the control for the ms values to avoid problems
         usr_spec_info_dct = core_spec_dct[group_key]
-        _samemz_se = _subgroup_df.iloc[0, :].squeeze()  # compress df to se for lipids with same bulk structures
+        key_type = '%s_FORMULA' % _subgroup_df['Ion'].iloc[0]
+        _samemz_se = _subgroup_df.loc[:, _subgroup_df.columns.isin(list(('scan_time', 'DDA_rank', 'scan_number', 'Lib_mz', 'FORMULA', 'Ion', key_type, 'Lib_mz', 'MS1_XIC_mz',
+                'MS2_PR_mz')))].iloc[0]
         _usr_ms2_rt = _samemz_se['scan_time']
         _usr_ms2_dda_rank = _samemz_se['DDA_rank']
         _usr_ms2_scan_id = _samemz_se['scan_number']
@@ -736,209 +761,193 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
             _score_ms2_hg_df = pd.DataFrame()
 
         if _ms1_pr_mz > 0.0 and not _ms1_df.empty and not _ms2_df.empty and _ms1_pr_i > 0.0:
-            # TODO (georgia@uni-leipzig.de): keep in mind to include the other vendors also otherwise it can cause a problem
-            # This contor is done to avoid the problem with the conversion of the raw data from the proteome wizard for the files from Thermo
-            # Future can cause problems since maybe there will be cases where we can not see the precursor -indensity in this files.
-            # For this cases futher thinging is require
-            # Also can cause problems with the other lipid structures from the other lipids
-            # if _ms2_df.query(' %f < mz < %f' % (_usr_ms2_pr_mz - 0.1, _usr_ms2_pr_mz + 0.1)).shape[0] > 0:
-            #     _th_pw_flag = 1
-            # elif _ms2_df.query(' %f < mz < %f' % (_usr_ms2_pr_mz - 0.1, _usr_ms2_pr_mz + 0.1)).shape[
-            #     0] == 0 and usr_vendor == '':
-            #     # here the vendor should be thermo
-            #     # But now this control is deactivated
-            #     _th_pw_flag = 0
-            # else:
-            #     _th_pw_flag = 1
-            _th_pw_flag = 1
-            if _th_pw_flag == 1:
+            print(core_count, '>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
 
-                print(core_count, '>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
+            isotope_score_info_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
+                                                                      _usr_formula_charged, _ms1_df, core_count,
+                                                                      ms1_precision=usr_ms1_precision,
+                                                                      isotope_number=2,
+                                                                      only_c=usr_fast_isotope,
+                                                                      score_filter=usr_isotope_score_filter)
 
-                isotope_score_info_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
-                                                                          _usr_formula_charged, _ms1_df, core_count,
-                                                                          ms1_precision=usr_ms1_precision,
-                                                                          isotope_number=2,
-                                                                          only_c=usr_fast_isotope,
-                                                                          score_filter=usr_isotope_score_filter)
+            isotope_score = isotope_score_info_dct['isotope_score']
+            _mz_amm_iso_flag = ""
+            print(core_count, 'isotope_score: %f' % isotope_score)
+            if isotope_score >= usr_isotope_score_filter:
+                print(core_count, '>>> isotope_check PASSED! >>> >>> >>>')
+                print(core_count, '>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
+                _samemz_se.at['MS1_obs_mz'] = _ms1_pr_mz
+                _exact_ppm = 1e6 * (_ms1_pr_mz - _usr_mz_lib) / _usr_mz_lib
+                _samemz_se.at['ppm'] = _exact_ppm
+                _samemz_se.at['abs_ppm'] = abs(_exact_ppm)
+                print(core_count, 'Proposed_bulk_structure can be:', _usr_abbr_bulk_lst)
+                for _usr_abbr_bulk in _usr_abbr_bulk_lst:
+                    # TODO (georgia.angelidou@uni-leipzig.de): Here is where the check for the ammonium adduct should be inlude before the rank score
+                    print(core_count, 'Now check_proposed_structure:', _usr_abbr_bulk)
+                    _mz_amm_iso_flag2 = ''
+                    if charge_mode in ['[M+H]+', '[M+Na]+']:
+                        _mz_amm_formula, _mz_amm_elem_dct = ElemCalc().get_formula(_usr_abbr_bulk, charge='neutral')
+                        _mz_amm_elem_dct['N'] += 1
+                        _mz_amm_elem_dct['H'] += 4
+                        _mz_df_amm = pd.DataFrame()
+                        _mz_amm_mz = ElemCalc().get_exactmass(_mz_amm_elem_dct)
+                        _mz_amm_mz2, _mz_amm_form, _mz_amm_Na_mz2, _mz_amm_Na_form = ElemCalc().get_NH3_pos_mode(
+                            charge_mode, _ms1_pr_mz,
+                            _mz_amm_elem_dct)
+                        _frag_mz_query_code = '%f <= mz <= %f' % (_mz_amm_mz2 - 0.2, _mz_amm_mz2 + 0.2)
+                        # TODO (georgia.angelidou@uni-leipzig.de): Need to check the reason why we do not get any output
+                        _frag_mz_query_code2 = '%f <= mz <= %f' % (_mz_amm_Na_mz2 - 0.2, _mz_amm_Na_mz2 + 0.2)
 
-                isotope_score = isotope_score_info_dct['isotope_score']
-                _mz_amm_iso_flag = ""
-                print(core_count, 'isotope_score: %f' % isotope_score)
-                if isotope_score >= usr_isotope_score_filter:
-                    print(core_count, '>>> isotope_check PASSED! >>> >>> >>>')
-                    print(core_count, '>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
-                    _samemz_se.at['MS1_obs_mz'] = _ms1_pr_mz
-                    _exact_ppm = 1e6 * (_ms1_pr_mz - _usr_mz_lib) / _usr_mz_lib
-                    _samemz_se.at['ppm'] = _exact_ppm
-                    _samemz_se.at['abs_ppm'] = abs(_exact_ppm)
-                    print(core_count, 'Proposed_bulk_structure can be:', _usr_abbr_bulk_lst)
-                    for _usr_abbr_bulk in _usr_abbr_bulk_lst:
-                        # TODO (georgia.angelidou@uni-leipzig.de): Here is where the check for the ammonium adduct should be inlude before the rank score
-                        print(core_count, 'Now check_proposed_structure:', _usr_abbr_bulk)
-                        _mz_amm_iso_flag2 = ''
-                        if charge_mode in ['[M+H]+', '[M+Na]+']:
-                            _mz_amm_formula, _mz_amm_elem_dct = ElemCalc().get_formula(_usr_abbr_bulk, charge='neutral')
-                            _mz_amm_elem_dct['N'] += 1
-                            _mz_amm_elem_dct['H'] += 4
-                            _mz_df_amm = pd.DataFrame()
-                            _mz_amm_mz = ElemCalc().get_exactmass(_mz_amm_elem_dct)
-                            _mz_amm_mz2, _mz_amm_form, _mz_amm_Na_mz2, _mz_amm_Na_form = ElemCalc().get_NH3_pos_mode(
-                                charge_mode, _ms1_pr_mz,
-                                _mz_amm_elem_dct)
-                            _frag_mz_query_code = '%f <= mz <= %f' % (_mz_amm_mz2 - 0.2, _mz_amm_mz2 + 0.2)
-                            # TODO (georgia.angelidou@uni-leipzig.de): Need to check the reason why we do not get any output
-                            _frag_mz_query_code2 = '%f <= mz <= %f' % (_mz_amm_Na_mz2 - 0.2, _mz_amm_Na_mz2 + 0.2)
+                        if not _ms1_df.query(_frag_mz_query_code).empty:
+                            # print('Go and check line 613 from ScoreHunter.py to see what is going on')
+                            _mz_df_amm = _ms1_df.query(_frag_mz_query_code)
+                            _mz_df_amm.reset_index(inplace=True, drop=True)
+                            _mz_amm_i = _mz_df_amm.loc[0, 'i']
+                            # if charge_mode in ['[M+H]+']:
+                            amm_formula = 'C' + str(_mz_amm_elem_dct['C']) + 'H' + str(
+                                _mz_amm_elem_dct['H']) + 'O' + str(_mz_amm_elem_dct['O']) + 'N'
+                            _mz_amm_iso_flag2 = isotope_hunter.get_isotope_fragments(_mz_amm_mz2, _mz_amm_i,
+                                                                                     _mz_amm_form, _ms1_df,
+                                                                                     core_count)
+                            # else:
+                            #     _mz_amm_iso_flag2 = 0
+                        else:
+                            _mz_amm_i = 0
+                            _mz_amm_iso_flag2 = 1
+                        if not _ms1_df.query(_frag_mz_query_code2).empty:
+                            _mz_df_amm_Na = _ms1_df.query(_frag_mz_query_code2)
+                            _mz_df_amm_Na.reset_index(inplace=True, drop=True)
+                            _mz_amm_Na_i = _mz_df_amm_Na.loc[0, 'i']
+                            # if charge_mode in ['[M+Na]+']:
+                            #     amm_formula = 'C' + str(_mz_amm_elem_dct['C']) + 'H' + str(
+                            #         _mz_amm_elem_dct['H']) + 'O' + str(_mz_amm_elem_dct['O']) + 'N'
+                            _mz_amm_iso_Na_flag2 = isotope_hunter.get_isotope_fragments(_mz_amm_Na_mz2,
+                                                                                        _mz_amm_Na_i,
+                                                                                        _mz_amm_Na_form,
+                                                                                        _ms1_df,
+                                                                                        core_count)
+                            # else:
+                            #     _mz_amm_iso_Na_flag2 = 0
+                        else:
+                            _mz_amm_Na_i = 0
+                            _mz_amm_iso_Na_flag2 = 0
 
-                            if not _ms1_df.query(_frag_mz_query_code).empty:
-                                # print('Go and check line 613 from ScoreHunter.py to see what is going on')
-                                _mz_df_amm = _ms1_df.query(_frag_mz_query_code)
-                                _mz_df_amm.reset_index(inplace=True, drop=True)
-                                _mz_amm_i = _mz_df_amm.loc[0, 'i']
-                                # if charge_mode in ['[M+H]+']:
-                                amm_formula = 'C' + str(_mz_amm_elem_dct['C']) + 'H' + str(
-                                    _mz_amm_elem_dct['H']) + 'O' + str(_mz_amm_elem_dct['O']) + 'N'
-                                _mz_amm_iso_flag2 = isotope_hunter.get_isotope_fragments(_mz_amm_mz2, _mz_amm_i,
-                                                                                         _mz_amm_form, _ms1_df,
-                                                                                         core_count)
-                                # else:
-                                #     _mz_amm_iso_flag2 = 0
-                            else:
-                                _mz_amm_i = 0
-                            if not _ms1_df.query(_frag_mz_query_code2).empty:
-                                _mz_df_amm_Na = _ms1_df.query(_frag_mz_query_code2)
-                                _mz_df_amm_Na.reset_index(inplace=True, drop=True)
-                                _mz_amm_Na_i = _mz_df_amm_Na.loc[0, 'i']
-                                # if charge_mode in ['[M+Na]+']:
-                                #     amm_formula = 'C' + str(_mz_amm_elem_dct['C']) + 'H' + str(
-                                #         _mz_amm_elem_dct['H']) + 'O' + str(_mz_amm_elem_dct['O']) + 'N'
-                                _mz_amm_iso_Na_flag2 = isotope_hunter.get_isotope_fragments(_mz_amm_Na_mz2,
-                                                                                            _mz_amm_Na_i,
-                                                                                            _mz_amm_Na_form,
-                                                                                            _ms1_df,
-                                                                                            core_count)
-                                # else:
-                                #     _mz_amm_iso_Na_flag2 = 0
-                            else:
-                                _mz_amm_Na_i = 0
-                                _mz_amm_iso_Na_flag2 = 0
-
-                            if _mz_amm_Na_i > _mz_amm_i and charge_mode in ['[M+H]+'] \
-                                    and _mz_amm_iso_flag2 == 0 and _mz_amm_iso_Na_flag2 != 1:
-                                _mz_amm_iso_flag = 1
-                            elif _mz_amm_i > _mz_amm_Na_i and charge_mode in ['[M+Na]+'] \
-                                    and _mz_amm_iso_Na_flag2 == 0 and _mz_amm_iso_flag2 != 1:
-                                _mz_amm_iso_flag = 1
-                            elif (_mz_amm_iso_flag2 == 1 and charge_mode in ['[M+H]+']) or (
-                                    _mz_amm_iso_Na_flag2 == 1 and charge_mode in ['[M+Na]+']):
-                                _mz_amm_iso_flag = 1
-                            # elif _mz_amm_Na_i > 0 and _mz_amm_i == 0 and _mz_amm_iso_flag2 != 1:
-                            #     _mz_amm_iso_flag =1
-                            else:
-                                _mz_amm_iso_flag = 0
-
+                        if _mz_amm_Na_i > _mz_amm_i and charge_mode in ['[M+H]+'] \
+                                and _mz_amm_iso_flag2 == 0 and _mz_amm_iso_Na_flag2 != 1:
+                            _mz_amm_iso_flag = 1
+                        elif _mz_amm_i > _mz_amm_Na_i and charge_mode in ['[M+Na]+'] \
+                                and _mz_amm_iso_Na_flag2 == 0 and _mz_amm_iso_flag2 != 1:
+                            _mz_amm_iso_flag = 1
+                        elif (_mz_amm_iso_flag2 == 1 and charge_mode in ['[M+H]+']) or (
+                                _mz_amm_iso_Na_flag2 == 1 and charge_mode in ['[M+Na]+']):
+                            _mz_amm_iso_flag = 1
+                        # elif _mz_amm_Na_i > 0 and _mz_amm_i == 0 and _mz_amm_iso_flag2 != 1:
+                        #     _mz_amm_iso_flag =1
                         else:
                             _mz_amm_iso_flag = 0
 
-                        # mz_amm_flag = isotope_hunter.get_isotope_fragments(_mz_amm_mz, _mz_amm_formula, _ms1_df)
-                        if _mz_amm_iso_flag == 0:
-                            matched_checker, obs_info_dct = get_rankscore(fa_df, checked_info_df, _usr_abbr_bulk,
-                                                                          charge_mode,
-                                                                          _score_ms2_df, _ms2_idx, usr_lipid_type,
-                                                                          usr_weight_dct, core_count,
-                                                                          rankscore_filter=usr_rankscore_filter,
-                                                                          all_sn=usr_tag_all_sn)
+                    else:
+                        _mz_amm_iso_flag = 0
 
-                            obs_info_df = obs_info_dct['INFO']
-                            rank_score = obs_info_df['RANK_SCORE'].values.tolist()
+                    # mz_amm_flag = isotope_hunter.get_isotope_fragments(_mz_amm_mz, _mz_amm_formula, _ms1_df)
+                    if _mz_amm_iso_flag == 0:
+                        matched_checker, obs_info_dct = get_rankscore(fa_df, checked_info_df, _usr_abbr_bulk,
+                                                                      charge_mode,
+                                                                      _score_ms2_df, _ms2_idx, usr_lipid_type,
+                                                                      usr_weight_dct, core_count,
+                                                                      rankscore_filter=usr_rankscore_filter,
+                                                                      all_sn=usr_tag_all_sn)
+
+                        obs_info_df = obs_info_dct['INFO']
+                        rank_score = obs_info_df['RANK_SCORE'].values.tolist()
+                    else:
+                        matched_checker = 0
+                        obs_info_dct = {}
+                        rank_score = []
+                        obs_info_df = pd.DataFrame()
+
+                    if matched_checker > 0:
+                        if len(key_frag_dct) > 0:
+                            specific_dct = get_specific_peaks(key_frag_dct, _usr_mz_lib, _score_ms2_hg_df,
+                                                              hg_ms2_ppm=usr_hg_ppm, vendor=usr_vendor,
+                                                              exp_mode=exp_mode)
                         else:
-                            matched_checker = 0
-                            obs_info_dct = {}
-                            rank_score = []
-                            obs_info_df = pd.DataFrame()
+                            specific_dct = {}
 
-                        if matched_checker > 0:
-                            if len(key_frag_dct) > 0:
-                                specific_dct = get_specific_peaks(key_frag_dct, _usr_mz_lib, _score_ms2_hg_df,
-                                                                  hg_ms2_ppm=usr_hg_ppm, vendor=usr_vendor,
-                                                                  exp_mode=exp_mode)
-                            else:
-                                specific_dct = {}
+                        print(core_count, 'Rank_score: --> passed', rank_score)
+                        print(core_count, '\n',
+                              obs_info_df[['BULK_ABBR', 'DISCRETE_ABBR', 'RANK_SCORE', 'scan_time', 'OBS_RESIDUES']]
+                              )
 
-                            print(core_count, 'Rank_score: --> passed', rank_score)
-                            print(core_count, '\n',
-                                  obs_info_df[['BULK_ABBR', 'DISCRETE_ABBR', 'RANK_SCORE', 'scan_time', 'OBS_RESIDUES']]
-                                  )
+                        # format abbr. for file names
+                        _save_abbr_bulk = _usr_abbr_bulk
+                        _save_abbr_bulk = _save_abbr_bulk.replace(r'(', r'[')
+                        _save_abbr_bulk = _save_abbr_bulk.replace(r')', r']')
+                        _save_abbr_bulk = _save_abbr_bulk.replace(r'<', r'[')
+                        _save_abbr_bulk = _save_abbr_bulk.replace(r'>', r']')
+                        _save_abbr_bulk = _save_abbr_bulk.replace(r':', r'-')
+                        _save_abbr_bulk = _save_abbr_bulk.replace(r'@', r'-')
+                        _save_abbr_bulk = _save_abbr_bulk.replace('\\', r'_')
+                        _save_abbr_bulk = _save_abbr_bulk.replace(r'/', r'_')
 
-                            # format abbr. for file names
-                            _save_abbr_bulk = _usr_abbr_bulk
-                            _save_abbr_bulk = _save_abbr_bulk.replace(r'(', r'[')
-                            _save_abbr_bulk = _save_abbr_bulk.replace(r')', r']')
-                            _save_abbr_bulk = _save_abbr_bulk.replace(r'<', r'[')
-                            _save_abbr_bulk = _save_abbr_bulk.replace(r'>', r']')
-                            _save_abbr_bulk = _save_abbr_bulk.replace(r':', r'-')
-                            _save_abbr_bulk = _save_abbr_bulk.replace(r'@', r'-')
-                            _save_abbr_bulk = _save_abbr_bulk.replace('\\', r'_')
-                            _save_abbr_bulk = _save_abbr_bulk.replace(r'/', r'_')
+                        img_name_core = ('/%.4f_rt%.3f_DDAtop%.0f_scan%.0f_%s.%s'
+                                         % (_usr_ms2_pr_mz, _usr_ms2_rt, _usr_ms2_dda_rank,
+                                            _usr_ms2_scan_id, _save_abbr_bulk, img_typ)
+                                         )
+                        img_name = (output_folder +
+                                    r'/LipidHunter_Results_Figures_%s'
+                                    % hunter_start_time_str + img_name_core)
 
-                            img_name_core = ('/%.4f_rt%.3f_DDAtop%.0f_scan%.0f_%s.%s'
-                                             % (_usr_ms2_pr_mz, _usr_ms2_rt, _usr_ms2_dda_rank,
-                                                _usr_ms2_scan_id, _save_abbr_bulk, img_typ)
-                                             )
-                            img_name = (output_folder +
-                                        r'/LipidHunter_Results_Figures_%s'
-                                        % hunter_start_time_str + img_name_core)
+                        print(core_count, '==> check for output -->')
 
-                            print(core_count, '==> check for output -->')
+                        obs_info_df['Proposed_structures'] = _usr_abbr_bulk
+                        obs_info_df['Bulk_identification'] = _usr_abbr_bulk
+                        # obs_info_df['Discrete_identification'] = _usr_abbr_bulk
+                        obs_info_df['Formula_neutral'] = _usr_formula
+                        obs_info_df['Formula_ion'] = _usr_formula_charged
+                        obs_info_df['Charge'] = _usr_charge
+                        obs_info_df['MS1_obs_mz'] = _ms1_pr_mz
+                        obs_info_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
+                        obs_info_df['Lib_mz'] = _usr_mz_lib
+                        obs_info_df['MS2_scan_time'] = _usr_ms2_rt
+                        obs_info_df['DDA#'] = _usr_ms2_dda_rank
+                        obs_info_df['MS2_PR_mz'] = _usr_ms2_pr_mz
+                        obs_info_df['Scan#'] = _usr_ms2_scan_id
+                        # obs_info_df['#Specific_peaks'] = (target_frag_count + target_nl_count)
+                        # obs_info_df['#Contaminated_peaks'] = (other_frag_count + other_nl_count)
+                        obs_info_df['ppm'] = _exact_ppm
+                        obs_info_df['img_name'] = img_name_core[1:]
 
-                            obs_info_df['Proposed_structures'] = _usr_abbr_bulk
-                            obs_info_df['Bulk_identification'] = _usr_abbr_bulk
-                            # obs_info_df['Discrete_identification'] = _usr_abbr_bulk
-                            obs_info_df['Formula_neutral'] = _usr_formula
-                            obs_info_df['Formula_ion'] = _usr_formula_charged
-                            obs_info_df['Charge'] = _usr_charge
-                            obs_info_df['MS1_obs_mz'] = _ms1_pr_mz
-                            obs_info_df['MS1_obs_i'] = '%.2e' % float(_ms1_pr_i)
-                            obs_info_df['Lib_mz'] = _usr_mz_lib
-                            obs_info_df['MS2_scan_time'] = _usr_ms2_rt
-                            obs_info_df['DDA#'] = _usr_ms2_dda_rank
-                            obs_info_df['MS2_PR_mz'] = _usr_ms2_pr_mz
-                            obs_info_df['Scan#'] = _usr_ms2_scan_id
-                            # obs_info_df['#Specific_peaks'] = (target_frag_count + target_nl_count)
-                            # obs_info_df['#Contaminated_peaks'] = (other_frag_count + other_nl_count)
-                            obs_info_df['ppm'] = _exact_ppm
-                            obs_info_df['img_name'] = img_name_core[1:]
+                        tmp_df = tmp_df.append(obs_info_df)
+                        if save_fig is True:
+                            img_param_dct = {'abbr': _usr_abbr_bulk, 'mz_se': _samemz_se, 'xic_dct': xic_dct,
+                                             'ident_info_dct': obs_info_dct, 'spec_info_dct': usr_spec_info_dct,
+                                             'isotope_score_info_dct': isotope_score_info_dct,
+                                             'specific_dct': specific_dct, 'formula_charged': _usr_formula_charged,
+                                             'charge': _usr_charge, 'save_img_as': img_name}
 
-                            tmp_df = tmp_df.append(obs_info_df)
-                            if save_fig is True:
-                                img_param_dct = {'abbr': _usr_abbr_bulk, 'mz_se': _samemz_se, 'xic_dct': xic_dct,
-                                                 'ident_info_dct': obs_info_dct, 'spec_info_dct': usr_spec_info_dct,
-                                                 'isotope_score_info_dct': isotope_score_info_dct,
-                                                 'specific_dct': specific_dct, 'formula_charged': _usr_formula_charged,
-                                                 'charge': _usr_charge, 'save_img_as': img_name}
+                            img_plt_lst.append(img_param_dct.copy())
 
-                                img_plt_lst.append(img_param_dct.copy())
-
-                                # if 'debug_mode' in list(param_dct.keys()):
-                                #     if param_dct['debug_mode'] == 'ON':
-                                #         current_path = os.getcwd()
-                                #         if os.path.isdir(output_folder):
-                                #             os.chdir(output_folder)
-                                #             if os.path.isdir('LipidHunter_Results_Figures_%s'
-                                #                              % hunter_start_time_str):
-                                #                 print('... Output folder existed...')
-                                #             else:
-                                #                 os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
-                                #                 print('... Output folder created...')
-                                #         else:
-                                #             os.mkdir(output_folder)
-                                #             os.chdir(output_folder)
-                                #             os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
-                                #             print('... Output folder created...')
-                                #         os.chdir(current_path)
-                                #         gen_plot(img_param_dct, core_count, 'png', 300, usr_vendor, usr_ms1_precision)
-                            else:
-                                pass
+                            # if 'debug_mode' in list(param_dct.keys()):
+                            #     if param_dct['debug_mode'] == 'ON':
+                            #         current_path = os.getcwd()
+                            #         if os.path.isdir(output_folder):
+                            #             os.chdir(output_folder)
+                            #             if os.path.isdir('LipidHunter_Results_Figures_%s'
+                            #                              % hunter_start_time_str):
+                            #                 print('... Output folder existed...')
+                            #             else:
+                            #                 os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
+                            #                 print('... Output folder created...')
+                            #         else:
+                            #             os.mkdir(output_folder)
+                            #             os.chdir(output_folder)
+                            #             os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
+                            #             print('... Output folder created...')
+                            #         os.chdir(current_path)
+                            #         gen_plot(img_param_dct, core_count, 'png', 300, usr_vendor, usr_ms1_precision)
+                        else:
+                            pass
 
     if not tmp_df.empty:
         print(core_count, 'Size of the identified LPP_df %i, %i' % (tmp_df.shape[0], tmp_df.shape[1]))
