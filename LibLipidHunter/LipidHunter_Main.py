@@ -34,9 +34,11 @@ from six.moves import configparser
 try:
     from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
     from LibLipidHunter.Hunter_Core import huntlipids
+    from LibLipidHunter.LipidComposer import LipidComposer
 except ImportError:  # for python 2.7.14
     from LipidHunter_UI import Ui_MainWindow
     from Hunter_Core import huntlipids
+    from LipidComposer import LipidComposer
 
 
 class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
@@ -65,9 +67,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.load_cfg()
         self.a_max_ms()
 
-        # disable multi_mode in batch run
+        # disable un necessary UI elements
         self.ui.tab_a_runhunter_pgb.hide()
         self.ui.tab_b_runbatch_pgb.hide()
+        self.ui.tab_c_runlm_pgb.hide()
         self.ui.tab_b_mutlimode_cmb.hide()
         self.ui.tab_b_maxbatch_lb.hide()
         self.ui.tab_b_maxbatch_spb.setValue(1)
@@ -95,6 +98,15 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.batch_worker.finished.connect(self.batch_worker_on_finish)
         self.batch_worker.info_update.connect(self.batch_worker_info_update)
 
+        # define lipidmaster worker
+        self.lm_worker = LMWorker()
+        self.lm_thread = QtCore.QThread()
+        self.lm_worker.moveToThread(self.lm_thread)
+        self.lm_worker.workRequested.connect(self.lm_thread.start)
+        self.lm_thread.started.connect(self.lm_worker.run_lm_generator)
+        self.lm_worker.finished.connect(self.lm_worker_on_finish)
+        self.lm_worker.info_update.connect(self.lm_worker_info_update)
+
         # slots for tab a
         QtCore.QObject.connect(self.ui.tab_a_lipidclass_cmb, QtCore.SIGNAL("currentIndexChanged(const QString&)"),
                                self.a_lipid_class_fa_list)
@@ -119,13 +131,14 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         # # slots for tab c
         QtCore.QObject.connect(self.ui.tab_c_falistpl_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_pl)
         QtCore.QObject.connect(self.ui.tab_c_falisttg_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_tg)
-        QtCore.QObject.connect(self.ui.tab_c_lmcalcfalist_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_lg)
+        QtCore.QObject.connect(self.ui.tab_c_lmcalcfalist_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_dg)
         QtCore.QObject.connect(self.ui.tab_c_hgcfg_pb, QtCore.SIGNAL("clicked()"), self.c_load_hgcfg)
         QtCore.QObject.connect(self.ui.tab_c_scorecfgpl_pb, QtCore.SIGNAL("clicked()"), self.c_load_scorecfg_pl)
         QtCore.QObject.connect(self.ui.tab_c_scorecfgtg_pb, QtCore.SIGNAL("clicked()"), self.c_load_scorecfg_tg)
         QtCore.QObject.connect(self.ui.tab_c_scorecfgdg_pb, QtCore.SIGNAL("clicked()"), self.c_load_scorecfg_dg)
         QtCore.QObject.connect(self.ui.tab_c_savesettings_pb, QtCore.SIGNAL("clicked()"), self.c_set_default_cfg)
         QtCore.QObject.connect(self.ui.tab_c_lmexport_pb, QtCore.SIGNAL("clicked()"), self.c_lmexport)
+        QtCore.QObject.connect(self.ui.tab_c_lmrun_pb, QtCore.SIGNAL("clicked()"), self.lm_worker_hunter)
 
         # load configurations
 
@@ -391,9 +404,13 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         elif _lipid_class in ['TG', 'DG', 'MG']:
             if usr_fa_cfg == '' or usr_fa_cfg == pl_fa_cfg:
                 self.ui.tab_a_loadfalist_le.setText(tg_fa_cfg)
-            if (usr_score_cfg == '' or usr_score_cfg == pl_score_cfg or usr_score_cfg == dg_score_cfg) and _lipid_class in ['TG']:
+            if (
+                    usr_score_cfg == '' or usr_score_cfg == pl_score_cfg or usr_score_cfg == dg_score_cfg) and _lipid_class in [
+                'TG']:
                 self.ui.tab_a_loadscorecfg_le.setText(tg_score_cfg)
-            elif (usr_score_cfg == '' or usr_score_cfg == pl_score_cfg or usr_score_cfg == tg_score_cfg) and _lipid_class in ['DG']:
+            elif (
+                    usr_score_cfg == '' or usr_score_cfg == pl_score_cfg or usr_score_cfg == tg_score_cfg) and _lipid_class in [
+                'DG']:
                 self.ui.tab_a_loadscorecfg_le.setText(dg_score_cfg)
 
     def a_get_params(self):
@@ -773,7 +790,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         file_info_str = 'FA white list files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_falisttg_le)
 
-    def c_load_falist_lg(self):
+    def c_load_falist_dg(self):
         file_info_str = 'FA white list files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_lmcalcfalist_le)
 
@@ -937,6 +954,81 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         back_info_str = self.batch_worker.infoback()
         print('Got info: ', back_info_str)
         self.ui.tab_b_statusrun_pte.insertPlainText(back_info_str)
+
+    def lm_worker_on_finish(self):
+        self.lm_thread.quit()
+        print('!! LipidMaster table export worker stopped !!')
+        self.ui.tab_c_lmrun_pb.setText(QtGui.QApplication.translate('MainWindow',
+                                                                    'Generate Lipid Master table >>>', None,
+                                                                    QtGui.QApplication.UnicodeUTF8))
+        self.ui.tab_b_runbatch_pb.setEnabled(True)
+        self.ui.tab_a_runhunter_pb.setEnabled(True)
+        self.ui.tab_c_lmrun_pb.setEnabled(True)
+
+    def lm_worker_hunter(self):
+
+        self.ui.tab_c_lmstatus_pte.clear()
+
+        _lipid_class_info = str(self.ui.tab_c_lipidclass_cmb.currentText())
+        lipid_class_checker = re.compile(r'(.*)( [(])(\w{2,3})([)] )(.*)')
+        lipid_class_match = lipid_class_checker.match(_lipid_class_info)
+
+        lipid_class_chosen = False
+        fa_list_chosen = False
+        lm_export_chosen = False
+        if lipid_class_match:
+            lipid_class_info_lst = lipid_class_match.groups()
+            usr_lipid_class = lipid_class_info_lst[2]
+            usr_lipid_charge = lipid_class_info_lst[4]
+            lipid_class_chosen = True
+        else:
+            usr_lipid_class = ''
+            usr_lipid_charge = ''
+            self.ui.tab_c_lmstatus_pte.appendPlainText('\n!! Please select a lipid class!!')
+
+        usr_ms2_ppm = self.ui.tab_c_lmms2ppm_spb.value()
+
+        fawhitelist_path_str = str(self.ui.tab_c_lmcalcfalist_le.text())
+        lm_export_path_str = str(self.ui.tab_c_lmexport_le.text())
+
+        if os.path.isfile(fawhitelist_path_str):
+            fa_list_chosen = True
+        else:
+            self.ui.tab_c_lmstatus_pte.appendPlainText('\n!! Please select a FA list!!')
+        if len(lm_export_path_str) > 0:
+            lm_export_chosen = True
+        else:
+            self.ui.tab_c_lmstatus_pte.appendPlainText('\n!! Please select a location to save the LipidMaster table!!')
+
+        if lipid_class_chosen is True and fa_list_chosen is True and lm_export_chosen is True:
+
+            os.chdir(self.lipidhunter_cwd)
+
+            composer_param_dct = {'lipid_type': usr_lipid_class,
+                                  'charge_mode': usr_lipid_charge,
+                                  'exact_position': 'FALSE',
+                                  'ms2ppm': usr_ms2_ppm,
+                                  'fa_whitelist': fawhitelist_path_str,
+                                  'export_path': lm_export_path_str,
+                                  }
+            print(composer_param_dct)
+            self.ui.tab_c_lmstatus_pte.appendPlainText('>>> Start to generate LipidMaster table...')
+
+            self.ui.tab_c_lmrun_pb.setText(QtGui.QApplication.translate('MainWindow', '... Generating ...',
+                                                                        None, QtGui.QApplication.UnicodeUTF8))
+            self.ui.tab_b_runbatch_pb.setEnabled(False)
+            self.ui.tab_a_runhunter_pb.setEnabled(False)
+            self.ui.tab_c_lmrun_pb.setEnabled(False)
+
+            self.lm_worker.request_work(composer_param_dct)
+        else:
+            self.ui.tab_c_lmstatus_pte.appendPlainText('!! Please check your settings and try again !!\n')
+
+    def lm_worker_info_update(self):
+
+        back_info_str = self.lm_worker.infoback()
+        print('Got info: ', back_info_str)
+        self.ui.tab_c_lmstatus_pte.appendPlainText(back_info_str)
 
 
 class SingleWorker(QtCore.QObject):
@@ -1182,27 +1274,65 @@ class BatchWorker(QtCore.QObject):
         self.finished.emit()
 
 
-class LipidMasterWorker(QtCore.QObject):
+class LMWorker(QtCore.QObject):
     workRequested = QtCore.Signal()
     finished = QtCore.Signal()
     info_update = QtCore.Signal(str)
 
     def __init__(self, parent=None):
-        super(LipidMasterWorker, self).__init__(parent)
+        super(LMWorker, self).__init__(parent)
         self.lm_params_dct = {}
         self.info_str = ''
 
     def request_work(self, lm_params_dct):
         """
         Get parameters from Main window
-        :param(dict) lm_params_dct: a dict contains all configurations from all batch files
+        :param(dict) lm_params_dct: a dict contains all params for LipidMaster table generator
         """
         self.workRequested.emit()
         self.lm_params_dct = lm_params_dct
 
     def infoback(self):
-
         return self.info_str
+
+    def run_lm_generator(self):
+
+        t_start = time.time()
+
+        lipidcomposer = LipidComposer()
+        usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=self.lm_params_dct,
+                                                          ms2_ppm=self.lm_params_dct['ms2ppm'])
+
+        self.info_str = ('==> Number of predicted lipids (discrete form): %i' % usr_lipid_master_df.shape[0])
+        self.infoback()
+        self.info_update.emit(self.info_str)
+
+        abs_export_path = os.path.abspath(self.lm_params_dct['export_path'])
+        abs_export_folder = os.path.dirname(abs_export_path)
+        if os.path.isdir(abs_export_folder):
+            pass
+        else:
+            os.mkdir(os.path.abspath(abs_export_folder))
+        try:
+            usr_lipid_master_df.to_csv(abs_export_path)
+            self.info_str = ('==> --> Lipid Master table Saved as: \n %s' % abs_export_path)
+            self.infoback()
+            self.info_update.emit(self.info_str)
+
+        except Exception as _err:
+            print(_err)
+            self.info_str = '\n %s \n' % _err
+            self.infoback()
+            self.info_update.emit(self.info_str)
+
+        t_end = time.time() - t_start
+
+        time.sleep(0.25)
+        self.lm_params_dct = {}
+        self.info_str = '\n>>> FINISHED in %.3f Sec <<<' % t_end
+        self.infoback()
+        self.info_update.emit(self.info_str)
+        self.finished.emit()
 
 
 if __name__ == '__main__':

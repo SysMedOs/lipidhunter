@@ -966,23 +966,25 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         if usr_lipid_class in ['TG'] and usr_charge in ['[M+H]+', '[M+NH4]+']:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
-                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i', '[M-(FA1)+H]+_i',
-                                '[M-(FA2)+H]+_i', '[M-(FA3)+H]+_i']
+                                'DDA#', 'Scan#',
+                                'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
+                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
+                                '[M-(FA1)+H]+_i', '[M-(FA2)+H]+_i', '[M-(FA3)+H]+_i']
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+Na]+']:
             # TODO (georgia.angelidou@uni-leipzig.de): need to solve the problem for the below sections
             # '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
-                                '[M-(FA1)+Na]+_i',
-                                '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i']
+                                'DDA#', 'Scan#',
+                                'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
+                                '[M-(FA1)+Na]+_i', '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i',
+                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',]
         elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
             # problem with the following key:  'FA2_[FA-H2O+H]_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
-                                '[MG(FA2)-H2O+H]+_i']
+                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]_i',
+                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i']
         else:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',

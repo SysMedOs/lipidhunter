@@ -533,13 +533,36 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         else:
             frag_lst_dg = ['[M-(FA1)+H]+', '[M-(FA2)+H]+', '[M-(FA3)+H]+']
     elif lipid_class in ['TG'] and charge in ['[M+Na]+']:
-        frag_lst_fa = ['[FA-H2O+H]+']
-        frag_lst = ['[MG-H2O+H]+']
-        frag_lst_dg = ['[M-(FA1-H+Na)+H]+', '[M-(FA2-H+Na)+H]+', '[M-(FA3-H+Na)+H]+']
-        frag_lst_dg_w = ['[M-(FA1)+Na]+', '[M-(FA2)+Na]+', '[M-(FA3)+Na]+']
+        if weight_dct['FA1_[FA-H2O+H]+']['Weight'] == 0 or weight_dct['FA2_[FA-H2O+H]+']['Weight'] == 0 or \
+                weight_dct['FA3_[FA-H2O+H]+']['Weight'] == 0:
+            frag_lst_fa = []
+        else:
+            frag_lst_fa = ['[FA-H2O+H]+']
+        if weight_dct['[MG(FA1)-H2O+H]+']['Weight'] == 0 or weight_dct['[MG(FA2)-H2O+H]+']['Weight'] == 0 or \
+                weight_dct['[MG(FA3)-H2O+H]+']['Weight'] == 0:
+            frag_lst = []
+        else:
+            frag_lst = ['[MG-H2O+H]+']
+
+        if weight_dct['[M-(FA1-H+Na)+H]+']['Weight'] == 0 or weight_dct['[M-(FA2-H+Na)+H]+']['Weight'] == 0 or \
+                weight_dct['[M-(FA3-H+Na)+H]+']['Weight'] == 0:
+            frag_lst_dg = []
+        else:
+            frag_lst_dg = ['[M-(FA1-H+Na)+H]+', '[M-(FA2-H+Na)+H]+', '[M-(FA3-H+Na)+H]+']
+        if weight_dct['[M-(FA1)+Na]+']['Weight'] == 0 or weight_dct['[M-(FA2)+Na]+']['Weight'] == 0 or \
+                weight_dct['[M-(FA3)+Na]+']['Weight'] == 0:
+            frag_lst_dg_w = []
+        else:
+            frag_lst_dg_w = ['[M-(FA1)+Na]+', '[M-(FA2)+Na]+', '[M-(FA3)+Na]+']
     elif lipid_class in ['DG'] and charge in ['[M+NH4]+', '[M+H]+']:
-        frag_lst_fa = ['[FA-H2O+H]+']
-        frag_lst = ['[MG-H2O+H]+']
+        if weight_dct['FA1_[FA-H2O+H]+']['Weight'] == 0 or weight_dct['FA2_[FA-H2O+H]+']['Weight'] == 0 :
+            frag_lst_fa = []
+        else:
+            frag_lst_fa = ['[FA-H2O+H]+']
+        if weight_dct['[MG(FA1)-H2O+H]+']['Weight'] == 0 or weight_dct['[MG(FA2)-H2O+H]+']['Weight'] == 0:
+            frag_lst = []
+        else:
+            frag_lst = ['[MG-H2O+H]+']
     else:
         # TODO (zhixu.ni@uni-leipzig.de): consider more situations here
         # TODO (georgia.angelidou@uni-leipzig.de): SM fragmentation pattern
