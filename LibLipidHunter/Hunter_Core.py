@@ -1103,7 +1103,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 6
+    core_count = 3
     max_ram = 10  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
     save_lipidmaster_table = True  # True --> export LipidMasterTable to output folder, False --> NO export
@@ -1112,10 +1112,11 @@ if __name__ == '__main__':
     # ['TG', 'thermo', '[M+NH4]+']]
 
     usr_test_lst = [
-        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
-        ['PE', 'waters', '[M-H]-', 'PE_waters'],
+        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        # ['PE', 'waters', '[M-H]-', 'PE_waters'],
         # ['TG', 'waters', '[M+H]+', 'TG_waters'],
-        ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
+        # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
+        # ['TG', 'waters', '[M+Na]+', 'TG_waters_Na'],
         # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
     ]
 
@@ -1180,6 +1181,9 @@ if __name__ == '__main__':
                 rt_range = [9, 13]
             else:
                 mzml = False
+
+            if lipid_class == 'TG' and charge == '[M+Na]+':
+                tg_base_dct['score_cfg'] = r'../ConfigurationFiles/03-Score_weight_TG_Na.xlsx'
 
             _test_dct.update(tg_base_dct)
         elif usr_test[0] in ['DG']:

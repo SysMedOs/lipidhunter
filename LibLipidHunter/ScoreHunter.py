@@ -743,6 +743,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
             list(('scan_time', 'DDA_rank', 'scan_number', 'Lib_mz', 'FORMULA', 'Ion', key_type, 'Lib_mz', 'MS1_XIC_mz',
                   'MS2_PR_mz')))].iloc[0]
         _usr_ms2_rt = _samemz_se['scan_time']
+
         _usr_ms2_dda_rank = _samemz_se['DDA_rank']
         _usr_ms2_scan_id = _samemz_se['scan_number']
         _usr_mz_lib = _samemz_se['Lib_mz']
@@ -755,6 +756,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         _ms1_df = usr_spec_info_dct['ms1_df']
         _ms2_df = usr_spec_info_dct['ms2_df']
         _ms2_idx = usr_spec_info_dct['_ms2_spec_idx']
+        _ms1_rt = usr_spec_info_dct['ms1_rt']
 
         print(core_count, _usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged)
         # _mz_amm_flag  = isotope_hunter.get_isotope_fragments(_ms1_df, )
@@ -768,7 +770,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
             _ms2_df = pd.DataFrame()
             _score_ms2_df = pd.DataFrame()
 
-        if _ms1_pr_mz > 0.0 and not _ms1_df.empty and not _ms2_df.empty and _ms1_pr_i > 0.0:
+        if _ms1_pr_mz > 0.0 and not _ms1_df.empty and not _ms2_df.empty and _ms1_pr_i > 0.0 and _ms1_rt < _usr_ms2_rt:
             print(core_count, '>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
 
             isotope_score_info_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
