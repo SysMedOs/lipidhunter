@@ -79,6 +79,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_b_maxsubram_spb.setValue(5)
         self.ui.tab_b_maxsubram_spb.setValue(5)
         self.ui.tabframe.removeTab(3)
+        self.ui.tab_c_isotopescoremode_lb.hide()
+        self.ui.tab_c_isotopescoremode_cmb.hide()
+        self.ui.tab_c_scoremode_lb.hide()
+        self.ui.tab_c_scoremode_cmb.hide()
 
         # define single worker
         self.single_worker = SingleWorker()
@@ -385,8 +389,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         if lipid_class_match:
             lipid_class_info_lst = lipid_class_match.groups()
             _lipid_class = lipid_class_info_lst[2]
+            _lipid_charge = lipid_class_info_lst[4]
         else:
             _lipid_class = ''
+            _lipid_charge = ''
 
         pl_fa_cfg = self.ui.tab_c_falistpl_le.text()
         tg_fa_cfg = self.ui.tab_c_falisttg_le.text()
@@ -397,21 +403,26 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         usr_score_cfg = self.ui.tab_a_loadscorecfg_le.text()
 
         if _lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
-            if usr_fa_cfg == '' or usr_fa_cfg == tg_fa_cfg:
+            if usr_fa_cfg in ['', tg_fa_cfg]:
                 self.ui.tab_a_loadfalist_le.setText(pl_fa_cfg)
-            if usr_score_cfg == '' or usr_score_cfg == tg_score_cfg or usr_score_cfg == dg_score_cfg:
+            if usr_score_cfg in ['', dg_score_cfg, tg_score_cfg]:
                 self.ui.tab_a_loadscorecfg_le.setText(pl_score_cfg)
         elif _lipid_class in ['TG', 'DG', 'MG']:
-            if usr_fa_cfg == '' or usr_fa_cfg == pl_fa_cfg:
+            if usr_fa_cfg in ['', pl_fa_cfg]:
                 self.ui.tab_a_loadfalist_le.setText(tg_fa_cfg)
-            if (
-                    usr_score_cfg == '' or usr_score_cfg == pl_score_cfg or usr_score_cfg == dg_score_cfg) and _lipid_class in [
-                'TG']:
-                self.ui.tab_a_loadscorecfg_le.setText(tg_score_cfg)
-            elif (
-                    usr_score_cfg == '' or usr_score_cfg == pl_score_cfg or usr_score_cfg == tg_score_cfg) and _lipid_class in [
-                'DG']:
-                self.ui.tab_a_loadscorecfg_le.setText(dg_score_cfg)
+            if _lipid_class in ['TG'] and _lipid_charge not in ['[M+Na]+']:
+                if usr_score_cfg in ['', pl_score_cfg, dg_score_cfg]:
+                    self.ui.tab_a_loadscorecfg_le.setText(tg_score_cfg)
+            elif _lipid_class in ['TG'] and _lipid_charge in ['[M+Na]+']:
+                self.ui.tab_a_loadscorecfg_le.setText('')
+            elif _lipid_class in ['DG']:
+                if usr_score_cfg in ['', pl_score_cfg, tg_score_cfg]:
+                    self.ui.tab_a_loadscorecfg_le.setText(dg_score_cfg)
+            else:
+                self.ui.tab_a_loadscorecfg_le.setText('')
+        else:
+            self.ui.tab_a_loadfalist_le.setText('')
+            self.ui.tab_a_loadscorecfg_le.setText('')
 
     def a_get_params(self):
 
@@ -472,10 +483,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         ms2_th = self.ui.tab_a_ms2threshold_spb.value()
         ms_ppm = self.ui.tab_a_msppm_spb.value()
         ms2_ppm = self.ui.tab_a_ms2ppm_spb.value()
-        hg_th = self.ui.tab_a_hgthreshold_spb.value()
-        hg_ppm = self.ui.tab_a_hgppm_spb.value()
         ms2_info_threshold = self.ui.tab_a_ms2infoth_dspb.value() * 0.01
-        hgms2_info_threshold = self.ui.tab_a_ms2hginfoth_dspb.value() * 0.01
 
         ms_max = 0
         if self.ui.tab_a_msmax_chb.isChecked() and self.ui.tab_a_msmax_spb.value() > ms_th + 1:
@@ -539,13 +547,12 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                             'img_output_folder_str': img_output_folder_str,
                             'xlsx_output_path_str': xlsx_output_path_str, 'rt_start': rt_start, 'rt_end': rt_end,
                             'mz_start': mz_start, 'mz_end': mz_end, 'dda_top': dda_top, 'ms_th': ms_th,
-                            'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm, 'hg_th': hg_th, 'hg_ppm': hg_ppm,
+                            'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm,
                             'rank_score_filter': rank_score_filter, 'isotope_score_filter': isotope_score_filter,
                             'score_filter': score_filter,
                             'lipid_type': _lipid_class, 'charge_mode': _lipid_charge,
                             'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor,
                             'ms2_infopeak_threshold': ms2_info_threshold,
-                            'ms2_hginfopeak_threshold': hgms2_info_threshold,
                             'rank_score': rank_score, 'fast_isotope': fast_isotope,
                             'hunter_folder': self.lipidhunter_cwd,
                             'hunter_start_time': start_time_str, 'experiment_mode': usr_exp_mode,
@@ -692,10 +699,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         cfg_params_dct = {}
         cfg_error = ''
 
-        i_type_key_lst = ['ms_th', 'ms2_th', 'hg_th', 'ms_ppm', 'ms2_ppm', 'hg_ppm', 'dda_top', 'sn_ratio',
+        i_type_key_lst = ['ms_th', 'ms2_th', 'ms_ppm', 'ms2_ppm', 'dda_top', 'sn_ratio',
                           'core_number', 'max_ram', 'img_dpi', 'ms_max']
         f_type_key_lst = ['rt_start', 'rt_end', 'mz_start', 'mz_end', 'pr_window', 'ms2_infopeak_threshold',
-                          'ms2_hginfopeak_threshold', 'score_filter', 'isotope_score_filter', 'rank_score_filter']
+                          'score_filter', 'isotope_score_filter', 'rank_score_filter']
         b_type_key_lst = ['rank_score', 'fast_isotope', 'tag_all_sn']
 
         print('Input LipidHunter configuration file : ', batch_cfg)

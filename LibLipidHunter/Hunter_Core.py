@@ -72,7 +72,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         'isotope_score_filter': 75.0, 'fast_isotope': False,
                         'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
                         'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
-                        'hg_th': 10.0, 'hg_ppm': 100.0, 'ms2_hginfopeak_threshold': 0.001,
                         'score_cfg': r'D:\lipidhunter\ConfigurationFiles\Score_cfg.xlsx',
                         'hunter_folder': r'D:\lipidhunter',
                         'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300}
@@ -105,17 +104,14 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     usr_ms1_threshold = param_dct['ms_th']
     usr_ms1_max = param_dct['ms_max']
     usr_ms2_threshold = param_dct['ms2_th']
-    # usr_ms2_hg_threshold = param_dct['hg_th']
     usr_ms1_ppm = param_dct['ms_ppm']
     usr_ms2_ppm = param_dct['ms2_ppm']
     usr_ms1_precision = usr_ms1_ppm * 1e-6
     usr_ms2_precision = usr_ms2_ppm * 1e-6
-    # usr_ms2_hg_precision = param_dct['hg_ppm'] * 1e-6
     # usr_rank_score_filter = param_dct['rank_score_filter']
     # usr_score_filter = param_dct['score_filter']
     # usr_isotope_score_filter = param_dct['isotope_score_filter']
     # usr_ms2_info_th = param_dct['ms2_infopeak_threshold']
-    # usr_ms2_hginfo_th = param_dct['ms2_hginfopeak_threshold']
     # usr_rank_mode = param_dct['rank_score']
     # usr_fast_isotope = param_dct['fast_isotope']
     if 'xic_ppm' in list(param_dct.keys()):
@@ -1207,10 +1203,8 @@ if __name__ == '__main__':
             if vendor == 'waters':
                 _cfg_dct['ms_ppm'] = 20
                 _cfg_dct['ms2_ppm'] = 30  # 50
-                _cfg_dct['hg_ppm'] = 100  # 200
                 _cfg_dct['ms_th'] = 750
                 _cfg_dct['ms2_th'] = 10
-                _cfg_dct['hg_th'] = 10
                 _cfg_dct['dda_top'] = 6
 
                 _test_dct.update(_cfg_dct)
@@ -1220,10 +1214,8 @@ if __name__ == '__main__':
             elif vendor == 'thermo':
                 _cfg_dct['ms_ppm'] = 5
                 _cfg_dct['ms2_ppm'] = 20
-                _cfg_dct['hg_ppm'] = 50
                 _cfg_dct['ms_th'] = 10000
                 _cfg_dct['ms2_th'] = 2000
-                _cfg_dct['hg_th'] = 2000
                 _cfg_dct['dda_top'] = 10
 
                 _test_dct.update(_cfg_dct)
@@ -1232,10 +1224,8 @@ if __name__ == '__main__':
             elif vendor == 'sciex':
                 _cfg_dct['ms_ppm'] = 10
                 _cfg_dct['ms2_ppm'] = 60
-                _cfg_dct['hg_ppm'] = 60
                 _cfg_dct['ms_th'] = 5000
                 _cfg_dct['ms2_th'] = 100  # Can get 2000/1000/750/500 depends how strict should be the identification
-                _cfg_dct['hg_th'] = 1000
                 _cfg_dct['dda_top'] = 15
                 ms_ppm_SCIEXS = 10
 
@@ -1245,10 +1235,8 @@ if __name__ == '__main__':
             elif vendor == 'agilent':
                 _cfg_dct['ms_ppm'] = 50
                 _cfg_dct['ms2_ppm'] = 100
-                _cfg_dct['hg_ppm'] = 100
                 _cfg_dct['ms_th'] = 1000
                 _cfg_dct['ms2_th'] = 10  # Can get 2000/1000/750/500 depends how strict should be the identification
-                _cfg_dct['hg_th'] = 10
                 _cfg_dct['dda_top'] = 4
 
                 _test_dct.update(_cfg_dct)
