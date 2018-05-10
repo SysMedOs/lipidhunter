@@ -882,6 +882,18 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                         else:
                             specific_dct = {}
 
+                        specific_ion_count = 0
+                        unspecific_ion_count = 0
+
+                        if 'TARGET_FRAG' in list(specific_dct.keys()):
+                            specific_ion_count += specific_dct['TARGET_FRAG'].shape[0]
+                        if 'TARGET_NL' in list(specific_dct.keys()):
+                            specific_ion_count += specific_dct['TARGET_NL'].shape[0]
+                        if 'OTHER_FRAG' in list(specific_dct.keys()):
+                            unspecific_ion_count += specific_dct['OTHER_FRAG'].shape[0]
+                        if 'OTHER_NL' in list(specific_dct.keys()):
+                            unspecific_ion_count += specific_dct['OTHER_NL'].shape[0]
+
                         print(core_count, 'Rank_score: --> passed', rank_score)
                         print(core_count, '\n',
                               obs_info_df[['BULK_ABBR', 'DISCRETE_ABBR', 'RANK_SCORE', 'scan_time', 'OBS_RESIDUES']]
@@ -921,8 +933,8 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                         obs_info_df['DDA#'] = _usr_ms2_dda_rank
                         obs_info_df['MS2_PR_mz'] = _usr_ms2_pr_mz
                         obs_info_df['Scan#'] = _usr_ms2_scan_id
-                        # obs_info_df['#Specific_peaks'] = (target_frag_count + target_nl_count)
-                        # obs_info_df['#Contaminated_peaks'] = (other_frag_count + other_nl_count)
+                        obs_info_df['#Specific_peaks'] = specific_ion_count
+                        obs_info_df['#Unspecific_peaks'] = unspecific_ion_count
                         obs_info_df['ppm'] = _exact_ppm
                         obs_info_df['img_name'] = img_name_core[1:]
 
