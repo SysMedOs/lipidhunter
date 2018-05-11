@@ -1116,12 +1116,12 @@ if __name__ == '__main__':
     # ['TG', 'thermo', '[M+NH4]+']]
 
     usr_test_lst = [
-        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
         # ['PE', 'waters', '[M-H]-', 'PE_waters'],
         # ['TG', 'waters', '[M+H]+', 'TG_waters'],
         # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
         # ['TG', 'waters', '[M+Na]+', 'TG_waters_Na'],
-        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
+        ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
     ]
 
     # set the default files
