@@ -960,7 +960,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                          inplace=True)
         if usr_lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', '#Observed_FA', '#Specific_peaks', '#Unspecific_peaks',
                                 'FA1_[FA-H]-_i', 'FA2_[FA-H]-_i',
                                 '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
@@ -968,7 +969,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                 ]
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+H]+', '[M+NH4]+']:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', '#Observed_FA',
                                 '[M-(FA1)+H]+_i', '[M-(FA2)+H]+_i', '[M-(FA3)+H]+_i',
                                 '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
@@ -978,7 +980,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             # TODO (georgia.angelidou@uni-leipzig.de): need to solve the problem for the below sections
             # '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', '#Observed_FA',
                                 '[M-(FA1)+Na]+_i', '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i',
                                 '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
@@ -987,14 +990,16 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
             # problem with the following key:  'FA2_[FA-H2O+H]_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', '#Observed_FA',
                                 '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i',
                                 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]_i',
                                 ]
         else:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', '#Observed_FA',
                                 ]
 
@@ -1217,7 +1222,7 @@ if __name__ == '__main__':
 
             if vendor == 'waters':
                 _cfg_dct['ms_ppm'] = 20
-                _cfg_dct['ms2_ppm'] = 30  # 50
+                _cfg_dct['ms2_ppm'] = 50  # 50
                 _cfg_dct['ms_th'] = 750
                 _cfg_dct['ms2_th'] = 10
                 _cfg_dct['dda_top'] = 6

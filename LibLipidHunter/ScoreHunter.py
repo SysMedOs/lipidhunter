@@ -935,10 +935,14 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                         obs_info_df['DDA#'] = _usr_ms2_dda_rank
                         obs_info_df['MS2_PR_mz'] = _usr_ms2_pr_mz
                         obs_info_df['Scan#'] = _usr_ms2_scan_id
+                        obs_info_df['ISOTOPE_SCORE'] = isotope_score
                         obs_info_df['#Specific_peaks'] = specific_ion_count
                         obs_info_df['#Unspecific_peaks'] = unspecific_ion_count
                         obs_info_df['ppm'] = _exact_ppm
                         obs_info_df['img_name'] = img_name_core[1:]
+
+                        usr_spec_info_dct['ms1_mz'] = isotope_score_info_dct['obs_pr_mz']
+                        usr_spec_info_dct['ms1_i'] = isotope_score_info_dct['obs_pr_i']
 
                         tmp_df = tmp_df.append(obs_info_df)
                         if save_fig is True:
