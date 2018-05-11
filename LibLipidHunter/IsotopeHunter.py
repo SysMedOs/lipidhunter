@@ -129,7 +129,9 @@ class IsotopeHunter(object):
                         isotope_pattern_calc *= k_ploy
                 isotope_pattern = list(isotope_pattern_calc.coef)[:isotope_number + 1]
             except ValueError:
-                print('==>Elements error --> change to 13C mode for this compound -->')
+                # print(_e)
+                print('==>Too large to use full elements for isotope pattern --> '
+                      'use 13C only mode for this compound...')
                 # consider C only --> binomial expansion 3x faster
                 isotope_pattern = stats.binom.pmf(list(range(0, isotope_number + 1)), c_count, ration_13c12c)
 
@@ -146,7 +148,9 @@ class IsotopeHunter(object):
 
         peak_top = False
 
-        if ms1_precision <= 200e-6:
+        if ms1_precision <= 100e-6:
+            top_precision = min(ms1_precision * 5, 100e-6)
+        elif 100e-6 < ms1_precision <= 200e-6:
             top_precision = min(ms1_precision * 5, 200e-6)
         else:
             top_precision = min(ms1_precision * 2, 500e-6)
@@ -177,7 +181,8 @@ class IsotopeHunter(object):
                   .format(pr=pr_obs_mz, delta=top_delta, obs_i=pr_obs_i, max_i=top_obs_i))
         return peak_top
 
-    def calc_isotope_score(self, isotope_pattern_df, spec_df, ms1_precision, ms1_pr_i, core_count=1, deconv=[]):
+    def calc_isotope_score(self, isotope_pattern_df, spec_df, ms1_precision, ms1_pr_i,
+                           core_count=1, deconv=[], mode='m'):
 
         isotope_checker_dct = {}
         isotope_score_delta = 0
@@ -244,19 +249,28 @@ class IsotopeHunter(object):
             obs_pr_mz = isotope_checker_dct[0]['obs_mz']
             obs_pr_i = isotope_checker_dct[0]['obs_i']
         except Exception as _e:
-            print(_e)
+            print('Exception', _e)
             theo_pr_mz = 0
             obs_pr_mz = 0
             obs_pr_i = 0
-        peak_top = self.peak_top_checker(theo_pr_mz, spec_df, core_count=core_count, ms1_precision=ms1_precision)
-        if peak_top is True:
+
+        if mode == 'm':
+            peak_top = self.peak_top_checker(theo_pr_mz, spec_df, core_count=core_count, ms1_precision=ms1_precision)
+            if peak_top is True:
+                isotope_calc_dct = {'isotope_checker_dct': isotope_checker_dct, 'isotope_score': isotope_score,
+                                    'isotope_m1_score': isotope_m1_score, 'm2_i': m2_i, 'theo_i_lst': theo_i_lst,
+                                    'obs_pr_mz': obs_pr_mz, 'obs_pr_i': obs_pr_i}
+            else:
+                isotope_calc_dct = {'isotope_checker_dct': {}, 'isotope_score': 0,
+                                    'isotope_m1_score': 0, 'm2_i': 0, 'theo_i_lst': [],
+                                    'obs_pr_mz': 0, 'obs_pr_i': 0}
+        else:
             isotope_calc_dct = {'isotope_checker_dct': isotope_checker_dct, 'isotope_score': isotope_score,
                                 'isotope_m1_score': isotope_m1_score, 'm2_i': m2_i, 'theo_i_lst': theo_i_lst,
                                 'obs_pr_mz': obs_pr_mz, 'obs_pr_i': obs_pr_i}
-        else:
-            isotope_calc_dct = {'isotope_checker_dct': {}, 'isotope_score': 0,
-                                'isotope_m1_score': 0, 'm2_i': 0, 'theo_i_lst': [],
-                                'obs_pr_mz': 0, 'obs_pr_i': 0}
+
+        print('mode', mode)
+        print(isotope_calc_dct)
 
         return isotope_calc_dct
 
@@ -354,7 +368,7 @@ class IsotopeHunter(object):
                 ms1_pr_i -= m0_base_abs
                 m0_deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs]
                 isotope_calc_dct = self.calc_isotope_score(isotope_pattern_df, spec_df, ms1_precision, ms1_pr_i,
-                                                           core_count=core_count, deconv=m0_deconv_lst)
+                                                           core_count=core_count, deconv=m0_deconv_lst, mode='m')
 
                 isotope_checker_dct = isotope_calc_dct['isotope_checker_dct']
                 isotope_score = isotope_calc_dct['isotope_score']
@@ -366,9 +380,10 @@ class IsotopeHunter(object):
                 obs_pr_mz = isotope_calc_dct['obs_pr_mz']
                 obs_pr_i = isotope_calc_dct['obs_pr_i']
 
-                if 0.1 < isotope_score < score_filter:
+                if isotope_score < score_filter:
+                    print('... check if M+2 is potential M+0 of M+2H ...')
 
-                    # check if M+2 is potential M+0 of M+H2
+                    # check if M+2 is potential M+0 of M+2H
                     # M+H2 elements
 
                     m2_elem_dct = self.get_elements(formula + 'H2')
@@ -377,7 +392,7 @@ class IsotopeHunter(object):
                     m2_i -= m2_base_abs
                     m2_deconv_lst = [m2_base_abs, m3_base_abs, 0]
                     m2_calc_dct = self.calc_isotope_score(m2_isotope_pattern_df, spec_df, ms1_precision, m2_i,
-                                                          core_count=core_count, deconv=m2_deconv_lst)
+                                                          core_count=core_count, deconv=m2_deconv_lst, mode='m+2')
 
                     m2_checker_dct = m2_calc_dct['isotope_checker_dct']
                     # use M+1 only
@@ -393,7 +408,7 @@ class IsotopeHunter(object):
                         del m2_checker_dct[2]
 
                     print(core_count, 'M+2-> M+4 has isotope score for [M+H2]: %.1f' % m2_score)
-                    if m2_score >= 60 and isotope_m1_score >= score_filter:
+                    if m2_score >= score_filter and isotope_m1_score >= score_filter:
                         isotope_score = isotope_m1_score
                         del isotope_checker_dct[2]
                     else:

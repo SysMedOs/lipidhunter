@@ -297,8 +297,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             ms_zoom_pic.plot(plt_ms_zoom_df['mz'].values.tolist(), plt_ms_zoom_df['i'].values.tolist(),
                              'grey', lw=1, zorder=1)
         elif vendor == 'thermo':
-            ms_zoom_pic.stem(plt_ms_zoom_df['mz'].values.tolist(), plt_ms_zoom_df['i'].values.tolist(),
-                             markerfmt=' ')  # zorder=1
+            marker_l, stem_l, base_l = ms_zoom_pic.stem(plt_ms_zoom_df['mz'].values.tolist(),
+                                                        plt_ms_zoom_df['i'].values.tolist(), markerfmt=' ')  # zorder=1
+            plt.setp(stem_l, color='grey')
         else:
             ms_zoom_pic.plot(plt_ms_zoom_df['mz'].values.tolist(), plt_ms_zoom_df['i'].values.tolist(),
                              'grey', lw=1, zorder=1)
@@ -438,8 +439,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         ident_table.set_fontsize(8)
 
         # plot MS/MS
-        msms_pic.stem(ms2_df['mz'].values.tolist(), ms2_df['i'].values.tolist(),
-                      markerfmt=' ', basefmt='k-')  # zorder=10
+        marker_l, stem_l, base_l = msms_pic.stem(ms2_df['mz'].values.tolist(), ms2_df['i'].values.tolist(),
+                                                 markerfmt=' ', basefmt='k-')  # zorder=10
+        plt.setp(stem_l, color='grey')
         msms_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
         msms_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
         msms_pic.set_ylabel("Intensity", fontsize=10)
@@ -545,9 +547,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # msms spectrum zoomed < 400 start
         if not _msms_low_df.empty:
-            msms_low_pic.stem(_msms_low_df['mz'].values.tolist(),
-                              _msms_low_df['i'].values.tolist(),
-                              markerfmt=' ')
+            marker_l, stem_l, base_l = msms_low_pic.stem(_msms_low_df['mz'].values.tolist(),
+                                                         _msms_low_df['i'].values.tolist(), markerfmt=' ')
+            plt.setp(stem_l, color='grey')
             msms_low_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
             msms_low_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
             msms_low_pic.set_ylabel("Intensity", fontsize=10)
@@ -673,12 +675,13 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 if charge in ['[M+H]+', '[M+NH4]+'] and abbr[0:2] == 'TG':
                     _lyso_table = msms_high_pic.table(cellText=_lyso_table_vals, colWidths=_lyso_col_width_lst,
                                                       colLabels=_lyso_col_labels, loc='upper center', cellLoc='center',
-                                                      bbox=[0.4, 1 - (0.067 * (len(_lyso_table_vals) + 1)), 0.5, 0.067*(len(_lyso_table_vals)+1)])
+                                                      bbox=[0.4, 1 - (0.067 * (len(_lyso_table_vals) + 1)), 0.5,
+                                                            0.067 * (len(_lyso_table_vals) + 1)])
                 elif charge in ['[M+Na]+'] and abbr[0:2] == 'TG':
                     _lyso_table = msms_high_pic.table(cellText=_lyso_table_vals, colWidths=_lyso_col_width_lst,
                                                       colLabels=_lyso_col_labels, loc='upper left', cellLoc='center',
                                                       bbox=[0, 1 - (0.067 * (len(_lyso_table_vals) + 1)), 0.45,
-                                                                    0.067 * (len(_lyso_table_vals) + 1)])
+                                                            0.067 * (len(_lyso_table_vals) + 1)])
                 else:
                     _lyso_table = msms_high_pic.table(cellText=_lyso_table_vals, colWidths=_lyso_col_width_lst,
                                                       colLabels=_lyso_col_labels, loc='upper center', cellLoc='center')
@@ -698,8 +701,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         # msms spectrum zoomed > 400 start
         if not _msms_high_df.empty:
             msms_high_max = _msms_high_df['i'].max()
-            msms_high_pic.stem(_msms_high_df['mz'].values.tolist(), _msms_high_df['i'].values.tolist(),
-                               markerfmt=' ')
+            marker_l, stem_l, base_l = msms_high_pic.stem(_msms_high_df['mz'].values.tolist(),
+                                                          _msms_high_df['i'].values.tolist(), markerfmt=' ')
+            plt.setp(stem_l, color='grey')
             msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
             msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
             msms_high_pic.set_ylabel("Intensity", fontsize=10)
