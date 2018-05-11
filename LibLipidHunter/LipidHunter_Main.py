@@ -83,6 +83,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_c_isotopescoremode_cmb.hide()
         self.ui.tab_c_scoremode_lb.hide()
         self.ui.tab_c_scoremode_cmb.hide()
+        self.ui.tab_c_parallization_cmb.hide()
 
         # define single worker
         self.single_worker = SingleWorker()
@@ -745,10 +746,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             config.add_section('settings')
             config.set('settings', 'fa_white_list_cfg_pl', self.ui.tab_c_falistpl_le.text())
             config.set('settings', 'fa_white_list_cfg_tg', self.ui.tab_c_falisttg_le.text())
-            config.set('settings', 'lipid_specific_cfg', self.ui.tab_c_hgcfg_le.text())
             config.set('settings', 'score_cfg_pl', self.ui.tab_c_scorecfgpl_le.text())
             config.set('settings', 'score_cfg_tg', self.ui.tab_c_scorecfgtg_le.text())
             config.set('settings', 'score_cfg_dg', self.ui.tab_c_scorecfgdg_le.text())
+            config.set('settings', 'lipid_specific_cfg', self.ui.tab_c_hgcfg_le.text())
 
             if self.ui.tab_c_scoremode_cmb.currentIndex() == 0:
                 config.set('settings', 'score_mode', 'RANK')

@@ -905,7 +905,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         output_df.drop_duplicates(keep='first', inplace=True)
         output_header_lst = output_df.columns.values.tolist()
         # TODO (georgia.angeldou@uni-leipzig.de): Add the info for the DG
-        # TODO (zhixu.ni@uni-leipzig.de): check following if segment
         if usr_lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
             output_list = ['FA1_[FA-H]-_i', 'FA2_[FA-H]-_i', '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
                            '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i']
@@ -1128,12 +1127,12 @@ if __name__ == '__main__':
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
     pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_PL.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_PL.xlsx'}
+                   'lipid_specific_cfg': r'../ConfigurationFiles/03-Specific_ions.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/02-Score_weight_PL.xlsx'}
 
     tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG-DG.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG.xlsx'}
+                   'lipid_specific_cfg': r'../ConfigurationFiles/03-Specific_ions.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/02-Score_weight_TG.xlsx'}
 
     usr_test_dct = {}
     usr_test_dct_keys = []
@@ -1183,7 +1182,7 @@ if __name__ == '__main__':
                 mzml = False
 
             if lipid_class == 'TG' and charge == '[M+Na]+':
-                tg_base_dct['score_cfg'] = r'../ConfigurationFiles/03-Score_weight_TG_Na.xlsx'
+                tg_base_dct['score_cfg'] = r'../ConfigurationFiles/02-Score_weight_TG_Na.xlsx'
 
             _test_dct.update(tg_base_dct)
         elif usr_test[0] in ['DG']:
