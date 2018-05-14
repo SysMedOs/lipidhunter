@@ -48,7 +48,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'10, May, 2018'
+        version_date = r'15, May, 2018'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
                         r'LipidHunter 2 Beta # Released Date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
@@ -69,6 +69,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         # disable un necessary UI elements
         self.ui.tab_a_runhunter_pgb.hide()
+        self.ui.tab_a_msmax_chb.hide()
         self.ui.tab_b_runbatch_pgb.hide()
         self.ui.tab_c_runlm_pgb.hide()
         self.ui.tab_b_mutlimode_cmb.hide()
