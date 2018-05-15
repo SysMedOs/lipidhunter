@@ -355,10 +355,8 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                         try:
                             _fa_wfactor = weight_dct['%s' % _obs_peak]['Weight']
                         except Exception as _e:
-                            print(_e)
-
+                            print('[Exception] Cannot get fa_wfactor from weight_dct ...', _e)
                             _fa_wfactor = 0
-                            # print(KeyError, 'Line 286 %s' % _obs_site)
                             exit()
 
                         if not _score_obs_df.empty:
@@ -655,7 +653,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         lite_info_df.sort_values(by=['RANK_SCORE', 'DISCRETE_ABBR'], ascending=[False, True], inplace=True)
         lite_info_df.reset_index(drop=True, inplace=True)
     except Exception as _e:
-        print('lite_info_df.sort_values', _e)
+        print('[Exception] Failed to get lite_info_df.sort_values ...', _e)
         pass
     if not lite_info_df.empty and not post_ident_peak_df.empty:
         matched_checker = 1
@@ -759,7 +757,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         _ms2_idx = usr_spec_info_dct['_ms2_spec_idx']
         _ms1_rt = usr_spec_info_dct['ms1_rt']
 
-        print(core_count, _usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged, group_key)
+        print(core_count, _usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged)
         # _mz_amm_flag  = isotope_hunter.get_isotope_fragments(_ms1_df, )
 
         # use the max threshold from abs & relative intensity settings

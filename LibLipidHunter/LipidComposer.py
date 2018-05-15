@@ -674,7 +674,6 @@ class LipidComposer:
         usr_fa_df = pd.read_excel(param_dct['fa_whitelist'])
         usr_fa_df = usr_fa_df.fillna(value='F')
         print('=== ==> --> FA white list loaded >>>')
-        # print(usr_fa_df)
         lipid_comb_dct = self.gen_all_comb(lipid_class, usr_fa_df, position=position_set)
 
         lipid_info_dct = {}

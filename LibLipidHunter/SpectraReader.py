@@ -31,6 +31,7 @@ try:
 except ImportError:  # for python 2.7.14
     from ParallelFunc import ppm_window_para
 
+
 def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10,
                  ms1_precision=50e-6, ms2_precision=500e-6, vendor='waters', ms1_max=0):
 
@@ -166,7 +167,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                             scan_id_lst.append(_scan_id)
                             pr_mz_lst.append(pr_mz)
 
-                            print('MS1_spectrum -> index = {idx} @ scan_time:{rt} | DDA_events={dda_idx}'
+                            print('MS1_spectrum -> index = {idx} @ scan_time: {rt} | DDA_events={dda_idx}'
                                   .format(idx=spec_idx, dda_idx=dda_event_idx, rt=_scan_rt))
 
                         if _function in ms2_function_range_lst:
@@ -195,8 +196,8 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                             # else:
                             #     pass
 
-                            print('MS2_spectrum -> index = {idx} @ scan_time:{rt} | DDA_events={dda_idx} RANK {rank} | '
-                                  'PR_MZ:{mz}'
+                            print('MS2_spectrum -> index = {idx} @ scan_time: {rt} | DDA_events={dda_idx} RANK {rank}'
+                                  ' | PR_MZ: {mz}'
                                   .format(idx=spec_idx, dda_idx=dda_event_idx, rank=_function-1, mz=pr_mz, rt=_scan_rt))
 
             spec_idx += 1
@@ -227,7 +228,8 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                                 _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
                                 spec_dct[spec_idx] = _tmp_spec_df
                                 _tmp_spec_df.loc[:, 'rt'] = _scan_rt
-                                print('Reading MS1_survey_scan @:', _scan_rt)
+                                print('MS1_spectrum -> index = {idx} @ scan_time: {rt} | DDA_events={dda_idx}'
+                                      .format(idx=spec_idx, dda_idx=dda_event_idx, rt=_scan_rt))
                                 ms1_xic_df = ms1_xic_df.append(_tmp_spec_df)
                             else:
                                 print('empty_MS1_spectrum --> index = ', spec_idx)
@@ -235,13 +237,24 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
                         if ms_level == 2:
                             dda_rank_idx += 1
-                            pr_mz = _spectrum[scan_pr_mz_obo]
-                            _ms2_temp_spec_df = _tmp_spec_df.query('i >= %f' % ms2_threshold)
-                            if not _ms2_temp_spec_df.empty:
-                                spec_dct[spec_idx] = _ms2_temp_spec_df
-                                del _ms2_temp_spec_df
+                            if dda_rank_idx <= dda_top:
+                                pr_mz = _spectrum[scan_pr_mz_obo]
+                                _ms2_temp_spec_df = _tmp_spec_df.query('i >= %f' % ms2_threshold)
+                                if not _ms2_temp_spec_df.empty:
+                                    print('MS2_spectrum -> index = {idx} @ scan_time: {rt}'
+                                          ' | DDA_events={dda_idx} RANK {rank}'
+                                          ' | PR_MZ: {mz}'
+                                          .format(idx=spec_idx, dda_idx=dda_event_idx, rank=dda_rank_idx, mz=pr_mz,
+                                                  rt=_scan_rt))
+
+                                    spec_dct[spec_idx] = _ms2_temp_spec_df
+                                    del _ms2_temp_spec_df
+
+                                else:
+                                    print('empty_MS2_spectrum --> index = ', spec_idx)
                             else:
-                                print('empty_MS2_spectrum --> index = ', spec_idx)
+                                print('[WARNING] User set limit of DDA TOP %i -> Skip scan @ DDA event %i RANK %i'
+                                      % (dda_top, dda_event_idx, dda_rank_idx))
                             del _tmp_spec_df
 
                         spec_idx_lst.append(spec_idx)

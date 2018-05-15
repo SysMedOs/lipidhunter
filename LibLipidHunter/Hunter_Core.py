@@ -1183,8 +1183,8 @@ if __name__ == '__main__':
                 rt_range = [9, 15]  # max [9, 15]
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
-                mz_range = [600, 1000]  # 600, 1000
-                rt_range = [20, 28]  # 25.6, 25.8
+                mz_range = [600, 1000]  # 600, 1000 short 800 - 840
+                rt_range = [20, 28]  # [20, 28] short [24, 26]
             elif vendor == 'sciex':
                 mzml = tg_mzml_SCIEXS
                 mz_range = [900, 1000]  # 600, 1000
@@ -1246,7 +1246,7 @@ if __name__ == '__main__':
                 _cfg_dct['ms2_ppm'] = 20
                 _cfg_dct['ms_th'] = 10000
                 _cfg_dct['ms2_th'] = 2000
-                _cfg_dct['dda_top'] = 10
+                _cfg_dct['dda_top'] = 10  # 10
 
                 _test_dct.update(_cfg_dct)
                 usr_test_dct[usr_test[3]] = _test_dct

@@ -247,7 +247,10 @@ class IsotopeHunter(object):
             obs_pr_mz = isotope_checker_dct[0]['obs_mz']
             obs_pr_i = isotope_checker_dct[0]['obs_i']
         except Exception as _e:
-            print('Exception', _e)
+            if mode == 'm':
+                print(core_count, '[Exception] Cannot get Theoretical or observed PR m/z ...', _e)
+            else:
+                print(core_count, '... M+2 is NOT potential M+0 of M+2H ...', _e)
             theo_pr_mz = 0
             obs_pr_mz = 0
             obs_pr_i = 0
@@ -379,7 +382,7 @@ class IsotopeHunter(object):
                 obs_pr_i = isotope_calc_dct['obs_pr_i']
 
                 if isotope_score < score_filter:
-                    print('... check if M+2 is potential M+0 of M+2H ...')
+                    print(core_count, '... check if M+2 is potential M+0 of M+2H ...')
 
                     # check if M+2 is potential M+0 of M+2H
                     # M+H2 elements

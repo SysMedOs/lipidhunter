@@ -85,6 +85,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_c_scoremode_lb.hide()
         self.ui.tab_c_scoremode_cmb.hide()
         self.ui.tab_c_parallization_cmb.hide()
+        self.ui.tab_c_tag_all_fa_chb.hide()
 
         # define single worker
         self.single_worker = SingleWorker()
