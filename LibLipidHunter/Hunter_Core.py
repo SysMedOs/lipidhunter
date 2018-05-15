@@ -72,7 +72,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         'isotope_score_filter': 75.0, 'fast_isotope': False,
                         'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
                         'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
-                        'hg_th': 10.0, 'hg_ppm': 100.0, 'ms2_hginfopeak_threshold': 0.001,
                         'score_cfg': r'D:\lipidhunter\ConfigurationFiles\Score_cfg.xlsx',
                         'hunter_folder': r'D:\lipidhunter',
                         'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300}
@@ -105,17 +104,14 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     usr_ms1_threshold = param_dct['ms_th']
     usr_ms1_max = param_dct['ms_max']
     usr_ms2_threshold = param_dct['ms2_th']
-    # usr_ms2_hg_threshold = param_dct['hg_th']
     usr_ms1_ppm = param_dct['ms_ppm']
     usr_ms2_ppm = param_dct['ms2_ppm']
     usr_ms1_precision = usr_ms1_ppm * 1e-6
     usr_ms2_precision = usr_ms2_ppm * 1e-6
-    # usr_ms2_hg_precision = param_dct['hg_ppm'] * 1e-6
     # usr_rank_score_filter = param_dct['rank_score_filter']
     # usr_score_filter = param_dct['score_filter']
     # usr_isotope_score_filter = param_dct['isotope_score_filter']
     # usr_ms2_info_th = param_dct['ms2_infopeak_threshold']
-    # usr_ms2_hginfo_th = param_dct['ms2_hginfopeak_threshold']
     # usr_rank_mode = param_dct['rank_score']
     # usr_fast_isotope = param_dct['fast_isotope']
     if 'xic_ppm' in list(param_dct.keys()):
@@ -909,7 +905,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         output_df.drop_duplicates(keep='first', inplace=True)
         output_header_lst = output_df.columns.values.tolist()
         # TODO (georgia.angeldou@uni-leipzig.de): Add the info for the DG
-        # TODO (zhixu.ni@uni-leipzig.de): check following if segment
         if usr_lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
             output_list = ['FA1_[FA-H]-_i', 'FA2_[FA-H]-_i', '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
                            '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i']
@@ -961,33 +956,52 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 output_round_dct[_t] = 2
         output_df = output_df.round(output_round_dct)
 
-        output_df.rename(columns={'#Contaminated_peaks': '#Unspecific_peaks'}, inplace=True)
-        # TODO (georgia.angelidou@uni-leipzig.de): Add the DG section
-        if usr_lipid_class in ['TG'] and usr_charge in ['[M+H]+', '[M+NH4]+']:
+        output_df.rename(columns={'OBS_RESIDUES': '#Observed_FA'},
+                         inplace=True)
+        if usr_lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
-                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i', '[M-(FA1)+H]+_i',
-                                '[M-(FA2)+H]+_i', '[M-(FA3)+H]+_i']
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA', '#Specific_peaks', '#Unspecific_peaks',
+                                'FA1_[FA-H]-_i', 'FA2_[FA-H]-_i',
+                                '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
+                                '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i'
+                                ]
+        elif usr_lipid_class in ['TG'] and usr_charge in ['[M+H]+', '[M+NH4]+']:
+            output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA',
+                                '[M-(FA1)+H]+_i', '[M-(FA2)+H]+_i', '[M-(FA3)+H]+_i',
+                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
+                                'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
+                                ]
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+Na]+']:
             # TODO (georgia.angelidou@uni-leipzig.de): need to solve the problem for the below sections
             # '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
-                                '[M-(FA1)+Na]+_i',
-                                '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i']
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA',
+                                '[M-(FA1)+Na]+_i', '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i',
+                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
+                                'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i'
+                                ]
         elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
             # problem with the following key:  'FA2_[FA-H2O+H]_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
-                                '[MG(FA2)-H2O+H]+_i']
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA',
+                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i',
+                                'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]_i',
+                                ]
         else:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H]-_i', 'FA2_[FA-H]-_i', '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
-                                '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i']
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA',
+                                ]
 
         final_output_df = output_df[output_short_lst]
         final_output_df = final_output_df.sort_values(by=['MS1_obs_mz', 'MS2_scan_time', 'RANK_SCORE'],
@@ -1093,8 +1107,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 3
-    max_ram = 5  # int only
+    core_count = 4
+    max_ram = 10  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
     save_lipidmaster_table = True  # True --> export LipidMasterTable to output folder, False --> NO export
 
@@ -1102,11 +1116,12 @@ if __name__ == '__main__':
     # ['TG', 'thermo', '[M+NH4]+']]
 
     usr_test_lst = [
-        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
         # ['PE', 'waters', '[M-H]-', 'PE_waters'],
         # ['TG', 'waters', '[M+H]+', 'TG_waters'],
         # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
-        ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
+        # ['TG', 'waters', '[M+Na]+', 'TG_waters_Na'],
+        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
     ]
 
     # set the default files
@@ -1116,13 +1131,13 @@ if __name__ == '__main__':
     tg_mzml_SCIEXS = r'../Test/mzML/20140613_HSL002_Positive_01.mzML'  # Dataset
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
-    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_PL.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_PL.xlsx'}
+    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_PL.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_PL.xlsx'}
 
-    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG-DG.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG.xlsx'}
+    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
 
     usr_test_dct = {}
     usr_test_dct_keys = []
@@ -1171,6 +1186,9 @@ if __name__ == '__main__':
             else:
                 mzml = False
 
+            if lipid_class == 'TG' and charge == '[M+Na]+':
+                tg_base_dct['score_cfg'] = r'../ConfigurationFiles/2-Score_weight_TG_Na.xlsx'
+
             _test_dct.update(tg_base_dct)
         elif usr_test[0] in ['DG']:
             # TODO (georgia.angelidou@uni-leipzig.de): remember to change the code below moer specific for DG
@@ -1204,11 +1222,9 @@ if __name__ == '__main__':
 
             if vendor == 'waters':
                 _cfg_dct['ms_ppm'] = 20
-                _cfg_dct['ms2_ppm'] = 30  # 50
-                _cfg_dct['hg_ppm'] = 100  # 200
+                _cfg_dct['ms2_ppm'] = 50  # 50
                 _cfg_dct['ms_th'] = 750
                 _cfg_dct['ms2_th'] = 10
-                _cfg_dct['hg_th'] = 10
                 _cfg_dct['dda_top'] = 6
 
                 _test_dct.update(_cfg_dct)
@@ -1218,10 +1234,8 @@ if __name__ == '__main__':
             elif vendor == 'thermo':
                 _cfg_dct['ms_ppm'] = 5
                 _cfg_dct['ms2_ppm'] = 20
-                _cfg_dct['hg_ppm'] = 50
                 _cfg_dct['ms_th'] = 10000
                 _cfg_dct['ms2_th'] = 2000
-                _cfg_dct['hg_th'] = 2000
                 _cfg_dct['dda_top'] = 10
 
                 _test_dct.update(_cfg_dct)
@@ -1230,10 +1244,8 @@ if __name__ == '__main__':
             elif vendor == 'sciex':
                 _cfg_dct['ms_ppm'] = 10
                 _cfg_dct['ms2_ppm'] = 60
-                _cfg_dct['hg_ppm'] = 60
                 _cfg_dct['ms_th'] = 5000
                 _cfg_dct['ms2_th'] = 100  # Can get 2000/1000/750/500 depends how strict should be the identification
-                _cfg_dct['hg_th'] = 1000
                 _cfg_dct['dda_top'] = 15
                 ms_ppm_SCIEXS = 10
 
@@ -1243,10 +1255,8 @@ if __name__ == '__main__':
             elif vendor == 'agilent':
                 _cfg_dct['ms_ppm'] = 50
                 _cfg_dct['ms2_ppm'] = 100
-                _cfg_dct['hg_ppm'] = 100
                 _cfg_dct['ms_th'] = 1000
                 _cfg_dct['ms2_th'] = 10  # Can get 2000/1000/750/500 depends how strict should be the identification
-                _cfg_dct['hg_th'] = 10
                 _cfg_dct['dda_top'] = 4
 
                 _test_dct.update(_cfg_dct)

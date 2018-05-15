@@ -38,9 +38,9 @@ except ImportError:  # for python 2.7.14
     from PanelPlotter import gen_plot
 
 
-def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, hg_ms2_ppm=100, vendor='waters', exp_mode='LC-MS'):
+def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, ms2_ppm=100, vendor='waters', exp_mode='LC-MS'):
     ms2_max_i = ms2_df['i'].max()
-    ms2_precision = hg_ms2_ppm * 0.000001
+    ms2_precision = ms2_ppm * 0.000001
     target_frag_df = key_frag_dct['target_frag_df']
     target_nl_df = key_frag_dct['target_nl_df']
     other_frag_df = key_frag_dct['other_frag_df']
@@ -362,24 +362,18 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                             exit()
 
                         if not _score_obs_df.empty:
-
                             _score_obs_df['fragment_abbr'] = _score_obs_df['obs_abbr']
                             _score_obs_df['discrete_abbr'] = _lipid_abbr
                             _score_obs_df['lipid_discrete_abbr'] = _lipid_abbr
                             _score_obs_df.set_index(['fragment_abbr', 'lipid_discrete_abbr'], inplace=True)
                             ident_obs_peak_df = ident_obs_peak_df.append(_score_obs_df)
 
-                            # _score_fa_abbr_lst = _score_obs_df['fa_abbr'].values.tolist()
                             _score_obs_type_lst = _score_obs_df['obs_type_calc'].values.tolist()
                             _score_obs_rank_lst = _score_obs_df['obs_rank'].values.tolist()
                             _score_obs_i_lst = _score_obs_df['i_mod'].values.tolist()
                             _score_obs_i_r_lst = _score_obs_df['obs_i_r_mod'].values.tolist()
-                            # _score_obs_i_lst = _score_obs_df['i'].values.tolist()
-                            # _score_obs_i_r_lst = _score_obs_df['obs_i_r'].values.tolist()
-                            # _score_obs_abbr_lst = _score_obs_df['obs_abbr'].values.tolist()
 
                             _obs_idx = _score_obs_type_lst.index(obs_typ)
-                            # _obs_idx = _score_fa_abbr_lst.index(_fa_abbr)
                             _obs_rank = _score_obs_rank_lst[_obs_idx]
 
                             # print(_lipid_abbr, _fa_abbr, 'Weight Info', _obs_peak, fa_site_lst, _fa_wfactor,
@@ -430,7 +424,6 @@ def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, rankscore_fil
     lite_info_df2['RANK_SCORE'] = 0.0
     lite_info_df2['OBS_RESIDUES'] = 0
 
-
     if lipid_class in ['TG']:
         resi_site_lst = ['FA1_ABBR', 'FA2_ABBR', 'FA3_ABBR']
     elif lipid_class in ['PA', 'PC', 'PE', 'PG', 'PS', 'PI', 'PIP', 'DG', 'SM']:
@@ -476,7 +469,7 @@ def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, rankscore_fil
 
     if not sliced_info_df.empty:
         ident_peak_df, lite_info_df2 = prep_rankscore(obs_dct, lite_info_df2, sliced_info_df, weight_dct,
-                                                     lipid_class=lipid_class)
+                                                      lipid_class=lipid_class)
     else:
         ident_peak_df = pd.DataFrame()
 
@@ -533,13 +526,36 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         else:
             frag_lst_dg = ['[M-(FA1)+H]+', '[M-(FA2)+H]+', '[M-(FA3)+H]+']
     elif lipid_class in ['TG'] and charge in ['[M+Na]+']:
-        frag_lst_fa = ['[FA-H2O+H]+']
-        frag_lst = ['[MG-H2O+H]+']
-        frag_lst_dg = ['[M-(FA1-H+Na)+H]+', '[M-(FA2-H+Na)+H]+', '[M-(FA3-H+Na)+H]+']
-        frag_lst_dg_w = ['[M-(FA1)+Na]+', '[M-(FA2)+Na]+', '[M-(FA3)+Na]+']
+        if weight_dct['FA1_[FA-H2O+H]+']['Weight'] == 0 or weight_dct['FA2_[FA-H2O+H]+']['Weight'] == 0 or \
+                weight_dct['FA3_[FA-H2O+H]+']['Weight'] == 0:
+            frag_lst_fa = []
+        else:
+            frag_lst_fa = ['[FA-H2O+H]+']
+        if weight_dct['[MG(FA1)-H2O+H]+']['Weight'] == 0 or weight_dct['[MG(FA2)-H2O+H]+']['Weight'] == 0 or \
+                weight_dct['[MG(FA3)-H2O+H]+']['Weight'] == 0:
+            frag_lst = []
+        else:
+            frag_lst = ['[MG-H2O+H]+']
+
+        if weight_dct['[M-(FA1-H+Na)+H]+']['Weight'] == 0 or weight_dct['[M-(FA2-H+Na)+H]+']['Weight'] == 0 or \
+                weight_dct['[M-(FA3-H+Na)+H]+']['Weight'] == 0:
+            frag_lst_dg = []
+        else:
+            frag_lst_dg = ['[M-(FA1-H+Na)+H]+', '[M-(FA2-H+Na)+H]+', '[M-(FA3-H+Na)+H]+']
+        if weight_dct['[M-(FA1)+Na]+']['Weight'] == 0 or weight_dct['[M-(FA2)+Na]+']['Weight'] == 0 or \
+                weight_dct['[M-(FA3)+Na]+']['Weight'] == 0:
+            frag_lst_dg_w = []
+        else:
+            frag_lst_dg_w = ['[M-(FA1)+Na]+', '[M-(FA2)+Na]+', '[M-(FA3)+Na]+']
     elif lipid_class in ['DG'] and charge in ['[M+NH4]+', '[M+H]+']:
-        frag_lst_fa = ['[FA-H2O+H]+']
-        frag_lst = ['[MG-H2O+H]+']
+        if weight_dct['FA1_[FA-H2O+H]+']['Weight'] == 0 or weight_dct['FA2_[FA-H2O+H]+']['Weight'] == 0:
+            frag_lst_fa = []
+        else:
+            frag_lst_fa = ['[FA-H2O+H]+']
+        if weight_dct['[MG(FA1)-H2O+H]+']['Weight'] == 0 or weight_dct['[MG(FA2)-H2O+H]+']['Weight'] == 0:
+            frag_lst = []
+        else:
+            frag_lst = ['[MG-H2O+H]+']
     else:
         # TODO (zhixu.ni@uni-leipzig.de): consider more situations here
         # TODO (georgia.angelidou@uni-leipzig.de): SM fragmentation pattern
@@ -689,12 +705,9 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
     charge_mode = param_dct['charge_mode']
     output_folder = param_dct['img_output_folder_str']
     usr_ms2_th = param_dct['ms2_th']
-    # usr_hg_th = param_dct['hg_th']
     usr_ms1_precision = param_dct['ms_ppm'] * 1e-6
-    # usr_ms2_ppm = param_dct['ms2_ppm']
-    usr_hg_ppm = param_dct['hg_ppm']
+    usr_ms2_ppm = param_dct['ms2_ppm']
     usr_ms2_info_th_p = param_dct['ms2_infopeak_threshold']
-    usr_hg_info_th_p = param_dct['ms2_hginfopeak_threshold']
 
     usr_isotope_score_filter = param_dct['isotope_score_filter']
     usr_rankscore_filter = param_dct['rank_score_filter']
@@ -726,9 +739,11 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         # TODO (georgia.angelidou@uni-leipzig.de): Here should be the control for the ms values to avoid problems
         usr_spec_info_dct = core_spec_dct[group_key]
         key_type = '%s_FORMULA' % _subgroup_df['Ion'].iloc[0]
-        _samemz_se = _subgroup_df.loc[:, _subgroup_df.columns.isin(list(('scan_time', 'DDA_rank', 'scan_number', 'Lib_mz', 'FORMULA', 'Ion', key_type, 'Lib_mz', 'MS1_XIC_mz',
-                'MS2_PR_mz')))].iloc[0]
+        _samemz_se = _subgroup_df.loc[:, _subgroup_df.columns.isin(
+            list(('scan_time', 'DDA_rank', 'scan_number', 'Lib_mz', 'FORMULA', 'Ion', key_type, 'Lib_mz', 'MS1_XIC_mz',
+                  'MS2_PR_mz')))].iloc[0]
         _usr_ms2_rt = _samemz_se['scan_time']
+
         _usr_ms2_dda_rank = _samemz_se['DDA_rank']
         _usr_ms2_scan_id = _samemz_se['scan_number']
         _usr_mz_lib = _samemz_se['Lib_mz']
@@ -741,6 +756,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         _ms1_df = usr_spec_info_dct['ms1_df']
         _ms2_df = usr_spec_info_dct['ms2_df']
         _ms2_idx = usr_spec_info_dct['_ms2_spec_idx']
+        _ms1_rt = usr_spec_info_dct['ms1_rt']
 
         print(core_count, _usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged)
         # _mz_amm_flag  = isotope_hunter.get_isotope_fragments(_ms1_df, )
@@ -749,18 +765,12 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         if 'i' in _ms2_df.columns.values.tolist():
             _ms2_max_i = _ms2_df['i'].max()
             ms2_threshold = max(usr_ms2_th, _ms2_max_i * usr_ms2_info_th_p)
-            ms2_hg_threshold = max(usr_ms2_th, _ms2_max_i * usr_hg_info_th_p)
             _score_ms2_df = _ms2_df.query('i > %f' % ms2_threshold)
-            if ms2_hg_threshold != ms2_threshold:
-                _score_ms2_hg_df = _ms2_df.query('i > %f' % ms2_hg_threshold)
-            else:
-                _score_ms2_hg_df = _score_ms2_df
         else:
             _ms2_df = pd.DataFrame()
             _score_ms2_df = pd.DataFrame()
-            _score_ms2_hg_df = pd.DataFrame()
 
-        if _ms1_pr_mz > 0.0 and not _ms1_df.empty and not _ms2_df.empty and _ms1_pr_i > 0.0:
+        if _ms1_pr_mz > 0.0 and not _ms1_df.empty and not _ms2_df.empty and _ms1_pr_i > 0.0 and _ms1_rt < _usr_ms2_rt:
             print(core_count, '>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
 
             isotope_score_info_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
@@ -868,11 +878,23 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
 
                     if matched_checker > 0:
                         if len(key_frag_dct) > 0:
-                            specific_dct = get_specific_peaks(key_frag_dct, _usr_mz_lib, _score_ms2_hg_df,
-                                                              hg_ms2_ppm=usr_hg_ppm, vendor=usr_vendor,
+                            specific_dct = get_specific_peaks(key_frag_dct, _usr_mz_lib, _score_ms2_df,
+                                                              ms2_ppm=usr_ms2_ppm, vendor=usr_vendor,
                                                               exp_mode=exp_mode)
                         else:
                             specific_dct = {}
+
+                        specific_ion_count = 0
+                        unspecific_ion_count = 0
+
+                        if 'TARGET_FRAG' in list(specific_dct.keys()):
+                            specific_ion_count += specific_dct['TARGET_FRAG'].shape[0]
+                        if 'TARGET_NL' in list(specific_dct.keys()):
+                            specific_ion_count += specific_dct['TARGET_NL'].shape[0]
+                        if 'OTHER_FRAG' in list(specific_dct.keys()):
+                            unspecific_ion_count += specific_dct['OTHER_FRAG'].shape[0]
+                        if 'OTHER_NL' in list(specific_dct.keys()):
+                            unspecific_ion_count += specific_dct['OTHER_NL'].shape[0]
 
                         print(core_count, 'Rank_score: --> passed', rank_score)
                         print(core_count, '\n',
@@ -913,10 +935,14 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                         obs_info_df['DDA#'] = _usr_ms2_dda_rank
                         obs_info_df['MS2_PR_mz'] = _usr_ms2_pr_mz
                         obs_info_df['Scan#'] = _usr_ms2_scan_id
-                        # obs_info_df['#Specific_peaks'] = (target_frag_count + target_nl_count)
-                        # obs_info_df['#Contaminated_peaks'] = (other_frag_count + other_nl_count)
+                        obs_info_df['ISOTOPE_SCORE'] = isotope_score
+                        obs_info_df['#Specific_peaks'] = specific_ion_count
+                        obs_info_df['#Unspecific_peaks'] = unspecific_ion_count
                         obs_info_df['ppm'] = _exact_ppm
                         obs_info_df['img_name'] = img_name_core[1:]
+
+                        usr_spec_info_dct['ms1_mz'] = isotope_score_info_dct['obs_pr_mz']
+                        usr_spec_info_dct['ms1_i'] = isotope_score_info_dct['obs_pr_i']
 
                         tmp_df = tmp_df.append(obs_info_df)
                         if save_fig is True:

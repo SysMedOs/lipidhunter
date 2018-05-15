@@ -764,26 +764,26 @@ class LipidComposer:
 
 
 if __name__ == '__main__':
-    fa_lst_file = r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles/01-FA_Whitelist_TG_small.xlsx'
+    fa_lst_file = r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx'
 
     # Note:
     # exact position means to consider the poition from the FA white list that the user give but,
     # in the case that the user define 2 different FA for both positions then:
     # When it is false it will give only one option
-    # and when it is TRUE to give both compinations that these 2 FA an make (incase of phospholipids)
-    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'TG', 'charge_mode': '[M+Na]+',
+    # and when it is TRUE to give both compinations that these 2 FA an make (in case of phospholipids)
+    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_type': 'TG', 'charge_mode': '[M+NH4]+',
                      'exact_position': 'FALSE'}
 
     composer = LipidComposer()
-    usr_lipid_master_df = composer.compose_lipid(param_dct=usr_param_dct, ms2_ppm=50)
+    usr_lipid_master_df = composer.compose_lipid(param_dct=usr_param_dct, ms2_ppm=30)
+    print('Lipid Master Table generated...')
 
-    master_xlsx = r'../Temp/LipidMaster_Whitelist_TG[M+Na]+.xlsx'
-    fa_xlsx = r'../Temp/LipidMaster_FAlist.xlsx'
+    master_csv = r'../Temp/LipidMaster_Whitelist_TG_ML.csv'
+    fa_csv = r'../Temp/LipidMaster_FAlist_ML.csv'
 
-    calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_type'],
-                                        r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles/01-FA_Whitelist_TG-DG.xlsx',
-                                        ms2_ppm=50)
+    calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_type'], fa_lst_file, ms2_ppm=50)
 
     print(calc_fa_df)
-    usr_lipid_master_df.to_excel(master_xlsx)
-    calc_fa_df.to_excel(fa_xlsx)
+    usr_lipid_master_df.to_csv(master_csv)
+    calc_fa_df.to_csv(fa_csv)
+    print('Finished...')
