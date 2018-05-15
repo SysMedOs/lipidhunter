@@ -107,7 +107,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
     print('Instrument vendor: %s' % vendor)
 
-    dda_add = 0
+    first_full_dda = 0
 
     if vendor == 'waters':
         scan_info_re = re.compile(r'(.*)(function=)(\d{1,2})(.*)(scan=)(\d*)(.*)')
@@ -140,7 +140,8 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                             _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
                             # if _tmp_spec_df.shape[0] > 0:
                             # dda_event_idx += 1
-                            dda_add = 1
+                            first_full_dda = 1
+                            dda_event_idx += 1
                             # _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False).head(1000)
                             if ms1_max > ms1_threshold:
                                 _tmp_spec_df = _tmp_spec_df.query('%f <= i <= %f' %
@@ -164,7 +165,9 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                             dda_rank_lst.append(_function - 1)  # function 1 in Waters file is MS level
                             scan_id_lst.append(_scan_id)
                             pr_mz_lst.append(pr_mz)
-                            print('MS1_spectrum --> index = ', spec_idx,  '; DDA_events = ', dda_event_idx)
+
+                            print('MS1_spectrum -> index = {idx} @ scan_time:{rt} | DDA_events={dda_idx}'
+                                  .format(idx=spec_idx, dda_idx=dda_event_idx, rt=_scan_rt))
 
                         if _function in ms2_function_range_lst:
 
@@ -186,14 +189,15 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                             scan_id_lst.append(_scan_id)
                             pr_mz_lst.append(pr_mz)
 
-                            if dda_add == 1:
-                                dda_event_idx += 1
-                                dda_add = 0
-                            else:
-                                pass
+                            # if first_full_dda == 1:
+                            #     dda_event_idx += 1
+                            #     first_full_dda = 0
+                            # else:
+                            #     pass
 
-                            print('MS2_spectrum -> index = {idx} pr_mz:{mz}, scan_time:{rt}, DDA_events={dda_idx}'
-                                  .format(idx=spec_idx, mz=pr_mz, rt=_scan_rt, dda_idx=dda_event_idx))
+                            print('MS2_spectrum -> index = {idx} @ scan_time:{rt} | DDA_events={dda_idx} RANK {rank} | '
+                                  'PR_MZ:{mz}'
+                                  .format(idx=spec_idx, dda_idx=dda_event_idx, rank=_function-1, mz=pr_mz, rt=_scan_rt))
 
             spec_idx += 1
 
@@ -249,7 +253,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
 
                         spec_idx += 1
     else:
-        print ('No vendor with that name')
+        print('No vendor with that name')
         exit()
     scan_info_df = pd.DataFrame(data=scan_info_dct, columns=['dda_event_idx', 'spec_index', 'scan_time',
                                                              'DDA_rank', 'scan_number', 'MS2_PR_mz'])

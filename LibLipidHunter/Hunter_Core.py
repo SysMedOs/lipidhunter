@@ -426,10 +426,15 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     split_seg = 1
     lipid_all_scan_num = checked_info_df['scan_checker'].nunique()
     lipid_all_scan_lst = list(checked_info_df['scan_checker'].unique())
-    print('total number of features: ', lipid_all_scan_num)
+
     # chk_info_df_lst = []
 
     # checked_info_df may become very large for TG in Thermo files, need to be divided for Multiprocessing
+    checked_info_df_groups = checked_info_df.groupby(['Formula', 'scan_checker'])
+    checked_info_key_lst = list(checked_info_df_groups.groups.keys())
+    checked_info_key_num = len(checked_info_key_lst)
+    print('Total number of spectra features: %i | Number of proposed Formula: %i'
+          % (lipid_all_scan_num, checked_info_key_num))
 
     if lipid_all_scan_num > (usr_core_num * 100):
 
@@ -448,7 +453,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
         spec_part_lst = [lipid_all_scan_lst[k: k + spec_part_len] for k in range(0, lipid_all_scan_num,
                                                                                  spec_part_len)]
-        print('lipid_part_number: ', len(spec_part_lst), ' lipid_part_len:', spec_part_len)
         # split_seg = len(spec_part_lst)
 
         for part_lst in spec_part_lst:
@@ -467,12 +471,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                     for k in range(0, _tmp_group_key_num, spec_sub_len)]
                 spec_part_key_lst.append((spec_sub_key_lst, _tmp_info_groups))
 
+        print('Distributed tasks into %i parts with max %i features ...' % (len(spec_part_lst), spec_part_len))
+
     else:
-        checked_info_df_groups = checked_info_df.groupby(['Formula', 'scan_checker'])
-        checked_info_key_lst = list(checked_info_df_groups.groups.keys())
-        spec_sub_len = int(math.ceil(lipid_all_scan_num / usr_core_num))
+
+        spec_sub_len = int(math.ceil(checked_info_key_num / usr_core_num))
         spec_sub_key_lst = [checked_info_key_lst[k: k + spec_sub_len] for k in
-                            range(0, len(checked_info_key_lst), spec_sub_len)]
+                            range(0, checked_info_key_num, spec_sub_len)]
         # chk_info_df_lst.append([checked_info_df, checked_info_df_groups])
         spec_part_key_lst.append((spec_sub_key_lst, checked_info_df_groups))
 
@@ -481,7 +486,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         # print('lipid_part_number: ', len(lipid_part_key_lst), ' lipid_part_len:', len(lipid_part_key_lst[0]))
 
         part_tot = len(spec_part_key_lst)
-        print('part_tot', part_tot)
+        # print('part_tot', part_tot)
         part_counter = 1
         queue = ''
 
@@ -489,6 +494,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
             spec_sub_key_lst = spec_sub_lst[0]
             sub_info_groups = spec_sub_lst[1]
+
             # print('spec_sub_key_lst')
             # print(spec_sub_key_lst)
             # print('sub_info_groups')
@@ -517,6 +523,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         spec_result = parallel_pool.apply_async(get_spec_info, args=(_sub_lst, sub_info_groups,
                                                                                      usr_scan_info_df, os_typ, queue))
                         worker_count += 1
+                        if worker_count > usr_core_num:
+                            worker_count = 1
                         spec_results_lst.append(spec_result)
 
                 parallel_pool.close()
@@ -585,7 +593,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
                     print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
                     sub_spec_dct = get_spec_info(_sub_lst, sub_info_groups, usr_scan_info_df, os_typ, queue)
-                    worker_count += 1
+
                     if len(list(sub_spec_dct.keys())) > 0:
                         lipid_spec_info_dct.update(sub_spec_dct)
 
@@ -597,6 +605,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     # Single process ONLY. usr_spectra_pl is too big in RAM --> RAM leaking during copy
     lipid_spec_dct = {}
     spec_info_key_lst = list(lipid_spec_info_dct.keys())
+    print(spec_info_key_lst)
     for _spec_group_key in spec_info_key_lst:
         _spec_info_dct = lipid_spec_info_dct[_spec_group_key]
         _usr_ms2_pr_mz = _spec_info_dct['MS2_PR_mz']
@@ -771,6 +780,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                             lipid_sub_lst = tuple([lipid_sub_lst])
                         print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
                         if len(list(lipid_sub_dct.keys())) > 0:
+
                             lipid_info_result = parallel_pool.apply_async(get_lipid_info,
                                                                           args=(param_dct, usr_fa_df, _chk_info_df,
                                                                                 _chk_info_gp, lipid_sub_lst,

@@ -258,10 +258,10 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                                    markerfmt=' ')
             plt.setp(stem_l, color='grey')
         _marker_line, _stem_lines, _base_line = ms_pic.stem([ms1_pr_mz], dash_i, markerfmt=' ')
-        plt.setp(_stem_lines, color=(0.0, 0.4, 1.0, 0.3), linewidth=4)
+        plt.setp(_stem_lines, color=(0.0, 0.4, 1.0, 0.2), linewidth=4)
         _marker_line, _stem_lines, _base_line = ms_pic.stem([ms1_pr_mz], [ms1_pr_i], markerfmt='D')
         # plt.setp(_stem_lines, color=(0.4, 1.0, 0.8, 1.0))
-        plt.setp(_marker_line, markerfacecolor=(0.2, 0.8, 1.0, 1.0), markersize=5, markeredgewidth=0)
+        plt.setp(_marker_line, markerfacecolor=(0.3, 0.9, 1.0, 0.8), markersize=5, markeredgewidth=0)
         plt.setp(_stem_lines, visible=False)
         ms_pic.text(ms1_pr_mz, ms1_pr_i, '%.4f' % ms1_pr_mz,
                     fontsize=7, color=(0.0, 0.4, 1.0, 1.0))
@@ -274,7 +274,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         _ms_pkl_top_df = ms1_df.sort_values(by='i', ascending=False).head(10)
         _ms_pkl_top_peak_list = list(zip(_ms_pkl_top_df['mz'].values.tolist(), _ms_pkl_top_df['i'].values.tolist()))
         for _ms_pkl_top_peak in _ms_pkl_top_peak_list:
-            if _ms_pkl_top_peak[0] != ms1_pr_mz:
+            if _ms_pkl_top_peak[0] < ms1_pr_mz - 5 or _ms_pkl_top_peak[0] > ms1_pr_mz + 5:  # avoid overlay with pr_mz
                 _ms_pkl_top_peak_str = '%.4f' % _ms_pkl_top_peak[0]
                 _ms_pkl_top_peak_y = _ms_pkl_top_peak[1]
                 ms_pic.text(_ms_pkl_top_peak[0], _ms_pkl_top_peak_y, _ms_pkl_top_peak_str, fontsize=6)
@@ -310,22 +310,29 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # isotope region | if any peak in M-1.0034
 
-        if ms1_precision < 19e-6:
-            m_pre_theo_box = patches.Rectangle((lib_mz - 1.0034 - ms1_delta, 0), 2 * ms1_delta, ms1_pr_i,
-                                               facecolor=(1.0, 0.0, 0.0, 0.5), edgecolor='none', zorder=1)
-        else:
-            m_pre_theo_box = patches.Rectangle((lib_mz - 1.0034 - ms1_delta, 0), 2 * ms1_delta, ms1_pr_i,
-                                               facecolor=(1.0, 0.0, 0.0, 0.5), edgecolor=(1.0, 0.0, 0.0, 0.5),
-                                               zorder=1, fill=False, linewidth=0.6, linestyle='dotted')
-            if deconv_lst[0] > 0:
-                m0_theo_df = plt_ms_zoom_df.query('%.4f <= mz <= %4f'
-                                                  % ((lib_mz - 1.0034 - ms1_delta - ms1_delta),
-                                                     (lib_mz - 1.0034 - ms1_delta + ms1_delta)))
-                m0_theo_i_box = patches.Rectangle((lib_mz - 1.0034 - ms1_delta, 0),
-                                                  2 * ms1_delta, m0_theo_df['i'].max(),
-                                                  facecolor=(1.0, 0.0, 0.0, 0.5), edgecolor='none', zorder=1)
-                ms_zoom_pic.add_patch(m0_theo_i_box)
-        ms_zoom_pic.add_patch(m_pre_theo_box)
+        if deconv_lst[0] > 0:
+            pseudo_m0_theo_df = plt_ms_zoom_df.query('%.4f <= mz <= %4f'
+                                                     % ((lib_mz - 1.0034 - ms1_delta - ms1_delta),
+                                                        (lib_mz - 1.0034 - ms1_delta + ms1_delta)))
+            pseudo_m0_i = pseudo_m0_theo_df['i'].max()
+            pseudo_m0_theo_i_box = patches.Rectangle((lib_mz - 1.0034 - ms1_delta, 0),
+                                                     2 * ms1_delta, pseudo_m0_i,
+                                                     facecolor=(1.0, 0.0, 0.0, 0.5), edgecolor='none', zorder=1)
+            ms_zoom_pic.add_patch(pseudo_m0_theo_i_box)
+            if pseudo_m0_i > 0.05 * ms1_pr_i:
+                ms_zoom_pic.text(lib_mz - 1.0034 - ms1_delta, pseudo_m0_i,
+                                 '%.4f' % (lib_mz - 1.0034 - ms1_delta),
+                                 color='red', fontsize=7, alpha=0.8)
+
+        # if ms1_precision < 19e-6:
+        #     m_pre_theo_box = patches.Rectangle((lib_mz - 1.0034 - ms1_delta, 0), 2 * ms1_delta, ms1_pr_i,
+        #                                        facecolor=(1.0, 0.0, 0.0, 0.5), edgecolor='none', zorder=1)
+        # else:
+        #     m_pre_theo_box = patches.Rectangle((lib_mz - 1.0034 - ms1_delta, 0), 2 * ms1_delta, ms1_pr_i,
+        #                                        facecolor=(1.0, 0.0, 0.0, 0.5), edgecolor=(1.0, 0.0, 0.0, 0.5),
+        #                                        zorder=1, fill=False, linewidth=0.6, linestyle='dotted')
+        # ms_zoom_pic.add_patch(m_pre_theo_box)
+
         ms_zoom_offset_i = ms_zoom_bp_i * 0.1
 
         m0_theo_base_box = patches.Rectangle((lib_mz - ms1_delta, 0), 2 * ms1_delta, deconv_lst[0],
@@ -337,7 +344,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([ms1_pr_mz], [ms1_pr_i], markerfmt='D')  # zorder=20
         plt.setp(_stem_l, visible=False)
-        plt.setp(_marker_l, markerfacecolor=(0.2, 0.8, 1.0, 0.8), markeredgecolor='none', markeredgewidth=0,
+        plt.setp(_marker_l, markerfacecolor=(0.2, 0.8, 1.0, 0.65), markeredgecolor='none', markeredgewidth=0,
                  markersize=6, lw=0)
 
         ms_zoom_pic.text(ms1_pr_mz + 0.06, ms1_pr_i, '%.4f' % ms1_pr_mz,
@@ -361,7 +368,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([m1_theo_mz], [m1_theo_i], '--', markerfmt='o')  # zorder=22
         # plt.setp(_stem_l, color=(0.4, 1.0, 0.8, 0.75))
-        plt.setp(_marker_l, markerfacecolor=(0.2, 0.8, 1.0, 0.85), markersize=6, markeredgewidth=0)
+        plt.setp(_marker_l, markerfacecolor=(0.2, 0.8, 1.0, 0.65), markersize=6, markeredgewidth=0)
         plt.setp(_stem_l, visible=False)
         ms_zoom_pic.text(m1_theo_mz - 0.15, m1_theo_i + ms_zoom_offset_i, '[M+1]',
                          color=(0.0, 0.4, 1.0, 1.0), fontsize=7)
@@ -388,7 +395,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             opt_box_lst.append(ms_zoom_pic)
             _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([m2_theo_mz], [m2_theo_i], '--', markerfmt='o')  # zorder=23
             # plt.setp(_stem_l, color=(0.2, 0.8, 1.0, 0.75), alpha=0.8)
-            plt.setp(_marker_l, markerfacecolor=(0.2, 0.8, 1.0, 0.8), markersize=6, markeredgewidth=0, alpha=0.9)
+            plt.setp(_marker_l, markerfacecolor=(0.2, 0.8, 1.0, 0.65), markersize=6, markeredgewidth=0, alpha=0.9)
             plt.setp(_stem_l, visible=False)
             ms_zoom_pic.text(m2_theo_mz - 0.15, m2_theo_i + ms_zoom_offset_i, '[M+2]', color=(0.0, 0.4, 1.0, 1.0),
                              fontsize=7)
@@ -418,8 +425,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 ms_zoom_pic.add_patch(mh2_theo_box)
                 _marker_l, _stem_l, _base_l = ms_zoom_pic.stem([mh2_theo_mz], [mh2_theo_i], '--',
                                                                markerfmt='o')  # zorder=24
-                plt.setp(_stem_l, color='red', alpha=0.8)
-                plt.setp(_marker_l, markerfacecolor='red', markersize=6, markeredgewidth=0, alpha=0.9)
+                plt.setp(_stem_l, color='red', alpha=0.6)
+                plt.setp(_marker_l, markerfacecolor='red', markersize=5, markeredgewidth=0, alpha=0.6)
                 plt.setp(_stem_l, visible=False)
                 if _mh2 == 0:
                     _mh2_name = ''
@@ -509,12 +516,12 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
         if target_frag_df is not False:
             marker_l, stem_l, base_l = msms_pic.stem(target_frag_df['mz'], target_frag_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.0, 0.7, 1.0, 0.7), linewidth=3, alpha=0.7)
+            plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=3, alpha=0.7)
         else:
             pass
         if target_nl_df is not False:
             marker_l, stem_l, base_l = msms_pic.stem(target_nl_df['mz'], target_nl_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.0, 0.7, 1.0, 0.7), linewidth=3, alpha=0.7)
+            plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=3, alpha=0.7)
         else:
             pass
 

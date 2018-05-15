@@ -751,6 +751,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         _usr_charge = _samemz_se['Ion']
         _usr_formula_charged = _samemz_se['%s_FORMULA' % _usr_charge]
         _usr_ms2_pr_mz = _samemz_se['Lib_mz']
+        _obs_ms2_pr_mz = _samemz_se['MS2_PR_mz']
         _ms1_pr_i = usr_spec_info_dct['ms1_i']
         _ms1_pr_mz = usr_spec_info_dct['ms1_mz']
         _ms1_df = usr_spec_info_dct['ms1_df']
@@ -758,7 +759,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         _ms2_idx = usr_spec_info_dct['_ms2_spec_idx']
         _ms1_rt = usr_spec_info_dct['ms1_rt']
 
-        print(core_count, _usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged)
+        print(core_count, _usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged, group_key)
         # _mz_amm_flag  = isotope_hunter.get_isotope_fragments(_ms1_df, )
 
         # use the max threshold from abs & relative intensity settings
@@ -770,7 +771,25 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
             _ms2_df = pd.DataFrame()
             _score_ms2_df = pd.DataFrame()
 
-        if _ms1_pr_mz > 0.0 and not _ms1_df.empty and not _ms2_df.empty and _ms1_pr_i > 0.0 and _ms1_rt < _usr_ms2_rt:
+        scan_time_chk = False
+        if _ms1_rt > _usr_ms2_rt:
+            print(core_count,
+                  '[WARNING] MS and MS/MS mismatch MS1_RT {ms1_rt}> MS2_RT {ms2_rt}...'
+                  .format(ms1_rt=_ms1_rt, ms2_rt=_usr_ms2_rt))
+        else:
+            scan_time_chk = True
+
+        spec_df_chk = False
+        if not _ms1_df.empty and not _ms2_df.empty:
+            spec_df_chk = True
+        elif _ms1_df.empty:
+            print(core_count, '[WARNING] MS1 spectrum is empty...')
+        elif _ms2_df.empty:
+            print(core_count, '[WARNING] MS/MS spectrum is empty...')
+        else:
+            pass
+
+        if _ms1_pr_mz > 0.0 and _ms1_pr_i > 0.0 and spec_df_chk is True and scan_time_chk is True:
             print(core_count, '>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
 
             isotope_score_info_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
@@ -933,7 +952,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                         obs_info_df['Lib_mz'] = _usr_mz_lib
                         obs_info_df['MS2_scan_time'] = _usr_ms2_rt
                         obs_info_df['DDA#'] = _usr_ms2_dda_rank
-                        obs_info_df['MS2_PR_mz'] = _usr_ms2_pr_mz
+                        obs_info_df['MS2_PR_mz'] = _obs_ms2_pr_mz
                         obs_info_df['Scan#'] = _usr_ms2_scan_id
                         obs_info_df['ISOTOPE_SCORE'] = isotope_score
                         obs_info_df['#Specific_peaks'] = specific_ion_count
@@ -974,7 +993,10 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                             #         gen_plot(img_param_dct, core_count, 'png', 300, usr_vendor, usr_ms1_precision)
                         else:
                             pass
-
+        else:
+            # print(core_count, '[WARNING] This feature did NOT pass pre check ')
+            # print('_ms1_rt', _ms1_rt, '_usr_ms2_rt', _usr_ms2_rt)
+            pass
     if not tmp_df.empty:
         print(core_count, 'Size of the identified LPP_df %i, %i' % (tmp_df.shape[0], tmp_df.shape[1]))
         tmp_df.reset_index(drop=True, inplace=True)
