@@ -554,7 +554,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                             'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm,
                             'rank_score_filter': rank_score_filter, 'isotope_score_filter': isotope_score_filter,
                             'score_filter': score_filter,
-                            'lipid_type': _lipid_class, 'charge_mode': _lipid_charge,
+                            'lipid_class': _lipid_class, 'charge_mode': _lipid_charge,
                             'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor,
                             'ms2_infopeak_threshold': ms2_info_threshold,
                             'rank_score': rank_score, 'fast_isotope': fast_isotope,
@@ -941,9 +941,20 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 hunter_param_dct['core_number'] = sub_max_core
                 hunter_param_dct['max_ram'] = sub_max_ram
 
+                # capability issues to old batch mode files
+                if 'lipid_class' in list(hunter_param_dct.keys()):
+                    hunter_param_dct['lipid_type'] = hunter_param_dct['lipid_class']
+                    ready_to_run = True
+                elif 'lipid_type' in list(hunter_param_dct.keys()):
+                    hunter_param_dct['lipid_class'] = hunter_param_dct['lipid_type']
+                    self.ui.tab_b_statusrun_pte.appendPlainText(
+                        '[WARNING] Please use "lipid_class" instead of "lipid_type" in your batch config file...\n')
+                    ready_to_run = True
+                else:
+                    ready_to_run = False
+
                 run_counter += 1
                 cfg_params_dct[run_counter] = [hunter_param_dct, _cfg]
-                ready_to_run = True
 
             else:
                 run_counter += 1
@@ -1015,7 +1026,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
             os.chdir(self.lipidhunter_cwd)
 
-            composer_param_dct = {'lipid_type': usr_lipid_class,
+            composer_param_dct = {'lipid_class': usr_lipid_class,
                                   'charge_mode': usr_lipid_charge,
                                   'exact_position': 'FALSE',
                                   'ms2ppm': usr_ms2_ppm,

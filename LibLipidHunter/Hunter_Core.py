@@ -66,7 +66,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         'xlsx_output_path_str': r'D:\lipidhunter\Temp\Test2\t2.xlsx',
                         'lipid_specific_cfg': r'D:\lipidhunter\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
                         'hunter_start_time': '2017-12-21_15-27-49',
-                        'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': 'PC', 'charge_mode': '[M+HCOO]-',
+                        'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_class': 'PC', 'charge_mode': '[M+HCOO]-',
                         'rt_start': 20.0, 'rt_end': 25.0, 'mz_start': 700.0, 'mz_end': 800.0,
                         'rank_score': True, 'rank_score_filter': 27.5, 'score_filter': 27.5,
                         'isotope_score_filter': 75.0, 'fast_isotope': False,
@@ -85,7 +85,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     start_time = time.clock()
     lipidcomposer = LipidComposer()
 
-    usr_lipid_class = param_dct['lipid_type']
+    usr_lipid_class = param_dct['lipid_class']
     usr_charge = param_dct['charge_mode']
     usr_vendor = param_dct['vendor']
     usr_fa_xlsx = param_dct['fawhitelist_path_str']
@@ -148,7 +148,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     print('=== ==> --> Start to process >>>')
     print('=== ==> --> Lipid class: %s >>>' % usr_lipid_class)
 
-    composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_type': usr_lipid_class,
+    composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_class': usr_lipid_class,
                           'charge_mode': usr_charge, 'exact_position': 'FALSE'}
 
     existed_lipid_master_path = ''
@@ -217,6 +217,11 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
+
+    if usr_fa_df is False:
+        print('[ERROR] Failed to generate FA info table ...\n')
+        error_lst.append('[ERROR] Failed to generate FA info table ...\n')
+        return False, error_lst, False
 
     lipid_info_df = usr_lipid_master_df
 
@@ -1144,7 +1149,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 4
+    core_count = 1
     max_ram = 10  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
     save_lipidmaster_table = True  # True --> export LipidMasterTable to output folder, False --> NO export
@@ -1254,7 +1259,7 @@ if __name__ == '__main__':
 
         if mzml is not False and charge is not False:
 
-            _cfg_dct = {'lipid_type': lipid_class, 'charge_mode': charge, 'vendor': vendor, 'mzml_path_str': mzml,
+            _cfg_dct = {'lipid_class': lipid_class, 'charge_mode': charge, 'vendor': vendor, 'mzml_path_str': mzml,
                         'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1]}
 
             if vendor == 'waters':
@@ -1320,7 +1325,7 @@ if __name__ == '__main__':
             if test_key in list(usr_test_dct.keys()):
                 test_dct = usr_test_dct[test_key]
                 t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-                lipid_class = test_dct['lipid_type']
+                lipid_class = test_dct['lipid_class']
 
                 cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
                            'xlsx_output_path_str': r'../Test/results/%s_%s.xlsx' % (test_key, t_str),
