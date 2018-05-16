@@ -484,7 +484,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         # plot MS/MS
         marker_l, stem_l, base_l = msms_pic.stem(ms2_df['mz'].values.tolist(), ms2_df['i'].values.tolist(),
                                                  markerfmt=' ', basefmt='k-')  # zorder=10
-        plt.setp(stem_l, color='grey')
+        plt.setp(stem_l, color='grey', linewidth=0.6)
         plt.setp(base_l, visible=False)
         msms_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
         msms_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
@@ -499,44 +499,70 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         if obs_ident_df is not False:
             marker_l, stem_l, base_l = msms_pic.stem(obs_ident_df['mz'], obs_ident_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0, 0.7, 1.0, 0.7), linewidth=3)
+            plt.setp(stem_l, color=(0, 0.7, 1.0, 0.6), linewidth=1.2)
             plt.setp(base_l, visible=False)
         else:
             pass
         if other_frag_df is not False:
             marker_l, stem_l, base_l = msms_pic.stem(other_frag_df['mz'], other_frag_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.7), linewidth=3, alpha=0.4)
+            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2)
             plt.setp(base_l, visible=False)
+            for _o_f_idx, _frag_se in other_frag_df.iterrows():
+                _frag_mz = _frag_se['mz']
+                _frag_i_r = _frag_se['i']
+                _frag_class = _frag_se['LABEL']
+                msms_pic.text(_frag_mz, _frag_i_r, _frag_class, txt_props,
+                              fontsize=7, color=(0.8, 0.0, 0.0, 1), rotation=60)
         else:
             pass
         if other_nl_df is not False:
             marker_l, stem_l, base_l = msms_pic.stem(other_nl_df['mz'], other_nl_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.7), linewidth=3, alpha=0.4)
+            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2)
             plt.setp(base_l, visible=False)
+            for _o_nl_idx, _nl_se in other_nl_df.iterrows():
+                _nl_mz = _nl_se['mz']
+                _nl_i_r = _nl_se['i']
+                _nl_class = _nl_se['LABEL']
+                # _nl_i_r = _nl_i_r * 1.2
+                msms_pic.text(_nl_mz, _nl_i_r, _nl_class, txt_props,
+                              fontsize=7, color=(0.8, 0.0, 0.0, 1), rotation=60)
         else:
             pass
         if plt_obs_fa_df is not False:
             marker_l, stem_l, base_l = msms_pic.stem(plt_obs_fa_df['mz'], plt_obs_fa_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.7), linewidth=3, alpha=0.4)
+            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2)
             plt.setp(base_l, visible=False)
         else:
             pass
         if plt_obs_lyso_df is not False:
             marker_l, stem_l, base_l = msms_pic.stem(plt_obs_lyso_df['mz'], plt_obs_lyso_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.7), linewidth=3, alpha=0.4)
+            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2)
             plt.setp(base_l, visible=False)
         else:
             pass
         if target_frag_df is not False:
             marker_l, stem_l, base_l = msms_pic.stem(target_frag_df['mz'], target_frag_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=3, alpha=0.7)
+            plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=1.2, alpha=0.7)
             plt.setp(base_l, visible=False)
+            for _t_f_idx, _frag_se in target_frag_df.iterrows():
+                _frag_mz = _frag_se['mz']
+                _frag_i_r = _frag_se['i']
+                _frag_class = _frag_se['LABEL']
+                msms_pic.text(_frag_mz, _frag_i_r, _frag_class, txt_props,
+                              fontsize=8, color=(0.0, 0.5, 1.0, 1.0), weight='bold', rotation=60)
         else:
             pass
         if target_nl_df is not False:
             marker_l, stem_l, base_l = msms_pic.stem(target_nl_df['mz'], target_nl_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=3, alpha=0.7)
+            plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=1.2)
             plt.setp(base_l, visible=False)
+            for _t_nl_idx, _nl_se in target_nl_df.iterrows():
+                _nl_mz = _nl_se['mz']
+                _nl_i_r = _nl_se['i']
+                _nl_class = _nl_se['LABEL']
+                # _nl_i_r = _nl_i * 1.2
+                msms_pic.text(_nl_mz, _nl_i_r, _nl_class, txt_props,
+                              fontsize=8, color=(0.0, 0.5, 1.0, 1.0), weight='bold', rotation=60)
         else:
             pass
 
@@ -600,7 +626,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         if not _msms_low_df.empty:
             marker_l, stem_l, base_l = msms_low_pic.stem(_msms_low_df['mz'].values.tolist(),
                                                          _msms_low_df['i'].values.tolist(), markerfmt=' ')
-            plt.setp(stem_l, color='grey')
+            plt.setp(stem_l, color='grey', linewidth=0.6)
             plt.setp(base_l, visible=False)
             msms_low_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
             msms_low_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
@@ -612,68 +638,132 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         if isinstance(obs_ident_df, pd.DataFrame):
             low_obs_ident_df = obs_ident_df[obs_ident_df['mz'] <= 400]
-            low_obs_ident_df.is_copy = False
             if not low_obs_ident_df.empty:
+                low_obs_ident_df.is_copy = False
                 marker_l, stem_l, base_l = msms_low_pic.stem(low_obs_ident_df['mz'],
                                                              low_obs_ident_df['i'], markerfmt=' ')
-                plt.setp(stem_l, color=(0, 0.7, 1.0, 0.6), linewidth=3)
+                plt.setp(stem_l, color=(0, 0.7, 1.0, 0.6), linewidth=1.2)
                 plt.setp(base_l, visible=False)
                 for _i_idx, _ident_se in low_obs_ident_df.iterrows():
                     _ident_mz = _ident_se['mz']
                     _ident_i_r = _ident_se['i']
                     msms_low_pic.text(_ident_mz, _ident_i_r, _ident_se['obs_label'], txt_props,
-                                      fontsize=8, color=(0, 0.6, 1.0, 1.0), rotation=60, weight='bold')
+                                      fontsize=8, color=(0, 0.6, 1.0, 1.0), weight='bold', rotation=60)
             else:
                 pass
         else:
             pass
 
         if isinstance(plt_obs_fa_df, pd.DataFrame):
-            marker_l, stem_l, base_l = msms_low_pic.stem(plt_obs_fa_df['mz'], plt_obs_fa_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=3, alpha=0.4)
-            plt.setp(base_l, visible=False)
-            for _i_f_idx, _frag_se in plt_obs_fa_df.iterrows():
-                _frag_mz = _frag_se['mz']
-                _frag_i_r = _frag_se['i']
-                msms_low_pic.text(_frag_mz, _frag_i_r, _frag_se['obs_label'], txt_props, fontsize=6,
-                                  color=(0.8, 0.0, 0.0, 1), rotation=60)
+            low_plt_obs_fa_df = plt_obs_fa_df[plt_obs_fa_df['mz'] <= 400]
+            if not low_plt_obs_fa_df.empty:
+                low_plt_obs_fa_df.is_copy = False
+                marker_l, stem_l, base_l = msms_low_pic.stem(low_plt_obs_fa_df['mz'], low_plt_obs_fa_df['i'],
+                                                             markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2)
+                plt.setp(base_l, visible=False)
+                for _i_f_idx, _frag_se in low_plt_obs_fa_df.iterrows():
+                    _frag_mz = _frag_se['mz']
+                    _frag_i_r = _frag_se['i']
+                    msms_low_pic.text(_frag_mz, _frag_i_r, _frag_se['obs_label'], txt_props, fontsize=6,
+                                      color=(0.8, 0.0, 0.0, 1), rotation=60)
         else:
             pass
 
         if isinstance(plt_obs_mg_df, pd.DataFrame):
-            marker_l, stem_l, base_l = msms_low_pic.stem(plt_obs_mg_df['mz'], plt_obs_mg_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=3, alpha=0.4)
-            plt.setp(base_l, visible=False)
-            for _i_f_idx, _frag_se in plt_obs_mg_df.iterrows():
-                _frag_mz = _frag_se['mz']
-                _frag_i_r = _frag_se['i']
-                msms_low_pic.text(_frag_mz, _frag_i_r, _frag_se['obs_label'], txt_props, fontsize=6,
-                                  color=(0.8, 0.0, 0.0, 1), rotation=60)
+            low_plt_obs_mg_df = plt_obs_mg_df[plt_obs_mg_df['mz'] <= 400]
+            if not low_plt_obs_mg_df.empty:
+                low_plt_obs_mg_df.is_copy = False
+                marker_l, stem_l, base_l = msms_low_pic.stem(low_plt_obs_mg_df['mz'], low_plt_obs_mg_df['i'],
+                                                             markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2, alpha=0.4)
+                plt.setp(base_l, visible=False)
+                for _i_f_idx, _frag_se in low_plt_obs_mg_df.iterrows():
+                    _frag_mz = _frag_se['mz']
+                    _frag_i_r = _frag_se['i']
+                    msms_low_pic.text(_frag_mz, _frag_i_r, _frag_se['obs_label'], txt_props,
+                                      fontsize=6, color=(0.8, 0.0, 0.0, 1), rotation=60)
         else:
             pass
         # add specific ion info
         if isinstance(other_frag_df, pd.DataFrame):
-            marker_l, stem_l, base_l = msms_low_pic.stem(other_frag_df['mz'], other_frag_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.6), linewidth=3)
-            plt.setp(base_l, visible=False)
-            for _o_f_idx, _frag_se in other_frag_df.iterrows():
-                _frag_mz = _frag_se['mz']
-                _frag_i_r = _frag_se['i']
-                _frag_class = _frag_se['LABEL']
-                msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, fontsize=7, color=(0.8, 0.0, 0.0, 1))
+            low_other_frag_df = other_frag_df[other_frag_df['mz'] <= 400]
+            if not low_other_frag_df.empty:
+                low_other_frag_df.is_copy = False
+                marker_l, stem_l, base_l = msms_low_pic.stem(low_other_frag_df['mz'], low_other_frag_df['i'],
+                                                             markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.6), linewidth=1.2)
+                plt.setp(base_l, visible=False)
+                for _o_f_idx, _frag_se in low_other_frag_df.iterrows():
+                    _frag_mz = _frag_se['mz']
+                    _frag_i_r = _frag_se['i']
+                    _frag_class = _frag_se['LABEL']
+                    msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, txt_props,
+                                      fontsize=7, color=(0.8, 0.0, 0.0, 1), rotation=60)
         else:
             pass
 
         if isinstance(target_frag_df, pd.DataFrame):
             marker_l, stem_l, base_l = msms_low_pic.stem(target_frag_df['mz'], target_frag_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=3)
+            plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=1.2)
             plt.setp(base_l, visible=False)
             for _t_f_idx, _frag_se in target_frag_df.iterrows():
                 _frag_mz = _frag_se['mz']
                 _frag_i_r = _frag_se['i']
                 _frag_class = _frag_se['LABEL']
-                msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, fontsize=8, color=(0.0, 0.5, 1.0, 1.0),
-                                  weight='bold')
+                msms_low_pic.text(_frag_mz, _frag_i_r, _frag_class, txt_props,
+                                  fontsize=8, color=(0.0, 0.5, 1.0, 1.0), weight='bold', rotation=60)
+        else:
+            pass
+
+        # Check missing part from higher m/z
+        if isinstance(plt_obs_lyso_df, pd.DataFrame):
+            low_plt_obs_lyso_df = plt_obs_lyso_df[plt_obs_lyso_df['mz'] <= 400]
+            if not low_plt_obs_lyso_df.empty:
+                low_plt_obs_lyso_df.is_copy = False
+                marker_l, stem_l, base_l = msms_low_pic.stem(low_plt_obs_lyso_df['mz'], low_plt_obs_lyso_df['i'],
+                                                             markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2, alpha=0.4)
+                plt.setp(base_l, visible=False)
+                for _i_nl_idx, _nl_se in low_plt_obs_lyso_df.iterrows():
+                    _nl_mz = _nl_se['mz']
+                    _nl_i_r = _nl_se['i']
+                    msms_low_pic.text(_nl_mz, _nl_i_r, _nl_se['obs_label'], txt_props, fontsize=6,
+                                      color=(0.8, 0.0, 0.0, 1), rotation=60)
+        else:
+            pass
+
+        if isinstance(plt_obs_dg_na_df, pd.DataFrame):
+            low_plt_obs_dg_na_df = plt_obs_dg_na_df[plt_obs_dg_na_df['mz'] <= 400]
+            if not low_plt_obs_dg_na_df.empty:
+                low_plt_obs_dg_na_df.is_copy = False
+                marker_l, stem_l, base_l = msms_low_pic.stem(low_plt_obs_dg_na_df['mz'], low_plt_obs_dg_na_df['i'],
+                                                             markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2, alpha=0.4)
+                plt.setp(base_l, visible=False)
+                for _i_nl_idx, _nl_se in low_plt_obs_dg_na_df.iterrows():
+                    _nl_mz = _nl_se['mz']
+                    _nl_i_r = _nl_se['i']
+                    msms_low_pic.text(_nl_mz, _nl_i_r, _nl_se['obs_label'], txt_props, fontsize=6,
+                                      color=(0.8, 0.0, 0.0, 1), rotation=60)
+        else:
+            pass
+
+        if isinstance(other_nl_df, pd.DataFrame):
+            low_other_nl_df = other_nl_df[other_nl_df['mz'] <= 400]
+            if not low_other_nl_df.empty:
+                low_other_nl_df.is_copy = False
+                marker_l, stem_l, base_l = msms_low_pic.stem(low_other_nl_df['mz'], low_other_nl_df['i'],
+                                                             markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.6), linewidth=1.2)
+                plt.setp(base_l, visible=False)
+                for _o_nl_idx, _nl_se in low_other_nl_df.iterrows():
+                    _nl_mz = _nl_se['mz']
+                    _nl_i_r = _nl_se['i']
+                    _nl_class = _nl_se['LABEL']
+                    # _nl_i_r = _nl_i_r * 1.2
+                    msms_low_pic.text(_nl_mz, _nl_i_r, _nl_class, txt_props,
+                                      fontsize=7, color=(0.8, 0.0, 0.0, 1), rotation=60)
         else:
             pass
 
@@ -760,7 +850,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             msms_high_max = _msms_high_df['i'].max()
             marker_l, stem_l, base_l = msms_high_pic.stem(_msms_high_df['mz'].values.tolist(),
                                                           _msms_high_df['i'].values.tolist(), markerfmt=' ')
-            plt.setp(stem_l, color='grey')
+            plt.setp(stem_l, color='grey', linewidth=0.6)
             plt.setp(base_l, visible=False)
             msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
             msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
@@ -773,70 +863,135 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         if isinstance(obs_ident_df, pd.DataFrame):
             high_obs_ident_df = obs_ident_df[obs_ident_df['mz'] > 400]
-            high_obs_ident_df.is_copy = False
-            high_obs_ident_df['i'] = high_obs_ident_df['i'] * 1.025
             if not high_obs_ident_df.empty:
+                high_obs_ident_df.is_copy = False
+                # high_obs_ident_df['i'] = high_obs_ident_df['i'] * 1.025
                 marker_l, stem_l, base_l = msms_high_pic.stem(high_obs_ident_df['mz'],
                                                               high_obs_ident_df['i'], markerfmt=' ')
-                plt.setp(stem_l, color=(0, 0.7, 1.0, 0.6), linewidth=3)
+                plt.setp(stem_l, color=(0, 0.7, 1.0, 0.6), linewidth=1.2)
                 plt.setp(base_l, visible=False)
                 for _i_idx, _ident_se in high_obs_ident_df.iterrows():
                     _ident_mz = _ident_se['mz']
                     _ident_i_r = _ident_se['i']
                     msms_high_pic.text(_ident_mz, _ident_i_r, _ident_se['obs_label'], txt_props,
-                                       fontsize=8, color=(0, 0.6, 1.0, 1.0), rotation=60, weight='bold')
+                                       fontsize=8, color=(0, 0.6, 1.0, 1.0), weight='bold', rotation=60)
             else:
                 pass
         else:
             pass
 
         if isinstance(plt_obs_lyso_df, pd.DataFrame):
-            marker_l, stem_l, base_l = msms_high_pic.stem(plt_obs_lyso_df['mz'], plt_obs_lyso_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=3, alpha=0.4)
-            plt.setp(base_l, visible=False)
-            for _i_nl_idx, _nl_se in plt_obs_lyso_df.iterrows():
-                _nl_mz = _nl_se['mz']
-                _nl_i_r = _nl_se['i']
-                msms_high_pic.text(_nl_mz, _nl_i_r, _nl_se['obs_label'], txt_props, fontsize=6,
-                                   color=(0.8, 0.0, 0.0, 1), rotation=60)
+            high_plt_obs_lyso_df = plt_obs_lyso_df[plt_obs_lyso_df['mz'] > 400]
+            if not high_plt_obs_lyso_df.empty:
+                high_plt_obs_lyso_df.is_copy = False
+                marker_l, stem_l, base_l = msms_high_pic.stem(high_plt_obs_lyso_df['mz'], high_plt_obs_lyso_df['i'],
+                                                              markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2)
+                plt.setp(base_l, visible=False)
+                for _i_nl_idx, _nl_se in high_plt_obs_lyso_df.iterrows():
+                    _nl_mz = _nl_se['mz']
+                    _nl_i_r = _nl_se['i']
+                    msms_high_pic.text(_nl_mz, _nl_i_r, _nl_se['obs_label'], txt_props,
+                                       fontsize=6, color=(0.8, 0.0, 0.0, 1), rotation=60)
         else:
             pass
 
         if isinstance(plt_obs_dg_na_df, pd.DataFrame):
-            marker_l, stem_l, base_l = msms_high_pic.stem(plt_obs_dg_na_df['mz'], plt_obs_dg_na_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=3, alpha=0.4)
-            plt.setp(base_l, visible=False)
-            for _i_nl_idx, _nl_se in plt_obs_dg_na_df.iterrows():
-                _nl_mz = _nl_se['mz']
-                _nl_i_r = _nl_se['i']
-                msms_high_pic.text(_nl_mz, _nl_i_r, _nl_se['obs_label'], txt_props, fontsize=6,
-                                   color=(0.8, 0.0, 0.0, 1), rotation=60)
+            high_plt_obs_dg_na_df = plt_obs_dg_na_df[plt_obs_dg_na_df['mz'] > 400]
+            if not high_plt_obs_dg_na_df.empty:
+                high_plt_obs_dg_na_df.is_copy = False
+                marker_l, stem_l, base_l = msms_high_pic.stem(high_plt_obs_dg_na_df['mz'], high_plt_obs_dg_na_df['i'],
+                                                              markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2)
+                plt.setp(base_l, visible=False)
+                for _i_nl_idx, _nl_se in high_plt_obs_dg_na_df.iterrows():
+                    _nl_mz = _nl_se['mz']
+                    _nl_i_r = _nl_se['i']
+                    msms_high_pic.text(_nl_mz, _nl_i_r, _nl_se['obs_label'], txt_props,
+                                       fontsize=6, color=(0.8, 0.0, 0.0, 1), rotation=60)
         else:
             pass
 
         if isinstance(other_nl_df, pd.DataFrame):
-            marker_l, stem_l, base_l = msms_high_pic.stem(other_nl_df['mz'], other_nl_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.6), linewidth=3)
-            plt.setp(base_l, visible=False)
-            for _o_nl_idx, _nl_se in other_nl_df.iterrows():
-                _nl_mz = _nl_se['mz']
-                _nl_i_r = _nl_se['i']
-                _nl_class = _nl_se['LABEL']
-                # _nl_i_r = _nl_i_r * 1.2
-                msms_high_pic.text(_nl_mz, _nl_i_r, _nl_class, fontsize=7, color=(0.8, 0.0, 0.0, 1))
+            high_other_nl_df = other_nl_df[other_nl_df['mz'] > 400]
+            if not high_other_nl_df.empty:
+                high_other_nl_df.is_copy = False
+                marker_l, stem_l, base_l = msms_high_pic.stem(high_other_nl_df['mz'], high_other_nl_df['i'],
+                                                              markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.6), linewidth=1.2)
+                plt.setp(base_l, visible=False)
+                for _o_nl_idx, _nl_se in high_other_nl_df.iterrows():
+                    _nl_mz = _nl_se['mz']
+                    _nl_i_r = _nl_se['i']
+                    _nl_class = _nl_se['LABEL']
+                    # _nl_i_r = _nl_i_r * 1.2
+                    msms_high_pic.text(_nl_mz, _nl_i_r, _nl_class, txt_props,
+                                       fontsize=7, color=(0.8, 0.0, 0.0, 1), rotation=60)
         else:
             pass
-
+        # add specific ion info
         if isinstance(target_nl_df, pd.DataFrame):
             marker_l, stem_l, base_l = msms_high_pic.stem(target_nl_df['mz'], target_nl_df['i'], markerfmt=' ')
-            plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=3)
+            plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=1.2)
             plt.setp(base_l, visible=False)
             for _t_nl_idx, _nl_se in target_nl_df.iterrows():
                 _nl_mz = _nl_se['mz']
                 _nl_i_r = _nl_se['i']
                 _nl_class = _nl_se['LABEL']
                 # _nl_i_r = _nl_i * 1.2
-                msms_high_pic.text(_nl_mz, _nl_i_r, _nl_class, fontsize=8, color=(0.0, 0.5, 1.0, 1.0), weight='bold')
+                msms_high_pic.text(_nl_mz, _nl_i_r, _nl_class, txt_props,
+                                   fontsize=8, color=(0.0, 0.5, 1.0, 1.0), weight='bold', rotation=60)
+        else:
+            pass
+
+        # Check missing part from lower m/z
+
+        if isinstance(plt_obs_fa_df, pd.DataFrame):
+            high_plt_obs_fa_df = plt_obs_fa_df[plt_obs_fa_df['mz'] > 400]
+            if not high_plt_obs_fa_df.empty:
+                high_plt_obs_fa_df.is_copy = False
+                marker_l, stem_l, base_l = msms_high_pic.stem(high_plt_obs_fa_df['mz'], high_plt_obs_fa_df['i'],
+                                                              markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2, alpha=0.4)
+                plt.setp(base_l, visible=False)
+                for _i_f_idx, _frag_se in high_plt_obs_fa_df.iterrows():
+                    _frag_mz = _frag_se['mz']
+                    _frag_i_r = _frag_se['i']
+                    msms_high_pic.text(_frag_mz, _frag_i_r, _frag_se['obs_label'], txt_props,
+                                       fontsize=6, color=(0.8, 0.0, 0.0, 1), rotation=60)
+        else:
+            pass
+
+        if isinstance(plt_obs_mg_df, pd.DataFrame):
+            high_plt_obs_mg_df = plt_obs_mg_df[plt_obs_mg_df['mz'] > 400]
+            if not high_plt_obs_mg_df.empty:
+                high_plt_obs_mg_df.is_copy = False
+                marker_l, stem_l, base_l = msms_high_pic.stem(high_plt_obs_mg_df['mz'], high_plt_obs_mg_df['i'],
+                                                              markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2, alpha=0.4)
+                plt.setp(base_l, visible=False)
+                for _i_f_idx, _frag_se in high_plt_obs_mg_df.iterrows():
+                    _frag_mz = _frag_se['mz']
+                    _frag_i_r = _frag_se['i']
+                    msms_high_pic.text(_frag_mz, _frag_i_r, _frag_se['obs_label'], txt_props,
+                                       fontsize=6, color=(0.8, 0.0, 0.0, 1), rotation=60)
+        else:
+            pass
+
+        if isinstance(other_frag_df, pd.DataFrame):
+            high_other_frag_df = other_frag_df[other_frag_df['mz'] > 400]
+            if not high_other_frag_df.empty:
+                high_other_frag_df.is_copy = False
+                marker_l, stem_l, base_l = msms_high_pic.stem(high_other_frag_df['mz'], high_other_frag_df['i'],
+                                                              markerfmt=' ')
+                plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.6), linewidth=1.2)
+                plt.setp(base_l, visible=False)
+                for _o_f_idx, _frag_se in high_other_frag_df.iterrows():
+                    _frag_mz = _frag_se['mz']
+                    _frag_i_r = _frag_se['i']
+                    _frag_class = _frag_se['LABEL']
+                    msms_high_pic.text(_frag_mz, _frag_i_r, _frag_class, txt_props,
+                                       fontsize=7, color=(0.8, 0.0, 0.0, 1), rotation=60)
         else:
             pass
 
@@ -844,6 +999,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         msms_high_pic.set_title(msms_high_str, color='b', fontsize=8, y=0.98)
         # print(core_count, 'plot MSMS > 400 ', time.time() - _t_img_0)
 
+    # all individual sub plot func finished
+    # start to generate images
     try:
         tasks = [plot_msms(), plot_msms_low(), plot_msms_high(), plot_xic(), plot_ms(), plot_ms_zoom()]
         with ThreadPoolExecutor(max_workers=2) as executor:

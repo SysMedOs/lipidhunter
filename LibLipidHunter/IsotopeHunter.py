@@ -147,6 +147,7 @@ class IsotopeHunter(object):
     def peak_top_checker(ms1_pr_mz, spec_df, core_count=1, ms1_precision=50e-6):
 
         peak_top = False
+        # top_obs_i = 0
 
         if ms1_precision <= 100e-6:
             top_precision = min(ms1_precision * 5, 100e-6)
@@ -179,7 +180,7 @@ class IsotopeHunter(object):
             print(core_count,
                   '[Warning] MS1 PR m/z {pr} is not peak top in +/- {delta} m/z, PR i {obs_i}, max i {max_i}'
                   .format(pr=pr_obs_mz, delta=top_delta, obs_i=pr_obs_i, max_i=top_obs_i))
-        return peak_top
+        return peak_top, top_obs_i
 
     def calc_isotope_score(self, isotope_pattern_df, spec_df, ms1_precision, ms1_pr_i,
                            core_count=1, deconv=[], mode='m'):
@@ -256,7 +257,8 @@ class IsotopeHunter(object):
             obs_pr_i = 0
 
         if mode == 'm':
-            peak_top = self.peak_top_checker(theo_pr_mz, spec_df, core_count=core_count, ms1_precision=ms1_precision)
+            peak_top, top_obs_i = self.peak_top_checker(theo_pr_mz, spec_df,
+                                                        core_count=core_count, ms1_precision=ms1_precision)
             if peak_top is True:
                 isotope_calc_dct = {'isotope_checker_dct': isotope_checker_dct, 'isotope_score': isotope_score,
                                     'isotope_m1_score': isotope_m1_score, 'm2_i': m2_i, 'theo_i_lst': theo_i_lst,
@@ -356,6 +358,12 @@ class IsotopeHunter(object):
 
         if not i_df.empty:
             max_pre_m_i = i_df['i'].max()
+            peak_top, top_obs_i = self.peak_top_checker(ms1_pr_mz - delta_13c, spec_df,
+                                                        core_count=core_count, ms1_precision=ms1_precision)
+            if peak_top is True:
+                pass
+            else:
+                max_pre_m_i = top_obs_i
         else:
             # print(core_count, '... No pseudo-precursor peaks ... ')
             max_pre_m_i = 0

@@ -754,9 +754,15 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             if part_tot == 1:
                 print('>>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
             else:
-                print('>>> Start multiprocessing to get Score ==> Part %i / %i '
-                      '--> Max Number of Cores: %i | x%i Features each'
-                      % (part_counter, part_tot, usr_core_num, split_seg))
+                try:
+                    worker_feature_count = len(lipid_sub_key_lst[0])
+                    print('>>> Start multiprocessing to get Score ==> Part %i / %i '
+                          '--> Max Number of Cores: %i | x%i Features each'
+                          % (part_counter, part_tot, usr_core_num, worker_feature_count))
+                except Exception as _e:
+                    print('>>> Start multiprocessing to get Score ==> Part %i / %i --> Max Number of Cores: %i'
+                          % (part_counter, part_tot, usr_core_num))
+                    print('[Exception] Can not get the number of features distributed to each core...', _e)
 
             if os_typ == 'windows':
                 parallel_pool = Pool(usr_core_num)
