@@ -47,7 +47,7 @@ class LogPageCreator(object):
         hunter_folder = params['hunter_folder']
 
         if params['rank_score'] is True:
-            score_mode = '(Rank mode)'
+            score_mode = ''
         else:
             score_mode = '(Intensity mode)'
 
@@ -57,9 +57,10 @@ class LogPageCreator(object):
             isotope_score_mode = ''
 
         with open(self.main_page, 'w') as _m_page:
+            # Merge sub pages into one report page, set _params_lst_page width 345, height 345
             m_info_lst = ['<html>\n', '<link rel="icon" href="', self.logo,
                           '" type="image/x-icon"/>\n<title>LipidHunter_Results ', start_time,
-                          '</title>\n<frameset cols="350,*">\n<frameset rows="390,*">\n',
+                          '</title>\n<frameset cols="345,*">\n<frameset rows="345,*">\n',
                           '<frame src="', _params_lst_page, '" frameborder="0" >\n',
                           '<frame src="', _idx_lst_page, '" frameborder="0" >\n</frameset>\n',
                           '<frame src="', _image_lst_page, '"name ="results_frame">\n</frameset>\n</html>\n']

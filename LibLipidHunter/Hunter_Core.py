@@ -189,6 +189,20 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             error_lst.append(e)
             return False, error_lst, False
 
+    if isinstance(usr_lipid_master_df, pd.DataFrame):
+        if not usr_lipid_master_df.empty:
+            pass
+        else:
+            print('[ERROR] Failed to generate LipidMaster Table...')
+            error_lst.append('[ERROR] Failed to generate LipidMaster Table...')
+            error_lst.append('... ... Please check if Lipid Class and FA are marked in FA whitelist...')
+            return False, error_lst, False
+    else:
+        print('[ERROR] Failed to generate LipidMaster Table...')
+        error_lst.append('[ERROR] Failed to generate LipidMaster Table...')
+        error_lst.append('... ... Please check if Lipid Class and FA are marked in FA whitelist...')
+        return False, error_lst, False
+
     if save_lipid_master_table is True:
         log_master_name = 'Lipid_Master_%s.csv' % hunter_start_time_str
         log_master_name = os.path.join(output_folder, log_master_name)
@@ -501,9 +515,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             # print(sub_info_groups)
 
             if part_tot == 1:
-                print('>>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
+                print('>>> Start multiprocessing to get Spectra info ==> Max Number of Cores: %i' % usr_core_num)
             else:
-                print('>>> Start multiprocessing to get Score ==> Part %i / %i '
+                print('>>> Start multiprocessing to get Spectra info ==> Part %i / %i '
                       '--> Max Number of Cores: %i'
                       % (part_counter, part_tot, usr_core_num))
 
@@ -753,9 +767,16 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
             if part_tot == 1:
                 print('>>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
+                try:
+                    worker_feature_count = len(lipid_sub_key_lst[0][0])
+                    print('>>> Start multiprocessing to get Score ==> Max Number of Cores: %i | x%i Features each'
+                          % (usr_core_num, worker_feature_count))
+                except Exception as _e:
+                    print('>>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
+                    print('[Exception] Can not get the number of features distributed to each core...', _e)
             else:
                 try:
-                    worker_feature_count = len(lipid_sub_key_lst[0])
+                    worker_feature_count = len(lipid_sub_key_lst[0][0])
                     print('>>> Start multiprocessing to get Score ==> Part %i / %i '
                           '--> Max Number of Cores: %i | x%i Features each'
                           % (part_counter, part_tot, usr_core_num, worker_feature_count))

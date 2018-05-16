@@ -28,6 +28,7 @@ import os
 import re
 import time
 
+import pandas as pd
 from PySide import QtCore, QtGui
 from six.moves import configparser
 
@@ -48,7 +49,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'15, May, 2018'
+        version_date = r'16, May, 2018'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
                         r'LipidHunter 2 Beta # Released Date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
@@ -893,8 +894,8 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def single_worker_info_update(self):
 
         back_info_str = self.single_worker.infoback()
-        self.ui.tab_a_statusrun_pte.insertPlainText(back_info_str)
-        self.ui.tab_a_statusrun_pte.insertPlainText('\n')
+        self.ui.tab_a_statusrun_pte.appendPlainText(back_info_str)
+        self.ui.tab_a_statusrun_pte.appendPlainText('\n')
 
     def batch_worker_on_finish(self):
         self.batch_thread.quit()
@@ -928,13 +929,13 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         os.chdir(self.lipidhunter_cwd)
 
         cfg_params_dct = {}
-        self.ui.tab_b_statusrun_pte.insertPlainText('>>> Hunter started ... Total run number: %i \n\n' % tot_num)
+        self.ui.tab_b_statusrun_pte.appendPlainText('>>> Hunter started ... Total run number: %i \n\n' % tot_num)
 
         for _cfg in loaded_cfg_lst:
 
             hunter_param_dct, cfg_error = self.b_read_cfg(_cfg)
             if len(cfg_error) > 0:
-                self.ui.tab_b_statusrun_pte.insertPlainText(str(cfg_error))
+                self.ui.tab_b_statusrun_pte.appendPlainText(str(cfg_error))
             if 'vendor' in list(hunter_param_dct.keys()):
                 hunter_param_dct['batch_cfg_file'] = _cfg
                 hunter_param_dct['core_number'] = sub_max_core
@@ -946,7 +947,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
             else:
                 run_counter += 1
-                self.ui.tab_b_statusrun_pte.insertPlainText('!! Failed to read batch mode configure files: # %i / %i\n'
+                self.ui.tab_b_statusrun_pte.appendPlainText('!! Failed to read batch mode configure files: # %i / %i\n'
                                                             '%s\n!! Please check your settings '
                                                             '... skip this one ...\n\n' % (run_counter, tot_num, _cfg))
         if ready_to_run is True:
@@ -957,13 +958,13 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
             self.batch_worker.request_work(cfg_params_dct, tot_num)
         else:
-            self.ui.tab_b_statusrun_pte.insertPlainText('!! Failed to read ALL batch mode configure files ...')
+            self.ui.tab_b_statusrun_pte.appendPlainText('!! Failed to read ALL batch mode configure files ...')
 
     def batch_worker_info_update(self):
 
         back_info_str = self.batch_worker.infoback()
         print('Got info: ', back_info_str)
-        self.ui.tab_b_statusrun_pte.insertPlainText(back_info_str)
+        self.ui.tab_b_statusrun_pte.appendPlainText(back_info_str)
 
     def lm_worker_on_finish(self):
         self.lm_thread.quit()
@@ -1313,25 +1314,42 @@ class LMWorker(QtCore.QObject):
         usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=self.lm_params_dct,
                                                           ms2_ppm=self.lm_params_dct['ms2ppm'])
 
-        self.info_str = ('==> Number of predicted lipids (discrete form): %i' % usr_lipid_master_df.shape[0])
-        self.infoback()
-        self.info_update.emit(self.info_str)
+        if isinstance(usr_lipid_master_df, pd.DataFrame):
+            if not usr_lipid_master_df.empty:
+                self.info_str = ('==> Number of predicted lipids (discrete form): %i' % usr_lipid_master_df.shape[0])
+                self.infoback()
+                self.info_update.emit(self.info_str)
 
-        abs_export_path = os.path.abspath(self.lm_params_dct['export_path'])
-        abs_export_folder = os.path.dirname(abs_export_path)
-        if os.path.isdir(abs_export_folder):
-            pass
+                abs_export_path = os.path.abspath(self.lm_params_dct['export_path'])
+                abs_export_folder = os.path.dirname(abs_export_path)
+                if os.path.isdir(abs_export_folder):
+                    pass
+                else:
+                    os.mkdir(os.path.abspath(abs_export_folder))
+                try:
+                    usr_lipid_master_df.to_csv(abs_export_path)
+                    self.info_str = ('==> --> Lipid Master table Saved as: \n %s' % abs_export_path)
+                    self.infoback()
+                    self.info_update.emit(self.info_str)
+
+                except Exception as _err:
+                    print(_err)
+                    self.info_str = '\n %s \n' % _err
+                    self.infoback()
+                    self.info_update.emit(self.info_str)
+
+            else:
+                print('[ERROR] Failed to generate LipidMaster Table...\n'
+                      '... ... Check if Lipid Class and FA are marked in FA whitelist...')
+                self.info_str = ('[ERROR] Failed to generate LipidMaster Table...\n'
+                                 ' ... ... Please check if Lipid Class and FA are marked in FA whitelist...')
+                self.infoback()
+                self.info_update.emit(self.info_str)
         else:
-            os.mkdir(os.path.abspath(abs_export_folder))
-        try:
-            usr_lipid_master_df.to_csv(abs_export_path)
-            self.info_str = ('==> --> Lipid Master table Saved as: \n %s' % abs_export_path)
-            self.infoback()
-            self.info_update.emit(self.info_str)
-
-        except Exception as _err:
-            print(_err)
-            self.info_str = '\n %s \n' % _err
+            print('[ERROR] Failed to generate LipidMaster Table...\n'
+                  '... ... Check if Lipid Class and FA are marked in FA whitelist...')
+            self.info_str = ('[ERROR] Failed to generate LipidMaster Table...\n'
+                             '... ... Please check if Lipid Class and FA are marked in FA whitelist...')
             self.infoback()
             self.info_update.emit(self.info_str)
 

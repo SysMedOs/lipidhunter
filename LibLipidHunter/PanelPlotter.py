@@ -576,6 +576,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         # print(core_count, 'start to plot MS/MS <= m/z 400 ...')
         msms_low_pic = pic_array[1, 1]
         msms_low_pic.tick_params(axis='both', which='major', labelsize=10)
+        msms_low_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+        msms_low_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
+        msms_low_pic.set_ylabel("Intensity", fontsize=10)
 
         # plot fa frag identification table
         if not obs_fa_df.empty:
@@ -628,13 +631,12 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                                          _msms_low_df['i'].values.tolist(), markerfmt=' ')
             plt.setp(stem_l, color='grey', linewidth=0.6)
             plt.setp(base_l, visible=False)
-            msms_low_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-            msms_low_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
-            msms_low_pic.set_ylabel("Intensity", fontsize=10)
             msms_low_pic.set_xlim([min(_msms_low_df['mz'].values.tolist()) - 1, 400])
             msms_low_pic.set_ylim([0, max(_msms_low_df['i'].values.tolist()) * 2])
+
         else:
-            pass
+            msms_low_pic.set_xlim([100, 400])
+            msms_low_pic.set_ylim([0, ms2_df['i'].max()])
 
         if isinstance(obs_ident_df, pd.DataFrame):
             low_obs_ident_df = obs_ident_df[obs_ident_df['mz'] <= 400]
@@ -778,6 +780,10 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         # print(core_count, 'start to plot MS/MS > m/z 400 ...')
         msms_high_pic = pic_array[2, 1]
         msms_high_pic.tick_params(axis='both', which='major', labelsize=10)
+        msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+        msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
+        msms_high_pic.set_ylabel("Intensity", fontsize=10)
+        msms_high_pic.set_xlim([400, ms2_pr_mz + 20])
 
         # plot fa nl identification table
         # For TG in [M+Na]+ there will be 2 different plots in this section
@@ -852,10 +858,6 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                                                           _msms_high_df['i'].values.tolist(), markerfmt=' ')
             plt.setp(stem_l, color='grey', linewidth=0.6)
             plt.setp(base_l, visible=False)
-            msms_high_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-            msms_high_pic.set_xlabel("m/z", fontsize=10, labelpad=-1)
-            msms_high_pic.set_ylabel("Intensity", fontsize=10)
-            msms_high_pic.set_xlim([400, ms2_pr_mz + 20])
             msms_high_pic.set_ylim([0, msms_high_max * 1.3])
         else:
             msms_high_max = ms2_df['i'].max()
