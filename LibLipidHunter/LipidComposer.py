@@ -392,26 +392,26 @@ class LipidComposer:
 
             del fa_link_df
             del fa_combo_link_df
-            print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
+            print('[INFO] Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
 
         elif lipid_class in ['CL']:
             fa_combo_df.values.sort(kind='mergesort')  # safe sort by numpy
-            print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
+            print('[INFO] Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
             fa_combo_df['DISCRETE_ABBR'] = (fa_combo_df['CLASS'] + '(' +
                                             fa_combo_df['FA1'].str.strip('FA') + '_' +
                                             fa_combo_df['FA2'].str.strip('FA') + '_' +
                                             fa_combo_df['FA3'].str.strip('FA') + '_' +
                                             fa_combo_df['FA4'].str.strip('FA') + ')')
             fa_combo_df.sort_values(by='DISCRETE_ABBR', inplace=True)
-            print('Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
+            print('[INFO] Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
         else:
             fa_combo_df['DISCRETE_ABBR'] = ''
-            print('!! Warning !! Number of predicted lipids (exact position): 0')
+            print('[WARNING] Number of predicted lipids (exact position): 0')
 
         if position is False:
-            print('... Use discrete form for identification ...')
+            print('[INFO] Use discrete form for identification ...')
             fa_combo_lite_df = fa_combo_df.drop_duplicates(subset=['DISCRETE_ABBR'], keep='first')
-            print('Number of predicted lipids (discrete form): ', fa_combo_lite_df.shape[0])
+            print('[INFO] Number of predicted lipids (discrete form): ', fa_combo_lite_df.shape[0])
         else:
             fa_combo_lite_df = fa_combo_df
 
@@ -709,7 +709,7 @@ class LipidComposer:
                 return False
         else:
             return False
-        print('=== ==> --> FA white list loaded >>>')
+        print('[INFO] FA white list loaded >>>')
         lipid_comb_dct = self.gen_all_comb(lipid_class, usr_fa_df, position=position_set)
 
         lipid_info_dct = {}
@@ -811,7 +811,7 @@ if __name__ == '__main__':
 
     composer = LipidComposer()
     usr_lipid_master_df = composer.compose_lipid(param_dct=usr_param_dct, ms2_ppm=30)
-    print('Lipid Master Table generated...')
+    print('[INFO] Lipid Master Table generated...')
 
     master_csv = r'../Temp/LipidMaster_Whitelist_TG_ML.csv'
     fa_csv = r'../Temp/LipidMaster_FAlist_ML.csv'
@@ -824,4 +824,4 @@ if __name__ == '__main__':
     print(calc_fa_df)
     usr_lipid_master_df.to_csv(master_csv)
     calc_fa_df.to_csv(fa_csv)
-    print('Finished...')
+    print('[INFO] Finished...')

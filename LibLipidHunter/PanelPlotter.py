@@ -58,7 +58,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     m2_checker_dct = isotope_score_info_dct['m2_checker_dct']
     deconv_lst = isotope_score_info_dct['deconv_lst']
 
-    print(core_count, '>>> Start to plot %s -> MS2 PR m/z %.4f @ MS1 best PR m/z %.4f with lib m/z %.4f'
+    print(core_count, '[STATUS] >>> Start to plot %s -> MS2 PR m/z %.4f @ MS1 best PR m/z %.4f with lib m/z %.4f'
           % (abbr, ms2_pr_mz, ms1_obs, lib_mz))
 
     if len(deconv_lst) == 4:
@@ -80,10 +80,25 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
     ms_zoom_query_str = ' %.2f < mz < %.2f' % (ms1_obs - 1.5, ms1_obs + 3.55)
     ms_zoom_df = ms1_df.query(ms_zoom_query_str)
-    try:
-        ms_zoom_bp_i = max(ms_zoom_df['i'].values.tolist())
-    except ValueError:
-        ms_zoom_bp_i = 0
+    if not ms_zoom_df.empty:
+        if 'i' in ms_zoom_df.columns.tolist():
+            ms_zoom_bp_i = max(ms_zoom_df['i'].values.tolist())
+        else:
+            if not ms1_df.empty:
+                if 'i' in ms1_df.columns.tolist():
+                    ms_zoom_bp_i = ms1_df['i'].max()
+                else:
+                    ms_zoom_bp_i = 0
+            else:
+                ms_zoom_bp_i = 0
+    else:
+        if not ms1_df.empty:
+            if 'i' in ms1_df.columns.tolist():
+                ms_zoom_bp_i = ms1_df['i'].max()
+            else:
+                ms_zoom_bp_i = 0
+        else:
+            ms_zoom_bp_i = 0
 
     xic_df = xic_dct[ms1_xic_mz]
 
@@ -93,11 +108,19 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     # if ms_zoom_bp_i > 0 and len(xic_rt_lst) > 0 and len(xic_i_lst) > 0:
 
     # cut lower peaks to accelerate plotting time
-    m1_dct = isotope_checker_dct[1]
-    m1_theo_mz = m1_dct['theo_mz']
-    m1_theo_i = m1_dct['theo_i']
-    m1_obs_mz = m1_dct['obs_mz']
-    m1_obs_i = m1_dct['obs_i']
+    try:
+        m1_dct = isotope_checker_dct[1]
+        m1_theo_mz = m1_dct['theo_mz']
+        m1_theo_i = m1_dct['theo_i']
+        m1_obs_mz = m1_dct['obs_mz']
+        m1_obs_i = m1_dct['obs_i']
+    except KeyError:
+        m1_theo_mz = ms1_obs
+        m1_theo_i = ms1_df['i'].max()
+        m1_obs_mz = ms1_obs
+        m1_obs_i = ms1_df['i'].max()
+        ms1_pr_mz = ms1_obs
+        ms_zoom_bp_i = ms1_df['i'].max()
 
     if ms1_df['i'].max() >= 10000 and ms1_df.shape[0] >= 500:
         ms1_min = ms1_df['i'].min()
@@ -107,7 +130,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         ms1_plot_th = max(ms1_plot_th, ms1_top1000_i)
         # print(core_count, m1_obs_i, 3 * ms1_min, ms1_max * 0.01, 1000, ms1_top1000_i)
         ms1_df = ms1_df.query('i >= %f' % ms1_plot_th)
-        print(core_count, 'Plot full MS1 with abs intensity filter > %f' % ms1_plot_th)
+        print(core_count, '[INFO] Plot full MS1 with abs intensity filter > %f' % ms1_plot_th)
     if ms2_df['i'].max() >= 1000 and ms2_df.shape[0] >= 500:
         ms2_min = ms2_df['i'].min()
         ms2_max = ms2_df['i'].max()
@@ -120,7 +143,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         ms2_plot_th -= 1
         if ms2_plot_th > 0:
             ms2_df = ms2_df.query('i >= %f' % ms2_plot_th)
-            print(core_count, 'Plot full MS/MS with abs intensity filter > %f' % ms2_plot_th)
+            print(core_count, '[INFO] Plot full MS/MS with abs intensity filter > %f' % ms2_plot_th)
 
     _msms_low_df = ms2_df.query('mz <= 400')
     _msms_high_df = ms2_df.query('mz > 400')
@@ -263,7 +286,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         # plt.setp(_stem_lines, color=(0.4, 1.0, 0.8, 1.0))
         plt.setp(_marker_line, markerfacecolor=(0.3, 0.9, 1.0, 0.8), markersize=5, markeredgewidth=0)
         plt.setp(_stem_lines, visible=False)
-        plt.setp(base_l, visible=False)
+        plt.setp(_base_line, visible=False)
         ms_pic.text(ms1_pr_mz, ms1_pr_i, '%.4f' % ms1_pr_mz,
                     fontsize=7, color=(0.0, 0.4, 1.0, 1.0))
         ms_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
@@ -1003,6 +1026,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
     # all individual sub plot func finished
     # start to generate images
+
     try:
         tasks = [plot_msms(), plot_msms_low(), plot_msms_high(), plot_xic(), plot_ms(), plot_ms_zoom()]
         with ThreadPoolExecutor(max_workers=2) as executor:
@@ -1010,11 +1034,10 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 executor.submit(_task)
 
         plt.savefig(save_img_as, type=img_type, dpi=dpi)
-        print(core_count, '=====> Image saved as: %s' % save_img_as)
+        print(core_count, '[OUTPUT] --> Image saved as: %s' % save_img_as)
         plt.close()
     except Exception as e:
-        print(e)
-        print('Use single thread and try again ...')
+        print('[INFO] Use single thread and try again ...', e)
         plot_msms()
         plot_msms_low()
         plot_msms_high()
@@ -1022,7 +1045,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         plot_ms()
         plot_ms_zoom()
         plt.savefig(save_img_as, type=img_type, dpi=dpi)
-        print(core_count, '=====> Image saved as: %s' % save_img_as)
+        print(core_count, '[INFO] =====> Image saved as: %s' % save_img_as)
         plt.close()
 
 
@@ -1043,13 +1066,14 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
             formula_charged = param_dct['formula_charged']
             charge = param_dct['charge']
             save_img_as = param_dct['save_img_as']
-            print('%s ==> image: %i / %i' % (core_count, img_counter, tot_img_count))
+            print('%s [STATUS] >>> image: %i / %i' % (core_count, img_counter, tot_img_count))
+
             try:
                 plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
                              formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
                              dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
             except Exception as e:
-                print(e)
+                print(core_count, '[EXCEPTION] gen_plot failed to save images from data list ...', e)
 
             img_counter += 1
 
@@ -1071,4 +1095,4 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
                              formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
                              dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
             except Exception as e:
-                print(e)
+                print(core_count, '[EXCEPTION] gen_plot failed to save image ...', e)
