@@ -69,9 +69,12 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.a_max_ms()
 
         # disable un necessary UI elements
+        self.ui.tab_a_runhunter_pgb.setStyleSheet('QProgressBar::chunk{background-color: #FF8C00;}')
         self.ui.tab_a_runhunter_pgb.hide()
         self.ui.tab_a_msmax_chb.hide()
+        self.ui.tab_b_runbatch_pgb.setStyleSheet('QProgressBar::chunk{background-color: #FF8C00;}')
         self.ui.tab_b_runbatch_pgb.hide()
+        self.ui.tab_c_runlm_pgb.setStyleSheet('QProgressBar::chunk{background-color: #FF8C00;}')
         self.ui.tab_c_runlm_pgb.hide()
         self.ui.tab_b_mutlimode_cmb.hide()
         self.ui.tab_b_maxbatch_lb.hide()
@@ -174,21 +177,21 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             if 'fa_white_list_cfg_pl' in options:
                 pl_fawhitelist_path_str = config.get(user_cfg, 'fa_white_list_cfg_pl')
                 pl_fawhitelist_path_str, error_log = self.check_file(pl_fawhitelist_path_str, 'FA whitelist for PL')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_falistpl_le.setText(error_log)
                 else:
                     self.ui.tab_c_falistpl_le.setText(pl_fawhitelist_path_str)
             if 'fa_white_list_cfg_tg' in options:
                 tg_fawhitelist_path_str = config.get(user_cfg, 'fa_white_list_cfg_tg')
                 tg_fawhitelist_path_str, error_log = self.check_file(tg_fawhitelist_path_str, 'FA whitelist for TG/DG')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_falisttg_le.setText(error_log)
                 else:
                     self.ui.tab_c_falisttg_le.setText(tg_fawhitelist_path_str)
             if 'lipid_specific_cfg' in options:
                 lipid_specific_path_str = config.get(user_cfg, 'lipid_specific_cfg')
                 lipid_specific_path_str, error_log = self.check_file(lipid_specific_path_str, 'lipid_specific_cfg')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_hgcfg_le.setText(error_log)
                 else:
                     self.ui.tab_c_hgcfg_le.setText(lipid_specific_path_str)
@@ -196,21 +199,21 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 self.ui.tab_c_scorecfgpl_le.setText(config.get(user_cfg, 'score_cfg_pl'))
                 pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_pl')
                 pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for PL')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_scorecfgpl_le.setText(error_log)
                 else:
                     self.ui.tab_c_scorecfgpl_le.setText(pl_score_cfg_path_str)
             if 'score_cfg_tg' in options:
                 pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_tg')
                 pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for TG')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_scorecfgtg_le.setText(error_log)
                 else:
                     self.ui.tab_c_scorecfgtg_le.setText(pl_score_cfg_path_str)
             if 'score_cfg_dg' in options:
                 pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_dg')
                 pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for DG')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_scorecfgdg_le.setText(error_log)
                 else:
                     self.ui.tab_c_scorecfgdg_le.setText(pl_score_cfg_path_str)
@@ -326,7 +329,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         file_abs_path = ''
         try:
             if os.path.isfile(usr_path):
-                error_log = ''
+                error_log = None
                 file_abs_path = os.path.abspath(usr_path)
             else:
                 error_log = '!! Failed to load {_file} !!'.format(_file=info_str)
@@ -340,7 +343,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         folder_abs_path = ''
         try:
             if os.path.isdir(usr_path):
-                error_log = ''
+                error_log = None
                 folder_abs_path = os.path.abspath(usr_path)
             else:
                 os.makedirs(usr_path)
@@ -500,16 +503,16 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         img_dpi = self.ui.tab_c_dpi_spb.value()
 
         fawhitelist_path_str, error_log = self.check_file(fawhitelist_path_str, 'FA whitelist')
-        if len(error_log) > 0:
+        if error_log is not None:
             error_log_lst.append(error_log)
         lipid_specific_cfg, error_log = self.check_file(lipid_specific_cfg, 'configuration for Phospholipids')
-        if len(error_log) > 0:
+        if error_log is not None:
             error_log_lst.append(error_log)
         score_cfg, error_log = self.check_file(score_cfg, 'W_frag score configuration')
-        if len(error_log) > 0:
+        if error_log is not None:
             error_log_lst.append(error_log)
         abs_img_output_folder_str, error_log = self.check_folder(img_output_folder_str, 'Output folder')
-        if len(error_log) > 0:
+        if error_log is not None:
             error_log_lst.append(error_log)
             self.ui.tab_a_saveimgfolder_le.setText(error_log)
         else:
@@ -583,7 +586,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             if not os.path.exists(param_cfg_directory):
                 os.makedirs(param_cfg_directory)
             abs_param_cfg_directory_str, error_log = self.check_folder(param_cfg_directory, 'Settings for batch mode')
-            if len(error_log) > 0:
+            if error_log is not None:
                 self.ui.tab_a_gencfg_pte.insertPlainText(error_log)
             if abs_param_cfg_directory_str != param_cfg_directory:
                 param_cfg_path = os.path.split(param_cfg_path_str)
@@ -832,8 +835,13 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         print('!! single_worker stopped !!')
         self.ui.tab_a_runhunter_pb.setText(QtGui.QApplication.translate('MainWindow', 'Hunt for lipids!', None,
                                                                         QtGui.QApplication.UnicodeUTF8))
+
+        self.ui.tab_a_runhunter_pgb.setMinimum(0)
+        self.ui.tab_a_runhunter_pgb.setMaximum(100)
+        self.ui.tab_a_runhunter_pgb.hide()
         self.ui.tab_a_runhunter_pb.setEnabled(True)
         self.ui.tab_b_runbatch_pb.setEnabled(True)
+        self.ui.tab_c_lmrun_pb.setEnabled(True)
 
     def single_worker_hunter(self):
 
@@ -882,20 +890,24 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         if len(error_log_lst) > 0:
             print('Parameter error:', error_log_lst)
             error_log_lst.append('!!! Please check your settings !!!')
-            self.ui.tab_a_statusrun_pte.appendPlainText('\n'.join(error_log_lst) + '\n')
+            self.ui.tab_a_statusrun_pte.appendPlainText('\n'.join(error_log_lst))
         else:
             if ready_to_run is True:
                 self.ui.tab_a_runhunter_pb.setText(QtGui.QApplication.translate('MainWindow', 'Hunting ...', None,
                                                                                 QtGui.QApplication.UnicodeUTF8))
                 self.ui.tab_a_runhunter_pb.setEnabled(False)
                 self.ui.tab_b_runbatch_pb.setEnabled(False)
+                self.ui.tab_c_lmrun_pb.setEnabled(False)
+                self.ui.tab_a_runhunter_pgb.setMinimum(0)
+                self.ui.tab_a_runhunter_pgb.setMaximum(0)
+                self.ui.tab_a_runhunter_pgb.show()
                 self.single_worker.request_work(hunter_param_dct)
 
     def single_worker_info_update(self):
 
         back_info_str = self.single_worker.infoback()
         self.ui.tab_a_statusrun_pte.appendPlainText(back_info_str)
-        self.ui.tab_a_statusrun_pte.appendPlainText('\n')
+        # self.ui.tab_a_statusrun_pte.appendPlainText('\n')
 
     def batch_worker_on_finish(self):
         self.batch_thread.quit()
@@ -903,8 +915,12 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_b_runbatch_pb.setText(QtGui.QApplication.translate('MainWindow',
                                                                        'Run batch mode identification >>>', None,
                                                                        QtGui.QApplication.UnicodeUTF8))
+        self.ui.tab_b_runbatch_pgb.setMinimum(0)
+        self.ui.tab_b_runbatch_pgb.setMaximum(100)
+        self.ui.tab_b_runbatch_pgb.hide()
         self.ui.tab_b_runbatch_pb.setEnabled(True)
         self.ui.tab_a_runhunter_pb.setEnabled(True)
+        self.ui.tab_c_lmrun_pb.setEnabled(True)
 
     def batch_worker_hunter(self):
 
@@ -960,12 +976,17 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 run_counter += 1
                 self.ui.tab_b_statusrun_pte.appendPlainText('!! Failed to read batch mode configure files: # %i / %i\n'
                                                             '%s\n!! Please check your settings '
-                                                            '... skip this one ...\n\n' % (run_counter, tot_num, _cfg))
+                                                            '... skip this one ...\n' % (run_counter, tot_num, _cfg))
         if ready_to_run is True:
+
             self.ui.tab_b_runbatch_pb.setText(QtGui.QApplication.translate('MainWindow', 'Hunting in batch mode ...',
                                                                            None, QtGui.QApplication.UnicodeUTF8))
             self.ui.tab_b_runbatch_pb.setEnabled(False)
             self.ui.tab_a_runhunter_pb.setEnabled(False)
+            self.ui.tab_c_lmrun_pb.setEnabled(False)
+            self.ui.tab_b_runbatch_pgb.setMinimum(0)
+            self.ui.tab_b_runbatch_pgb.setMaximum(0)
+            self.ui.tab_b_runbatch_pgb.show()
 
             self.batch_worker.request_work(cfg_params_dct, tot_num)
         else:
@@ -986,6 +1007,9 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_b_runbatch_pb.setEnabled(True)
         self.ui.tab_a_runhunter_pb.setEnabled(True)
         self.ui.tab_c_lmrun_pb.setEnabled(True)
+        self.ui.tab_c_runlm_pgb.setMinimum(0)
+        self.ui.tab_c_runlm_pgb.setMaximum(100)
+        self.ui.tab_c_runlm_pgb.hide()
 
     def lm_worker_hunter(self):
 
@@ -1041,6 +1065,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             self.ui.tab_b_runbatch_pb.setEnabled(False)
             self.ui.tab_a_runhunter_pb.setEnabled(False)
             self.ui.tab_c_lmrun_pb.setEnabled(False)
+
+            self.ui.tab_c_runlm_pgb.setMinimum(0)
+            self.ui.tab_c_runlm_pgb.setMaximum(0)
+            self.ui.tab_c_runlm_pgb.show()
 
             self.lm_worker.request_work(composer_param_dct)
         else:
