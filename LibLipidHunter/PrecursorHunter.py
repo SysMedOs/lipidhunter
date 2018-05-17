@@ -146,7 +146,7 @@ class PrecursorHunter(object):
         ms1_ppm = self.param_dct['ms_ppm']
         ms1_th = self.param_dct['ms_th']
 
-        pl_class = self.param_dct['lipid_type']
+        pl_class = self.param_dct['lipid_class']
         usr_charge = self.param_dct['charge_mode']
 
         ms1_obs_pr_df = pd.DataFrame()

@@ -43,11 +43,11 @@ class LogPageCreator(object):
         self.idx_lst_page = self.output_img_folder + r'/LipidHunter_Identification_list.html'
         self.cfg_sum_page = self.output_img_folder + r'/LipidHunter_Configuration_Summary.html'
 
-        self.lipid_type = params['lipid_type']
+        self.lipid_class = params['lipid_class']
         hunter_folder = params['hunter_folder']
 
         if params['rank_score'] is True:
-            score_mode = '(Rank mode)'
+            score_mode = ''
         else:
             score_mode = '(Intensity mode)'
 
@@ -57,9 +57,10 @@ class LogPageCreator(object):
             isotope_score_mode = ''
 
         with open(self.main_page, 'w') as _m_page:
+            # Merge sub pages into one report page, set _params_lst_page width 345, height 345
             m_info_lst = ['<html>\n', '<link rel="icon" href="', self.logo,
                           '" type="image/x-icon"/>\n<title>LipidHunter_Results ', start_time,
-                          '</title>\n<frameset cols="350,*">\n<frameset rows="390,*">\n',
+                          '</title>\n<frameset cols="345,*">\n<frameset rows="345,*">\n',
                           '<frame src="', _params_lst_page, '" frameborder="0" >\n',
                           '<frame src="', _idx_lst_page, '" frameborder="0" >\n</frameset>\n',
                           '<frame src="', _image_lst_page, '"name ="results_frame">\n</frameset>\n</html>\n']
@@ -88,7 +89,7 @@ class LogPageCreator(object):
                            'score_cfg': 'Weight factor defined in:',
                            'hunter_start_time': 'Run start from:',
                            'vendor': 'Instrument vendor:', 'experiment_mode': 'Experiment type:',
-                           'lipid_type': 'Lipid class:', 'charge_mode': 'Precursor charge mode:',
+                           'lipid_class': 'Lipid class:', 'charge_mode': 'Precursor charge mode:',
                            'rt_start': 'RT start:', 'rt_end': 'RT end:',
                            'mz_start': r'm/z start:', 'mz_end': r'm/z end:', 'score_filter': 'Score >=',
                            'rank_score': 'Rank score mode:', 'rank_score_filter': 'Rank score >=',
@@ -106,7 +107,7 @@ class LogPageCreator(object):
                            'img_type': 'Save image format:', 'img_dpi': 'Save image with dpi =',
                            'tag_all_sn': 'Prefer all sn identified for TAGs:'}
 
-            cfg_sum_lst = ['lipid_type', 'charge_mode', 'vendor', 'experiment_mode', 'hunter_start_time',
+            cfg_sum_lst = ['lipid_class', 'charge_mode', 'vendor', 'experiment_mode', 'hunter_start_time',
                            'img_output_folder_str', 'xlsx_output_path_str',
                            'mzml_path_str', 'fawhitelist_path_str', 'lipid_specific_cfg', 'score_cfg',
                            'rt_start', 'rt_end', 'mz_start', 'mz_end', 'dda_top',
@@ -180,7 +181,7 @@ class LogPageCreator(object):
                                 </body>
                                 </html>
                                 ''' % ('%', os.path.basename(params['mzml_path_str']), params['hunter_start_time'],
-                                       self.lipid_type, params['charge_mode'],
+                                       self.lipid_class, params['charge_mode'],
                                        params['mz_start'], params['mz_end'], params['rt_start'], params['rt_end'],
                                        params['ms_th'], params['ms2_th'], params['ms_ppm'], params['ms2_ppm'],
                                        params['rank_score_filter'], score_mode,
@@ -255,7 +256,7 @@ class LogPageCreator(object):
 
                     # convert info df to html table code
                     plot_df_cols = []
-                    if self.lipid_type in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
+                    if self.lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE',
                                         'FA1_[FA-H]-_i_per', 'FA2_[FA-H]-_i_per',
                                         '[LPL(FA1)-H]-_i_per', '[LPL(FA2)-H]-_i_per',
@@ -267,7 +268,7 @@ class LogPageCreator(object):
                                      '[LPL(FA2)-H]-_i_per': '[LPL(FA2)-H]-_i (%)',
                                      '[LPL(FA1)-H2O-H]-_i_per': '[LPL(FA1)-H2O-H]-_i (%)',
                                      '[LPL(FA2)-H2O-H]-_i_per': '[LPL(FA2)-H2O-H]-_i (%)'}, inplace=True)
-                    elif self.lipid_type in ['TG', 'TAG', 'MG', 'MAG'] and charge in ['[M+H]+', '[M+NH4]+']:
+                    elif self.lipid_class in ['TG', 'TAG', 'MG', 'MAG'] and charge in ['[M+H]+', '[M+NH4]+']:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'FA1_[FA-H2O+H]+_i_per',
                                         'FA2_[FA-H2O+H]+_i_per', 'FA3_[FA-H2O+H]+_i_per', '[M-(FA1)+H]+_i_per',
                                         '[M-(FA2)+H]+_i_per', '[M-(FA3)+H]+_i_per', '[MG(FA1)-H2O+H]+_i_per',
@@ -283,7 +284,7 @@ class LogPageCreator(object):
                                      '[MG(FA1)-H2O+H]+_i_per': '[MG(FA1)-H2O+H]+_i (%)',
                                      '[MG(FA2)-H2O+H]+_i_per': '[MG(FA2)-H2O+H]+_i (%)',
                                      '[MG(FA3)-H2O+H]+_i_per': '[MG(FA3)-H2O+H]+_i (%)'}, inplace=True)
-                    elif self.lipid_type in ['TG'] and charge in ['[M+Na]+']:
+                    elif self.lipid_class in ['TG'] and charge in ['[M+Na]+']:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'FA1_[FA-H2O+H]+_i_per',
                                         'FA2_[FA-H2O+H]+_i_per', 'FA3_[FA-H2O+H]+_i_per', '[M-(FA1)+Na]+_i_per',
                                         '[M-(FA2)+Na]+_i_per', '[M-(FA3)+Na]+_i_per', '[MG(FA1)-H2O+H]+_i_per',
@@ -299,7 +300,7 @@ class LogPageCreator(object):
                                      '[MG(FA1)-H2O+H]+_i_per': '[MG(FA1)-H2O+H]+_i (%)',
                                      '[MG(FA2)-H2O+H]+_i_per': '[MG(FA2)-H2O+H]+_i (%)',
                                      '[MG(FA3)-H2O+H]+_i_per': '[MG(FA3)-H2O+H]+_i (%)'}, inplace=True)
-                    elif self.lipid_type in ['DG'] and charge in ['[M+H]+', '[M+NH4]+']:
+                    elif self.lipid_class in ['DG'] and charge in ['[M+H]+', '[M+NH4]+']:
                         plot_df_cols = ['Proposed_structures', 'DISCRETE_ABBR', 'RANK_SCORE', 'FA1_[FA-H2O+H]+_i_per',
                                         'FA2_[FA-H2O+H]+_i_per', '[MG(FA1)-H2O+H]+_i_per', '[MG(FA2)-H2O+H]+_i_per']
                         peak_info_df = pd.DataFrame(_subgroup_df, columns=plot_df_cols)
