@@ -25,6 +25,7 @@ import glob
 import multiprocessing
 import multiprocessing.pool
 import os
+from sys import platform
 import re
 import time
 
@@ -49,7 +50,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'16, May, 2018'
+        version_date = r'21, May, 2018'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
                         r'LipidHunter 2 Beta # Released Date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
@@ -343,12 +344,36 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         folder_abs_path = ''
         try:
             if os.path.isdir(usr_path):
+                print('Folder existed...\n', usr_path)
                 error_log = None
                 folder_abs_path = os.path.abspath(usr_path)
+                print('abs path of folder\n', folder_abs_path)
             else:
-                os.makedirs(usr_path)
-                print('Folder created... %s' % usr_path)
-                error_log = ''
+                if platform == "linux" or platform == "linux2":
+                    l_cwd = os.getcwd()
+                    os.chdir('/')
+                    if os.path.isdir(usr_path):
+                        print('Folder existed...\n', usr_path)
+                        error_log = None
+                        folder_abs_path = os.path.abspath(usr_path)
+                        print('abs path of folder\n', folder_abs_path)
+                    else:
+                        if os.path.isdir('/' + usr_path):
+                            print('Folder existed...\n', usr_path)
+                            error_log = None
+                            folder_abs_path = os.path.abspath(usr_path)
+                            print('abs path of folder\n', folder_abs_path)
+                        else:
+                            print('No folder...\n', usr_path)
+                            os.makedirs(usr_path)
+                            print('Folder created... %s' % usr_path)
+                            error_log = ''
+                    os.chdir(l_cwd)
+                else:
+                    print('No folder...\n', usr_path)
+                    os.makedirs(usr_path)
+                    print('Folder created... %s' % usr_path)
+                    error_log = ''
         except IOError:
             error_log = '!! Failed to open folder {_file} !!'.format(_file=info_str)
 
@@ -476,6 +501,8 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         fawhitelist_path_str = str(self.ui.tab_a_loadfalist_le.text())
         mzml_path_str = str(self.ui.tab_a_mzml_le.text())
         img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text()).strip(r'\/')
+        if platform == "linux" or platform == "linux2":
+            img_output_folder_str = '/' + img_output_folder_str
         xlsx_output_path_str = str(self.ui.tab_a_savexlsxpath_le.text())
 
         rt_start = self.ui.tab_a_rtstart_dspb.value()
@@ -516,10 +543,15 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             error_log_lst.append(error_log)
             self.ui.tab_a_saveimgfolder_le.setText(error_log)
         else:
-            if abs_img_output_folder_str != img_output_folder_str:
-                self.ui.tab_a_saveimgfolder_le.setText(abs_img_output_folder_str)
-                error_log_lst.append('!! Image output folder not correct !!')
-                error_log_lst.append('>> Propose to save in folder: %s' % abs_img_output_folder_str)
+            if platform == "linux" or platform == "linux2":
+                pass
+            else:
+                if abs_img_output_folder_str != img_output_folder_str:
+                    self.ui.tab_a_saveimgfolder_le.clear()
+                    self.ui.tab_a_saveimgfolder_le.setText(abs_img_output_folder_str)
+                    print('!! Image output folder not correct !!')
+                    print('>> Propose to save in folder: %s' % abs_img_output_folder_str)
+                    img_output_folder_str = abs_img_output_folder_str
 
         if xlsx_output_path_str[-5:] == '.xlsx':
             pass
@@ -858,19 +890,41 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         print('Rankscore mode = %s' % (hunter_param_dct['rank_score']))
         print('Hunter started!')
 
-        output_folder_path = str(self.ui.tab_a_saveimgfolder_le.text()).strip(r'\/')
+        output_folder_path = hunter_param_dct['img_output_folder_str']
 
-        if os.path.isdir(output_folder_path):
-            print('Output folder path... %s' % output_folder_path)
+        if platform == "linux" or platform == "linux2":
+            l_cwd = os.getcwd()
+            os.chdir('/')
+            if os.path.isdir(output_folder_path):
+                print('Folder existed...\n', output_folder_path)
+                error_log = None
+                folder_abs_path = os.path.abspath(output_folder_path)
+                print('abs path of folder\n', folder_abs_path)
+            else:
+                if os.path.isdir('/' + output_folder_path):
+                    print('Folder existed...\n', output_folder_path)
+                    error_log = None
+                    folder_abs_path = os.path.abspath(output_folder_path)
+                    print('abs path of folder\n', folder_abs_path)
+                else:
+                    print('No folder...\n', output_folder_path)
+                    os.makedirs(output_folder_path)
+                    print('Folder created... %s' % output_folder_path)
+                    error_log = ''
+            os.chdir(l_cwd)
         else:
-            try:
-                os.mkdir(output_folder_path)
-                print('Output folder created... %s' % output_folder_path)
-            except IOError:
-                error_log_lst.append('!! Failed to create output folder !!')
+            if os.path.isdir(output_folder_path):
+                print('Output folder path... %s' % output_folder_path)
+            else:
+                try:
+                    os.mkdir(output_folder_path)
+                    print('Output folder created... %s' % output_folder_path)
+                except IOError:
+                    error_log_lst.append('!! Failed to create output folder !!')
 
-        param_log_output_path_str = (output_folder_path + '/LipidHunter_Params-Log_%s.txt'
-                                     % hunter_param_dct['hunter_start_time'])
+        param_log_output_path_str = os.path.join(output_folder_path + '/LipidHunter_Params-Log_%s.txt'
+                                                 % hunter_param_dct['hunter_start_time'])
+        print('param_log_output_path_str', param_log_output_path_str)
 
         try:
             config = configparser.ConfigParser()
@@ -881,7 +935,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 config.write(usr_param_cfg)
                 ready_to_run = True
         except IOError:
-            error_log_lst.append('!! Failed to save parameter log files !!')
+            error_log_lst.append('!! Failed to save parameter log files !!\n%s' % param_log_output_path_str)
 
         print(hunter_param_dct)
 

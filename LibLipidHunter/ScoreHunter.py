@@ -288,10 +288,10 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                     if 'obs_type' in post_obs_df.columns.values.tolist():
                         post_obs_df['obs_type_calc'] = post_obs_df['obs_type']
                     else:
-                        print(obs_typ, 'post_obs_df["obs_type"].empty')
+                        # print(obs_typ, 'post_obs_df["obs_type"].empty')
                         break
                 else:
-                    print(obs_typ, 'post_obs_df.empty')
+                    # print(obs_typ, 'post_obs_df.empty')
                     break
 
             for _fa_abbr in unique_fa_abbr_lst:
@@ -344,9 +344,10 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                     _score_obs_df = post_obs_df[post_obs_df['fa_abbr'].isin(_unique_fa_abbr_lst)]
                     _score_obs_df = _score_obs_df.query('fa_abbr == "%s" and obs_type_calc == "%s"'
                                                         % (_fa_abbr, obs_typ))
-                    if _score_obs_df.shape[0] > 1:
-                        print('_score_obs_df shape > 1')
-                        print(_score_obs_df)
+                    # if _score_obs_df.shape[0] > 1:
+                    #     # print('_score_obs_df shape > 1')
+                    #     # print(_score_obs_df)
+                    #     pass
                     _score_obs_df.is_copy = False
                     fa_site_lst = fa_to_site_dct[_fa_abbr]
 
@@ -355,7 +356,7 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                         try:
                             _fa_wfactor = weight_dct['%s' % _obs_peak]['Weight']
                         except Exception as _e:
-                            print('[Exception] Cannot get fa_wfactor from weight_dct ...', _e)
+                            print('[Exception] !!! Cannot get fa_wfactor from weight_dct ...', _e)
                             _fa_wfactor = 0
                             exit()
 
@@ -614,8 +615,8 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                 _tmp_obs.mz_int = _tmp_obs.mz_int.astype(int)
                 _tmp_obs.sort_values(by=['mz_int', 'TYPE'], ascending=[True, False], inplace=True)
                 _tmp_obs.drop_duplicates(subset=['mz_int'], keep='first', inplace=True)
-                obs_fa_frag_df = _tmp_obs[_tmp_obs['TYPE'] == 'FA'].drop(columns=['mz_int', 'TYPE'])
-                obs_fa_nl_df = _tmp_obs[_tmp_obs['TYPE'] == 'NL'].drop(columns=['mz_int', 'TYPE'])
+                obs_fa_frag_df = _tmp_obs[_tmp_obs['TYPE'] == 'FA'].drop(['mz_int', 'TYPE'], axis=1)
+                obs_fa_nl_df = _tmp_obs[_tmp_obs['TYPE'] == 'NL'].drop(['mz_int', 'TYPE'], axis=1)
                 del _tmp_obs
 
             obs_dct = {'[FA-H2O+H]+': [obs_fa_frag_df, {'FA1': 'FA1_[FA-H2O+H]+',
@@ -640,9 +641,9 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
         else:
             # TODO (georgia.angelidou@uni=leipzig.de): SM, Cer, HexCer
-            print(core_count, lipid_class, charge, '[Warning] No informative peak found !!!')
+            print(core_count, lipid_class, charge, '[Warning] !!! No informative peak found !!!')
     else:
-        print(core_count, lipid_class, charge, '[Warning] No informative peak found !!!')
+        print(core_count, lipid_class, charge, '[Warning] !!! No informative peak found !!!')
         return 0, {}
 
     if len(list(obs_dct.keys())) > 0:
@@ -758,7 +759,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         _ms2_idx = usr_spec_info_dct['_ms2_spec_idx']
         _ms1_rt = usr_spec_info_dct['ms1_rt']
 
-        print(core_count, _usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged)
+        print(core_count, '[INFO] --> ', _usr_ms2_rt, _ms1_pr_mz, _usr_formula_charged)
         # _mz_amm_flag  = isotope_hunter.get_isotope_fragments(_ms1_df, )
 
         # use the max threshold from abs & relative intensity settings
@@ -773,7 +774,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         scan_time_chk = False
         if _ms1_rt > _usr_ms2_rt:
             print(core_count,
-                  '[WARNING] MS and MS/MS mismatch MS1_RT {ms1_rt}> MS2_RT {ms2_rt}...'
+                  '[WARNING] !!! MS and MS/MS mismatch MS1_RT {ms1_rt}> MS2_RT {ms2_rt}...'
                   .format(ms1_rt=_ms1_rt, ms2_rt=_usr_ms2_rt))
         else:
             scan_time_chk = True
@@ -782,14 +783,14 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
         if not _ms1_df.empty and not _ms2_df.empty:
             spec_df_chk = True
         elif _ms1_df.empty:
-            print(core_count, '[WARNING] MS1 spectrum is empty...')
+            print(core_count, '[WARNING] !!! MS1 spectrum is empty...')
         elif _ms2_df.empty:
-            print(core_count, '[WARNING] MS/MS spectrum is empty...')
+            print(core_count, '[WARNING] !!! MS/MS spectrum is empty...')
         else:
             pass
 
         if _ms1_pr_mz > 0.0 and _ms1_pr_i > 0.0 and spec_df_chk is True and scan_time_chk is True:
-            print(core_count, '>>> >>> >>> >>> Best PR on MS1: %f' % _ms1_pr_mz)
+            print(core_count, '[INFO] --> Best PR on MS1: %f' % _ms1_pr_mz)
 
             isotope_score_info_dct = isotope_hunter.get_isotope_score(_ms1_pr_mz, _ms1_pr_i,
                                                                       _usr_formula_charged, _ms1_df, core_count,
@@ -800,18 +801,18 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
 
             isotope_score = isotope_score_info_dct['isotope_score']
             _mz_amm_iso_flag = ""
-            print(core_count, 'isotope_score: %f' % isotope_score)
+            print(core_count, '[SCORE] === isotope_score: %f' % isotope_score)
             if isotope_score >= usr_isotope_score_filter:
-                print(core_count, '>>> isotope_check PASSED! >>> >>> >>>')
-                print(core_count, '>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
+                print(core_count, '[INFO] --> isotope_check PASSED! >>> >>> >>>')
+                # print(core_count, '>>> >>> >>> >>> Entry Info >>> >>> >>> >>> ')
                 _samemz_se.at['MS1_obs_mz'] = _ms1_pr_mz
                 _exact_ppm = 1e6 * (_ms1_pr_mz - _usr_mz_lib) / _usr_mz_lib
                 _samemz_se.at['ppm'] = _exact_ppm
                 _samemz_se.at['abs_ppm'] = abs(_exact_ppm)
-                print(core_count, 'Proposed_bulk_structure can be:', _usr_abbr_bulk_lst)
+                print(core_count, '[INFO] --> Proposed_bulk_structure can be:', _usr_abbr_bulk_lst)
                 for _usr_abbr_bulk in _usr_abbr_bulk_lst:
                     # TODO (georgia.angelidou@uni-leipzig.de): Here is where the check for the ammonium adduct should be inlude before the rank score
-                    print(core_count, 'Now check_proposed_structure:', _usr_abbr_bulk)
+                    print(core_count, '[INFO] --> Now check_proposed_structure:', _usr_abbr_bulk)
                     _mz_amm_iso_flag2 = ''
                     if charge_mode in ['[M+H]+', '[M+Na]+']:
                         _mz_amm_formula, _mz_amm_elem_dct = ElemCalc().get_formula(_usr_abbr_bulk, charge='neutral')
@@ -918,7 +919,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                         if 'OTHER_NL' in list(specific_dct.keys()):
                             unspecific_ion_count += specific_dct['OTHER_NL'].shape[0]
 
-                        print(core_count, 'Rank_score: --> passed', rank_score)
+                        print(core_count, '[SCORE] === Rank_score: --> passed', rank_score)
                         print(core_count, '\n',
                               obs_info_df[['BULK_ABBR', 'DISCRETE_ABBR', 'RANK_SCORE', 'scan_time', 'OBS_RESIDUES']]
                               )
@@ -942,7 +943,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                                     r'/LipidHunter_Results_Figures_%s'
                                     % hunter_start_time_str + img_name_core)
 
-                        print(core_count, '==> check for output -->')
+                        # print(core_count, '==> check for output -->')
 
                         obs_info_df['Proposed_structures'] = _usr_abbr_bulk
                         obs_info_df['Bulk_identification'] = _usr_abbr_bulk
@@ -1001,15 +1002,16 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
             # print('_ms1_rt', _ms1_rt, '_usr_ms2_rt', _usr_ms2_rt)
             pass
     if not tmp_df.empty:
-        print(core_count, 'Size of the identified LPP_df %i, %i' % (tmp_df.shape[0], tmp_df.shape[1]))
+        print(core_count, '[INFO] --> Size of the identified LPP_df %i, %i' % (tmp_df.shape[0], tmp_df.shape[1]))
         tmp_df.reset_index(drop=True, inplace=True)
         tmp_df.index += 1
 
     else:
-        print(core_count, '!! Size of the identified LPP_df == 0')
+        print(core_count, '[WARNING] !!! Size of the identified LPP_df == 0')
         tmp_df = 'error'
     if save_fig is True:
-        print('img_plt_lst', len(img_plt_lst))
+        # print('img_plt_lst', len(img_plt_lst))
+        pass
     else:
         img_plt_lst = []
 

@@ -30,7 +30,7 @@ import pandas as pd
 
 class LogPageCreator(object):
     def __init__(self, output_folder, start_time, params):
-        print(os.getcwd())
+        # print(os.getcwd())
         self.output_folder = output_folder
         self.output_img_folder = output_folder + r'/LipidHunter_Results_Figures_%s' % start_time
         self.main_page = output_folder + r'/LipidHunter_Results_%s.html' % start_time
@@ -350,7 +350,7 @@ class LogPageCreator(object):
                                        ident=ident_abbr, score=score))
                     idx_page.write(idx_str)
 
-            print('==> info added to report html -->')
+            print('[INFO] --> Result info added to report html -->')
 
     def close_page(self):
         with open(self.main_page, 'a') as _m_page:

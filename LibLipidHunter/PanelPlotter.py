@@ -130,7 +130,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         ms1_plot_th = max(ms1_plot_th, ms1_top1000_i)
         # print(core_count, m1_obs_i, 3 * ms1_min, ms1_max * 0.01, 1000, ms1_top1000_i)
         ms1_df = ms1_df.query('i >= %f' % ms1_plot_th)
-        print(core_count, '[INFO] Plot full MS1 with abs intensity filter > %f' % ms1_plot_th)
+        print(core_count, '[INFO] --> Plot full MS1 with abs intensity filter > %f' % ms1_plot_th)
     if ms2_df['i'].max() >= 1000 and ms2_df.shape[0] >= 500:
         ms2_min = ms2_df['i'].min()
         ms2_max = ms2_df['i'].max()
@@ -143,7 +143,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         ms2_plot_th -= 1
         if ms2_plot_th > 0:
             ms2_df = ms2_df.query('i >= %f' % ms2_plot_th)
-            print(core_count, '[INFO] Plot full MS/MS with abs intensity filter > %f' % ms2_plot_th)
+            print(core_count, '[INFO] --> Plot full MS/MS with abs intensity filter > %f' % ms2_plot_th)
 
     _msms_low_df = ms2_df.query('mz <= 400')
     _msms_high_df = ms2_df.query('mz > 400')
@@ -1034,10 +1034,10 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
                 executor.submit(_task)
 
         plt.savefig(save_img_as, type=img_type, dpi=dpi)
-        print(core_count, '[OUTPUT] --> Image saved as: %s' % save_img_as)
+        print(core_count, '[OUTPUT] ==> Image saved as: %s' % save_img_as)
         plt.close()
     except Exception as e:
-        print('[INFO] Use single thread and try again ...', e)
+        print('[INFO] --> Use single thread and try again ...', e)
         plot_msms()
         plot_msms_low()
         plot_msms_high()
@@ -1045,7 +1045,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         plot_ms()
         plot_ms_zoom()
         plt.savefig(save_img_as, type=img_type, dpi=dpi)
-        print(core_count, '[INFO] =====> Image saved as: %s' % save_img_as)
+        print(core_count, '[INFO] --> Image saved as: %s' % save_img_as)
         plt.close()
 
 
@@ -1073,7 +1073,7 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
                              formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
                              dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
             except Exception as e:
-                print(core_count, '[EXCEPTION] gen_plot failed to save images from data list ...', e)
+                print(core_count, '[EXCEPTION] !!! gen_plot failed to save images from data list ...', e)
 
             img_counter += 1
 
@@ -1095,4 +1095,4 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
                              formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
                              dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
             except Exception as e:
-                print(core_count, '[EXCEPTION] gen_plot failed to save image ...', e)
+                print(core_count, '[EXCEPTION] !!! gen_plot failed to save image ...', e)

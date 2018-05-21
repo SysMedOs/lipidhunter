@@ -1455,7 +1455,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "LipidHunter (beta) | University of Leipzig ", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "LipidHunter 2 (beta) | University of Leipzig ", None, QtGui.QApplication.UnicodeUTF8))
         self.label_50.setText(QtGui.QApplication.translate("MainWindow", "Score weight factor settings:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_mzml_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Select lipid class:", None, QtGui.QApplication.UnicodeUTF8))
