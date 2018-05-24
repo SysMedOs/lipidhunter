@@ -515,11 +515,15 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text())
         if img_output_folder_str[-1] in ['\\', '/']:
             img_output_folder_str = img_output_folder_str[:-1]
+            self.ui.tab_a_saveimgfolder_le.clear()
+            self.ui.tab_a_saveimgfolder_le.setText(img_output_folder_str)
         else:
             pass
         xlsx_output_path_str = str(self.ui.tab_a_savexlsxpath_le.text())
         if xlsx_output_path_str[-5:] != '.xlsx':
             xlsx_output_path_str += '.xlsx'
+            self.ui.tab_a_savexlsxpath_le.clear()
+            self.ui.tab_a_savexlsxpath_le.setText(xlsx_output_path_str)
 
         rt_start = self.ui.tab_a_rtstart_dspb.value()
         rt_end = self.ui.tab_a_rtend_dspb.value()
@@ -649,6 +653,8 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 pass
             else:
                 param_cfg_path_str = '%s.txt' % param_cfg_path_str
+                self.ui.tab_a_cfgpath_le.clear()
+                self.ui.tab_a_cfgpath_le.setText(param_cfg_path_str)
             param_cfg_directory = os.path.dirname(param_cfg_path_str)
             if not os.path.exists(param_cfg_directory):
                 os.makedirs(param_cfg_directory)
@@ -1130,6 +1136,8 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         lm_export_path_str = str(self.ui.tab_c_lmexport_le.text())
         if lm_export_path_str[-4:] != '.csv':
             lm_export_path_str += '.csv'
+            self.ui.tab_c_lmexport_le.clear()
+            self.ui.tab_c_lmexport_le.setText(lm_export_path_str)
 
         if os.path.isfile(fawhitelist_path_str):
             fa_list_chosen = True
