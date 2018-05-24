@@ -50,7 +50,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'21, May, 2018'
+        version_date = r'25, May, 2018'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
                         r'LipidHunter 2 Beta # Released Date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
@@ -70,12 +70,19 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.a_max_ms()
 
         # disable un necessary UI elements
-        self.ui.tab_a_runhunter_pgb.setStyleSheet('QProgressBar::chunk{background-color: #FF8C00;}')
+        q_pgb_style = '''
+                      QProgressBar:horizontal {
+                      border: 1px #CCCCCC; border-radius: 0px; background: #CCCCCC; padding: 1px;}
+                      QProgressBar::chunk:horizontal {
+                      background: qlineargradient(x1: 0, y1: 0.5, x2: 0, y2: 0.5, stop: 0 #FF8C00, stop: 1 white);}
+                      '''
+
+        self.ui.tab_a_runhunter_pgb.setStyleSheet(q_pgb_style)
         self.ui.tab_a_runhunter_pgb.hide()
         self.ui.tab_a_msmax_chb.hide()
-        self.ui.tab_b_runbatch_pgb.setStyleSheet('QProgressBar::chunk{background-color: #FF8C00;}')
+        self.ui.tab_b_runbatch_pgb.setStyleSheet(q_pgb_style)
         self.ui.tab_b_runbatch_pgb.hide()
-        self.ui.tab_c_runlm_pgb.setStyleSheet('QProgressBar::chunk{background-color: #FF8C00;}')
+        self.ui.tab_c_runlm_pgb.setStyleSheet(q_pgb_style)
         self.ui.tab_c_runlm_pgb.hide()
         self.ui.tab_b_mutlimode_cmb.hide()
         self.ui.tab_b_maxbatch_lb.hide()
@@ -348,32 +355,32 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 error_log = None
                 folder_abs_path = os.path.abspath(usr_path)
                 print('abs path of folder\n', folder_abs_path)
+            # else:
+            #     if platform == "linux" or platform == "linux2":
+            #         l_cwd = os.getcwd()
+            #         os.chdir('/')
+            #         if os.path.isdir(usr_path):
+            #             print('Folder existed...\n', usr_path)
+            #             error_log = None
+            #             folder_abs_path = os.path.abspath(usr_path)
+            #             print('abs path of folder\n', folder_abs_path)
+            #         else:
+            #             if os.path.isdir('/' + usr_path):
+            #                 print('Folder existed...\n', usr_path)
+            #                 error_log = None
+            #                 folder_abs_path = os.path.abspath(usr_path)
+            #                 print('abs path of folder\n', folder_abs_path)
+            #             else:
+            #                 print('No folder...\n', usr_path)
+            #                 os.makedirs(usr_path)
+            #                 print('Folder created... %s' % usr_path)
+            #                 error_log = ''
+            #         os.chdir(l_cwd)
             else:
-                if platform == "linux" or platform == "linux2":
-                    l_cwd = os.getcwd()
-                    os.chdir('/')
-                    if os.path.isdir(usr_path):
-                        print('Folder existed...\n', usr_path)
-                        error_log = None
-                        folder_abs_path = os.path.abspath(usr_path)
-                        print('abs path of folder\n', folder_abs_path)
-                    else:
-                        if os.path.isdir('/' + usr_path):
-                            print('Folder existed...\n', usr_path)
-                            error_log = None
-                            folder_abs_path = os.path.abspath(usr_path)
-                            print('abs path of folder\n', folder_abs_path)
-                        else:
-                            print('No folder...\n', usr_path)
-                            os.makedirs(usr_path)
-                            print('Folder created... %s' % usr_path)
-                            error_log = ''
-                    os.chdir(l_cwd)
-                else:
-                    print('No folder...\n', usr_path)
-                    os.makedirs(usr_path)
-                    print('Folder created... %s' % usr_path)
-                    error_log = ''
+                print('No folder...\n', usr_path)
+                os.makedirs(usr_path)
+                print('Folder created... %s' % usr_path)
+                error_log = ''
         except IOError:
             error_log = '!! Failed to open folder {_file} !!'.format(_file=info_str)
 
@@ -402,7 +409,11 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def a_save_output(self):
         a_save_output_path = QtGui.QFileDialog.getSaveFileName(caption='Save file', filter='.xlsx')
         self.ui.tab_a_savexlsxpath_le.clear()
-        a_save_output_str = os.path.abspath(a_save_output_path[0])
+        usr_output_path = a_save_output_path[0]
+        if usr_output_path[-5:] != '.xlsx':
+            usr_output_path += '.xlsx'
+        a_save_output_str = os.path.abspath(usr_output_path)
+
         self.ui.tab_a_savexlsxpath_le.setText(a_save_output_str)
 
     def a_max_ms(self):
@@ -497,13 +508,18 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         # else:
         #     score_cfg = ''
         #     error_log_lst.append('!! No Corresponding Score weight factor for selected lipid class!!')
+
         score_cfg = self.ui.tab_a_loadscorecfg_le.text()
         fawhitelist_path_str = str(self.ui.tab_a_loadfalist_le.text())
         mzml_path_str = str(self.ui.tab_a_mzml_le.text())
-        img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text()).strip(r'\/')
-        if platform == "linux" or platform == "linux2":
-            img_output_folder_str = '/' + img_output_folder_str
+        img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text())
+        if img_output_folder_str[-1] in ['\\', '/']:
+            img_output_folder_str = img_output_folder_str[:-1]
+        else:
+            pass
         xlsx_output_path_str = str(self.ui.tab_a_savexlsxpath_le.text())
+        if xlsx_output_path_str[-5:] != '.xlsx':
+            xlsx_output_path_str += '.xlsx'
 
         rt_start = self.ui.tab_a_rtstart_dspb.value()
         rt_end = self.ui.tab_a_rtend_dspb.value()
@@ -543,15 +559,15 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             error_log_lst.append(error_log)
             self.ui.tab_a_saveimgfolder_le.setText(error_log)
         else:
-            if platform == "linux" or platform == "linux2":
-                pass
-            else:
-                if abs_img_output_folder_str != img_output_folder_str:
-                    self.ui.tab_a_saveimgfolder_le.clear()
-                    self.ui.tab_a_saveimgfolder_le.setText(abs_img_output_folder_str)
-                    print('!! Image output folder not correct !!')
-                    print('>> Propose to save in folder: %s' % abs_img_output_folder_str)
-                    img_output_folder_str = abs_img_output_folder_str
+            # if platform == "linux" or platform == "linux2":
+            #     pass
+            # else:
+            if abs_img_output_folder_str != img_output_folder_str:
+                self.ui.tab_a_saveimgfolder_le.clear()
+                self.ui.tab_a_saveimgfolder_le.setText(abs_img_output_folder_str)
+                print('!! Image output folder not correct !!')
+                print('>> Propose to save in folder: %s' % abs_img_output_folder_str)
+                img_output_folder_str = abs_img_output_folder_str
 
         if xlsx_output_path_str[-5:] == '.xlsx':
             pass
@@ -582,28 +598,47 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         score_filter = rank_score_filter
 
-        hunter_param_dct = {'fawhitelist_path_str': fawhitelist_path_str, 'mzml_path_str': mzml_path_str,
-                            'img_output_folder_str': img_output_folder_str,
-                            'xlsx_output_path_str': xlsx_output_path_str, 'rt_start': rt_start, 'rt_end': rt_end,
-                            'mz_start': mz_start, 'mz_end': mz_end, 'dda_top': dda_top, 'ms_th': ms_th,
-                            'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm,
-                            'rank_score_filter': rank_score_filter, 'isotope_score_filter': isotope_score_filter,
-                            'score_filter': score_filter,
+        hunter_param_dct = {'vendor': usr_vendor, 'experiment_mode': usr_exp_mode,
                             'lipid_class': _lipid_class, 'charge_mode': _lipid_charge,
-                            'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor,
-                            'ms2_infopeak_threshold': ms2_info_threshold,
-                            'rank_score': rank_score, 'fast_isotope': fast_isotope,
+                            'fawhitelist_path_str': fawhitelist_path_str,
+                            'score_cfg': score_cfg,
+                            'mzml_path_str': mzml_path_str,
+                            'img_output_folder_str': img_output_folder_str,
+                            'xlsx_output_path_str': xlsx_output_path_str,
+                            'rt_start': rt_start, 'rt_end': rt_end,
+                            'mz_start': mz_start, 'mz_end': mz_end,
+                            'dda_top': dda_top, 'pr_window': pr_window,
+                            'ms_th': ms_th, 'ms_ppm': ms_ppm,
+                            'ms2_th': ms2_th, 'ms2_ppm': ms2_ppm, 'ms2_infopeak_threshold': ms2_info_threshold,
+                            'rank_score_filter': rank_score_filter, 'score_filter': score_filter,
+                            'isotope_score_filter': isotope_score_filter,
+                            'lipid_specific_cfg': lipid_specific_cfg,
+                            'core_number': core_num, 'max_ram': max_ram,
+                            'img_type': img_typ, 'img_dpi': img_dpi,
                             'hunter_folder': self.lipidhunter_cwd,
-                            'hunter_start_time': start_time_str, 'experiment_mode': usr_exp_mode,
-                            'core_number': core_num, 'max_ram': max_ram, 'tag_all_sn': tag_all_sn,
-                            'img_type': img_typ, 'img_dpi': img_dpi, 'ms_max': ms_max, 'pr_window': pr_window}
+                            'hunter_start_time': start_time_str,
+                            }
+        debug_mode = 'OFF'
+        if debug_mode == 'ON':
+            hunter_param_dct['rank_score'] = rank_score
+            hunter_param_dct['tag_all_sn'] = tag_all_sn
+            hunter_param_dct['fast_isotope'] = fast_isotope
+            hunter_param_dct['ms_max'] = ms_max
+        else:
+            hunter_param_dct['rank_score'] = True
+            hunter_param_dct['tag_all_sn'] = True
+            hunter_param_dct['fast_isotope'] = False
+            hunter_param_dct['ms_max'] = 0
 
-        return hunter_param_dct, error_log_lst
+            return hunter_param_dct, error_log_lst
 
     def a_save_cfg(self):
         a_save_cfg_path = QtGui.QFileDialog.getSaveFileName(caption='Save file', filter='.txt')
         self.ui.tab_a_cfgpath_le.clear()
-        a_save_cfg_str = os.path.abspath(a_save_cfg_path[0])
+        usr_cfg_path = a_save_cfg_path[0]
+        if usr_cfg_path[-4:] != '.txt':
+            usr_cfg_path += '.txt'
+        a_save_cfg_str = os.path.abspath(usr_cfg_path)
         self.ui.tab_a_cfgpath_le.setText(a_save_cfg_str)
 
     def a_create_cfg(self):
@@ -859,7 +894,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def c_lmexport(self):
         c_lmexport_path = QtGui.QFileDialog.getSaveFileName(caption='Save file', filter='.csv')
         self.ui.tab_c_lmexport_le.clear()
-        c_lmexport_str = os.path.abspath(c_lmexport_path[0])
+        usr_lm_path = c_lmexport_path[0]
+        if usr_lm_path[-4:] != '.csv':
+            usr_lm_path += '.csv'
+        c_lmexport_str = os.path.abspath(usr_lm_path)
         self.ui.tab_c_lmexport_le.setText(c_lmexport_str)
 
     def single_worker_on_finish(self):
@@ -1090,6 +1128,8 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         fawhitelist_path_str = str(self.ui.tab_c_lmcalcfalist_le.text())
         lm_export_path_str = str(self.ui.tab_c_lmexport_le.text())
+        if lm_export_path_str[-4:] != '.csv':
+            lm_export_path_str += '.csv'
 
         if os.path.isfile(fawhitelist_path_str):
             fa_list_chosen = True

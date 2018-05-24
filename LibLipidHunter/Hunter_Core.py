@@ -138,6 +138,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     elif platform == "win32":  # Windows
         os_typ = 'windows'
         print('[INFO] --> LipidHunter Running on >>> Windows ...')
+    elif platform == "darwin":  # macOS
+        if usr_core_num > 1:
+            os_typ = 'linux_multi'
+            print('[INFO] --> LipidHunter Running on >>> macOS with multiprocessing mode ...')
+        else:
+            os_typ = 'linux_single'
+            print('[INFO] --> LipidHunter Running on >>> macOS with single core mode ...')
     else:
         usr_core_num = 1
         param_dct['core_number'] = 1
