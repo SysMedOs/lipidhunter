@@ -1455,7 +1455,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "LipidHunter (beta) | University of Leipzig ", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "LipidHunter 2 (beta) | University of Leipzig ", None, QtGui.QApplication.UnicodeUTF8))
         self.label_50.setText(QtGui.QApplication.translate("MainWindow", "Score weight factor settings:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_mzml_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Select lipid class:", None, QtGui.QApplication.UnicodeUTF8))
@@ -1465,7 +1465,7 @@ class Ui_MainWindow(object):
         self.label_11.setText(QtGui.QApplication.translate("MainWindow", "to", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("MainWindow", "Input .mzML file:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_loadfalist_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_7.setText(QtGui.QApplication.translate("MainWindow", "Save LipidHunter report to folder:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_7.setText(QtGui.QApplication.translate("MainWindow", "Save report to folder:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_loadscorecfg_pb.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_sumxlsxpath_pb.setText(QtGui.QApplication.translate("MainWindow", "Save as", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_a_saveimgfolder_pb.setText(QtGui.QApplication.translate("MainWindow", "Save as", None, QtGui.QApplication.UnicodeUTF8))
@@ -1524,8 +1524,8 @@ class Ui_MainWindow(object):
         self.tab_b_addcfgfolder_pb.setText(QtGui.QApplication.translate("MainWindow", "Select a folder", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_b_clearall_pb.setText(QtGui.QApplication.translate("MainWindow", "Clear all", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_b_runbatch_pb.setText(QtGui.QApplication.translate("MainWindow", "Run batch mode identification >>>", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_maxsubcore_lb.setText(QtGui.QApplication.translate("MainWindow", "Max cores for each file:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_b_maxsubram_lb.setText(QtGui.QApplication.translate("MainWindow", "Max RAM for each file:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_maxsubcore_lb.setText(QtGui.QApplication.translate("MainWindow", "Max cores for each task:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_b_maxsubram_lb.setText(QtGui.QApplication.translate("MainWindow", "Max RAM for each task:", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_b_maxsubram_spb.setSuffix(QtGui.QApplication.translate("MainWindow", " GB", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_b_mutlimode_cmb.setItemText(0, QtGui.QApplication.translate("MainWindow", "Process as a sequence", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_b_mutlimode_cmb.setItemText(1, QtGui.QApplication.translate("MainWindow", "Process multiple files in parallel", None, QtGui.QApplication.UnicodeUTF8))
@@ -1716,7 +1716,7 @@ class Ui_MainWindow(object):
         self.link_emed_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"http://www.sys-med.de/en/\"><span style=\"   text-decoration: none; color:#FF8C00;\">http://www.sys-med.de/en/</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.link_sysmedos_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p><a href=\"https://home.uni-leipzig.de/fedorova/sysmedos/\"><span style=\"   text-decoration: none; color:#FF8C00;\">https://home.uni-leipzig.de/fedorova/sysmedos/</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_58.setText(QtGui.QApplication.translate("MainWindow", "SysMedOS Project : ", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabframe.setTabText(self.tabframe.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "About LipidHunter", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabframe.setTabText(self.tabframe.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "About LipidHunter 2", None, QtGui.QApplication.UnicodeUTF8))
         self.link_uni_lb.setText(QtGui.QApplication.translate("MainWindow", "<html><head/><body><p>LipidHunter (C) 2016-2018 | <a href=\"http://www.zv.uni-leipzig.de/\"><span style=\" color:#ff8c00;\">University of Leipzig</span></a> | <a href=\"http://research.uni-leipzig.de/bioanalytik/\"><span style=\" color:#ff8c00;\">AG Bioanalytik</span></a> | <a href=\"https://home.uni-leipzig.de/fedorova/\"><span style=\" color:#ff8c00;\">Fedorova Research Group</span></a></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
 
 

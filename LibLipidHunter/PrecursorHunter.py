@@ -38,7 +38,7 @@ except ImportError:  # for python 2.7
 def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max, core=1,
                  os_type='windows', queue=None):
     core_count = 'Core #{core}'.format(core=core)
-    print(core_count, '... Matching precursors ...')
+    print(core_count, '[STATUS] >>> ... Matching precursors ...')
     core_results_df = pd.DataFrame()
     for group_key in sub_group_list:
         subgroup_df = lpp_info_groups.get_group(group_key).copy()
@@ -118,7 +118,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
             pass
             # print('_tmp_scan_info_df.shape[0] = 0')
 
-    print(core_count, 'core_results_count', core_results_df.shape[0])
+    print(core_count, '[INFO] --> core_results_count', core_results_df.shape[0])
 
     if os_type == 'linux_multi':
         queue.put(core_results_df)
@@ -135,11 +135,11 @@ class PrecursorHunter(object):
 
     def get_matched_pr(self, scan_info_df, spectra_pl, ms1_max=0, core_num=4, max_ram=8):
 
-        print('>>>>>>>> Start match precursors!!!!')
+        print('[STATUS] >>>  Start match precursors ...')
 
         if core_num > 4:
             core_num = 4
-            print('>>> Temporarily reduce to 4 cores to enhance the performance in this step...')
+            print('[INFO] --> Temporarily reduce to 4 cores to enhance the performance in this step...')
 
         pr_window = self.param_dct['pr_window']
 
@@ -190,21 +190,21 @@ class PrecursorHunter(object):
         spectra_pl_idx_lst = sorted(spectra_pl.items.values.tolist())
 
         if (max_ram * 64) <= len(spectra_pl_idx_lst) < (max_ram * 128):
-            print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
+            print('[INFO] --> Spectra is too large for the RAM settings, split to few segments ...')
             sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.5))
         elif (max_ram * 128) <= len(spectra_pl_idx_lst) < (max_ram * 256):
-            print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
+            print('[INFO] --> Spectra is too large for the RAM settings, split to few segments ...')
             sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.25))
         elif len(spectra_pl_idx_lst) >= (max_ram * 256):
-            print('>>>>>>>> Spectra is too large for the RAM settings, split to few segments ...')
+            print('[INFO] --> Spectra is too large for the RAM settings, split to few segments ...')
             sub_group_len = int(math.ceil(len(spectra_pl_idx_lst) * 0.1))
 
         else:
             sub_group_len = len(spectra_pl_idx_lst)
 
-        print('Total Scans:', len(spectra_pl_idx_lst), 'Sub part scans:', sub_group_len)
+        print('[INFO] --> Total Scans:', len(spectra_pl_idx_lst), 'Sub part scans:', sub_group_len)
         if sub_group_len > 500:
-            print('>>> Set sub part scans to 500 to avoid Memory error ...')
+            print('[INFO] --> Set sub part scans to 500 to avoid Memory error ...')
             sub_group_len = 500
         sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
                                                                                       sub_group_len)]
@@ -223,9 +223,11 @@ class PrecursorHunter(object):
 
                 # Start multiprocessing
                 if part_tot == 1:
-                    print('>>> Start multiprocessing for precursor matching ==> Number of Cores: %i' % core_num)
+                    print('[STATUS] >>> Start multiprocessing for precursor matching ==> Number of Cores: %i'
+                          % core_num)
                 else:
-                    print('>>> Start multiprocessing for precursor matching ==> Part %i / %i --> Number of Cores: %i' %
+                    print('[STATUS] >>> Start multiprocessing for precursor matching '
+                          '==> Part %i / %i --> Number of Cores: %i' %
                           (part_counter, part_tot, core_num))
 
                 if self.param_dct['core_number'] > 1:
@@ -239,7 +241,7 @@ class PrecursorHunter(object):
                                     core_list = [x for x in core_list if x is not None]
                                 else:
                                     pass
-                                print('>>> >>> ...... Core #%i ==> processing ......' % core_worker_count)
+                                print('[STATUS] >>> Core #%i ==> processing ......' % core_worker_count)
                                 pr_info_result = parallel_pool.apply_async(find_pr_info, args=(scan_info_df,
                                                                                                sub_pl,
                                                                                                lpp_info_groups,
@@ -262,7 +264,7 @@ class PrecursorHunter(object):
                                     core_list = [x for x in core_list if x is not None]
                                 else:
                                     pass
-                                print('>>> >>> ...... Core #%i ==> processing ......' % core_worker_count)
+                                print('[STATUS] >>> Core #%i ==> processing ......' % core_worker_count)
                                 job = multiprocessing.Process(target=find_pr_info, args=(scan_info_df, sub_pl,
                                                                                          lpp_info_groups, core_list,
                                                                                          ms1_th, ms1_ppm, ms1_max,
@@ -276,7 +278,7 @@ class PrecursorHunter(object):
                             j.join()
 
                 else:
-                    print('Using single core mode...')
+                    print('[INFO] --> Using single core mode...')
                     core_worker_count = 1
                     for core_list in core_key_list:
                         if isinstance(core_list, tuple) or isinstance(core_list, list):
@@ -284,7 +286,8 @@ class PrecursorHunter(object):
                                 core_list = [x for x in core_list if x is not None]
                             else:
                                 pass
-                            print('>>> >>> processing ......Part: %i subset: %i ' % (part_counter, core_worker_count))
+                            print('[STATUS] >>> processing ......Part: %i subset: %i '
+                                  % (part_counter, core_worker_count))
                             sub_df = find_pr_info(scan_info_df, sub_pl, lpp_info_groups, core_list, ms1_th,
                                                   ms1_ppm, ms1_max, core_worker_count)
                             if not sub_df.empty:
@@ -319,13 +322,14 @@ class PrecursorHunter(object):
                 result_part_counter += 1
 
             if part_tot == 1:
-                print('>>> Multiprocessing results merged ...')
+                print('[STATUS] >>> Multiprocessing results merged ...')
             else:
-                print('>>> Multiprocessing results merged ... Part %i / %i ...' % (result_part_counter, part_tot))
+                print('[STATUS] >>> Multiprocessing results merged ... Part %i / %i ...'
+                      % (result_part_counter, part_tot))
 
         # End multiprocessing
 
-        print('ms1_obs_pr_df.shape', ms1_obs_pr_df.shape)
+        # print('ms1_obs_pr_df.shape', ms1_obs_pr_df.shape)
         if not ms1_obs_pr_df.empty:
             ms1_obs_pr_df = ms1_obs_pr_df.sort_values(by=['Lib_mz', 'abs_ppm'], ascending=[True, True])
             ms1_obs_pr_df = ms1_obs_pr_df.reset_index(drop=True)

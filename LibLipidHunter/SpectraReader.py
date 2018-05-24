@@ -73,8 +73,8 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
     rt_start = rt_range[0]
     rt_end = rt_range[1]
 
-    print('==> Start to process file: %s' % mzml)
-    print('=== ==> RT: %.2f -> %.2f with DDA Top % i' % (rt_start, rt_end, dda_top))
+    print('[STATUS] >>> Start to process file: %s' % mzml)
+    print('[INFO] --> Processing RT: %.2f -> %.2f with DDA Top % i' % (rt_start, rt_end, dda_top))
 
     spec_title_obo = 'MS:1000796'
     scan_rt_obo = 'MS:1000016'
@@ -353,22 +353,22 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
                                 try:
                                     ms2_df.drop('rt', axis=1, inplace=True)
                                 except (KeyError, ValueError):
-                                    print('MS2_df do not have rt column...')
+                                    print('[ERROR] !!! MS2_df do not have rt column...')
                             else:
-                                print('!!!!!! MS2 spectra not in the list >>> >>>')
+                                print('[WARNING] !!! MS2 spectra not in the list ...')
                         else:
-                            print('!!!!!! Precursor m/z in MS1 not in the list >>> >>>')
+                            print('[WARNING] !!! Precursor m/z in MS1 not in the list ...')
                     else:
-                        print('!!!!!! Precursor m/z in MS1 not in the list >>> >>>')
+                        print('[WARNING] !!! Precursor m/z in MS1 not in the list ...')
                 else:
-                    print('!!!!!! MS1 spectra not in the list >>> >>>')
+                    print('[WARNING] !!! MS1 spectra not in the list ...')
 
-                print('MS1 @ DDA#:%.0f | Total scan id:%.0f' % (ms2_dda_idx, ms1_spec_idx))
-                print('MS2 @ DDA#:%.0f | Total scan id:%.0f' % (ms2_dda_idx, ms2_spec_idx))
+                print('[INFO] --> MS1 @ DDA#:%.0f | Total scan id:%.0f' % (ms2_dda_idx, ms1_spec_idx))
+                print('[INFO] --> MS2 @ DDA#:%.0f | Total scan id:%.0f' % (ms2_dda_idx, ms2_spec_idx))
                 # print('--------------- NEXT _idx')
 
     else:
-        print('=== ===DO NOT have this precursor pr_mz == %f and func_id == %f and scan_id == %f!!!!!!'
+        print('[WARNING] !!! DO NOT have this precursor pr_mz == %f and func_id == %f and scan_id == %f !!!'
               % (mz, func_id, ms2_scan_id))
 
     spec_info_dct = {'ms1_i': ms1_i, 'ms1_mz': ms1_mz, 'ms1_pr_ppm': ms1_pr_ppm, 'ms1_rt': ms1_rt, 'ms2_rt': ms2_rt,
