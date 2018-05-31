@@ -66,13 +66,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         'xlsx_output_path_str': r'D:\lipidhunter\Temp\Test2\t2.xlsx',
                         'lipid_specific_cfg': r'D:\lipidhunter\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
                         'hunter_start_time': '2017-12-21_15-27-49',
-                        'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_type': 'PC', 'charge_mode': '[M+HCOO]-',
+                        'vendor': 'waters', 'experiment_mode': 'LC-MS', 'lipid_class': 'PC', 'charge_mode': '[M+HCOO]-',
                         'rt_start': 20.0, 'rt_end': 25.0, 'mz_start': 700.0, 'mz_end': 800.0,
                         'rank_score': True, 'rank_score_filter': 27.5, 'score_filter': 27.5,
                         'isotope_score_filter': 75.0, 'fast_isotope': False,
                         'ms_th': 1000, 'ms_ppm': 20, 'ms_max': 0, 'pr_window': 0.75, 'dda_top': 6,
                         'ms2_th': 10, 'ms2_ppm': 50, 'ms2_infopeak_threshold': 0.001,
-                        'hg_th': 10.0, 'hg_ppm': 100.0, 'ms2_hginfopeak_threshold': 0.001,
                         'score_cfg': r'D:\lipidhunter\ConfigurationFiles\Score_cfg.xlsx',
                         'hunter_folder': r'D:\lipidhunter',
                         'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300}
@@ -81,12 +80,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     :return:
     """
 
-    print('>>> hunter core start...')
+    print('[INFO] --> Hunter Core Start...')
 
     start_time = time.clock()
     lipidcomposer = LipidComposer()
 
-    usr_lipid_class = param_dct['lipid_type']
+    usr_lipid_class = param_dct['lipid_class']
     usr_charge = param_dct['charge_mode']
     usr_vendor = param_dct['vendor']
     usr_fa_xlsx = param_dct['fawhitelist_path_str']
@@ -105,17 +104,14 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     usr_ms1_threshold = param_dct['ms_th']
     usr_ms1_max = param_dct['ms_max']
     usr_ms2_threshold = param_dct['ms2_th']
-    # usr_ms2_hg_threshold = param_dct['hg_th']
     usr_ms1_ppm = param_dct['ms_ppm']
     usr_ms2_ppm = param_dct['ms2_ppm']
     usr_ms1_precision = usr_ms1_ppm * 1e-6
     usr_ms2_precision = usr_ms2_ppm * 1e-6
-    # usr_ms2_hg_precision = param_dct['hg_ppm'] * 1e-6
     # usr_rank_score_filter = param_dct['rank_score_filter']
     # usr_score_filter = param_dct['score_filter']
     # usr_isotope_score_filter = param_dct['isotope_score_filter']
     # usr_ms2_info_th = param_dct['ms2_infopeak_threshold']
-    # usr_ms2_hginfo_th = param_dct['ms2_hginfopeak_threshold']
     # usr_rank_mode = param_dct['rank_score']
     # usr_fast_isotope = param_dct['fast_isotope']
     if 'xic_ppm' in list(param_dct.keys()):
@@ -135,24 +131,31 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     if platform == "linux" or platform == "linux2":  # linux
         if usr_core_num > 1:
             os_typ = 'linux_multi'
-            print('=== ==> --> LipidHunter Running on >>> Linux with multiprocessing mode ...')
+            print('[INFO] --> LipidHunter Running on >>> Linux with multiprocessing mode ...')
         else:
             os_typ = 'linux_single'
-            print('=== ==> --> LipidHunter Running on >>> Linux with single core mode ...')
+            print('[INFO] --> LipidHunter Running on >>> Linux with single core mode ...')
     elif platform == "win32":  # Windows
         os_typ = 'windows'
-        print('=== ==> --> LipidHunter Running on >>> Windows ...')
+        print('[INFO] --> LipidHunter Running on >>> Windows ...')
+    elif platform == "darwin":  # macOS
+        if usr_core_num > 1:
+            os_typ = 'linux_multi'
+            print('[INFO] --> LipidHunter Running on >>> macOS with multiprocessing mode ...')
+        else:
+            os_typ = 'linux_single'
+            print('[INFO] --> LipidHunter Running on >>> macOS with single core mode ...')
     else:
         usr_core_num = 1
         param_dct['core_number'] = 1
         os_typ = 'linux_single'
-        print('=== ==> --> LipidHunter Running on >>> unoptimized system ... %s' % platform)
-        print('!! Force to use single core mode !!')
+        print('[INFO] --> LipidHunter Running on >>> unoptimized system ... %s' % platform)
+        print('[WARNING] !!! Force to use single core mode !!')
 
-    print('=== ==> --> Start to process >>>')
-    print('=== ==> --> Lipid class: %s >>>' % usr_lipid_class)
+    print('[INFO] --> Start to process >>>')
+    print('[INFO] --> Lipid class: %s >>>' % usr_lipid_class)
 
-    composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_type': usr_lipid_class,
+    composer_param_dct = {'fa_whitelist': usr_fa_xlsx, 'lipid_class': usr_lipid_class,
                           'charge_mode': usr_charge, 'exact_position': 'FALSE'}
 
     existed_lipid_master_path = ''
@@ -164,7 +167,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             if os.path.isfile(existed_lipid_master_path):
                 use_existed_lipid_master = True
             else:
-                print('Failed to load existed Lipid Master table: %s', existed_lipid_master_path)
+                print('[ERROR] !!! Failed to load existed Lipid Master table: %s', existed_lipid_master_path)
 
         if 'save_lipid_master_table' in list(param_dct.keys()):
             if param_dct['save_lipid_master_table'] == 'CSV':
@@ -172,26 +175,40 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     if use_existed_lipid_master is False:
         try:
-            print('==> --> Start to generate Lipid Master Table ...')
+            print('[INFO] --> Start to generate Lipid Master Table ...')
             t_lm_0 = time.time()
             usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=composer_param_dct, ms2_ppm=usr_ms2_ppm)
-            print('=== ==> --> Lipid Master Table generated >>> in %.2f sec' % (time.time() - t_lm_0))
+            print('[INFO] --> Lipid Master Table generated >>> in %.2f sec' % (time.time() - t_lm_0))
 
         except Exception as e:
-            print(e)
+            print('[ERROR] !!! Failed to predict Lipid structures...', e)
             error_lst.append(e)
-            error_lst.append('Some files missing...')
-            error_lst.append('Please check your settings in the configuration file ...')
+            error_lst.append('[ERROR] !!! Some files missing...')
+            error_lst.append('... ... Please check your settings in the configuration file ...')
             return False, error_lst, False
     else:
         try:
-            print('Try to use existed Lipid Master table: %s' % existed_lipid_master_path)
+            print('[INFO] --> Try to use existed Lipid Master table: %s' % existed_lipid_master_path)
             usr_lipid_master_df = pd.read_csv(existed_lipid_master_path)
-            print('=== ==> --> Lipid Master table loaded >>>', usr_lipid_master_df.shape[0])
+            print('[INFO] --> Lipid Master table loaded >>>', usr_lipid_master_df.shape[0])
         except Exception as e:
             print(e)
             error_lst.append(e)
             return False, error_lst, False
+
+    if isinstance(usr_lipid_master_df, pd.DataFrame):
+        if not usr_lipid_master_df.empty:
+            pass
+        else:
+            print('[ERROR] !!! Failed to generate LipidMaster Table...')
+            error_lst.append('[ERROR] !!! Failed to generate LipidMaster Table...')
+            error_lst.append('... ... Please check if Lipid Class and FA are marked in FA whitelist...')
+            return False, error_lst, False
+    else:
+        print('[ERROR] !!! Failed to generate LipidMaster Table...')
+        error_lst.append('[ERROR] !!! Failed to generate LipidMaster Table...')
+        error_lst.append('... ... Please check if Lipid Class and FA are marked in FA whitelist...')
+        return False, error_lst, False
 
     if save_lipid_master_table is True:
         log_master_name = 'Lipid_Master_%s.csv' % hunter_start_time_str
@@ -201,12 +218,17 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         else:
             os.mkdir(os.path.abspath(output_folder))
         usr_lipid_master_df.to_csv(log_master_name)
-        print('==> --> Lipid Master table Saved as: ', log_master_name)
+        print('[OUTPUT] ==> Lipid Master table Saved as: ', log_master_name)
     else:
         pass
 
     # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
+
+    if usr_fa_df is False:
+        print('[ERROR] !!! Failed to generate FA info table ...\n')
+        error_lst.append('[ERROR] !!! Failed to generate FA info table ...\n')
+        return False, error_lst, False
 
     lipid_info_df = usr_lipid_master_df
 
@@ -256,13 +278,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     output_df = pd.DataFrame()
 
-    print('=== ==> --> Start to process data ...')
-    print('=== ==> --> Lipid class: %s' % usr_lipid_class)
+    print('[INFO] --> Start to process data ...')
+    print('[INFO] --> Lipid class: %s' % usr_lipid_class)
 
     # generate the Weight factor df
     usr_weight_df = pd.read_excel(score_cfg, index_col='Type')
 
-    print('=== ==> --> Start to parse mzML')
+    print('[INFO] --> Start to parse mzML')
     # extract all spectra from mzML to pandas DataFrame
     usr_scan_info_df, usr_spectra_pl, ms1_xic_df = extract_mzml(usr_mzml, usr_rt_range, dda_top=usr_dda_top,
                                                                 ms1_threshold=usr_ms1_threshold,
@@ -271,17 +293,17 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                                                 ms2_precision=usr_ms2_precision,
                                                                 vendor=usr_vendor, ms1_max=usr_ms1_max)
 
-    print('MS1_XIC_df.shape', ms1_xic_df.shape)
+    print('[INFO] --> MS1_XIC_df.shape', ms1_xic_df.shape)
 
     ms1_obs_pr_df, sub_pl_group_lst = pr_hunter.get_matched_pr(usr_scan_info_df, usr_spectra_pl, ms1_max=usr_ms1_max,
                                                                core_num=usr_core_num, max_ram=usr_max_ram)
 
     if ms1_obs_pr_df is False:
-        print('!! NO suitable precursor --> Check settings!!\n')
-        error_lst.append('!! NO suitable precursor --> Check settings!!\n')
+        print('[WARNING] !!! NO suitable precursor --> Check settings!!\n')
+        error_lst.append('[WARNING] !! NO suitable precursor --> Check settings!!\n')
         return False, error_lst, False
 
-    print('=== ==> --> ms1 precursor matched')
+    print('[INFO] --> ms1 precursor matched')
 
     # remove bad precursors, keep the matched scans by DDA_rank and scan number
     # build unique identifier for each scan with scan_number00dda_rank use numpy.int64 to avoid large scan_number
@@ -305,17 +327,17 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     #         checked_info_df.to_csv(os.path.join(output_folder, 'checked_info_df.csv'))
 
     if checked_info_df.shape[0] == 0:
-        print('!! No identification in pre-match steps !!')
+        print('[ERROR] !!! No identification in pre-match steps !!')
         error_lst.append('!! No identification in pre-match steps !!\n')
         return False, error_lst, False
     else:
-        print('>>> features identified in the pre-match: ', checked_info_df.shape[0])
+        print('[INFO] --> features identified in the pre-match: ', checked_info_df.shape[0])
 
     ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
     print('ms1_xic_mz_lst', len(ms1_xic_mz_lst))
     print(ms1_xic_mz_lst)
-    print('=== ==> --> Start to extract XIC')
+    print('[INFO] --> Start to extract XIC')
     if len(ms1_xic_mz_lst) >= 3 * usr_core_num:
         sub_len = int(math.ceil(len(ms1_xic_mz_lst) / usr_core_num))
         # core_key_list = list(*(iter(ms1_xic_mz_lst),) * sub_len)
@@ -325,7 +347,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         core_key_list = [ms1_xic_mz_lst]
 
     # Start multiprocessing to get XIC
-    print('!!!!!! Start multiprocessing to get XIC ==> ==> ==> Number of Cores: %i' % usr_core_num)
+    print('[STATUS] >>> Start multiprocessing to get XIC ==> ==> ==> Number of Cores: %i' % usr_core_num)
     xic_dct = {}
 
     if usr_core_num > 1:
@@ -341,7 +363,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         core_list = [x for x in core_list if x is not None]
                     else:
                         pass
-                    print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                    print('[STATUS] >>> Core #%i ==> ...... processing ......' % worker_count)
                     print(core_list)
                     xic_result = parallel_pool.apply_async(get_xic_from_pl, args=(core_list, ms1_xic_df, usr_xic_ppm,
                                                                                   os_typ, queue))
@@ -370,7 +392,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         core_list = [x for x in core_list if x is not None]
                     else:
                         pass
-                    print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                    print('[STATUS] >>> Core #%i ==> ...... processing ......' % worker_count)
                     print(core_list)
                     job = multiprocessing.Process(target=get_xic_from_pl, args=(core_list, ms1_xic_df, usr_xic_ppm,
                                                                                 os_typ, queue))
@@ -388,7 +410,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 except (KeyError, SystemError, ValueError):
                     pass
     else:
-        print('Using single core mode...')
+        print('[INFO] --> Using single core mode...')
         queue = ''
         worker_count = 1
         for core_list in core_key_list:
@@ -397,7 +419,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     core_list = [x for x in core_list if x is not None]
                 else:
                     pass
-                print('>>> >>> Core #1 Part %i ==> ...... processing ......' % worker_count)
+                print('[STATUS] >>> Core #1 Part %i ==> ...... processing ......' % worker_count)
                 print(core_list)
                 sub_xic_dct = get_xic_from_pl(core_list, ms1_xic_df, usr_xic_ppm, os_typ, queue)
                 worker_count += 1
@@ -408,15 +430,15 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     # print(xic_dct.keys())
 
     if len(list(xic_dct.keys())) == 0:
-        print('!! No precursor for XIC found !!')
+        print('[ERROR] !!! No precursor for XIC found !!')
         error_lst.append('!! No precursor for XIC found !!\n')
         return False, error_lst, False
     else:
-        print('=== ==> --> Number of XIC extracted: %i' % len(list(xic_dct.keys())))
+        print('[INFO] --> Number of XIC extracted: %i' % len(list(xic_dct.keys())))
 
     target_ident_lst = []
 
-    print('=== ==> --> Start to Hunt for Lipids !!')
+    print('[STATUS] >>> Start to Hunt for Lipids !!')
     # checked_info_groups = checked_info_df.groupby(['Lib_mz', 'MS2_PR_mz', 'Formula', 'scan_time', 'Ion'])
     # checked_info_groups = checked_info_df.groupby(['Formula', 'scan_checker'])
     # lipid_all_group_key_lst = list(checked_info_groups.groups.keys())
@@ -430,10 +452,15 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     split_seg = 1
     lipid_all_scan_num = checked_info_df['scan_checker'].nunique()
     lipid_all_scan_lst = list(checked_info_df['scan_checker'].unique())
-    print('total number of features: ', lipid_all_scan_num)
+
     # chk_info_df_lst = []
 
     # checked_info_df may become very large for TG in Thermo files, need to be divided for Multiprocessing
+    checked_info_df_groups = checked_info_df.groupby(['Formula', 'scan_checker'])
+    checked_info_key_lst = list(checked_info_df_groups.groups.keys())
+    checked_info_key_num = len(checked_info_key_lst)
+    print('[INFO] --> Total number of spectra features: %i | Number of proposed Formula: %i'
+          % (lipid_all_scan_num, checked_info_key_num))
 
     if lipid_all_scan_num > (usr_core_num * 100):
 
@@ -452,7 +479,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
         spec_part_lst = [lipid_all_scan_lst[k: k + spec_part_len] for k in range(0, lipid_all_scan_num,
                                                                                  spec_part_len)]
-        print('lipid_part_number: ', len(spec_part_lst), ' lipid_part_len:', spec_part_len)
         # split_seg = len(spec_part_lst)
 
         for part_lst in spec_part_lst:
@@ -471,12 +497,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                     for k in range(0, _tmp_group_key_num, spec_sub_len)]
                 spec_part_key_lst.append((spec_sub_key_lst, _tmp_info_groups))
 
+        print('[INFO] --> Distributed tasks into %i parts with max %i features ...' % (len(spec_part_lst), spec_part_len))
+
     else:
-        checked_info_df_groups = checked_info_df.groupby(['Formula', 'scan_checker'])
-        checked_info_key_lst = list(checked_info_df_groups.groups.keys())
-        spec_sub_len = int(math.ceil(lipid_all_scan_num / usr_core_num))
+
+        spec_sub_len = int(math.ceil(checked_info_key_num / usr_core_num))
         spec_sub_key_lst = [checked_info_key_lst[k: k + spec_sub_len] for k in
-                            range(0, len(checked_info_key_lst), spec_sub_len)]
+                            range(0, checked_info_key_num, spec_sub_len)]
         # chk_info_df_lst.append([checked_info_df, checked_info_df_groups])
         spec_part_key_lst.append((spec_sub_key_lst, checked_info_df_groups))
 
@@ -485,7 +512,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         # print('lipid_part_number: ', len(lipid_part_key_lst), ' lipid_part_len:', len(lipid_part_key_lst[0]))
 
         part_tot = len(spec_part_key_lst)
-        print('part_tot', part_tot)
+        # print('part_tot', part_tot)
         part_counter = 1
         queue = ''
 
@@ -493,15 +520,17 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
             spec_sub_key_lst = spec_sub_lst[0]
             sub_info_groups = spec_sub_lst[1]
+
             # print('spec_sub_key_lst')
             # print(spec_sub_key_lst)
             # print('sub_info_groups')
             # print(sub_info_groups)
 
             if part_tot == 1:
-                print('>>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
+                print('[STATUS] >>> Start multiprocessing to get Spectra info ==> Max Number of Cores: %i'
+                      % usr_core_num)
             else:
-                print('>>> Start multiprocessing to get Score ==> Part %i / %i '
+                print('[STATUS] >>> Start multiprocessing to get Spectra info ==> Part %i / %i '
                       '--> Max Number of Cores: %i'
                       % (part_counter, part_tot, usr_core_num))
 
@@ -517,10 +546,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                             _sub_lst = [x for x in _sub_lst if x is not None]
                         else:
                             pass
-                        print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                        print('[STATUS] >>> Core #%i ==> ...... processing ......' % worker_count)
                         spec_result = parallel_pool.apply_async(get_spec_info, args=(_sub_lst, sub_info_groups,
                                                                                      usr_scan_info_df, os_typ, queue))
                         worker_count += 1
+                        if worker_count > usr_core_num:
+                            worker_count = 1
                         spec_results_lst.append(spec_result)
 
                 parallel_pool.close()
@@ -536,7 +567,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                             _sub_lst = [x for x in _sub_lst if x is not None]
                         else:
                             pass
-                        print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                        print('[STATUS] >>> Core #%i ==> ...... processing ......' % worker_count)
                         job = multiprocessing.Process(target=get_spec_info, args=(_sub_lst, sub_info_groups,
                                                                                   usr_scan_info_df, os_typ, queue_spec))
                         worker_count += 1
@@ -556,22 +587,22 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         if len(list(sub_spec_dct.keys())) > 0:
                             lipid_spec_info_dct.update(sub_spec_dct)
                     except (KeyError, SystemError, ValueError):
-                        print('ValueError: must supply a tuple to get_group with multiple grouping keys')
+                        print('[ValueError] !!! must supply a tuple to get_group with multiple grouping keys ...')
                 else:  # for linux
                     try:
                         if len(list(spec_result.keys())) > 0:
                             lipid_spec_info_dct.update(spec_result)
                     except (KeyError, SystemError, ValueError):
-                        print('ValueError: must supply a tuple to get_group with multiple grouping keys')
+                        print('[ValueError] !!! must supply a tuple to get_group with multiple grouping keys ...')
 
             if part_tot == 1:
-                print('>>> multiprocessing results merged')
+                print('[STATUS] >>> multiprocessing results merged')
             else:
-                print('>>> multiprocessing results merged ==> Part %i / %i '
+                print('[STATUS] >>> multiprocessing results merged ==> Part %i / %i '
                       % (part_counter, part_tot))
             part_counter += 1
     else:
-        print('Using single core mode...')
+        print('[INFO] --> Using single core mode...')
         queue = ''
         worker_count = 1
         for spec_sub_lst in spec_part_key_lst:
@@ -587,20 +618,21 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                             _sub_lst3 = _sub_lst3 + (_sub_lst,)
                             _sub_lst = _sub_lst3
 
-                    print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                    print('[STATUS] >>> Core #%i ==> ...... processing ......' % worker_count)
                     sub_spec_dct = get_spec_info(_sub_lst, sub_info_groups, usr_scan_info_df, os_typ, queue)
-                    worker_count += 1
+
                     if len(list(sub_spec_dct.keys())) > 0:
                         lipid_spec_info_dct.update(sub_spec_dct)
 
                 else:
                     pass
 
-    print('lipid_spec_info_dct', len(list(lipid_spec_info_dct.keys())))
+    # print('lipid_spec_info_dct', len(list(lipid_spec_info_dct.keys())))
 
     # Single process ONLY. usr_spectra_pl is too big in RAM --> RAM leaking during copy
     lipid_spec_dct = {}
     spec_info_key_lst = list(lipid_spec_info_dct.keys())
+    # print(spec_info_key_lst)
     for _spec_group_key in spec_info_key_lst:
         _spec_info_dct = lipid_spec_info_dct[_spec_group_key]
         _usr_ms2_pr_mz = _spec_info_dct['MS2_PR_mz']
@@ -616,7 +648,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     found_spec_key_lst = list(lipid_spec_dct.keys())
     found_spec_key_lst = sorted(found_spec_key_lst, key=lambda x: x[0])
     spec_key_num = len(found_spec_key_lst)
-    print('spec_key_num', spec_key_num)
+    # print('spec_key_num', spec_key_num)
 
     # parse specific peak info
     pl_class_lst = ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'PIP']
@@ -675,7 +707,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     else:
         key_frag_dct = {}
 
-    print('... Key FRAG Dict Generated ...')
+    print('[INFO] --> Key FRAG Dict Generated ...')
 
     # Start multiprocessing to get rank score
 
@@ -699,7 +731,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         lipid_part_len = int(math.ceil(spec_key_num / split_seg))
         lipid_part_lst = [found_spec_key_lst[k: k + lipid_part_len] for k in range(0, spec_key_num,
                                                                                    lipid_part_len)]
-        print('lipid_part_number: ', len(lipid_part_lst), ' lipid_part_len:', lipid_part_len)
+        print('[INFO] --> lipid_part_number: ', len(lipid_part_lst), ' lipid_part_len:', lipid_part_len)
 
         for part_lst in lipid_part_lst:
             if None in part_lst:
@@ -747,11 +779,25 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             lipid_info_results_lst = []
 
             if part_tot == 1:
-                print('>>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
+                print('[STATUS] >>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
+                try:
+                    worker_feature_count = len(lipid_sub_key_lst[0][0])
+                    print('[STATUS] >>> Start multiprocessing to get Score ==> Max Number of Cores: %i | '
+                          'x%i Features each'
+                          % (usr_core_num, worker_feature_count))
+                except Exception as _e:
+                    print('[STATUS] >>> Start multiprocessing to get Score ==> Max Number of Cores: %i' % usr_core_num)
+                    print('[Exception] Can not get the number of features distributed to each core...', _e)
             else:
-                print('>>> Start multiprocessing to get Score ==> Part %i / %i '
-                      '--> Max Number of Cores: %i | x%i Features each'
-                      % (part_counter, part_tot, usr_core_num, split_seg))
+                try:
+                    worker_feature_count = len(lipid_sub_key_lst[0][0])
+                    print('[STATUS] >>> Start multiprocessing to get Score ==> Part %i / %i '
+                          '--> Max Number of Cores: %i | x%i Features each'
+                          % (part_counter, part_tot, usr_core_num, worker_feature_count))
+                except Exception as _e:
+                    print('[STATUS] >>> Start multiprocessing to get Score ==> Part %i / %i --> Max Number of Cores: %i'
+                          % (part_counter, part_tot, usr_core_num))
+                    print('[Exception] ... Can not get the number of features distributed to each core...', _e)
 
             if os_typ == 'windows':
                 parallel_pool = Pool(usr_core_num)
@@ -773,8 +819,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         else:
                             lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
                             lipid_sub_lst = tuple([lipid_sub_lst])
-                        print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                        print('[STATUS] >>> Core #%i ==> ...... processing ......' % worker_count)
                         if len(list(lipid_sub_dct.keys())) > 0:
+
                             lipid_info_result = parallel_pool.apply_async(get_lipid_info,
                                                                           args=(param_dct, usr_fa_df, _chk_info_df,
                                                                                 _chk_info_gp, lipid_sub_lst,
@@ -807,7 +854,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         else:
                             lipid_sub_dct = {lipid_sub_lst: lipid_spec_dct[lipid_sub_lst]}
                             lipid_sub_lst = tuple([lipid_sub_lst])
-                        print('>>> >>> Core #%i ==> ...... processing ......' % worker_count)
+                        print('[STATUS] >>> Core #%i ==> ...... processing ......' % worker_count)
                         job = multiprocessing.Process(target=get_lipid_info, args=(param_dct, usr_fa_df,
                                                                                    _chk_info_df,
                                                                                    _chk_info_gp, lipid_sub_lst,
@@ -836,7 +883,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     except (KeyError, SystemError, ValueError, TypeError):
                         tmp_lipid_info_df = 'error'
                         tmp_lipid_img_lst = []
-                        print('!!error!!--> This segment receive no Lipid identified.')
+                        print('[ERROR] !!! This segment receive no Lipid identified.')
                 else:  # for linux
                     try:
                         tmp_lipid_info_df = lipid_info_result[0]
@@ -845,7 +892,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     except (KeyError, SystemError, ValueError, TypeError):
                         tmp_lipid_info_df = 'error'
                         tmp_lipid_img_lst = []
-                        print('!!error!!--> This segment receive no Lipid identified.')
+                        print('[ERROR] !!! This segment receive no Lipid identified.')
 
                 if isinstance(tmp_lipid_info_df, str):
                     pass
@@ -855,14 +902,14 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                             output_df = output_df.append(tmp_lipid_info_df)
                             lipid_info_img_lst.extend(tmp_lipid_img_lst)
             if part_tot == 1:
-                print('>>> multiprocessing results merged')
+                print('[STATUS] >>> multiprocessing results merged')
             else:
-                print('>>> multiprocessing results merged ==> Part %i / %i '
+                print('[STATUS] >>> multiprocessing results merged ==> Part %i / %i '
                       % (part_counter, part_tot))
             part_counter += 1
 
     else:
-        print('Using single core mode...')
+        print('[INFO] --> Using single core mode...')
         for lipid_sub_key_lst in lipid_part_key_lst:
             for lipid_sub in lipid_sub_key_lst:
                 if isinstance(lipid_sub, tuple) or isinstance(lipid_sub, list):
@@ -891,8 +938,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                             output_df = output_df.append(tmp_lipid_info_df)
                             lipid_info_img_lst = tmp_lipid_img_lst
 
-    print('=== ==> --> Generate the output table')
-    print('output_df.shape', output_df.shape)
+    print('[OUTPUT] ==> Generate the output table')
+    if isinstance(output_df, pd.DataFrame):
+        print('[INFO] --> Total number of records', output_df.shape[0])
     if not output_df.empty:
         try:
             output_df = output_df.sort_values(by=['Lib_mz', 'Bulk_identification', 'MS2_scan_time', 'RANK_SCORE'],
@@ -909,7 +957,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         output_df.drop_duplicates(keep='first', inplace=True)
         output_header_lst = output_df.columns.values.tolist()
         # TODO (georgia.angeldou@uni-leipzig.de): Add the info for the DG
-        # TODO (zhixu.ni@uni-leipzig.de): check following if segment
         if usr_lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
             output_list = ['FA1_[FA-H]-_i', 'FA2_[FA-H]-_i', '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
                            '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i']
@@ -961,33 +1008,52 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 output_round_dct[_t] = 2
         output_df = output_df.round(output_round_dct)
 
-        output_df.rename(columns={'#Contaminated_peaks': '#Unspecific_peaks'}, inplace=True)
-        # TODO (georgia.angelidou@uni-leipzig.de): Add the DG section
-        if usr_lipid_class in ['TG'] and usr_charge in ['[M+H]+', '[M+NH4]+']:
+        output_df.rename(columns={'OBS_RESIDUES': '#Observed_FA'},
+                         inplace=True)
+        if usr_lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
-                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i', '[M-(FA1)+H]+_i',
-                                '[M-(FA2)+H]+_i', '[M-(FA3)+H]+_i']
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA', '#Specific_peaks', '#Unspecific_peaks',
+                                'FA1_[FA-H]-_i', 'FA2_[FA-H]-_i',
+                                '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
+                                '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i'
+                                ]
+        elif usr_lipid_class in ['TG'] and usr_charge in ['[M+H]+', '[M+NH4]+']:
+            output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA',
+                                '[M-(FA1)+H]+_i', '[M-(FA2)+H]+_i', '[M-(FA3)+H]+_i',
+                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
+                                'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
+                                ]
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+Na]+']:
             # TODO (georgia.angelidou@uni-leipzig.de): need to solve the problem for the below sections
             # '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
-                                '[M-(FA1)+Na]+_i',
-                                '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i']
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA',
+                                '[M-(FA1)+Na]+_i', '[M-(FA2)+Na]+_i', '[M-(FA3)+Na]+_i',
+                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
+                                'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i'
+                                ]
         elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
             # problem with the following key:  'FA2_[FA-H2O+H]_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
-                                '[MG(FA2)-H2O+H]+_i']
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA',
+                                '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i',
+                                'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]_i',
+                                ]
         else:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
-                                'Lib_mz', 'ppm', 'RANK_SCORE', 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
-                                'DDA#', 'Scan#', 'FA1_[FA-H]-_i', 'FA2_[FA-H]-_i', '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
-                                '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i']
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA',
+                                ]
 
         final_output_df = output_df[output_short_lst]
         final_output_df = final_output_df.sort_values(by=['MS1_obs_mz', 'MS2_scan_time', 'RANK_SCORE'],
@@ -1000,17 +1066,17 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             os.makedirs(output_sum_xlsx_directory)
         try:
             final_output_df.to_excel(output_sum_xlsx, index=False)
-            print(output_sum_xlsx)
+            print('[OUTPUT] ==> Prepare to save output as: ', output_sum_xlsx)
         except IOError:
             final_output_df.to_excel('%s-%i%s' % (output_sum_xlsx[:-5], int(time.time()), '.xlsx'), index=False)
             print(output_sum_xlsx)
-        print('=== ==> --> saved >>> >>> >>>')
+        print('[OUTPUT] ==> File saved ...')
 
     else:
-        error_lst.append('!! Warning !! NO Lipid identified in this file.\n!! Please check your settings !!')
+        error_lst.append('[Warning] NO Lipid identified in this file.\n!! Please check your settings !!')
         tot_run_time = time.clock() - start_time
-        print('!! Warning !!--> This file got no Lipid identified.')
-        print('=== == --> identification finished in %s sec <<< <<< <<<' % tot_run_time)
+        print('[WARNING] !!! This file got no Lipid identified.')
+        print('[STATUS] >>> Identification finished in %s sec <<<' % tot_run_time)
         return tot_run_time, error_lst, output_df
 
     # Start multiprocessing to save img
@@ -1021,15 +1087,15 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         if os.path.isdir(output_folder):
             os.chdir(output_folder)
             if os.path.isdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str):
-                print('... Output folder existed...')
+                print('[INFO] --> Output folder existed...')
             else:
                 os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
-                print('... Output folder created...')
+                print('[INFO] --> Output folder created...')
         else:
             os.mkdir(output_folder)
             os.chdir(output_folder)
             os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
-            print('... Output folder created...')
+            print('[INFO] --> Output folder created...')
         os.chdir(current_path)
 
         # generate html files
@@ -1037,7 +1103,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         log_pager.add_all_info(output_df)
         log_pager.close_page()
 
-        print('=== == --> start to generate images: image count %i' % len(lipid_info_img_lst))
+        print('[STATUS] >>> start to generate images: image count %i' % len(lipid_info_img_lst))
 
         if usr_core_num > 1:
             parallel_pool = Pool(usr_core_num)
@@ -1057,7 +1123,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     #                   'usr_ms1_precision': usr_ms1_precision, 'worker_count': worker_count}
 
                     if len(img_sub_lst) > 0:
-                        print('>>> >>> Core #%i ==> Generating output images ... image count: %i'
+                        print('[STATUS] >>> Core #%i ==> Generating output images ... image count: %i'
                               % (worker_count, len(img_sub_lst)))
                         if 'debug_mode' in list(param_dct.keys()):
                             if param_dct['debug_mode'] == 'ON':
@@ -1071,7 +1137,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             parallel_pool.join()
 
         else:
-            print('Using single core mode...')
+            print('[INFO] --> Using single core mode...')
             if isinstance(lipid_info_img_lst, tuple) or isinstance(lipid_info_img_lst, list):
                 if None in lipid_info_img_lst:
                     lipid_info_img_lst = [x for x in lipid_info_img_lst if x is not None]
@@ -1081,11 +1147,11 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     gen_plot(lipid_info_img_lst, worker_count, usr_img_type, usr_dpi,
                              usr_vendor, usr_ms1_precision)
     else:
-        print('!!!!!! User skip image generation !!!!!!')
+        print('[WARNING] !!! User skip image generation !!!!!!')
 
     tot_run_time = time.clock() - start_time
 
-    print('>>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
+    print('[STATUS] >>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
 
     return tot_run_time, error_lst, output_df
 
@@ -1094,7 +1160,7 @@ if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
     core_count = 3
-    max_ram = 5  # int only
+    max_ram = 10  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
     save_lipidmaster_table = True  # True --> export LipidMasterTable to output folder, False --> NO export
 
@@ -1102,11 +1168,12 @@ if __name__ == '__main__':
     # ['TG', 'thermo', '[M+NH4]+']]
 
     usr_test_lst = [
-        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
         # ['PE', 'waters', '[M-H]-', 'PE_waters'],
         # ['TG', 'waters', '[M+H]+', 'TG_waters'],
         # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
-        ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
+        # ['TG', 'waters', '[M+Na]+', 'TG_waters_Na'],
+        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
     ]
 
     # set the default files
@@ -1116,13 +1183,13 @@ if __name__ == '__main__':
     tg_mzml_SCIEXS = r'../Test/mzML/20140613_HSL002_Positive_01.mzML'  # Dataset
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
-    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_PL.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_PL.xlsx'}
+    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_PL.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_PL.xlsx'}
 
-    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/01-FA_Whitelist_TG-DG.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/02-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/03-Score_weight_TG.xlsx'}
+    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
 
     usr_test_dct = {}
     usr_test_dct_keys = []
@@ -1158,8 +1225,8 @@ if __name__ == '__main__':
                 rt_range = [9, 15]  # max [9, 15]
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
-                mz_range = [600, 1000]  # 600, 1000
-                rt_range = [20, 28]  # 25.6, 25.8
+                mz_range = [600, 1000]  # 600, 1000 short 800 - 840
+                rt_range = [20, 28]  # [20, 28] short [24, 26]
             elif vendor == 'sciex':
                 mzml = tg_mzml_SCIEXS
                 mz_range = [900, 1000]  # 600, 1000
@@ -1170,6 +1237,9 @@ if __name__ == '__main__':
                 rt_range = [9, 13]
             else:
                 mzml = False
+
+            if lipid_class == 'TG' and charge == '[M+Na]+':
+                tg_base_dct['score_cfg'] = r'../ConfigurationFiles/2-Score_weight_TG_Na.xlsx'
 
             _test_dct.update(tg_base_dct)
         elif usr_test[0] in ['DG']:
@@ -1199,16 +1269,14 @@ if __name__ == '__main__':
 
         if mzml is not False and charge is not False:
 
-            _cfg_dct = {'lipid_type': lipid_class, 'charge_mode': charge, 'vendor': vendor, 'mzml_path_str': mzml,
+            _cfg_dct = {'lipid_class': lipid_class, 'charge_mode': charge, 'vendor': vendor, 'mzml_path_str': mzml,
                         'rt_start': rt_range[0], 'rt_end': rt_range[1], 'mz_start': mz_range[0], 'mz_end': mz_range[1]}
 
             if vendor == 'waters':
                 _cfg_dct['ms_ppm'] = 20
-                _cfg_dct['ms2_ppm'] = 30  # 50
-                _cfg_dct['hg_ppm'] = 100  # 200
+                _cfg_dct['ms2_ppm'] = 50  # 50
                 _cfg_dct['ms_th'] = 750
                 _cfg_dct['ms2_th'] = 10
-                _cfg_dct['hg_th'] = 10
                 _cfg_dct['dda_top'] = 6
 
                 _test_dct.update(_cfg_dct)
@@ -1218,11 +1286,9 @@ if __name__ == '__main__':
             elif vendor == 'thermo':
                 _cfg_dct['ms_ppm'] = 5
                 _cfg_dct['ms2_ppm'] = 20
-                _cfg_dct['hg_ppm'] = 50
                 _cfg_dct['ms_th'] = 10000
                 _cfg_dct['ms2_th'] = 2000
-                _cfg_dct['hg_th'] = 2000
-                _cfg_dct['dda_top'] = 10
+                _cfg_dct['dda_top'] = 10  # 10
 
                 _test_dct.update(_cfg_dct)
                 usr_test_dct[usr_test[3]] = _test_dct
@@ -1230,10 +1296,8 @@ if __name__ == '__main__':
             elif vendor == 'sciex':
                 _cfg_dct['ms_ppm'] = 10
                 _cfg_dct['ms2_ppm'] = 60
-                _cfg_dct['hg_ppm'] = 60
                 _cfg_dct['ms_th'] = 5000
                 _cfg_dct['ms2_th'] = 100  # Can get 2000/1000/750/500 depends how strict should be the identification
-                _cfg_dct['hg_th'] = 1000
                 _cfg_dct['dda_top'] = 15
                 ms_ppm_SCIEXS = 10
 
@@ -1243,10 +1307,8 @@ if __name__ == '__main__':
             elif vendor == 'agilent':
                 _cfg_dct['ms_ppm'] = 50
                 _cfg_dct['ms2_ppm'] = 100
-                _cfg_dct['hg_ppm'] = 100
                 _cfg_dct['ms_th'] = 1000
                 _cfg_dct['ms2_th'] = 10  # Can get 2000/1000/750/500 depends how strict should be the identification
-                _cfg_dct['hg_th'] = 10
                 _cfg_dct['dda_top'] = 4
 
                 _test_dct.update(_cfg_dct)
@@ -1273,7 +1335,7 @@ if __name__ == '__main__':
             if test_key in list(usr_test_dct.keys()):
                 test_dct = usr_test_dct[test_key]
                 t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-                lipid_class = test_dct['lipid_type']
+                lipid_class = test_dct['lipid_class']
 
                 cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
                            'xlsx_output_path_str': r'../Test/results/%s_%s.xlsx' % (test_key, t_str),

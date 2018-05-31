@@ -25,18 +25,22 @@ import glob
 import multiprocessing
 import multiprocessing.pool
 import os
+from sys import platform
 import re
 import time
 
+import pandas as pd
 from PySide import QtCore, QtGui
 from six.moves import configparser
 
 try:
     from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
     from LibLipidHunter.Hunter_Core import huntlipids
+    from LibLipidHunter.LipidComposer import LipidComposer
 except ImportError:  # for python 2.7.14
     from LipidHunter_UI import Ui_MainWindow
     from Hunter_Core import huntlipids
+    from LipidComposer import LipidComposer
 
 
 class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
@@ -46,9 +50,9 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'27, April, 2018'
+        version_date = r'25, May, 2018'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
-                        r'LipidHunter 2 Beta >> Released Date: {version_date}'
+                        r'LipidHunter 2 Beta # Released Date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
         self.ui.version_lb.setText(QtGui.QApplication.translate("MainWindow", version_html, None,
                                                                 QtGui.QApplication.UnicodeUTF8))
@@ -65,9 +69,21 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.load_cfg()
         self.a_max_ms()
 
-        # disable multi_mode in batch run
+        # disable un necessary UI elements
+        q_pgb_style = '''
+                      QProgressBar:horizontal {
+                      border: 1px #CCCCCC; border-radius: 0px; background: #CCCCCC; padding: 1px;}
+                      QProgressBar::chunk:horizontal {
+                      background: qlineargradient(x1: 0, y1: 0.5, x2: 0, y2: 0.5, stop: 0 #FF8C00, stop: 1 white);}
+                      '''
+
+        self.ui.tab_a_runhunter_pgb.setStyleSheet(q_pgb_style)
         self.ui.tab_a_runhunter_pgb.hide()
+        self.ui.tab_a_msmax_chb.hide()
+        self.ui.tab_b_runbatch_pgb.setStyleSheet(q_pgb_style)
         self.ui.tab_b_runbatch_pgb.hide()
+        self.ui.tab_c_runlm_pgb.setStyleSheet(q_pgb_style)
+        self.ui.tab_c_runlm_pgb.hide()
         self.ui.tab_b_mutlimode_cmb.hide()
         self.ui.tab_b_maxbatch_lb.hide()
         self.ui.tab_b_maxbatch_spb.setValue(1)
@@ -76,6 +92,12 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_b_maxsubram_spb.setValue(5)
         self.ui.tab_b_maxsubram_spb.setValue(5)
         self.ui.tabframe.removeTab(3)
+        self.ui.tab_c_isotopescoremode_lb.hide()
+        self.ui.tab_c_isotopescoremode_cmb.hide()
+        self.ui.tab_c_scoremode_lb.hide()
+        self.ui.tab_c_scoremode_cmb.hide()
+        self.ui.tab_c_parallization_cmb.hide()
+        self.ui.tab_c_tag_all_fa_chb.hide()
 
         # define single worker
         self.single_worker = SingleWorker()
@@ -94,6 +116,15 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.batch_thread.started.connect(self.batch_worker.run_hunter)
         self.batch_worker.finished.connect(self.batch_worker_on_finish)
         self.batch_worker.info_update.connect(self.batch_worker_info_update)
+
+        # define lipidmaster worker
+        self.lm_worker = LMWorker()
+        self.lm_thread = QtCore.QThread()
+        self.lm_worker.moveToThread(self.lm_thread)
+        self.lm_worker.workRequested.connect(self.lm_thread.start)
+        self.lm_thread.started.connect(self.lm_worker.run_lm_generator)
+        self.lm_worker.finished.connect(self.lm_worker_on_finish)
+        self.lm_worker.info_update.connect(self.lm_worker_info_update)
 
         # slots for tab a
         QtCore.QObject.connect(self.ui.tab_a_lipidclass_cmb, QtCore.SIGNAL("currentIndexChanged(const QString&)"),
@@ -119,13 +150,14 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         # # slots for tab c
         QtCore.QObject.connect(self.ui.tab_c_falistpl_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_pl)
         QtCore.QObject.connect(self.ui.tab_c_falisttg_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_tg)
-        QtCore.QObject.connect(self.ui.tab_c_lmcalcfalist_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_lg)
+        QtCore.QObject.connect(self.ui.tab_c_lmcalcfalist_pb, QtCore.SIGNAL("clicked()"), self.c_load_falist_dg)
         QtCore.QObject.connect(self.ui.tab_c_hgcfg_pb, QtCore.SIGNAL("clicked()"), self.c_load_hgcfg)
         QtCore.QObject.connect(self.ui.tab_c_scorecfgpl_pb, QtCore.SIGNAL("clicked()"), self.c_load_scorecfg_pl)
         QtCore.QObject.connect(self.ui.tab_c_scorecfgtg_pb, QtCore.SIGNAL("clicked()"), self.c_load_scorecfg_tg)
         QtCore.QObject.connect(self.ui.tab_c_scorecfgdg_pb, QtCore.SIGNAL("clicked()"), self.c_load_scorecfg_dg)
         QtCore.QObject.connect(self.ui.tab_c_savesettings_pb, QtCore.SIGNAL("clicked()"), self.c_set_default_cfg)
         QtCore.QObject.connect(self.ui.tab_c_lmexport_pb, QtCore.SIGNAL("clicked()"), self.c_lmexport)
+        QtCore.QObject.connect(self.ui.tab_c_lmrun_pb, QtCore.SIGNAL("clicked()"), self.lm_worker_hunter)
 
         # load configurations
 
@@ -153,21 +185,21 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             if 'fa_white_list_cfg_pl' in options:
                 pl_fawhitelist_path_str = config.get(user_cfg, 'fa_white_list_cfg_pl')
                 pl_fawhitelist_path_str, error_log = self.check_file(pl_fawhitelist_path_str, 'FA whitelist for PL')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_falistpl_le.setText(error_log)
                 else:
                     self.ui.tab_c_falistpl_le.setText(pl_fawhitelist_path_str)
             if 'fa_white_list_cfg_tg' in options:
                 tg_fawhitelist_path_str = config.get(user_cfg, 'fa_white_list_cfg_tg')
                 tg_fawhitelist_path_str, error_log = self.check_file(tg_fawhitelist_path_str, 'FA whitelist for TG/DG')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_falisttg_le.setText(error_log)
                 else:
                     self.ui.tab_c_falisttg_le.setText(tg_fawhitelist_path_str)
             if 'lipid_specific_cfg' in options:
                 lipid_specific_path_str = config.get(user_cfg, 'lipid_specific_cfg')
                 lipid_specific_path_str, error_log = self.check_file(lipid_specific_path_str, 'lipid_specific_cfg')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_hgcfg_le.setText(error_log)
                 else:
                     self.ui.tab_c_hgcfg_le.setText(lipid_specific_path_str)
@@ -175,21 +207,21 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 self.ui.tab_c_scorecfgpl_le.setText(config.get(user_cfg, 'score_cfg_pl'))
                 pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_pl')
                 pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for PL')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_scorecfgpl_le.setText(error_log)
                 else:
                     self.ui.tab_c_scorecfgpl_le.setText(pl_score_cfg_path_str)
             if 'score_cfg_tg' in options:
                 pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_tg')
                 pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for TG')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_scorecfgtg_le.setText(error_log)
                 else:
                     self.ui.tab_c_scorecfgtg_le.setText(pl_score_cfg_path_str)
             if 'score_cfg_dg' in options:
                 pl_score_cfg_path_str = config.get(user_cfg, 'score_cfg_dg')
                 pl_score_cfg_path_str, error_log = self.check_file(pl_score_cfg_path_str, 'Score cfg for DG')
-                if len(error_log) > 0:
+                if error_log is not None:
                     self.ui.tab_c_scorecfgdg_le.setText(error_log)
                 else:
                     self.ui.tab_c_scorecfgdg_le.setText(pl_score_cfg_path_str)
@@ -305,7 +337,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         file_abs_path = ''
         try:
             if os.path.isfile(usr_path):
-                error_log = ''
+                error_log = None
                 file_abs_path = os.path.abspath(usr_path)
             else:
                 error_log = '!! Failed to load {_file} !!'.format(_file=info_str)
@@ -319,9 +351,33 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         folder_abs_path = ''
         try:
             if os.path.isdir(usr_path):
-                error_log = ''
+                print('Folder existed...\n', usr_path)
+                error_log = None
                 folder_abs_path = os.path.abspath(usr_path)
+                print('abs path of folder\n', folder_abs_path)
+            # else:
+            #     if platform == "linux" or platform == "linux2":
+            #         l_cwd = os.getcwd()
+            #         os.chdir('/')
+            #         if os.path.isdir(usr_path):
+            #             print('Folder existed...\n', usr_path)
+            #             error_log = None
+            #             folder_abs_path = os.path.abspath(usr_path)
+            #             print('abs path of folder\n', folder_abs_path)
+            #         else:
+            #             if os.path.isdir('/' + usr_path):
+            #                 print('Folder existed...\n', usr_path)
+            #                 error_log = None
+            #                 folder_abs_path = os.path.abspath(usr_path)
+            #                 print('abs path of folder\n', folder_abs_path)
+            #             else:
+            #                 print('No folder...\n', usr_path)
+            #                 os.makedirs(usr_path)
+            #                 print('Folder created... %s' % usr_path)
+            #                 error_log = ''
+            #         os.chdir(l_cwd)
             else:
+                print('No folder...\n', usr_path)
                 os.makedirs(usr_path)
                 print('Folder created... %s' % usr_path)
                 error_log = ''
@@ -353,7 +409,11 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def a_save_output(self):
         a_save_output_path = QtGui.QFileDialog.getSaveFileName(caption='Save file', filter='.xlsx')
         self.ui.tab_a_savexlsxpath_le.clear()
-        a_save_output_str = os.path.abspath(a_save_output_path[0])
+        usr_output_path = a_save_output_path[0]
+        if usr_output_path[-5:] != '.xlsx':
+            usr_output_path += '.xlsx'
+        a_save_output_str = os.path.abspath(usr_output_path)
+
         self.ui.tab_a_savexlsxpath_le.setText(a_save_output_str)
 
     def a_max_ms(self):
@@ -372,8 +432,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         if lipid_class_match:
             lipid_class_info_lst = lipid_class_match.groups()
             _lipid_class = lipid_class_info_lst[2]
+            _lipid_charge = lipid_class_info_lst[4]
         else:
             _lipid_class = ''
+            _lipid_charge = ''
 
         pl_fa_cfg = self.ui.tab_c_falistpl_le.text()
         tg_fa_cfg = self.ui.tab_c_falisttg_le.text()
@@ -384,17 +446,26 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         usr_score_cfg = self.ui.tab_a_loadscorecfg_le.text()
 
         if _lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
-            if usr_fa_cfg == '' or usr_fa_cfg == tg_fa_cfg:
+            if usr_fa_cfg in ['', tg_fa_cfg]:
                 self.ui.tab_a_loadfalist_le.setText(pl_fa_cfg)
-            if usr_score_cfg == '' or usr_score_cfg == tg_score_cfg or usr_score_cfg == dg_score_cfg:
+            if usr_score_cfg in ['', dg_score_cfg, tg_score_cfg]:
                 self.ui.tab_a_loadscorecfg_le.setText(pl_score_cfg)
         elif _lipid_class in ['TG', 'DG', 'MG']:
-            if usr_fa_cfg == '' or usr_fa_cfg == pl_fa_cfg:
+            if usr_fa_cfg in ['', pl_fa_cfg]:
                 self.ui.tab_a_loadfalist_le.setText(tg_fa_cfg)
-            if (usr_score_cfg == '' or usr_score_cfg == pl_score_cfg or usr_score_cfg == dg_score_cfg) and _lipid_class in ['TG']:
-                self.ui.tab_a_loadscorecfg_le.setText(tg_score_cfg)
-            elif (usr_score_cfg == '' or usr_score_cfg == pl_score_cfg or usr_score_cfg == tg_score_cfg) and _lipid_class in ['DG']:
-                self.ui.tab_a_loadscorecfg_le.setText(dg_score_cfg)
+            if _lipid_class in ['TG'] and _lipid_charge not in ['[M+Na]+']:
+                if usr_score_cfg in ['', pl_score_cfg, dg_score_cfg]:
+                    self.ui.tab_a_loadscorecfg_le.setText(tg_score_cfg)
+            elif _lipid_class in ['TG'] and _lipid_charge in ['[M+Na]+']:
+                self.ui.tab_a_loadscorecfg_le.setText('')
+            elif _lipid_class in ['DG']:
+                if usr_score_cfg in ['', pl_score_cfg, tg_score_cfg]:
+                    self.ui.tab_a_loadscorecfg_le.setText(dg_score_cfg)
+            else:
+                self.ui.tab_a_loadscorecfg_le.setText('')
+        else:
+            self.ui.tab_a_loadfalist_le.setText('')
+            self.ui.tab_a_loadscorecfg_le.setText('')
 
     def a_get_params(self):
 
@@ -437,11 +508,22 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         # else:
         #     score_cfg = ''
         #     error_log_lst.append('!! No Corresponding Score weight factor for selected lipid class!!')
+
         score_cfg = self.ui.tab_a_loadscorecfg_le.text()
         fawhitelist_path_str = str(self.ui.tab_a_loadfalist_le.text())
         mzml_path_str = str(self.ui.tab_a_mzml_le.text())
-        img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text()).strip(r'\/')
+        img_output_folder_str = str(self.ui.tab_a_saveimgfolder_le.text())
+        if img_output_folder_str[-1] in ['\\', '/']:
+            img_output_folder_str = img_output_folder_str[:-1]
+            self.ui.tab_a_saveimgfolder_le.clear()
+            self.ui.tab_a_saveimgfolder_le.setText(img_output_folder_str)
+        else:
+            pass
         xlsx_output_path_str = str(self.ui.tab_a_savexlsxpath_le.text())
+        if xlsx_output_path_str[-5:] != '.xlsx':
+            xlsx_output_path_str += '.xlsx'
+            self.ui.tab_a_savexlsxpath_le.clear()
+            self.ui.tab_a_savexlsxpath_le.setText(xlsx_output_path_str)
 
         rt_start = self.ui.tab_a_rtstart_dspb.value()
         rt_end = self.ui.tab_a_rtend_dspb.value()
@@ -455,10 +537,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         ms2_th = self.ui.tab_a_ms2threshold_spb.value()
         ms_ppm = self.ui.tab_a_msppm_spb.value()
         ms2_ppm = self.ui.tab_a_ms2ppm_spb.value()
-        hg_th = self.ui.tab_a_hgthreshold_spb.value()
-        hg_ppm = self.ui.tab_a_hgppm_spb.value()
         ms2_info_threshold = self.ui.tab_a_ms2infoth_dspb.value() * 0.01
-        hgms2_info_threshold = self.ui.tab_a_ms2hginfoth_dspb.value() * 0.01
 
         ms_max = 0
         if self.ui.tab_a_msmax_chb.isChecked() and self.ui.tab_a_msmax_spb.value() > ms_th + 1:
@@ -471,23 +550,28 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         img_dpi = self.ui.tab_c_dpi_spb.value()
 
         fawhitelist_path_str, error_log = self.check_file(fawhitelist_path_str, 'FA whitelist')
-        if len(error_log) > 0:
+        if error_log is not None:
             error_log_lst.append(error_log)
         lipid_specific_cfg, error_log = self.check_file(lipid_specific_cfg, 'configuration for Phospholipids')
-        if len(error_log) > 0:
+        if error_log is not None:
             error_log_lst.append(error_log)
         score_cfg, error_log = self.check_file(score_cfg, 'W_frag score configuration')
-        if len(error_log) > 0:
+        if error_log is not None:
             error_log_lst.append(error_log)
         abs_img_output_folder_str, error_log = self.check_folder(img_output_folder_str, 'Output folder')
-        if len(error_log) > 0:
+        if error_log is not None:
             error_log_lst.append(error_log)
             self.ui.tab_a_saveimgfolder_le.setText(error_log)
         else:
+            # if platform == "linux" or platform == "linux2":
+            #     pass
+            # else:
             if abs_img_output_folder_str != img_output_folder_str:
+                self.ui.tab_a_saveimgfolder_le.clear()
                 self.ui.tab_a_saveimgfolder_le.setText(abs_img_output_folder_str)
-                error_log_lst.append('!! Image output folder not correct !!')
-                error_log_lst.append('>> Propose to save in folder: %s' % abs_img_output_folder_str)
+                print('!! Image output folder not correct !!')
+                print('>> Propose to save in folder: %s' % abs_img_output_folder_str)
+                img_output_folder_str = abs_img_output_folder_str
 
         if xlsx_output_path_str[-5:] == '.xlsx':
             pass
@@ -518,29 +602,47 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
 
         score_filter = rank_score_filter
 
-        hunter_param_dct = {'fawhitelist_path_str': fawhitelist_path_str, 'mzml_path_str': mzml_path_str,
+        hunter_param_dct = {'vendor': usr_vendor, 'experiment_mode': usr_exp_mode,
+                            'lipid_class': _lipid_class, 'charge_mode': _lipid_charge,
+                            'fawhitelist_path_str': fawhitelist_path_str,
+                            'score_cfg': score_cfg,
+                            'mzml_path_str': mzml_path_str,
                             'img_output_folder_str': img_output_folder_str,
-                            'xlsx_output_path_str': xlsx_output_path_str, 'rt_start': rt_start, 'rt_end': rt_end,
-                            'mz_start': mz_start, 'mz_end': mz_end, 'dda_top': dda_top, 'ms_th': ms_th,
-                            'ms2_th': ms2_th, 'ms_ppm': ms_ppm, 'ms2_ppm': ms2_ppm, 'hg_th': hg_th, 'hg_ppm': hg_ppm,
-                            'rank_score_filter': rank_score_filter, 'isotope_score_filter': isotope_score_filter,
-                            'score_filter': score_filter,
-                            'lipid_type': _lipid_class, 'charge_mode': _lipid_charge,
-                            'lipid_specific_cfg': lipid_specific_cfg, 'score_cfg': score_cfg, 'vendor': usr_vendor,
-                            'ms2_infopeak_threshold': ms2_info_threshold,
-                            'ms2_hginfopeak_threshold': hgms2_info_threshold,
-                            'rank_score': rank_score, 'fast_isotope': fast_isotope,
+                            'xlsx_output_path_str': xlsx_output_path_str,
+                            'rt_start': rt_start, 'rt_end': rt_end,
+                            'mz_start': mz_start, 'mz_end': mz_end,
+                            'dda_top': dda_top, 'pr_window': pr_window,
+                            'ms_th': ms_th, 'ms_ppm': ms_ppm,
+                            'ms2_th': ms2_th, 'ms2_ppm': ms2_ppm, 'ms2_infopeak_threshold': ms2_info_threshold,
+                            'rank_score_filter': rank_score_filter, 'score_filter': score_filter,
+                            'isotope_score_filter': isotope_score_filter,
+                            'lipid_specific_cfg': lipid_specific_cfg,
+                            'core_number': core_num, 'max_ram': max_ram,
+                            'img_type': img_typ, 'img_dpi': img_dpi,
                             'hunter_folder': self.lipidhunter_cwd,
-                            'hunter_start_time': start_time_str, 'experiment_mode': usr_exp_mode,
-                            'core_number': core_num, 'max_ram': max_ram, 'tag_all_sn': tag_all_sn,
-                            'img_type': img_typ, 'img_dpi': img_dpi, 'ms_max': ms_max, 'pr_window': pr_window}
+                            'hunter_start_time': start_time_str,
+                            }
+        debug_mode = 'OFF'
+        if debug_mode == 'ON':
+            hunter_param_dct['rank_score'] = rank_score
+            hunter_param_dct['tag_all_sn'] = tag_all_sn
+            hunter_param_dct['fast_isotope'] = fast_isotope
+            hunter_param_dct['ms_max'] = ms_max
+        else:
+            hunter_param_dct['rank_score'] = True
+            hunter_param_dct['tag_all_sn'] = True
+            hunter_param_dct['fast_isotope'] = False
+            hunter_param_dct['ms_max'] = 0
 
-        return hunter_param_dct, error_log_lst
+            return hunter_param_dct, error_log_lst
 
     def a_save_cfg(self):
         a_save_cfg_path = QtGui.QFileDialog.getSaveFileName(caption='Save file', filter='.txt')
         self.ui.tab_a_cfgpath_le.clear()
-        a_save_cfg_str = os.path.abspath(a_save_cfg_path[0])
+        usr_cfg_path = a_save_cfg_path[0]
+        if usr_cfg_path[-4:] != '.txt':
+            usr_cfg_path += '.txt'
+        a_save_cfg_str = os.path.abspath(usr_cfg_path)
         self.ui.tab_a_cfgpath_le.setText(a_save_cfg_str)
 
     def a_create_cfg(self):
@@ -551,11 +653,13 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 pass
             else:
                 param_cfg_path_str = '%s.txt' % param_cfg_path_str
+                self.ui.tab_a_cfgpath_le.clear()
+                self.ui.tab_a_cfgpath_le.setText(param_cfg_path_str)
             param_cfg_directory = os.path.dirname(param_cfg_path_str)
             if not os.path.exists(param_cfg_directory):
                 os.makedirs(param_cfg_directory)
             abs_param_cfg_directory_str, error_log = self.check_folder(param_cfg_directory, 'Settings for batch mode')
-            if len(error_log) > 0:
+            if error_log is not None:
                 self.ui.tab_a_gencfg_pte.insertPlainText(error_log)
             if abs_param_cfg_directory_str != param_cfg_directory:
                 param_cfg_path = os.path.split(param_cfg_path_str)
@@ -675,10 +779,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         cfg_params_dct = {}
         cfg_error = ''
 
-        i_type_key_lst = ['ms_th', 'ms2_th', 'hg_th', 'ms_ppm', 'ms2_ppm', 'hg_ppm', 'dda_top', 'sn_ratio',
+        i_type_key_lst = ['ms_th', 'ms2_th', 'ms_ppm', 'ms2_ppm', 'dda_top', 'sn_ratio',
                           'core_number', 'max_ram', 'img_dpi', 'ms_max']
         f_type_key_lst = ['rt_start', 'rt_end', 'mz_start', 'mz_end', 'pr_window', 'ms2_infopeak_threshold',
-                          'ms2_hginfopeak_threshold', 'score_filter', 'isotope_score_filter', 'rank_score_filter']
+                          'score_filter', 'isotope_score_filter', 'rank_score_filter']
         b_type_key_lst = ['rank_score', 'fast_isotope', 'tag_all_sn']
 
         print('Input LipidHunter configuration file : ', batch_cfg)
@@ -721,10 +825,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             config.add_section('settings')
             config.set('settings', 'fa_white_list_cfg_pl', self.ui.tab_c_falistpl_le.text())
             config.set('settings', 'fa_white_list_cfg_tg', self.ui.tab_c_falisttg_le.text())
-            config.set('settings', 'lipid_specific_cfg', self.ui.tab_c_hgcfg_le.text())
             config.set('settings', 'score_cfg_pl', self.ui.tab_c_scorecfgpl_le.text())
             config.set('settings', 'score_cfg_tg', self.ui.tab_c_scorecfgtg_le.text())
             config.set('settings', 'score_cfg_dg', self.ui.tab_c_scorecfgdg_le.text())
+            config.set('settings', 'lipid_specific_cfg', self.ui.tab_c_hgcfg_le.text())
 
             if self.ui.tab_c_scoremode_cmb.currentIndex() == 0:
                 config.set('settings', 'score_mode', 'RANK')
@@ -773,7 +877,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         file_info_str = 'FA white list files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_falisttg_le)
 
-    def c_load_falist_lg(self):
+    def c_load_falist_dg(self):
         file_info_str = 'FA white list files (*.xlsx *.XLSX)'
         self.open_file(file_info_str, self.ui.tab_c_lmcalcfalist_le)
 
@@ -796,7 +900,10 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def c_lmexport(self):
         c_lmexport_path = QtGui.QFileDialog.getSaveFileName(caption='Save file', filter='.csv')
         self.ui.tab_c_lmexport_le.clear()
-        c_lmexport_str = os.path.abspath(c_lmexport_path[0])
+        usr_lm_path = c_lmexport_path[0]
+        if usr_lm_path[-4:] != '.csv':
+            usr_lm_path += '.csv'
+        c_lmexport_str = os.path.abspath(usr_lm_path)
         self.ui.tab_c_lmexport_le.setText(c_lmexport_str)
 
     def single_worker_on_finish(self):
@@ -804,8 +911,13 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         print('!! single_worker stopped !!')
         self.ui.tab_a_runhunter_pb.setText(QtGui.QApplication.translate('MainWindow', 'Hunt for lipids!', None,
                                                                         QtGui.QApplication.UnicodeUTF8))
+
+        self.ui.tab_a_runhunter_pgb.setMinimum(0)
+        self.ui.tab_a_runhunter_pgb.setMaximum(100)
+        self.ui.tab_a_runhunter_pgb.hide()
         self.ui.tab_a_runhunter_pb.setEnabled(True)
         self.ui.tab_b_runbatch_pb.setEnabled(True)
+        self.ui.tab_c_lmrun_pb.setEnabled(True)
 
     def single_worker_hunter(self):
 
@@ -822,19 +934,41 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         print('Rankscore mode = %s' % (hunter_param_dct['rank_score']))
         print('Hunter started!')
 
-        output_folder_path = str(self.ui.tab_a_saveimgfolder_le.text()).strip(r'\/')
+        output_folder_path = hunter_param_dct['img_output_folder_str']
 
-        if os.path.isdir(output_folder_path):
-            print('Output folder path... %s' % output_folder_path)
+        if platform == "linux" or platform == "linux2":
+            l_cwd = os.getcwd()
+            os.chdir('/')
+            if os.path.isdir(output_folder_path):
+                print('Folder existed...\n', output_folder_path)
+                error_log = None
+                folder_abs_path = os.path.abspath(output_folder_path)
+                print('abs path of folder\n', folder_abs_path)
+            else:
+                if os.path.isdir('/' + output_folder_path):
+                    print('Folder existed...\n', output_folder_path)
+                    error_log = None
+                    folder_abs_path = os.path.abspath(output_folder_path)
+                    print('abs path of folder\n', folder_abs_path)
+                else:
+                    print('No folder...\n', output_folder_path)
+                    os.makedirs(output_folder_path)
+                    print('Folder created... %s' % output_folder_path)
+                    error_log = ''
+            os.chdir(l_cwd)
         else:
-            try:
-                os.mkdir(output_folder_path)
-                print('Output folder created... %s' % output_folder_path)
-            except IOError:
-                error_log_lst.append('!! Failed to create output folder !!')
+            if os.path.isdir(output_folder_path):
+                print('Output folder path... %s' % output_folder_path)
+            else:
+                try:
+                    os.mkdir(output_folder_path)
+                    print('Output folder created... %s' % output_folder_path)
+                except IOError:
+                    error_log_lst.append('!! Failed to create output folder !!')
 
-        param_log_output_path_str = (output_folder_path + '/LipidHunter_Params-Log_%s.txt'
-                                     % hunter_param_dct['hunter_start_time'])
+        param_log_output_path_str = os.path.join(output_folder_path + '/LipidHunter_Params-Log_%s.txt'
+                                                 % hunter_param_dct['hunter_start_time'])
+        print('param_log_output_path_str', param_log_output_path_str)
 
         try:
             config = configparser.ConfigParser()
@@ -845,7 +979,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
                 config.write(usr_param_cfg)
                 ready_to_run = True
         except IOError:
-            error_log_lst.append('!! Failed to save parameter log files !!')
+            error_log_lst.append('!! Failed to save parameter log files !!\n%s' % param_log_output_path_str)
 
         print(hunter_param_dct)
 
@@ -854,20 +988,24 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         if len(error_log_lst) > 0:
             print('Parameter error:', error_log_lst)
             error_log_lst.append('!!! Please check your settings !!!')
-            self.ui.tab_a_statusrun_pte.appendPlainText('\n'.join(error_log_lst) + '\n')
+            self.ui.tab_a_statusrun_pte.appendPlainText('\n'.join(error_log_lst))
         else:
             if ready_to_run is True:
                 self.ui.tab_a_runhunter_pb.setText(QtGui.QApplication.translate('MainWindow', 'Hunting ...', None,
                                                                                 QtGui.QApplication.UnicodeUTF8))
                 self.ui.tab_a_runhunter_pb.setEnabled(False)
                 self.ui.tab_b_runbatch_pb.setEnabled(False)
+                self.ui.tab_c_lmrun_pb.setEnabled(False)
+                self.ui.tab_a_runhunter_pgb.setMinimum(0)
+                self.ui.tab_a_runhunter_pgb.setMaximum(0)
+                self.ui.tab_a_runhunter_pgb.show()
                 self.single_worker.request_work(hunter_param_dct)
 
     def single_worker_info_update(self):
 
         back_info_str = self.single_worker.infoback()
-        self.ui.tab_a_statusrun_pte.insertPlainText(back_info_str)
-        self.ui.tab_a_statusrun_pte.insertPlainText('\n')
+        self.ui.tab_a_statusrun_pte.appendPlainText(back_info_str)
+        # self.ui.tab_a_statusrun_pte.appendPlainText('\n')
 
     def batch_worker_on_finish(self):
         self.batch_thread.quit()
@@ -875,8 +1013,12 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.tab_b_runbatch_pb.setText(QtGui.QApplication.translate('MainWindow',
                                                                        'Run batch mode identification >>>', None,
                                                                        QtGui.QApplication.UnicodeUTF8))
+        self.ui.tab_b_runbatch_pgb.setMinimum(0)
+        self.ui.tab_b_runbatch_pgb.setMaximum(100)
+        self.ui.tab_b_runbatch_pgb.hide()
         self.ui.tab_b_runbatch_pb.setEnabled(True)
         self.ui.tab_a_runhunter_pb.setEnabled(True)
+        self.ui.tab_c_lmrun_pb.setEnabled(True)
 
     def batch_worker_hunter(self):
 
@@ -901,42 +1043,144 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         os.chdir(self.lipidhunter_cwd)
 
         cfg_params_dct = {}
-        self.ui.tab_b_statusrun_pte.insertPlainText('>>> Hunter started ... Total run number: %i \n\n' % tot_num)
+        self.ui.tab_b_statusrun_pte.appendPlainText('>>> Hunter started ... Total run number: %i \n\n' % tot_num)
 
         for _cfg in loaded_cfg_lst:
 
             hunter_param_dct, cfg_error = self.b_read_cfg(_cfg)
             if len(cfg_error) > 0:
-                self.ui.tab_b_statusrun_pte.insertPlainText(str(cfg_error))
+                self.ui.tab_b_statusrun_pte.appendPlainText(str(cfg_error))
             if 'vendor' in list(hunter_param_dct.keys()):
                 hunter_param_dct['batch_cfg_file'] = _cfg
                 hunter_param_dct['core_number'] = sub_max_core
                 hunter_param_dct['max_ram'] = sub_max_ram
 
+                # capability issues to old batch mode files
+                if 'lipid_class' in list(hunter_param_dct.keys()):
+                    hunter_param_dct['lipid_type'] = hunter_param_dct['lipid_class']
+                    ready_to_run = True
+                elif 'lipid_type' in list(hunter_param_dct.keys()):
+                    hunter_param_dct['lipid_class'] = hunter_param_dct['lipid_type']
+                    self.ui.tab_b_statusrun_pte.appendPlainText(
+                        '[WARNING] Please use "lipid_class" instead of "lipid_type" in your batch config file...\n')
+                    ready_to_run = True
+                else:
+                    ready_to_run = False
+
                 run_counter += 1
                 cfg_params_dct[run_counter] = [hunter_param_dct, _cfg]
-                ready_to_run = True
 
             else:
                 run_counter += 1
-                self.ui.tab_b_statusrun_pte.insertPlainText('!! Failed to read batch mode configure files: # %i / %i\n'
+                self.ui.tab_b_statusrun_pte.appendPlainText('!! Failed to read batch mode configure files: # %i / %i\n'
                                                             '%s\n!! Please check your settings '
-                                                            '... skip this one ...\n\n' % (run_counter, tot_num, _cfg))
+                                                            '... skip this one ...\n' % (run_counter, tot_num, _cfg))
         if ready_to_run is True:
+
             self.ui.tab_b_runbatch_pb.setText(QtGui.QApplication.translate('MainWindow', 'Hunting in batch mode ...',
                                                                            None, QtGui.QApplication.UnicodeUTF8))
             self.ui.tab_b_runbatch_pb.setEnabled(False)
             self.ui.tab_a_runhunter_pb.setEnabled(False)
+            self.ui.tab_c_lmrun_pb.setEnabled(False)
+            self.ui.tab_b_runbatch_pgb.setMinimum(0)
+            self.ui.tab_b_runbatch_pgb.setMaximum(0)
+            self.ui.tab_b_runbatch_pgb.show()
 
             self.batch_worker.request_work(cfg_params_dct, tot_num)
         else:
-            self.ui.tab_b_statusrun_pte.insertPlainText('!! Failed to read ALL batch mode configure files ...')
+            self.ui.tab_b_statusrun_pte.appendPlainText('!! Failed to read ALL batch mode configure files ...')
 
     def batch_worker_info_update(self):
 
         back_info_str = self.batch_worker.infoback()
         print('Got info: ', back_info_str)
-        self.ui.tab_b_statusrun_pte.insertPlainText(back_info_str)
+        self.ui.tab_b_statusrun_pte.appendPlainText(back_info_str)
+
+    def lm_worker_on_finish(self):
+        self.lm_thread.quit()
+        print('!! LipidMaster table export worker stopped !!')
+        self.ui.tab_c_lmrun_pb.setText(QtGui.QApplication.translate('MainWindow',
+                                                                    'Generate Lipid Master table >>>', None,
+                                                                    QtGui.QApplication.UnicodeUTF8))
+        self.ui.tab_b_runbatch_pb.setEnabled(True)
+        self.ui.tab_a_runhunter_pb.setEnabled(True)
+        self.ui.tab_c_lmrun_pb.setEnabled(True)
+        self.ui.tab_c_runlm_pgb.setMinimum(0)
+        self.ui.tab_c_runlm_pgb.setMaximum(100)
+        self.ui.tab_c_runlm_pgb.hide()
+
+    def lm_worker_hunter(self):
+
+        self.ui.tab_c_lmstatus_pte.clear()
+
+        _lipid_class_info = str(self.ui.tab_c_lipidclass_cmb.currentText())
+        lipid_class_checker = re.compile(r'(.*)( [(])(\w{2,3})([)] )(.*)')
+        lipid_class_match = lipid_class_checker.match(_lipid_class_info)
+
+        lipid_class_chosen = False
+        fa_list_chosen = False
+        lm_export_chosen = False
+        if lipid_class_match:
+            lipid_class_info_lst = lipid_class_match.groups()
+            usr_lipid_class = lipid_class_info_lst[2]
+            usr_lipid_charge = lipid_class_info_lst[4]
+            lipid_class_chosen = True
+        else:
+            usr_lipid_class = ''
+            usr_lipid_charge = ''
+            self.ui.tab_c_lmstatus_pte.appendPlainText('\n!! Please select a lipid class!!')
+
+        usr_ms2_ppm = self.ui.tab_c_lmms2ppm_spb.value()
+
+        fawhitelist_path_str = str(self.ui.tab_c_lmcalcfalist_le.text())
+        lm_export_path_str = str(self.ui.tab_c_lmexport_le.text())
+        if lm_export_path_str[-4:] != '.csv':
+            lm_export_path_str += '.csv'
+            self.ui.tab_c_lmexport_le.clear()
+            self.ui.tab_c_lmexport_le.setText(lm_export_path_str)
+
+        if os.path.isfile(fawhitelist_path_str):
+            fa_list_chosen = True
+        else:
+            self.ui.tab_c_lmstatus_pte.appendPlainText('\n!! Please select a FA list!!')
+        if len(lm_export_path_str) > 0:
+            lm_export_chosen = True
+        else:
+            self.ui.tab_c_lmstatus_pte.appendPlainText('\n!! Please select a location to save the LipidMaster table!!')
+
+        if lipid_class_chosen is True and fa_list_chosen is True and lm_export_chosen is True:
+
+            os.chdir(self.lipidhunter_cwd)
+
+            composer_param_dct = {'lipid_class': usr_lipid_class,
+                                  'charge_mode': usr_lipid_charge,
+                                  'exact_position': 'FALSE',
+                                  'ms2ppm': usr_ms2_ppm,
+                                  'fa_whitelist': fawhitelist_path_str,
+                                  'export_path': lm_export_path_str,
+                                  }
+            print(composer_param_dct)
+            self.ui.tab_c_lmstatus_pte.appendPlainText('>>> Start to generate LipidMaster table...')
+
+            self.ui.tab_c_lmrun_pb.setText(QtGui.QApplication.translate('MainWindow', '... Generating ...',
+                                                                        None, QtGui.QApplication.UnicodeUTF8))
+            self.ui.tab_b_runbatch_pb.setEnabled(False)
+            self.ui.tab_a_runhunter_pb.setEnabled(False)
+            self.ui.tab_c_lmrun_pb.setEnabled(False)
+
+            self.ui.tab_c_runlm_pgb.setMinimum(0)
+            self.ui.tab_c_runlm_pgb.setMaximum(0)
+            self.ui.tab_c_runlm_pgb.show()
+
+            self.lm_worker.request_work(composer_param_dct)
+        else:
+            self.ui.tab_c_lmstatus_pte.appendPlainText('!! Please check your settings and try again !!\n')
+
+    def lm_worker_info_update(self):
+
+        back_info_str = self.lm_worker.infoback()
+        print('Got info: ', back_info_str)
+        self.ui.tab_c_lmstatus_pte.appendPlainText(back_info_str)
 
 
 class SingleWorker(QtCore.QObject):
@@ -1182,27 +1426,82 @@ class BatchWorker(QtCore.QObject):
         self.finished.emit()
 
 
-class LipidMasterWorker(QtCore.QObject):
+class LMWorker(QtCore.QObject):
     workRequested = QtCore.Signal()
     finished = QtCore.Signal()
     info_update = QtCore.Signal(str)
 
     def __init__(self, parent=None):
-        super(LipidMasterWorker, self).__init__(parent)
+        super(LMWorker, self).__init__(parent)
         self.lm_params_dct = {}
         self.info_str = ''
 
     def request_work(self, lm_params_dct):
         """
         Get parameters from Main window
-        :param(dict) lm_params_dct: a dict contains all configurations from all batch files
+        :param(dict) lm_params_dct: a dict contains all params for LipidMaster table generator
         """
         self.workRequested.emit()
         self.lm_params_dct = lm_params_dct
 
     def infoback(self):
-
         return self.info_str
+
+    def run_lm_generator(self):
+
+        t_start = time.time()
+
+        lipidcomposer = LipidComposer()
+        usr_lipid_master_df = lipidcomposer.compose_lipid(param_dct=self.lm_params_dct,
+                                                          ms2_ppm=self.lm_params_dct['ms2ppm'])
+
+        if isinstance(usr_lipid_master_df, pd.DataFrame):
+            if not usr_lipid_master_df.empty:
+                self.info_str = ('==> Number of predicted lipids (discrete form): %i' % usr_lipid_master_df.shape[0])
+                self.infoback()
+                self.info_update.emit(self.info_str)
+
+                abs_export_path = os.path.abspath(self.lm_params_dct['export_path'])
+                abs_export_folder = os.path.dirname(abs_export_path)
+                if os.path.isdir(abs_export_folder):
+                    pass
+                else:
+                    os.mkdir(os.path.abspath(abs_export_folder))
+                try:
+                    usr_lipid_master_df.to_csv(abs_export_path)
+                    self.info_str = ('==> --> Lipid Master table Saved as: \n %s' % abs_export_path)
+                    self.infoback()
+                    self.info_update.emit(self.info_str)
+
+                except Exception as _err:
+                    print(_err)
+                    self.info_str = '\n %s \n' % _err
+                    self.infoback()
+                    self.info_update.emit(self.info_str)
+
+            else:
+                print('[ERROR] Failed to generate LipidMaster Table...\n'
+                      '... ... Check if Lipid Class and FA are marked in FA whitelist...')
+                self.info_str = ('[ERROR] Failed to generate LipidMaster Table...\n'
+                                 ' ... ... Please check if Lipid Class and FA are marked in FA whitelist...')
+                self.infoback()
+                self.info_update.emit(self.info_str)
+        else:
+            print('[ERROR] Failed to generate LipidMaster Table...\n'
+                  '... ... Check if Lipid Class and FA are marked in FA whitelist...')
+            self.info_str = ('[ERROR] Failed to generate LipidMaster Table...\n'
+                             '... ... Please check if Lipid Class and FA are marked in FA whitelist...')
+            self.infoback()
+            self.info_update.emit(self.info_str)
+
+        t_end = time.time() - t_start
+
+        time.sleep(0.25)
+        self.lm_params_dct = {}
+        self.info_str = '\n>>> FINISHED in %.3f Sec <<<' % t_end
+        self.infoback()
+        self.info_update.emit(self.info_str)
+        self.finished.emit()
 
 
 if __name__ == '__main__':
