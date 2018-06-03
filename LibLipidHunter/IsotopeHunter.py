@@ -130,7 +130,7 @@ class IsotopeHunter(object):
                 isotope_pattern = list(isotope_pattern_calc.coef)[:isotope_number + 1]
             except ValueError:
                 # print(_e)
-                print('==>Too large to use full elements for isotope pattern --> '
+                print('[INFO] --> Too large to use full elements for isotope pattern ... '
                       'use 13C only mode for this compound...')
                 # consider C only --> binomial expansion 3x faster
                 isotope_pattern = stats.binom.pmf(list(range(0, isotope_number + 1)), c_count, ration_13c12c)
@@ -208,15 +208,17 @@ class IsotopeHunter(object):
                 _ratio = _se['ratio']
                 _mz_delta = _mz * ms1_precision
                 _i_df = spec_df.query('%f <= mz <= %f' % (_mz - _mz_delta, _mz + _mz_delta))
+
                 if _i < 2:
                     theo_i = ms1_pr_i * _ratio + _base_i
                 else:
                     theo_i = ms1_pr_i * _ratio
                 _i_info_dct = {'theo_mz': _mz, 'theo_i': theo_i, 'theo_ratio': _ratio}
+
                 if not _i_df.empty:
                     _i_df = _i_df.sort_values(by='i', ascending=False).head(1)
-                    _i_max = _i_df['i'].values.tolist()[0]
-                    _mz_max = _i_df['mz'].values.tolist()[0]
+                    _i_max = _i_df['i'].max()
+                    _mz_max = _i_df['mz'].max()
                     _i_info_dct['obs_i'] = _i_max
                     _i_info_dct['obs_mz'] = _mz_max
                 else:
@@ -249,9 +251,9 @@ class IsotopeHunter(object):
             obs_pr_i = isotope_checker_dct[0]['obs_i']
         except Exception as _e:
             if mode == 'm':
-                print(core_count, '[Exception] Cannot get Theoretical or observed PR m/z ...', _e)
+                print(core_count, '[Exception] !!! Cannot get Theoretical or observed PR m/z ...', _e)
             else:
-                print(core_count, '... M+2 is NOT potential M+0 of M+2H ...', _e)
+                print(core_count, '[Exception] !!! M+2 is NOT potential M+0 of M+2H ...', _e)
             theo_pr_mz = 0
             obs_pr_mz = 0
             obs_pr_i = 0
@@ -262,19 +264,19 @@ class IsotopeHunter(object):
                                                             core_count=core_count, ms1_precision=ms1_precision)
                 if peak_top is True:
                     isotope_calc_dct = {'isotope_checker_dct': isotope_checker_dct, 'isotope_score': isotope_score,
-                                        'isotope_m1_score': isotope_m1_score, 'm2_i': m2_i, 'theo_i_lst': theo_i_lst,
+                                        'isotope_m1_score': isotope_m1_score, 'theo_i_lst': theo_i_lst,
                                         'obs_pr_mz': obs_pr_mz, 'obs_pr_i': obs_pr_i}
                 else:
                     isotope_calc_dct = {'isotope_checker_dct': {}, 'isotope_score': 0,
-                                        'isotope_m1_score': 0, 'm2_i': 0, 'theo_i_lst': [],
+                                        'isotope_m1_score': 0, 'theo_i_lst': [],
                                         'obs_pr_mz': 0, 'obs_pr_i': 0}
             else:
                 isotope_calc_dct = {'isotope_checker_dct': isotope_checker_dct, 'isotope_score': isotope_score,
-                                    'isotope_m1_score': isotope_m1_score, 'm2_i': m2_i, 'theo_i_lst': theo_i_lst,
+                                    'isotope_m1_score': isotope_m1_score,  'theo_i_lst': theo_i_lst,
                                     'obs_pr_mz': obs_pr_mz, 'obs_pr_i': obs_pr_i}
         else:
             isotope_calc_dct = {'isotope_checker_dct': isotope_checker_dct, 'isotope_score': isotope_score,
-                                'isotope_m1_score': isotope_m1_score, 'm2_i': m2_i, 'theo_i_lst': theo_i_lst,
+                                'isotope_m1_score': isotope_m1_score, 'theo_i_lst': theo_i_lst,
                                 'obs_pr_mz': obs_pr_mz, 'obs_pr_i': obs_pr_i}
 
         # print('mode', mode)
@@ -388,22 +390,27 @@ class IsotopeHunter(object):
                 isotope_checker_dct = isotope_calc_dct['isotope_checker_dct']
                 isotope_score = isotope_calc_dct['isotope_score']
                 isotope_m1_score = isotope_calc_dct['isotope_m1_score']
-                m2_i = isotope_calc_dct['m2_i']
+                # m2_i = isotope_calc_dct['m2_i']
                 m2_checker_dct = {}
                 m2_score = 0
 
                 obs_pr_mz = isotope_calc_dct['obs_pr_mz']
                 obs_pr_i = isotope_calc_dct['obs_pr_i']
 
-                if isotope_score < score_filter:
-                    print(core_count, '... check if M+2 is potential M+0 of M+2H ...')
+                if isotope_score <= score_filter <= isotope_m1_score:
+                    print(core_count, '[INFO] --> check if M+2 is potential M+0 of M+2H ...')
 
                     # check if M+2 is potential M+0 of M+2H
                     # M+H2 elements
 
                     m2_elem_dct = self.get_elements(formula + 'H2')
                     m2_isotope_pattern_df = self.get_isotope_mz(m2_elem_dct, only_c=only_c)
-
+                    # get exact M+2 pr i, especially for ppm < 10
+                    m2_mz_df = m2_isotope_pattern_df.head(1)
+                    m2_mz = m2_mz_df['mz'].tolist()[0]
+                    m2_i_df = spec_df.query('%f <= mz <= %f' % (m2_mz * (1 - ms1_precision),
+                                                                m2_mz * (1 + ms1_precision)))
+                    m2_i = m2_i_df['i'].max()
                     m2_i -= m2_base_abs
                     m2_deconv_lst = [m2_base_abs, m3_base_abs, 0]
                     m2_calc_dct = self.calc_isotope_score(m2_isotope_pattern_df, spec_df, ms1_precision, m2_i,
@@ -413,7 +420,7 @@ class IsotopeHunter(object):
                     m2_checker_dct = m2_calc_dct['isotope_checker_dct']
                     # use M+1 only
                     m2_score = m2_calc_dct['isotope_m1_score']
-                    m2_m2i = m2_calc_dct['m2_i']
+                    # m2_m2i = m2_calc_dct['m2_i']
 
                     if m2_score > 0:
                         pass
@@ -423,21 +430,21 @@ class IsotopeHunter(object):
                     if 2 in list(m2_checker_dct.keys()):
                         del m2_checker_dct[2]
 
-                    print(core_count, 'M+2-> M+4 has isotope score for [M+H2]: %.1f' % m2_score)
-                    if m2_score >= score_filter and isotope_m1_score >= score_filter:
+                    if m2_score >= max(score_filter * 0.75, 60):  # set lower filter for M+2H
+                        print(core_count, '[INFO] --> M+2 ~ M+4 has isotope score for [M+H2]: %.1f' % m2_score)
                         isotope_score = isotope_m1_score
                         del isotope_checker_dct[2]
                     else:
                         pass
             else:
-                print(core_count, '!! MS1 PR m/z not fit to Formula check bulk identification !!!!!!')
+                print(core_count, '[WARNING] !!! MS1 PR m/z not fit to Formula check bulk identification !!!')
                 isotope_score = 0
                 isotope_checker_dct = {}
                 m2_checker_dct = {}
                 m2_score = 0
 
         else:
-            print(core_count, 'MS1 PR is an isotope !!!!!!')
+            print(core_count, '[WARNING] !!! MS1 PR is an isotope !!!')
             isotope_score = 0
             isotope_checker_dct = {}
             m2_checker_dct = {}
@@ -479,7 +486,8 @@ class IsotopeHunter(object):
             # M+3
             m3_base_abs = base_m3_i
 
-            print(core_count, 'Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
+            print(core_count, '[INFO] --> Deconvolution_i_abs_corrections: '
+                              '[M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
                   % (m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs))
 
             deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs]
@@ -502,9 +510,9 @@ class IsotopeHunter(object):
                 if abs((ms1_pr_mz - mono_mz)) <= ms1_precision * ms1_pr_mz:
                     isotope_flag = 0
                 else:
-                    print('!! MS1 PR m/z not fit to Formula check bulk identification !!!!!!')
+                    print('[WARNING] !!! MS1 PR m/z not fit to Formula check bulk identification !!!')
             else:
-                print('MS1 PR is an isotope !!!!!!')
+                print('[WARNING] !!! MS1 PR is an isotope !!!')
                 isotope_flag = 1
         else:
             pass
@@ -539,7 +547,8 @@ class IsotopeHunter(object):
             # M+3
             m3_base_abs = base_m3_i
 
-            print(core_count, 'Deconvolution_i_abs_corrections: [M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
+            print(core_count, '[INFO] --> Deconvolution_i_abs_corrections: '
+                              '[M+0] %.1f, [M+1] %.1f, [M+2] %.1f, [M+3] %.1f'
                   % (m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs))
 
             deconv_lst = [m0_base_abs, m1_base_abs, m2_base_abs, m3_base_abs]
@@ -562,9 +571,9 @@ class IsotopeHunter(object):
                 if abs((ms1_pr_mz - mono_mz)) <= ms1_precision * ms1_pr_mz:
                     isotope_flag = 0
                 else:
-                    print(core_count, '!! MS1 PR m/z not fit to Formula check bulk identification !!!!!!')
+                    print(core_count, '[WARNING] !!! MS1 PR m/z not fit to Formula check bulk identification !!!')
             else:
-                print(core_count, 'MS1 PR is an isotope !!!!!!')
+                print(core_count, '[WARNING] !!! MS1 PR is an isotope !!!')
                 isotope_flag = 1
         else:
             pass
