@@ -433,9 +433,16 @@ class IsotopeHunter(object):
                     if m2_score >= max(score_filter * 0.75, 60):  # set lower filter for M+2H
                         print(core_count, '[INFO] --> M+2 ~ M+4 has isotope score for [M+H2]: %.1f' % m2_score)
                         isotope_score = isotope_m1_score
-                        del isotope_checker_dct[2]
+                        del isotope_checker_dct[2]['obs_i']
+                        del isotope_checker_dct[2]['obs_mz']
                     else:
-                        pass
+                        print(core_count, '[WARNING] !!! M+2 ~ M+4 has isotope score for [M+H2]: %.1f' % m2_score)
+                        isotope_score = isotope_m1_score
+                        m2_checker_dct = {}
+                        m2_score = 0
+                        del isotope_checker_dct[2]['obs_i']
+                        del isotope_checker_dct[2]['obs_mz']
+
             else:
                 print(core_count, '[WARNING] !!! MS1 PR m/z not fit to Formula check bulk identification !!!')
                 isotope_score = 0

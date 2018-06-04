@@ -1180,7 +1180,7 @@ if __name__ == '__main__':
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Ni file
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Mile file
     tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Angela file
-    tg_mzml_SCIEXS = r'../Test/mzML/20140613_HSL002_Positive_01.mzML'  # Dataset
+    tg_mzml_SCIEXS = r'../Test/mzML/Test_sciex.mzML'  # Dataset
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
     pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_PL.xlsx',
