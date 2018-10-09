@@ -224,13 +224,14 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     # for TG has the fragment of neutral loss of the FA and the fragments for the MG
     usr_fa_df = lipidcomposer.calc_fa_query(usr_lipid_class, usr_fa_xlsx, ms2_ppm=usr_ms2_ppm)
-
+    # del lipidcomposer
     if usr_fa_df is False:
         print('[ERROR] !!! Failed to generate FA info table ...\n')
         error_lst.append('[ERROR] !!! Failed to generate FA info table ...\n')
         return False, error_lst, False
-
+    # TODO (georgia.angelidou@uni-leipzig.de): why from usr_lipid_master_df create the lipid_info_df if it contains the same information ???????? and the original one is not needed for futher analysis
     lipid_info_df = usr_lipid_master_df
+    # del usr_lipid_master_df
 
     # cut lib info to the user defined m/z range
     # TODO (georgia.angelidou@uni-leipzig.de): support for the sphingomyelins and ceramides
@@ -294,17 +295,20 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                                                 vendor=usr_vendor, ms1_max=usr_ms1_max)
 
     print('[INFO] --> MS1_XIC_df.shape', ms1_xic_df.shape)
-
-    ms1_obs_pr_df, sub_pl_group_lst = pr_hunter.get_matched_pr(usr_scan_info_df, usr_spectra_pl, ms1_max=usr_ms1_max,
+    # TODO (georgia.angelidou@uni-leipzig.de): remove the second variable that pr_hunter is returns since it is not used
+    # in this case sub_pl_group_lst
+    ms1_obs_pr_df = pr_hunter.get_matched_pr(usr_scan_info_df, usr_spectra_pl, ms1_max=usr_ms1_max,
                                                                core_num=usr_core_num, max_ram=usr_max_ram)
 
+    # del lipid_info_df
+    # del pr_hunter
     if ms1_obs_pr_df is False:
         print('[WARNING] !!! NO suitable precursor --> Check settings!!\n')
         error_lst.append('[WARNING] !! NO suitable precursor --> Check settings!!\n')
         return False, error_lst, False
 
     print('[INFO] --> ms1 precursor matched')
-
+    # TODO (georgia.angelidou@uni-leipzig.de): Do you need the below section
     # remove bad precursors, keep the matched scans by DDA_rank and scan number
     # build unique identifier for each scan with scan_number00dda_rank use numpy.int64 to avoid large scan_number
     # usr_scan_info_df['scan_checker'] = ((10000 * usr_scan_info_df['scan_number'] + usr_scan_info_df['DDA_rank'])
@@ -316,10 +320,14 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     ms1_obs_pr_df['scan_checker'] = (ms1_obs_pr_df['scan_number'].astype(int64).astype(str).str.
                                      cat(ms1_obs_pr_df['DDA_rank'].astype(int64).astype(str).astype(str), sep='_'))
 
-    usr_scan_checker_lst = usr_scan_info_df['scan_checker'].tolist()
+    usr_scan_checker_lst = usr_scan_info_df['scan_checker'].tolist()    # line can be removed not necessary
+    # TODO (georgia.angelidou@uni-leipzig.de): the line below will change to the following:
+    # checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_info_df['scan_checker'].tolist()st)]
     checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_checker_lst)]
+    # del usr_scan_checker_lst
     checked_info_df.is_copy = False
     checked_info_df.sort_values(by=['scan_checker', 'Lib_mz'], ascending=[True, True], inplace=True)
+    # TODO (georgia.angelidou@uni-leipzig.de): remove if not needed
     # if 'debug_mode' in list(param_dct.keys()):
     #     if param_dct['debug_mode'] == 'ON':
     #         usr_scan_info_df.to_csv(os.path.join(output_folder, 'usr_scan_info.csv'))
@@ -334,6 +342,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         print('[INFO] --> features identified in the pre-match: ', checked_info_df.shape[0])
 
     ms1_xic_mz_lst = ms1_obs_pr_df['MS1_XIC_mz'].values.tolist()
+    # del ms1_obs_pr_df
     ms1_xic_mz_lst = sorted(set(ms1_xic_mz_lst))
     print('ms1_xic_mz_lst', len(ms1_xic_mz_lst))
     print(ms1_xic_mz_lst)
@@ -365,6 +374,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         pass
                     print('[STATUS] >>> Core #%i ==> ...... processing ......' % worker_count)
                     print(core_list)
+                    # TODO (georgia.angelidou@uni-leipzig.de): maybe can be combine or stay like this????
                     xic_result = parallel_pool.apply_async(get_xic_from_pl, args=(core_list, ms1_xic_df, usr_xic_ppm,
                                                                                   os_typ, queue))
                     worker_count += 1
@@ -372,7 +382,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
             parallel_pool.close()
             parallel_pool.join()
-
+            # del ms1_xic_df
+            # TODO (georgia.angelidou@uni-leipzig.de): can be done before the join??????
             for xic_result in xic_results_lst:
                 try:
                     sub_xic_dct = xic_result.get()
@@ -381,6 +392,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
                 except (KeyError, SystemError, ValueError):
                     pass
+            # del sub_xic_dct
+            # del xic_result
+            # del xic_results_lst
 
         else:  # for linux
             jobs = []
@@ -400,15 +414,18 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     jobs.append(job)
                     job.start()
                     xic_results_lst.append(queue.get())
+            # del ms1_xic_df
             for j in jobs:
                 j.join()
-
+            # TODO (georgia,angelidou@uni-leipzig.de): question does these part can be move before the different jobs are join?????
             for xic_result in xic_results_lst:
                 try:
                     if len(list(xic_result.keys())) > 0:
                         xic_dct.update(xic_result)
                 except (KeyError, SystemError, ValueError):
                     pass
+            # del xic_result
+            # del xic_results_lst
     else:
         print('[INFO] --> Using single core mode...')
         queue = ''
@@ -423,11 +440,11 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 print(core_list)
                 sub_xic_dct = get_xic_from_pl(core_list, ms1_xic_df, usr_xic_ppm, os_typ, queue)
                 worker_count += 1
+
                 if len(list(sub_xic_dct.keys())) > 0:
                     xic_dct.update(sub_xic_dct)
-
-    # print('xic_dct', len(xic_dct.keys()))
-    # print(xic_dct.keys())
+        # del sub_xic_dct
+        # del ms1_xic_df
 
     if len(list(xic_dct.keys())) == 0:
         print('[ERROR] !!! No precursor for XIC found !!')
@@ -476,7 +493,10 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         if spec_part_len > 200:
             spec_part_len = 200
             # split_seg = int(math.ceil(lipid_all_scan_num / spec_part_len))
-
+        # TODO (georgia.angelidou@uni-leipzig.de): Altarnative way to avoid osaving all the information in a new parameter so to reduce space issues
+        # spec_part_lst = [list(checked_info_df['scan_checker'].unique())[k: k + spec_part_len] for k in range(0, lipid_all_scan_num,
+        #                                                                         spec_part_len)]
+        # Not so important since it isnt big
         spec_part_lst = [lipid_all_scan_lst[k: k + spec_part_len] for k in range(0, lipid_all_scan_num,
                                                                                  spec_part_len)]
         # split_seg = len(spec_part_lst)
@@ -485,7 +505,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             if None in part_lst:
                 part_lst = [x for x in part_lst if x is not None]
             spec_sub_len = int(math.ceil(len(part_lst) / usr_core_num))
-            # print('lipid_sub_len', lipid_sub_len)
             scan_sub_lst = [part_lst[k: k + spec_sub_len] for k in range(0, len(part_lst), spec_sub_len)]
             for scan_lst in scan_sub_lst:
                 _tmp_lipid_info_df = checked_info_df[checked_info_df['scan_checker'].isin(scan_lst)]
@@ -506,11 +525,11 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                             range(0, checked_info_key_num, spec_sub_len)]
         # chk_info_df_lst.append([checked_info_df, checked_info_df_groups])
         spec_part_key_lst.append((spec_sub_key_lst, checked_info_df_groups))
+    # del spec_sub_key_lst # careful use the same name twice
+    # del checked_info_df_groups
+    # del lipid_all_scan_lst
 
     if usr_core_num > 1:
-
-        # print('lipid_part_number: ', len(lipid_part_key_lst), ' lipid_part_len:', len(lipid_part_key_lst[0]))
-
         part_tot = len(spec_part_key_lst)
         # print('part_tot', part_tot)
         part_counter = 1
@@ -520,11 +539,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
             spec_sub_key_lst = spec_sub_lst[0]
             sub_info_groups = spec_sub_lst[1]
-
-            # print('spec_sub_key_lst')
-            # print(spec_sub_key_lst)
-            # print('sub_info_groups')
-            # print(sub_info_groups)
 
             if part_tot == 1:
                 print('[STATUS] >>> Start multiprocessing to get Spectra info ==> Max Number of Cores: %i'
@@ -576,8 +590,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         spec_results_lst.append(queue_spec.get())
                 for j in jobs:
                     j.join()
-
-            # Merge multiprocessing results
+            # del sub_info_groups
+            #  Merge multiprocessing results
             for spec_result in spec_results_lst:
 
                 if os_typ == 'windows':
@@ -594,7 +608,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                             lipid_spec_info_dct.update(spec_result)
                     except (KeyError, SystemError, ValueError):
                         print('[ValueError] !!! must supply a tuple to get_group with multiple grouping keys ...')
-
+            # del spec_result
+            # del spec_results_lst
             if part_tot == 1:
                 print('[STATUS] >>> multiprocessing results merged')
             else:
@@ -626,13 +641,21 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
                 else:
                     pass
-
+    #         del sub_info_groups
+    # del sub_spec_dct
+    # del spec_part_key_lst
+    # del spec_sub_lst
+    # del spec_sub_key_lst
     # print('lipid_spec_info_dct', len(list(lipid_spec_info_dct.keys())))
 
     # Single process ONLY. usr_spectra_pl is too big in RAM --> RAM leaking during copy
     lipid_spec_dct = {}
+    # TODO (georgia.angelidou@uni-leipzig.de): when pfor loop change below line will be remove
     spec_info_key_lst = list(lipid_spec_info_dct.keys())
     # print(spec_info_key_lst)
+    # TODO (georgia.angelidou@uni-leipzig.de): Need to change since it is used only once is not necessary to introduce a new parameter
+    # chnge to :
+    # for _spec_group_key in list(lipid_spec_info_dct.keys())
     for _spec_group_key in spec_info_key_lst:
         _spec_info_dct = lipid_spec_info_dct[_spec_group_key]
         _usr_ms2_pr_mz = _spec_info_dct['MS2_PR_mz']
@@ -640,11 +663,20 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         _usr_ms2_scan_id = _spec_info_dct['scan_number']
         _usr_mz_lib = _spec_info_dct['Lib_mz']
         # TODO(zhixu.ni@uni-leipzig.de): change get_spectra into multiple processing mode
+        # TODO(georgia.angelidou@uni-leipzig.de): change remove and company the next to line as:
+        # lipid_spec_dct[_spec_group_key] = get_spectra(_usr_ms2_pr_mz, _usr_mz_lib, _usr_ms2_dda_rank, _usr_ms2_scan_id,
+        #                                ms1_xic_mz_lst, usr_scan_info_df, usr_spectra_pl,
+        #                                dda_top=usr_dda_top, ms1_precision=usr_ms1_precision, vendor=usr_vendor)
         usr_spec_info_dct = get_spectra(_usr_ms2_pr_mz, _usr_mz_lib, _usr_ms2_dda_rank, _usr_ms2_scan_id,
                                         ms1_xic_mz_lst, usr_scan_info_df, usr_spectra_pl,
                                         dda_top=usr_dda_top, ms1_precision=usr_ms1_precision, vendor=usr_vendor)
         lipid_spec_dct[_spec_group_key] = usr_spec_info_dct
-
+    #     del usr_spec_info_dct
+    # del usr_scan_info_df
+    # del lipid_spec_info_dct
+    # del ms1_xic_mz_lst
+    # del spec_info_key_lst
+    # del usr_spectra_pl
     found_spec_key_lst = list(lipid_spec_dct.keys())
     found_spec_key_lst = sorted(found_spec_key_lst, key=lambda x: x[0])
     spec_key_num = len(found_spec_key_lst)
@@ -706,7 +738,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     else:
         key_frag_dct = {}
-
+    # del other_frag_df
+    # del other_nl_df
+    # del target_frag_df
+    # del target_nl_df
+    # del target_pr_df
+    # del usr_key_frag_df
     print('[INFO] --> Key FRAG Dict Generated ...')
 
     # Start multiprocessing to get rank score
@@ -747,9 +784,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 _core_chk_groups = _core_chk_info_df.groupby(['Formula', 'scan_checker'])
 
                 lipid_sub_key_lst.append((_core_key_lst, _core_chk_info_df, _core_chk_groups))
+                # del _core_chk_info_df
+                # del _core_key_df
+                # del _core_chk_groups
 
             lipid_part_key_lst.append(lipid_sub_key_lst)
-
+        # del lipid_sub_key_lst
+        # del pre_lipid_sub_key_lst
     else:
         lipid_sub_len = int(math.ceil(spec_key_num / usr_core_num))
         pre_lipid_sub_key_lst = [found_spec_key_lst[k: k + lipid_sub_len] for k in
@@ -761,8 +802,18 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             _core_chk_info_df = checked_info_df[checked_info_df['scan_checker'].isin(_core_scan_lst)]
             _core_chk_groups = _core_chk_info_df.groupby(['Formula', 'scan_checker'])
 
+            # TODO (georgia.angelidou@uni-leipzig.de):  unnecesary decleration of new parameter
+            # It can derectly be save in the destination parameter:
+            # lipid_part_key_lst.append((_core_key_lst, _core_chk_info_df, _core_chk_groups))
             lipid_sub_key_lst.append((_core_key_lst, _core_chk_info_df, _core_chk_groups))
+            # del _core_chk_info_df
+            # del _core_key_df
+            # del _core_chk_groups
         lipid_part_key_lst.append(lipid_sub_key_lst)
+    #     del lipid_sub_key_lst
+    #     del pre_lipid_sub_key_lst
+    #
+    # del checked_info_df
 
     # print('lipid_part_number: ', len(lipid_part_key_lst), ' lipid_part_len:', len(lipid_part_key_lst[0]))
 
@@ -829,9 +880,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                                                                 lipid_sub_dct, xic_dct,
                                                                                 worker_count,
                                                                                 save_fig, os_typ, queue))
+
                             lipid_info_results_lst.append(lipid_info_result)
                             worker_count += 1
-
+                #         del _chk_info_gp
+                #         del _chk_info_df
+                # del lipid_sub_dct
+                # del lipid_sub
                 parallel_pool.close()
                 parallel_pool.join()
 
@@ -862,24 +917,33 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                                                                    lipid_sub_dct, xic_dct,
                                                                                    worker_count,
                                                                                    save_fig, os_typ, queue))
+                        # del _chk_info_gp
+                        # del _chk_info_df
                         worker_count += 1
                         jobs.append(job)
                         job.start()
                         lipid_info_results_lst.append(queue.get())
+                # del lipid_sub_dct
+                # del lipid_sub
                 for j in jobs:
                     j.join()
 
             # Merge multiprocessing results
             for lipid_info_result in lipid_info_results_lst:
+                # TODO (georgia.angelidou@uni-leipzig.de): need to change the following part. The differnt sections can be combine
 
                 if os_typ == 'windows':
                     try:
                         tmp_lipid_info = lipid_info_result.get()
+                        # TODO (georgia.angelidou@uni-leipzig.de): can be avoided
                         tmp_lipid_info_df = tmp_lipid_info[0]
-                        # print(tmp_lipid_info_df)
                         tmp_lipid_img_lst = tmp_lipid_info[1]
-                        # print('tmp_lipid_img_lst')
-                        # print(len(tmp_lipid_img_lst))
+
+                        # TODO (georgia.angelidou@uni-leipzig.de): when above remove this need to be activated
+                        # if isinstance(tmp_lipid_info[0], pd.DataFrame):
+                        #     if not  tmp_lipid_info[0].empty:
+                        #         output_df = output_df.append(tmp_lipid_info[0])
+                        #         lipid_info_img_lst.extend(tmp_lipid_info[1])
                     except (KeyError, SystemError, ValueError, TypeError):
                         tmp_lipid_info_df = 'error'
                         tmp_lipid_img_lst = []
@@ -888,12 +952,18 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     try:
                         tmp_lipid_info_df = lipid_info_result[0]
                         tmp_lipid_img_lst = lipid_info_result[1]
+                        # TODO (georgia.angelidou@uni-leipzig.de): need to be activated when the above 2 lines are removed
+                        # if isinstance(lipid_info_result[0], pd.DataFrame):
+                        #     if not lipid_info_result[0].empty:
+                        #         output_df = output_df.append(lipid_info_result[0])
+                        #         lipid_info_img_lst.extend(lipid_info_result[1])
 
                     except (KeyError, SystemError, ValueError, TypeError):
                         tmp_lipid_info_df = 'error'
                         tmp_lipid_img_lst = []
                         print('[ERROR] !!! This segment receive no Lipid identified.')
 
+                # TODO (georgia.angelidou@uni-leipzig.de): when new section are activate all the below if/else statement cant go away
                 if isinstance(tmp_lipid_info_df, str):
                     pass
                 else:
@@ -907,6 +977,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 print('[STATUS] >>> multiprocessing results merged ==> Part %i / %i '
                       % (part_counter, part_tot))
             part_counter += 1
+        #     del lipid_info_results_lst
+        #     del tmp_lipid_img_lst
+        #     del tmp_lipid_info
+        # del tmp_lipid_info_df
+        # del usr_fa_df
+        # del usr_weight_df
+        # del lipid_sub_key_lst
 
     else:
         print('[INFO] --> Using single core mode...')
@@ -918,6 +995,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     _chk_info_df = lipid_sub[1]
                     _chk_info_gp = lipid_sub[2]
 
+                    # TODO (georgia.angelidou@uni-leipig.de): remove if not necessary
                     # if None in lipid_sub_lst:
                     #     lipid_sub_lst = [x for x in lipid_sub_lst if x is not None]
                     # else:
@@ -931,13 +1009,33 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     lipid_info_results_lst = get_lipid_info(param_dct, usr_fa_df, _chk_info_df,
                                                             _chk_info_gp,  found_spec_key_lst, usr_weight_df,
                                                             key_frag_dct, lipid_spec_dct, xic_dct, worker_count)
+                    # del _chk_info_df
+                    # del _chk_info_gp
+                    # TODO (georgia.angelidou@uni-leipzig.de): unecessary declaration of values can be avoide
                     tmp_lipid_info_df = lipid_info_results_lst[0]
                     tmp_lipid_img_lst = lipid_info_results_lst[1]
                     if isinstance(tmp_lipid_info_df, pd.DataFrame):
                         if not tmp_lipid_info_df.empty:
                             output_df = output_df.append(tmp_lipid_info_df)
                             lipid_info_img_lst = tmp_lipid_img_lst
-
+                    # TODO (georgia.angelidou@uni-leipzig.de): code can change as below
+                    # if isinstance(lipid_info_results_lst[0], pd.DataFrame):
+                    #     if not lipid_info_results_lst[0].empty:
+                    #         output_df = output_df.append(lipid_info_results_lst[0])
+                    #         lipid_info_img_lst = lipid_info_results_lst[1]
+    #         del lipid_info_results_lst
+    #         del tmp_lipid_img_lst
+    #         del tmp_lipid_info
+    #     del lipid_sub
+    #     del tmp_lipid_info_df
+    #     del usr_fa_df
+    #     del usr_weight_df
+    #     del lipid_sub_key_lst
+    # del lipid_spec_dct
+    # del lipid_part_key_lst
+    # del found_spec_key_lst
+    # del key_frag_dct
+    # del xic_dct
     print('[OUTPUT] ==> Generate the output table')
     if isinstance(output_df, pd.DataFrame):
         print('[INFO] --> Total number of records', output_df.shape[0])
@@ -964,6 +1062,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                 'i_fa1': 2, 'i_fa2': 2, 'i_[M-H]-fa1': 2, 'i_[M-H]-fa2': 2,
                                 'i_[M-H]-fa1-H2O': 2, 'i_[M-H]-fa2-H2O': 2
                                 }
+            # TODO (georgia.angelidou@uni-leipzig.de): If not important remove
             # for _i_check in ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
             #                  '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']:
             #     if _i_check not in output_header_lst:
@@ -971,7 +1070,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+NH4]+', '[M+H]+']:
             output_list = ['FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
-                           '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i', '[M-(FA1)+H]+', '[M-(FA2)+H]+_i',
+                           '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i', '[M-(FA1)+H]+_i', '[M-(FA2)+H]+_i',
                            '[M-(FA3)+H]+_i']
             output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3,
                                 'i_fa1': 2, 'i_fa2': 2, 'i_fa3': 2, 'i_[M+H]-fa1': 2, 'i_[M+H]-fa2': 2,
@@ -980,7 +1079,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+Na]+']:
             # TODO (georgia.angelidou@uni-leipzig.de): check why this can cause some problems with [MGSN1-H2O+H]+
             output_list = ['FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
-                           '[MG(FA3)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i', '[M-(FA1)+Na]+_i', '[M-(FA2)+Na]+_i',
+                           '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i', '[M-(FA1)+Na]+_i', '[M-(FA2)+Na]+_i',
                            '[M-(FA3)+Na]+_i', '[M-(FA1-H+Na)+N]+_i', '[M-(FA2-H+Na)+H]+_i']
             output_round_dct = {r'MS1_obs_mz': 4, r'lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3, 'i_fa1': 2, 'i_fa2': 2,
                                 'i_fa3': 2, 'i_[M+Na]-fa1': 2, 'i_[M+Na]-fa2': 2, 'i_[M+Na]-fa3': 2,
@@ -1001,12 +1100,14 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         for _i_check in output_list:
             if _i_check not in output_header_lst:
                 output_df[_i_check] = 0.0
-
+        # del output_header_lst
+        # del output_list
         # add intensities of target peaks to round list
         if len(target_ident_lst) > 0:
             for _t in target_ident_lst:
                 output_round_dct[_t] = 2
         output_df = output_df.round(output_round_dct)
+        # del output_round_dct
 
         output_df.rename(columns={'OBS_RESIDUES': '#Observed_FA'},
                          inplace=True)
@@ -1029,8 +1130,6 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i',
                                 ]
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+Na]+']:
-            # TODO (georgia.angelidou@uni-leipzig.de): need to solve the problem for the below sections
-            # '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i', '[MG(FA3)-H2O+H]+_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
                                 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
@@ -1040,13 +1139,12 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                 'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i'
                                 ]
         elif usr_lipid_class in ['DG'] and usr_charge in ['[M+H]+', '[M+NH4]+', '[M+Na]+']:
-            # problem with the following key:  'FA2_[FA-H2O+H]_i',
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
                                 'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
                                 'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
                                 'DDA#', 'Scan#', '#Observed_FA',
                                 '[MG(FA1)-H2O+H]+_i', '[MG(FA2)-H2O+H]+_i',
-                                'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]_i',
+                                'FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i',
                                 ]
         else:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
@@ -1055,7 +1153,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                 'DDA#', 'Scan#', '#Observed_FA',
                                 ]
 
+        # TODO(georgia.angelidou@uni-leipzig.de): what is the diference between the output_df and final_output_df
         final_output_df = output_df[output_short_lst]
+        # del output_short_lst
         final_output_df = final_output_df.sort_values(by=['MS1_obs_mz', 'MS2_scan_time', 'RANK_SCORE'],
                                                       ascending=[True, True, False])
         final_output_df = final_output_df.reset_index(drop=True)
@@ -1071,6 +1171,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             final_output_df.to_excel('%s-%i%s' % (output_sum_xlsx[:-5], int(time.time()), '.xlsx'), index=False)
             print(output_sum_xlsx)
         print('[OUTPUT] ==> File saved ...')
+        # del final_output_df
 
     else:
         error_lst.append('[Warning] NO Lipid identified in this file.\n!! Please check your settings !!')
@@ -1102,7 +1203,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         log_pager = LogPageCreator(output_folder, hunter_start_time_str, param_dct)
         log_pager.add_all_info(output_df)
         log_pager.close_page()
-
+        # del log_pager
         print('[STATUS] >>> start to generate images: image count %i' % len(lipid_info_img_lst))
 
         if usr_core_num > 1:
@@ -1127,12 +1228,15 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                               % (worker_count, len(img_sub_lst)))
                         if 'debug_mode' in list(param_dct.keys()):
                             if param_dct['debug_mode'] == 'ON':
+                                # TODO (georgia.angelidou@uni-leipzig.de): Check if the following is really necesary or can be done with alternative way
                                 for img_param_dct in img_sub_lst:
                                     print(img_param_dct['save_img_as'])
+                                del img_param_dct
                         parallel_pool.apply_async(gen_plot, args=(img_sub_lst, worker_count, usr_img_type,
                                                                   usr_dpi, usr_vendor, usr_ms1_precision))
                         worker_count += 1
-
+            # del img_sub_key_lst
+            # del img_sub_lst
             parallel_pool.close()
             parallel_pool.join()
 
@@ -1150,17 +1254,22 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         print('[WARNING] !!! User skip image generation !!!!!!')
 
     tot_run_time = time.clock() - start_time
+    # del lipid_info_img_lst
+    # del parallel_pool
+    # del param_dct
+    # del output_df
 
     print('[STATUS] >>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
-
+    # alldfs = [var for var in dir() if isinstance(eval(var), pd.core.frame.DataFrame)]
+    # print (alldfs)
     return tot_run_time, error_lst, output_df
 
 
 if __name__ == '__main__':
 
     # set the core number and max ram in GB to be used for the test
-    core_count = 3
-    max_ram = 10  # int only
+    core_count = 4
+    max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
     save_lipidmaster_table = True  # True --> export LipidMasterTable to output folder, False --> NO export
 
@@ -1168,35 +1277,37 @@ if __name__ == '__main__':
     # ['TG', 'thermo', '[M+NH4]+']]
 
     usr_test_lst = [
-        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
         # ['PE', 'waters', '[M-H]-', 'PE_waters'],
         # ['TG', 'waters', '[M+H]+', 'TG_waters'],
         # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
         # ['TG', 'waters', '[M+Na]+', 'TG_waters_Na'],
-        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
+        #['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
+        ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4']
+        # ['DG', 'agilent', '[M+NH4]+', 'TG_agilent_NH4'],
     ]
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Ni file
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Mile file
-    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Angela file
-    tg_mzml_SCIEXS = r'../Test/mzML/20140613_HSL002_Positive_01.mzML'  # Dataset
-    tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
+    tg_mzml_thermo = r'D:\PhD\2018\parousiasei\7ELM\software\demo\LC-MS.MS-positive.mzML'  # Angela file
+    tg_mzml_SCIEXS = r'../Test/mzML/Test_sciex.mzML'  # Dataset
+    tg_mzml_agilent = r'D:\PhD\2018\Samples\Mike\ox_TAG_270718\DG_geo\20180727_AT_SIR1_rep2.mzML'  # position holder
 
-    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_PL.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_PL.xlsx'}
+    pl_base_dct = {'fawhitelist_path_str': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\1-FA_Whitelist_TG-DG.xlsx',
+                   'lipid_specific_cfg': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\3-Specific_ions.xlsx',
+                   'score_cfg': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\2-Score_weight_TG.xlsx'}
 
-    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
+    tg_base_dct = {'fawhitelist_path_str': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\1-FA_Whitelist_TG-DG.xlsx',
+                   'lipid_specific_cfg': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\3-Specific_ions.xlsx',
+                   'score_cfg': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\2-Score_weight_TG.xlsx'}
 
     usr_test_dct = {}
     usr_test_dct_keys = []
     mz_range = [600, 1000]  # default
     rt_range = [6, 10]  # default
     for usr_test in usr_test_lst:
-        _test_dct = {'rank_score_filter': 27.5, 'score_filter': 27.5, 'isotope_score_filter': 75.0, 'ms_max': 0,
+        _test_dct = {'rank_score_filter': 60.5, 'score_filter': 60.5, 'isotope_score_filter': 75.0, 'ms_max': 0,
                      'pr_window': 0.75, 'ms2_infopeak_threshold': 0.001, 'ms2_hginfopeak_threshold': 0.001}
         if usr_test[0] in ['PC', 'PE', 'PA', 'PG', 'PI', 'PS', 'PIP']:
             lipid_class = usr_test[0]
@@ -1226,7 +1337,7 @@ if __name__ == '__main__':
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
                 mz_range = [600, 1000]  # 600, 1000 short 800 - 840
-                rt_range = [20, 28]  # [20, 28] short [24, 26]
+                rt_range = [17, 19]  # [20, 28] short [24, 26]
             elif vendor == 'sciex':
                 mzml = tg_mzml_SCIEXS
                 mz_range = [900, 1000]  # 600, 1000
@@ -1254,8 +1365,12 @@ if __name__ == '__main__':
                 rt_range = [6, 10]
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
-                mz_range = [400, 800]
-                rt_range = [6, 10]
+                mz_range = [609, 617]
+                rt_range = [8.69, 8.77]
+            elif vendor == 'agilent':
+                mzml = tg_mzml_agilent
+                mz_range = [400, 1000]
+                rt_range = [5, 13]
             else:
                 mzml = False
 
@@ -1286,7 +1401,7 @@ if __name__ == '__main__':
             elif vendor == 'thermo':
                 _cfg_dct['ms_ppm'] = 5
                 _cfg_dct['ms2_ppm'] = 20
-                _cfg_dct['ms_th'] = 10000
+                _cfg_dct['ms_th'] = 100000
                 _cfg_dct['ms2_th'] = 2000
                 _cfg_dct['dda_top'] = 10  # 10
 
@@ -1351,10 +1466,10 @@ if __name__ == '__main__':
 
                 print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
 
-                t, log_lst, export_df = huntlipids(test_dct, log_lst, save_fig=save_images)
+                t, log_lst, output_df2 = huntlipids(test_dct, log_lst, save_fig=save_images)
                 if t is not False:
                     print('>>>>>>>>>>>>>>>> TEST PASSED: %s in %.3f Sec <<<<<<<<<<<<<<<<\n' % (test_key, t))
-                    t_sum_lst.append((test_key, 'PASSED', '%.3f Sec' % t, 'Identified: %i' % export_df.shape[0]))
+                    t_sum_lst.append((test_key, 'PASSED', '%.3f Sec' % t, 'Identified:'))
                 else:
                     print('>>>>>>>>!!!!!!!! TEST FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
                     t_sum_lst.append((test_key, 'FAILED', '', 'Identified: 0'))

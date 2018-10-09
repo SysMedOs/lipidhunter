@@ -410,6 +410,7 @@ def get_xic_from_pl(xic_ms1_lst, ms1_xic_df, xic_ppm, os_type='windows', queue=N
 
 def get_spec_info(lpp_all_group_key_lst, checked_info_groups, scans_info_df, os_type='windows', queue=None):
     lpp_spec_info_dct = {}
+    # TODO (Dasha: georgia.angelidou@uni-leipzig.de): reduce the table size be checking even and odd number spectra
     for group_key in lpp_all_group_key_lst:
         _subgroup_df = checked_info_groups.get_group(group_key)
         _samemz_se = _subgroup_df.iloc[0, :].squeeze()

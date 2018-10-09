@@ -176,17 +176,18 @@ class PrecursorHunter(object):
                 self.lpp_info_df.loc[:, 'Lib_mz'] = self.lpp_info_df.loc[:, '%s_MZ' % usr_charge]
 
             self.lpp_info_df.sort_values(by='PR_MZ_LOW', inplace=True)
-
+            del lpp_mz_lst
         else:
             # no matched info --> exit
             return False, False
 
         # Prepare for multiprocessing
         lpp_info_groups = self.lpp_info_df.groupby(['Lib_mz', 'Formula'])
+        # TODO (georgia.angelidou@uni-leipzig.de): can also be reduced
         all_group_key_lst = list(lpp_info_groups.groups.keys())
         sub_len = int(math.ceil(len(all_group_key_lst) / core_num))
         core_key_list = [all_group_key_lst[k: k + sub_len] for k in range(0, len(all_group_key_lst), sub_len)]
-
+        del all_group_key_lst
         spectra_pl_idx_lst = sorted(spectra_pl.items.values.tolist())
 
         if (max_ram * 64) <= len(spectra_pl_idx_lst) < (max_ram * 128):
@@ -211,13 +212,13 @@ class PrecursorHunter(object):
 
         part_tot = len(sub_pl_group_lst)
         part_counter = 1
-        opt_sub_pl_group_lst = []
+        # opt_sub_pl_group_lst = []
         pr_info_results_lst = []
         for sub_idx_lst in sub_pl_group_lst:
 
             if isinstance(sub_idx_lst, tuple) or isinstance(sub_idx_lst, list):
                 sub_idx_lst = [x for x in sub_idx_lst if x is not None]
-                opt_sub_pl_group_lst.append(sub_idx_lst)
+                # opt_sub_pl_group_lst.append(sub_idx_lst)
                 sub_pl = spectra_pl.loc[sub_idx_lst, :, :]
                 # print(sub_pl.items)
 
@@ -251,7 +252,7 @@ class PrecursorHunter(object):
                                                                                                self.os_typ))
                                 core_worker_count += 1
                                 pr_info_results_lst.append(pr_info_result)
-
+                        del core_list
                         parallel_pool.close()
                         parallel_pool.join()
                     else:
@@ -274,6 +275,7 @@ class PrecursorHunter(object):
                                 jobs.append(job)
                                 job.start()
                                 pr_info_results_lst.append(queue.get())
+                        del core_list
                         for j in jobs:
                             j.join()
 
@@ -292,9 +294,10 @@ class PrecursorHunter(object):
                                                   ms1_ppm, ms1_max, core_worker_count)
                             if not sub_df.empty:
                                 pr_info_results_lst.append(sub_df)
-
+                    del core_list
                 part_counter += 1
-
+        del core_key_list
+        del lpp_info_groups
         #  Merge multiprocessing results
         result_counter = 0
         result_part_counter = 1
@@ -333,7 +336,9 @@ class PrecursorHunter(object):
         if not ms1_obs_pr_df.empty:
             ms1_obs_pr_df = ms1_obs_pr_df.sort_values(by=['Lib_mz', 'abs_ppm'], ascending=[True, True])
             ms1_obs_pr_df = ms1_obs_pr_df.reset_index(drop=True)
-            return ms1_obs_pr_df, opt_sub_pl_group_lst
+            # TODO (georgia.angelidou@uni-leipzig.de): Remove the second parameter that the program returns
+            # return ms1_obs_pr_df, opt_sub_pl_group_lst
+            return ms1_obs_pr_df
 
         else:
-            return False, False
+            return False
