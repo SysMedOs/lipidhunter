@@ -608,19 +608,22 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
                                                   'FA3': '[M-(FA3)+H]+'}]}
     elif lipid_class in ['DG'] and charge in ['[M+H]+', '[M+NH4]+']:
 
-        if not obs_fa_frag_df.empty:
-            # TEMPORARY
-            _tmp_obs = obs_fa_nl_df
-            _tmp_obs['TYPE'] = 'NL'
-            obs_fa_frag_df['TYPE'] = 'FA'
-            _tmp_obs = _tmp_obs.append(obs_fa_frag_df)
-            _tmp_obs['mz_int'] = _tmp_obs['mz']
-            _tmp_obs.mz_int = _tmp_obs.mz_int.astype(int)
-            _tmp_obs.sort_values(by=['mz_int', 'TYPE'], ascending=[True, False], inplace=True)
-            _tmp_obs.drop_duplicates(subset=['mz_int'], keep='first', inplace=True)
-            obs_fa_frag_df = _tmp_obs[_tmp_obs['TYPE'] == 'FA'].drop(['mz_int', 'TYPE'], axis=1)
-            obs_fa_nl_df = _tmp_obs[_tmp_obs['TYPE'] == 'NL'].drop(['mz_int', 'TYPE'], axis=1)
-            del _tmp_obs
+        # if not obs_fa_frag_df.empty:
+        #     # # TEMPORARY
+        #     # _tmp_obs = obs_fa_nl_df
+        #     # _tmp_obs['TYPE'] = 'NL'
+        #     obs_fa_frag_df['TYPE'] = 'FA'
+        #     obs_fa_nl_df['TYPE'] = 'NL'
+        #     # _tmp_obs = _tmp_obs.append(obs_fa_frag_df)
+        #     # _tmp_obs['mz_int'] = _tmp_obs['mz']
+        #     # _tmp_obs.mz_int = _tmp_obs.mz_int.astype(int)
+        #     # _tmp_obs.sort_values(by=['mz_int', 'TYPE'], ascending=[True, False], inplace=True)
+        #     # _tmp_obs.drop_duplicates(subset=['mz_int'], keep='first', inplace=True)
+        #     # obs_fa_frag_df = _tmp_obs[_tmp_obs['TYPE'] == 'FA'].drop(['mz_int', 'TYPE'], axis=1)
+        #     # obs_fa_frag_df.sort_values(by=['i'], ascending=[False], inplace=True)
+        #     # obs_fa_nl_df = _tmp_obs[_tmp_obs['TYPE'] == 'NL'].drop(['mz_int', 'TYPE'], axis=1)
+        #     # obs_fa_nl_df.sort_values(by=['i'], ascending=[False], inplace=True)
+        #     # del _tmp_obs
 
         obs_dct = {'[FA-H2O+H]+': [obs_fa_frag_df, {'FA1': 'FA1_[FA-H2O+H]+',
                                                     'FA2': 'FA2_[FA-H2O+H]+'}],
@@ -681,7 +684,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         obs_fa_nl_df['TYPE'] = 'MG'
         obs_fa_frag_df = obs_fa_frag_df.append(obs_fa_nl_df)
         if not obs_fa_frag_df.empty:
-            # obs_fa_frag_df.sort_values(by='i', ascending=False, inplace=True)
+            #obs_fa_frag_df.sort_values(by='i', ascending=False, inplace=True)
             obs_fa_frag_df.reset_index(drop=True, inplace=True)
         if charge in ['[M+Na]+']:
             obs_dg_frag_df['TYPE'] = 'NL_Na'  # [M-(FA-H+Na)+H]+ fragments

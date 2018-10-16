@@ -446,21 +446,21 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         usr_score_cfg = self.ui.tab_a_loadscorecfg_le.text()
 
         if _lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
-            if usr_fa_cfg in ['', tg_fa_cfg]:
-                self.ui.tab_a_loadfalist_le.setText(pl_fa_cfg)
-            if usr_score_cfg in ['', dg_score_cfg, tg_score_cfg]:
-                self.ui.tab_a_loadscorecfg_le.setText(pl_score_cfg)
+            # if usr_fa_cfg in ['', tg_fa_cfg]:
+            self.ui.tab_a_loadfalist_le.setText(pl_fa_cfg)
+            # if usr_score_cfg in ['', dg_score_cfg, tg_score_cfg]:
+            self.ui.tab_a_loadscorecfg_le.setText(pl_score_cfg)
         elif _lipid_class in ['TG', 'DG', 'MG']:
-            if usr_fa_cfg in ['', pl_fa_cfg]:
-                self.ui.tab_a_loadfalist_le.setText(tg_fa_cfg)
+            # if usr_fa_cfg in ['', pl_fa_cfg]:
+            self.ui.tab_a_loadfalist_le.setText(tg_fa_cfg)
             if _lipid_class in ['TG'] and _lipid_charge not in ['[M+Na]+']:
-                if usr_score_cfg in ['', pl_score_cfg, dg_score_cfg]:
-                    self.ui.tab_a_loadscorecfg_le.setText(tg_score_cfg)
+                # if usr_score_cfg in ['', pl_score_cfg, dg_score_cfg]:
+                self.ui.tab_a_loadscorecfg_le.setText(tg_score_cfg)
             elif _lipid_class in ['TG'] and _lipid_charge in ['[M+Na]+']:
-                self.ui.tab_a_loadscorecfg_le.setText('')
+                self.ui.tab_a_loadscorecfg_le.setText('.\ConfigurationFiles\\2-Score_weight_TG_Na.xlsx')
             elif _lipid_class in ['DG']:
-                if usr_score_cfg in ['', pl_score_cfg, tg_score_cfg]:
-                    self.ui.tab_a_loadscorecfg_le.setText(dg_score_cfg)
+                # if usr_score_cfg in ['', pl_score_cfg, tg_score_cfg]:
+                self.ui.tab_a_loadscorecfg_le.setText(dg_score_cfg)
             else:
                 self.ui.tab_a_loadscorecfg_le.setText('')
         else:
@@ -1217,7 +1217,7 @@ class SingleWorker(QtCore.QObject):
         self.info_update.emit(self.info_str)
 
         try:
-            hunter_time, log_lst, export_df = huntlipids(self.params_dct, error_lst=log_lst)
+            hunter_time, log_lst, output_df2 = huntlipids(self.params_dct, error_lst=log_lst)
         except Exception as _e:
             print(_e)
             hunter_time = False
@@ -1363,7 +1363,7 @@ class BatchWorker(QtCore.QObject):
 
             if ready_to_run is True:
                 try:
-                    hunter_time, log_lst, export_df = huntlipids(_param_dct, error_lst=log_lst)
+                    hunter_time, log_lst, output_df2 = huntlipids(_param_dct, error_lst=log_lst)
                 except Exception as _e:
                     print(_e)
                     hunter_time = False
