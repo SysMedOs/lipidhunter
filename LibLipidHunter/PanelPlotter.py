@@ -317,8 +317,8 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         ms_zoom_pic.set_xlim([ms1_pr_mz - 1.5, ms1_pr_mz + 3.55])
         ms_zoom_pic.set_ylim([0, ms_zoom_bp_i * 1.45])
-        ms_zoom_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0), fontsize=10)
-        ms_zoom_pic.ticklabel_format(axis='x', useOffset=False, fontsize=10)
+        ms_zoom_pic.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+        ms_zoom_pic.ticklabel_format(axis='x', useOffset=False)
         ms_zoom_pic.set_xlabel('m/z', fontsize=7, labelpad=-1)
         ms_zoom_pic.set_ylabel('Intensity', fontsize=7)
 

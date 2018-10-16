@@ -1288,19 +1288,19 @@ if __name__ == '__main__':
     ]
 
     # set the default files
-    pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Ni file
-    tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Mile file
-    tg_mzml_thermo = r'D:\PhD\2018\parousiasei\7ELM\software\demo\LC-MS.MS-positive.mzML'  # Angela file
-    tg_mzml_SCIEXS = r'../Test/mzML/Test_sciex.mzML'  # Dataset
-    tg_mzml_agilent = r'D:\PhD\2018\Samples\Mike\ox_TAG_270718\DG_geo\20180727_AT_SIR1_rep2.mzML'  # position holder
+    pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Synapt-g2si file
+    tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Synapt-g2si file
+    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Qexactive file
+    tg_mzml_SCIEXS = r'../Test/mzML/Test_sciex.mzML'  # position holder
+    tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
-    pl_base_dct = {'fawhitelist_path_str': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\1-FA_Whitelist_TG-DG.xlsx',
-                   'lipid_specific_cfg': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\3-Specific_ions.xlsx',
-                   'score_cfg': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\2-Score_weight_TG.xlsx'}
+    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
 
-    tg_base_dct = {'fawhitelist_path_str': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\1-FA_Whitelist_TG-DG.xlsx',
-                   'lipid_specific_cfg': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\3-Specific_ions.xlsx',
-                   'score_cfg': r'D:\Programs_PhD\lipidhunterdev\ConfigurationFiles\2-Score_weight_TG.xlsx'}
+    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
 
     usr_test_dct = {}
     usr_test_dct_keys = []
@@ -1337,7 +1337,7 @@ if __name__ == '__main__':
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
                 mz_range = [600, 1000]  # 600, 1000 short 800 - 840
-                rt_range = [17, 19]  # [20, 28] short [24, 26]
+                rt_range = [24, 26]  # [20, 28] short [24, 26]
             elif vendor == 'sciex':
                 mzml = tg_mzml_SCIEXS
                 mz_range = [900, 1000]  # 600, 1000
@@ -1476,6 +1476,7 @@ if __name__ == '__main__':
 
     else:
         print('!!! Invalid LipidHunter folder', hunter_folder)
+        print('Please run HunterCore from LibLipidHunter folder')
         for test_key in usr_test_dct_keys:
             print('>>>>>>>>!!!!!!!! TEST FAILED: %s !!!!!!!<<<<<<<<\n' % test_key)
             t_sum_lst.append((test_key, 'FAILED', '', 'Identified: 0'))
