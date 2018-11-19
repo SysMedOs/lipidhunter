@@ -1283,18 +1283,24 @@ if __name__ == '__main__':
         # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
         # ['TG', 'waters', '[M+Na]+', 'TG_waters_Na'],
         #['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
-        ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4']
+        ['LPC', 'thermo', '[M+HCOO]-', 'LPC_thermo']
+        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4']
         # ['DG', 'agilent', '[M+NH4]+', 'TG_agilent_NH4'],
     ]
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Synapt-g2si file
+    lpl_mzml_thermo = r'../Test/mzML/Qexactive_Neg.mzML'  # Synapt-g2si file
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Synapt-g2si file
     tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Qexactive file
     tg_mzml_SCIEXS = r'../Test/mzML/Test_sciex.mzML'  # position holder
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
     pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx',
+                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
+                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
+
+    lpl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_LPL.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
                    'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
 
@@ -1320,6 +1326,27 @@ if __name__ == '__main__':
                 mzml = pl_mzml_waters
                 mz_range = [600, 1000]  # 600, 1000
                 rt_range = [24, 27]  # max [24, 27]
+            else:
+                mzml = False
+                pass
+
+            _test_dct.update(pl_base_dct)
+
+        if usr_test[0] in ['LPC', 'LPE', 'LPA', 'LPG', 'LPI', 'LPS', 'LPIP']:
+            lipid_class = usr_test[0]
+            if lipid_class == 'LPC':
+                charge = '[M+HCOO]-'
+            else:
+                charge = '[M-H]-'
+            vendor = usr_test[1]
+            if vendor == 'waters':
+                mzml = pl_mzml_waters
+                mz_range = [600, 1000]  # 600, 1000
+                rt_range = [24, 27]  # max [24, 27]
+            elif vendor == 'thermo':
+                mzml = lpl_mzml_thermo
+                mz_range = [300, 700]  # 600, 1000 short 800 - 840
+                rt_range = [2, 20]  # [20, 28] short [24, 26]
             else:
                 mzml = False
                 pass

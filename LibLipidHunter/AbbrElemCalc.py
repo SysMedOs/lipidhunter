@@ -38,8 +38,10 @@ class ElemCalc:
         fa_hg_elem = {'C': 0, 'H': 0, 'O': 0, 'P': 0, 'N': 0}
 
         self.lipid_hg_elem_dct = {'PA': pa_hg_elem, 'PC': pc_hg_elem, 'PE': pe_hg_elem, 'PG': pg_hg_elem,
-                                  'PI': pi_hg_elem, 'PS': ps_hg_elem, 'PIP': pip_hg_elem, 'TG': tg_hg_elem,
-                                  'FA': fa_hg_elem, 'DG': tg_hg_elem}
+                                  'PI': pi_hg_elem, 'PS': ps_hg_elem, 'PIP': pip_hg_elem,
+                                  'LPA': pa_hg_elem, 'LPC': pc_hg_elem, 'LPE': pe_hg_elem, 'LPG': pg_hg_elem,
+                                  'LPI': pi_hg_elem, 'LPS': ps_hg_elem, 'LPIP': pip_hg_elem,
+                                  'TG': tg_hg_elem,'FA': fa_hg_elem, 'DG': tg_hg_elem}
 
         self.glycerol_bone_elem_dct = {'C': 3, 'H': 2}
         self.link_o_elem_dct = {'O': -1, 'H': 2}
@@ -61,6 +63,7 @@ class ElemCalc:
     def decode_abbr(abbr):
 
         pl_checker = re.compile(r'(P[ACEGSI])([(])(.*)([)])')
+        lpl_checker = re.compile(r'(LP[ACEGSI])([(])(.*)([)])')
         pip_checker = re.compile(r'(PIP)([(])(.*)([)])')
         tg_checker = re.compile(r'(TG)([(])(.*)([)])')
         dg_checker = re.compile(r'(DG)([(])(.*)([)])')
@@ -84,6 +87,12 @@ class ElemCalc:
             pl_typ_lst = pl_re_chk.groups()
             _pl_typ = pl_typ_lst[0]
             bulk_fa_typ = pl_typ_lst[2]
+        if lpl_checker.match(abbr):
+            # print('PL')
+            lpl_re_chk = lpl_checker.match(abbr)
+            lpl_typ_lst = lpl_re_chk.groups()
+            _pl_typ = lpl_typ_lst[0]
+            bulk_fa_typ = lpl_typ_lst[2]
         if pip_checker.match(abbr):
             # print('PIP')
             pip_re_chk = pip_checker.match(abbr)
@@ -142,8 +151,7 @@ class ElemCalc:
             bulk_fa_linker = 'P-'
             lyso_fa_linker_dct = {'P': ''}
 
-        if _pl_typ in ['PL', 'PA', 'PC', 'PE', 'PG', 'PI', 'PS']:
-            # TODO(georgia.angelidou@uni-leipzig.de): the first 2 statements are the same. What is the difference?
+        if _pl_typ in ['PL', 'PA', 'PC', 'PE', 'PG', 'PI', 'PIP', 'PS']:
             if fa_short_checker.match(bulk_fa_typ):
                 bulk_fa_linker = 'A-A-'
                 lyso_fa_linker_dct = {'A': ''}
@@ -172,6 +180,30 @@ class ElemCalc:
                 bulk_fa_lst = fa_chk.groups()
                 bulk_fa_c = bulk_fa_lst[1]
                 bulk_fa_db = bulk_fa_lst[3]
+
+        elif _pl_typ in ['LPL', 'LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPIP', 'LPS']:
+            if fa_short_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'A-'
+                lyso_fa_linker_dct = {'A': ''}
+                fa_chk = fa_short_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[0]
+                bulk_fa_db = bulk_fa_lst[2]
+            elif fa_o_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'O-'
+                lyso_fa_linker_dct = {'O': ''}  # link of the other sn after NL of this sn
+                fa_chk = fa_o_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[1]
+                bulk_fa_db = bulk_fa_lst[3]
+            elif fa_p_checker.match(bulk_fa_typ):
+                bulk_fa_linker = 'P-'
+                lyso_fa_linker_dct = {'P': ''}  # link of the other sn after NL of this sn
+                fa_chk = fa_p_checker.match(bulk_fa_typ)
+                bulk_fa_lst = fa_chk.groups()
+                bulk_fa_c = bulk_fa_lst[1]
+                bulk_fa_db = bulk_fa_lst[3]
+
         elif _pl_typ in ['TG']:
             if fa_short_checker.match(bulk_fa_typ):
                 bulk_fa_linker = 'A-A-A-'
@@ -264,6 +296,23 @@ class ElemCalc:
 
                 return tmp_lipid_elem_dct
 
+            elif lipid_type in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPIP', 'LPS']:
+                tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
+                tmp_lipid_elem_dct['O'] += 4
+                tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']
+                tmp_lipid_elem_dct['H'] += (self.glycerol_bone_elem_dct['H'] + usr_lipid_info_dct['C'] * 2
+                                            - usr_lipid_info_dct['DB'] * 2)  # DBE = DB + 2xC=O from FA
+
+                if usr_lipid_info_dct['LINK'] == 'O-':
+                    tmp_lipid_elem_dct['O'] += -1
+                    tmp_lipid_elem_dct['H'] += 2
+                elif usr_lipid_info_dct['LINK'] == 'P-':
+                    tmp_lipid_elem_dct['O'] += -1
+                else:
+                    pass
+
+                return tmp_lipid_elem_dct
+
             elif lipid_type in ['TG']:
                 tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
                 tmp_lipid_elem_dct['O'] += 6
@@ -275,8 +324,11 @@ class ElemCalc:
                     tmp_lipid_elem_dct['H'] += 2
                 elif usr_lipid_info_dct['LINK'] == 'P-A-A-':
                     tmp_lipid_elem_dct['O'] += -1
+                else:
+                    pass
 
                 return tmp_lipid_elem_dct
+
             elif lipid_type in ['DG']:
                 tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
                 tmp_lipid_elem_dct['O'] += 5
@@ -311,7 +363,10 @@ class ElemCalc:
         elif charge == '[M+H]+':
             lipid_elem_dct['H'] += 1
         elif charge == '[M+NH4]+':
-            lipid_elem_dct['N'] += 1
+            if 'N' in list(lipid_elem_dct.keys()):
+                lipid_elem_dct['N'] += 1
+            else:
+                lipid_elem_dct['N'] = 1
             lipid_elem_dct['H'] += 4
         elif charge == '[M+Na]+':
             lipid_elem_dct['Na'] = 1
@@ -453,7 +508,13 @@ class ElemCalc:
 
 if __name__ == '__main__':
 
-    usr_bulk_abbr_lst = ['TG(P-48:2)', 'PC(O-36:3)', 'PC(P-36:3)', 'PC(36:3)']
+    usr_bulk_abbr_lst = [
+        # 'TG(P-48:2)',
+        # 'PC(O-36:3)',
+        # 'PC(P-36:3)',
+        # 'PC(36:3)',
+        'LPC(20:3)'
+    ]
     charge_lst = ['[M+NH4]+', '[M-H]-', '[M+HCOO]-', '[M+OAc]-']
     # usr_bulk_abbr_lst = ['PC(36:3)', 'PC(O-36:3)', 'PC(P-36:3)']
     # charge_lst = ['', '[M-H]-', '[M+HCOO]-', '[M+OAc]-']
