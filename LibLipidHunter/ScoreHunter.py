@@ -722,6 +722,9 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         obs_fa_nl_df['TYPE'] = 'NL'
         obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_fa_nl_df,
                         'IDENT': post_ident_peak_df}
+    elif lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS']:
+        obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df,
+                        'IDENT': post_ident_peak_df}
     else:
         # TODO(georgia.angelidou@uni-leipzig.de): Reason why in the current output doesnt give DG
         # probably put in the OBS_FA the MG an free FA and OBS_LYSO put the FA loss
@@ -743,6 +746,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
         obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_dg_frag_df,
                         'IDENT': post_ident_peak_df}
+
     return matched_checker, obs_info_dct
 
 

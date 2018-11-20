@@ -238,7 +238,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     pos_charge_lst = ['[M+H]+', '[M+Na]+', '[M+NH4]+']
     neg_charge_lst = ['[M-H]-', '[M+HCOO]-', '[M+CH3COO]-']
     if usr_charge in neg_charge_lst:
-        if usr_lipid_class == 'PC':
+        if usr_lipid_class in ['PC', 'LPC']:
             if usr_charge == '[M+HCOO]-':
                 lipid_info_df = lipid_info_df[(mz_start <= lipid_info_df['[M+HCOO]-_MZ'])
                                               & (lipid_info_df['[M+HCOO]-_MZ'] <= mz_end)]
@@ -684,6 +684,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     # parse specific peak info
     pl_class_lst = ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'PIP']
+    lpl_class_lst = ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS', 'LPIP']
     pl_neg_chg_lst = ['[M-H]-', '[M+HCOO]-', '[M+CH3COO]-']
     tg_class_lst = ['TG', 'DG']
     tg_pos_chg_lst = ['[M+NH4]+', '[M+H]+', '[M+Na]+']
@@ -709,6 +710,30 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                               % (usr_lipid_class, charge_mode))
         other_nl_df = usr_key_frag_df.query('CLASS != "%s" and TYPE == "NL" and CHARGE_MODE == "%s"'
                                             % (usr_lipid_class, charge_mode))
+        key_frag_dct = {'target_frag_df': target_frag_df, 'target_nl_df': target_nl_df,
+                        'other_frag_df': other_frag_df, 'other_nl_df': other_nl_df}
+    elif usr_lipid_class in lpl_class_lst and usr_charge in pl_neg_chg_lst:
+        charge_mode = 'NEG'
+        usr_key_frag_df = pd.read_excel(key_frag_cfg)
+        usr_key_frag_df = usr_key_frag_df.query('EXACTMASS > 0')
+        # get the information from the following columns
+        usr_key_frag_df = usr_key_frag_df[['CLASS', 'TYPE', 'EXACTMASS', 'PR_CHARGE', 'LABEL', 'CHARGE_MODE']]
+        # find key peaks for the target PL class
+        target_frag_df = usr_key_frag_df.query(r'CLASS == "%s" and TYPE == "FRAG" and PR_CHARGE == "%s"'
+                                               % (usr_lipid_class[1:], usr_charge))
+        target_nl_df = usr_key_frag_df.query(r'CLASS == "%s" and TYPE == "NL" and PR_CHARGE == "%s"'
+                                             % (usr_lipid_class[1:], usr_charge))
+        # add precursor to the list
+        target_pr_df = pd.DataFrame(data={'CLASS': usr_lipid_class, 'TYPE': 'NL', 'EXACTMASS': 0.0,
+                                          'PR_CHARGE': usr_charge, 'LABEL': 'PR', 'CHARGE_MODE': 'NEG'}, index=['PR'])
+        target_nl_df = target_nl_df.append(target_pr_df)
+        target_nl_df.reset_index(drop=True, inplace=True)
+
+        # extract info for other classes
+        other_frag_df = usr_key_frag_df.query('CLASS != "%s" and TYPE == "FRAG" and CHARGE_MODE == "%s"'
+                                              % (usr_lipid_class[1:], charge_mode))
+        other_nl_df = usr_key_frag_df.query('CLASS != "%s" and TYPE == "NL" and CHARGE_MODE == "%s"'
+                                            % (usr_lipid_class[1:], charge_mode))
         key_frag_dct = {'target_frag_df': target_frag_df, 'target_nl_df': target_nl_df,
                         'other_frag_df': other_frag_df, 'other_nl_df': other_nl_df}
     elif usr_lipid_class in tg_class_lst and usr_charge in tg_pos_chg_lst:
@@ -1283,9 +1308,14 @@ if __name__ == '__main__':
         # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
         # ['TG', 'waters', '[M+Na]+', 'TG_waters_Na'],
         #['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
-        ['LPC', 'thermo', '[M+HCOO]-', 'LPC_thermo']
         # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4']
         # ['DG', 'agilent', '[M+NH4]+', 'TG_agilent_NH4'],
+        # ['LPC', 'thermo', '[M+HCOO]-', 'LPC_thermo'],
+        # ['LPE', 'thermo', '[M-H]-', 'LPE_thermo'],
+        # ['LPA', 'thermo', '[M-H]-', 'LPA_thermo'],
+        # ['LPG', 'thermo', '[M-H]-', 'LPG_thermo'],
+        # ['LPS', 'thermo', '[M-H]-', 'LPS_thermo'],
+        ['LPI', 'thermo', '[M-H]-', 'LPI_thermo'],
     ]
 
     # set the default files
@@ -1298,11 +1328,11 @@ if __name__ == '__main__':
 
     pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
+                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_PL.xlsx'}
 
     lpl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_LPL.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
+                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_LPL.xlsx'}
 
     tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
@@ -1345,13 +1375,13 @@ if __name__ == '__main__':
                 rt_range = [24, 27]  # max [24, 27]
             elif vendor == 'thermo':
                 mzml = lpl_mzml_thermo
-                mz_range = [300, 700]  # 600, 1000 short 800 - 840
+                mz_range = [300, 800]  # 600, 1000 short 800 - 840
                 rt_range = [2, 20]  # [20, 28] short [24, 26]
             else:
                 mzml = False
                 pass
 
-            _test_dct.update(pl_base_dct)
+            _test_dct.update(lpl_base_dct)
 
         elif usr_test[0] in ['TG']:
             lipid_class = usr_test[0]
@@ -1426,11 +1456,11 @@ if __name__ == '__main__':
                 usr_test_dct_keys.append(usr_test[3])
 
             elif vendor == 'thermo':
-                _cfg_dct['ms_ppm'] = 5
-                _cfg_dct['ms2_ppm'] = 20
-                _cfg_dct['ms_th'] = 100000
-                _cfg_dct['ms2_th'] = 2000
-                _cfg_dct['dda_top'] = 10  # 10
+                _cfg_dct['ms_ppm'] = 10
+                _cfg_dct['ms2_ppm'] = 100
+                _cfg_dct['ms_th'] = 5000
+                _cfg_dct['ms2_th'] = 50
+                _cfg_dct['dda_top'] = 20  # 10
 
                 _test_dct.update(_cfg_dct)
                 usr_test_dct[usr_test[3]] = _test_dct

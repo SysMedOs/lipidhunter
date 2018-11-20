@@ -404,9 +404,6 @@ class LipidComposer:
                                            fa_link_df['FA1'].str.strip('FA') + ')')
             fa_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
 
-            print('fa_link_df')
-            print(fa_link_df)
-
             if lipid_class in ['LPC', 'LPE']:
                 op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-') | (fa_combo_link_df['LINK'] == 'P-')]
                 if not op_link_df.empty:
@@ -919,7 +916,9 @@ if __name__ == '__main__':
     # usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'TG', 'charge_mode': '[M+NH4]+',
     #                  'exact_position': 'FALSE'}
 
-    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'LPC', 'charge_mode': '[M+HCOO]-',
+    # usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'LPC', 'charge_mode': '[M+HCOO]-',
+    #                  'exact_position': 'FALSE'}
+    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'LPE', 'charge_mode': '[M-H]-',
                      'exact_position': 'FALSE'}
 
     composer = LipidComposer()
@@ -927,8 +926,8 @@ if __name__ == '__main__':
     print('[INFO] --> Lipid Master Table generated...')
 
     # master_csv = r'../Temp/LipidMaster_Whitelist_TG_ML.csv'
-    master_csv = r'../Temp/LipidMaster_Whitelist_LPL.csv'
-    fa_csv = r'../Temp/LipidMaster_FAlist_LPL.csv'
+    master_csv = r'../Temp/LipidMaster_Whitelist_%s.csv' % usr_param_dct['lipid_class']
+    fa_csv = r'../Temp/LipidMaster_FAlist_%s.csv' % usr_param_dct['lipid_class']
 
     calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_class'], fa_lst_file, ms2_ppm=50)
 

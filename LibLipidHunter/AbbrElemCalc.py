@@ -298,9 +298,9 @@ class ElemCalc:
 
             elif lipid_type in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPIP', 'LPS']:
                 tmp_lipid_elem_dct = self.lipid_hg_elem_dct[usr_lipid_info_dct['TYPE']].copy()
-                tmp_lipid_elem_dct['O'] += 4
+                tmp_lipid_elem_dct['O'] += 3
                 tmp_lipid_elem_dct['C'] += self.glycerol_bone_elem_dct['C'] + usr_lipid_info_dct['C']
-                tmp_lipid_elem_dct['H'] += (self.glycerol_bone_elem_dct['H'] + usr_lipid_info_dct['C'] * 2
+                tmp_lipid_elem_dct['H'] += (self.glycerol_bone_elem_dct['H'] + 2 + usr_lipid_info_dct['C'] * 2
                                             - usr_lipid_info_dct['DB'] * 2)  # DBE = DB + 2xC=O from FA
 
                 if usr_lipid_info_dct['LINK'] == 'O-':
