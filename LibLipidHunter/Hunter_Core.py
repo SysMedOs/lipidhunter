@@ -1092,6 +1092,17 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             #                  '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']:
             #     if _i_check not in output_header_lst:
             #         output_df[_i_check] = 0.0
+        elif usr_lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPIP', 'LPS']:
+            output_list = ['FA1_[FA-H]-_i']
+            output_round_dct = {r'MS1_obs_mz': 4, r'Lib_mz': 4, 'ppm': 2, 'MS2_scan_time': 3,
+                                'i_fa1': 2, 'i_fa2': 2, 'i_[M-H]-fa1': 2, 'i_[M-H]-fa2': 2,
+                                'i_[M-H]-fa1-H2O': 2, 'i_[M-H]-fa2-H2O': 2
+                                }
+            # TODO (georgia.angelidou@uni-leipzig.de): If not important remove
+            # for _i_check in ['SN1_[FA-H]-_i', 'SN2_[FA-H]-_i', '[LPL(SN1)-H]-_i', '[LPL(SN2)-H]-_i',
+            #                  '[LPL(SN1)-H2O-H]-_i', '[LPL(SN2)-H2O-H]-_i']:
+            #     if _i_check not in output_header_lst:
+            #         output_df[_i_check] = 0.0
 
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+NH4]+', '[M+H]+']:
             output_list = ['FA1_[FA-H2O+H]+_i', 'FA2_[FA-H2O+H]+_i', 'FA3_[FA-H2O+H]+_i', '[MG(FA1)-H2O+H]+_i',
@@ -1144,6 +1155,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                                 'FA1_[FA-H]-_i', 'FA2_[FA-H]-_i',
                                 '[LPL(FA1)-H]-_i', '[LPL(FA2)-H]-_i',
                                 '[LPL(FA1)-H2O-H]-_i', '[LPL(FA2)-H2O-H]-_i'
+                                ]
+        elif usr_lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPIP', 'LPS']:
+            output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
+                                'Lib_mz', 'ppm', 'ISOTOPE_SCORE', 'RANK_SCORE',
+                                'MS1_obs_mz', 'MS1_obs_i', r'MS2_PR_mz', 'MS2_scan_time',
+                                'DDA#', 'Scan#', '#Observed_FA', '#Specific_peaks', '#Unspecific_peaks',
+                                'FA1_[FA-H]-_i',
                                 ]
         elif usr_lipid_class in ['TG'] and usr_charge in ['[M+H]+', '[M+NH4]+']:
             output_short_lst = ['Proposed_structures', 'DISCRETE_ABBR', 'Formula_neutral', 'Formula_ion', 'Charge',
@@ -1311,16 +1329,18 @@ if __name__ == '__main__':
         # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4']
         # ['DG', 'agilent', '[M+NH4]+', 'TG_agilent_NH4'],
         # ['LPC', 'thermo', '[M+HCOO]-', 'LPC_thermo'],
-        # ['LPE', 'thermo', '[M-H]-', 'LPE_thermo'],
+        ['LPE', 'thermo', '[M-H]-', 'LPE_thermo'],
         # ['LPA', 'thermo', '[M-H]-', 'LPA_thermo'],
         # ['LPG', 'thermo', '[M-H]-', 'LPG_thermo'],
         # ['LPS', 'thermo', '[M-H]-', 'LPS_thermo'],
-        ['LPI', 'thermo', '[M-H]-', 'LPI_thermo'],
+        # ['LPI', 'thermo', '[M-H]-', 'LPI_thermo'],
     ]
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Synapt-g2si file
-    lpl_mzml_thermo = r'../Test/mzML/Qexactive_Neg.mzML'  # Synapt-g2si file
+    # lpl_mzml_thermo = r'../Test/mzML/Qexactive_Neg.mzML'  # Qexactive file
+    # lpl_mzml_thermo = r'D:\CoopFiles\W.Zhang\mzML\20181022_BAT_test07.mzML'  # Qexactive file
+    lpl_mzml_thermo = r'D:\CoopFiles\W.Zhang\mzML\210180531_M23.mzML'  # Qexactive file
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Synapt-g2si file
     tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Qexactive file
     tg_mzml_SCIEXS = r'../Test/mzML/Test_sciex.mzML'  # position holder
@@ -1375,8 +1395,8 @@ if __name__ == '__main__':
                 rt_range = [24, 27]  # max [24, 27]
             elif vendor == 'thermo':
                 mzml = lpl_mzml_thermo
-                mz_range = [300, 800]  # 600, 1000 short 800 - 840
-                rt_range = [2, 20]  # [20, 28] short [24, 26]
+                mz_range = [300, 900]  # 600, 1000 short 800 - 840
+                rt_range = [3, 10]  # [20, 28] short [24, 26]
             else:
                 mzml = False
                 pass
@@ -1457,10 +1477,10 @@ if __name__ == '__main__':
 
             elif vendor == 'thermo':
                 _cfg_dct['ms_ppm'] = 10
-                _cfg_dct['ms2_ppm'] = 100
-                _cfg_dct['ms_th'] = 5000
+                _cfg_dct['ms2_ppm'] = 50
+                _cfg_dct['ms_th'] = 500
                 _cfg_dct['ms2_th'] = 50
-                _cfg_dct['dda_top'] = 20  # 10
+                _cfg_dct['dda_top'] = 30  # 10
 
                 _test_dct.update(_cfg_dct)
                 usr_test_dct[usr_test[3]] = _test_dct
