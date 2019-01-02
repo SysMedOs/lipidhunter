@@ -120,9 +120,6 @@ class NameParserFA:
 
 if __name__ == '__main__':
 
-    abbr_decoder = NameParserFA()
+    from test.test_LipidNomenclature import test_get_fa_info
 
-    abbr_lst = ['FA16:0', 'FA18:0',  'FA18:1', 'O-16:0', 'P-18:0']
-    for abbr in abbr_lst:
-        x = abbr_decoder.get_fa_info(abbr)
-        print(x)
+    test_get_fa_info()
