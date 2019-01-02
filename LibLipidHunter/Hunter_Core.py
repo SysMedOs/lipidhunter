@@ -26,6 +26,7 @@ import math
 import multiprocessing
 from multiprocessing import Pool
 import os
+import pickle
 import sys
 from sys import platform
 import time
@@ -43,6 +44,8 @@ try:
     from LibLipidHunter.PrecursorHunter import PrecursorHunter
     from LibLipidHunter.ScoreHunter import get_lipid_info
     from LibLipidHunter.PanelPlotter import gen_plot
+    from LibLipidHunter.HuntManager import save_hunt
+    from LibLipidHunter.HuntManager import recover_hunt
 except ImportError:  # for python 2.7.14
     from LipidComposer import LipidComposer
     from SpectraReader import extract_mzml
@@ -53,6 +56,8 @@ except ImportError:  # for python 2.7.14
     from PrecursorHunter import PrecursorHunter
     from ScoreHunter import get_lipid_info
     from PanelPlotter import gen_plot
+    from HuntManager import save_hunt
+    from HuntManager import recover_hunt
 
 
 def huntlipids(param_dct, error_lst, save_fig=True):
@@ -1224,6 +1229,13 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         print('[STATUS] >>> Identification finished in %s sec <<<' % tot_run_time)
         return tot_run_time, error_lst, output_df
 
+    results_pickle_dct = {'lipid_info_img_lst': lipid_info_img_lst,
+                          'param_dct': param_dct, 'output_df': output_df,
+                          'final_output_df': final_output_df}
+    hunt_save_path = os.path.join(output_folder, 'HunterData_%s.hunt' % hunter_start_time_str)
+    save_hunt(results_pickle_dct, hunt_save_path)
+    print('Hunter session saved as:', hunt_save_path)
+
     # Start multiprocessing to save img
     if save_fig is True:
 
@@ -1285,6 +1297,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             parallel_pool.join()
 
         else:
+            worker_count = 1
             print('[INFO] --> Using single core mode...')
             if isinstance(lipid_info_img_lst, tuple) or isinstance(lipid_info_img_lst, list):
                 if None in lipid_info_img_lst:
