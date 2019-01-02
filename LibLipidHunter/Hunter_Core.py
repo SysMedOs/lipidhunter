@@ -197,6 +197,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
             return False, error_lst, False
 
     if isinstance(usr_lipid_master_df, pd.DataFrame):
+
         if not usr_lipid_master_df.empty:
             pass
         else:
@@ -1325,8 +1326,8 @@ if __name__ == '__main__':
         # ['TG', 'waters', '[M+H]+', 'TG_waters'],
         # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
         # ['TG', 'waters', '[M+Na]+', 'TG_waters_Na'],
-        #['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
-        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4']
+        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
+        # ['DG', 'thermo', '[M+NH4]+', 'DG_thermo_NH4'],
         # ['DG', 'agilent', '[M+NH4]+', 'TG_agilent_NH4'],
         # ['LPC', 'thermo', '[M+HCOO]-', 'LPC_thermo'],
         ['LPE', 'thermo', '[M-H]-', 'LPE_thermo'],
@@ -1338,15 +1339,14 @@ if __name__ == '__main__':
 
     # set the default files
     pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Synapt-g2si file
-    # lpl_mzml_thermo = r'../Test/mzML/Qexactive_Neg.mzML'  # Qexactive file
-    # lpl_mzml_thermo = r'D:\CoopFiles\W.Zhang\mzML\20181022_BAT_test07.mzML'  # Qexactive file
-    lpl_mzml_thermo = r'D:\CoopFiles\W.Zhang\mzML\210180531_M23.mzML'  # Qexactive file
+    lpl_mzml_thermo = r'../Test/mzML/Qexactive_Neg.mzML'  # Qexactive file
     tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Synapt-g2si file
-    tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Qexactive file
+    tg_mzml_thermo = r'../Test/mzML/QE_18_42_AT_SIR1_1_0,00025_pos_DDA.mzML'  # Qexactive file
+    # tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Qexactive file
     tg_mzml_SCIEXS = r'../Test/mzML/Test_sciex.mzML'  # position holder
     tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
 
-    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx',
+    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_PL.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
                    'score_cfg': r'../ConfigurationFiles/2-Score_weight_PL.xlsx'}
 
@@ -1382,7 +1382,7 @@ if __name__ == '__main__':
 
             _test_dct.update(pl_base_dct)
 
-        if usr_test[0] in ['LPC', 'LPE', 'LPA', 'LPG', 'LPI', 'LPS', 'LPIP']:
+        elif usr_test[0] in ['LPC', 'LPE', 'LPA', 'LPG', 'LPI', 'LPS', 'LPIP']:
             lipid_class = usr_test[0]
             if lipid_class == 'LPC':
                 charge = '[M+HCOO]-'
@@ -1442,8 +1442,8 @@ if __name__ == '__main__':
                 rt_range = [6, 10]
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
-                mz_range = [609, 617]
-                rt_range = [8.69, 8.77]
+                mz_range = [300, 850]
+                rt_range = [5, 15]
             elif vendor == 'agilent':
                 mzml = tg_mzml_agilent
                 mz_range = [400, 1000]

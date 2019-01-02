@@ -761,7 +761,6 @@ class LipidComposer:
         tmp_columns = usr_fa_df.columns.tolist()
 
         usr_fa_df.columns = usr_fa_df.columns.str.upper()
-        print('tmp_columns', tmp_columns)
 
         if lipid_class in ['PL', 'PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'SM']:
             if lipid_class in tmp_columns:
@@ -770,7 +769,7 @@ class LipidComposer:
                 pass
             else:
                 return False
-        if lipid_class in ['LPL', 'LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS']:
+        elif lipid_class in ['LPL', 'LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS']:
             if lipid_class in tmp_columns:
                 pass
             elif 'LPL' in tmp_columns or 'PL' in tmp_columns:
