@@ -48,9 +48,22 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     ms1_pr_ppm = mz_se['ppm']
 
     obs_info_df = ident_info_dct['INFO']
-    obs_fa_df = ident_info_dct['OBS_FA']
-    obs_lyso_df = ident_info_dct['OBS_LYSO']
     obs_ident_df = ident_info_dct['IDENT']
+
+    obs_fa_df = ident_info_dct['OBS_FA']
+    if 'OBS_LYSO' in list(ident_info_dct.keys()):
+        obs_lyso_df = ident_info_dct['OBS_LYSO']
+        if not obs_lyso_df.empty:
+            obs_dg_na_df = obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']
+            obs_dg_na_df.reset_index(drop=True, inplace=True)
+            obs_dg_na_idx = obs_lyso_df.index[obs_lyso_df['TYPE'] == 'NL_Na'].tolist()
+        else:
+            obs_dg_na_df =  pd.DataFrame()
+            obs_dg_na_idx = []
+    else:
+        obs_lyso_df = pd.DataFrame()
+        obs_dg_na_df = pd.DataFrame()
+        obs_dg_na_idx = []
 
     isotope_score = isotope_score_info_dct['isotope_score']
     isotope_checker_dct = isotope_score_info_dct['isotope_checker_dct']
@@ -168,34 +181,36 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
     obs_mg_df.reset_index(drop=True, inplace=True)
     # Need this because we need to keep their original position in the DF to remove them later
     obs_mg_idx = obs_fa_df.index[obs_fa_df['TYPE'] == 'MG'].tolist()
-    obs_dg_na_df = obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']
-    obs_dg_na_df.reset_index(drop=True, inplace=True)
-    obs_dg_na_idx = obs_lyso_df.index[obs_lyso_df['TYPE'] == 'NL_Na'].tolist()
+    # obs_dg_na_df = obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']
+    # obs_dg_na_df.reset_index(drop=True, inplace=True)
+    # obs_dg_na_idx = obs_lyso_df.index[obs_lyso_df['TYPE'] == 'NL_Na'].tolist()
 
-    if isinstance(obs_fa_df, pd.DataFrame):
+    if isinstance(obs_fa_df, pd.DataFrame) and not obs_fa_df.empty:
         for _idx, _ion_se in obs_fa_df.iterrows():
             # if _ion_se['obs_abbr'] in ident_peak_lst:
             if _ion_se['obs_abbr'] in ident_peak_lst and _ion_se['TYPE'] == 'FA':
                 frag_idx_lst.append(_idx)
-    if isinstance(obs_mg_df, pd.DataFrame):
+    if isinstance(obs_mg_df, pd.DataFrame) and not obs_mg_df.empty:
         for _idx, _ion_se in obs_mg_df.iterrows():
             if _ion_se['obs_abbr'] in ident_peak_lst:
                 mg_idx_lst.append(_idx)
-    if isinstance(obs_lyso_df, pd.DataFrame):
+    if isinstance(obs_lyso_df, pd.DataFrame) and not obs_lyso_df.empty:
         for _idx, _ion_se in obs_lyso_df.iterrows():
             # if _ion_se['obs_abbr'] in ident_peak_lst:
             if _ion_se['obs_abbr'] in ident_peak_lst and _ion_se['TYPE'] == 'NL':
                 nl_idx_lst.append(_idx)
-    if isinstance(obs_dg_na_df, pd.DataFrame):
+    if isinstance(obs_dg_na_df, pd.DataFrame) and not obs_dg_na_df.empty:
         for _idx, _ion_se in obs_dg_na_df.iterrows():
             if _ion_se['obs_abbr'] in ident_peak_lst and _ion_se['TYPE'] == 'NL_Na':
                 dg_Na_idx_lst.append(_idx)
-
+        plt_obs_dg_na_df = pd.DataFrame(obs_dg_na_df.drop(dg_Na_idx_lst))
+    else:
+        plt_obs_dg_na_df = pd.DataFrame()
     # from the below we remove all of the MG for TG because there is another table for them
     plt_obs_fa_df = pd.DataFrame(obs_fa_df.drop(frag_idx_lst + obs_mg_idx))
     plt_obs_mg_df = pd.DataFrame(obs_mg_df.drop(mg_idx_lst))
     plt_obs_lyso_df = pd.DataFrame(obs_lyso_df.drop(nl_idx_lst + obs_dg_na_idx))
-    plt_obs_dg_na_df = pd.DataFrame(obs_dg_na_df.drop(dg_Na_idx_lst))
+
 
     # add specific ion info
     txt_props = {'ha': 'left', 'va': 'bottom'}
@@ -671,7 +686,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             msms_low_pic.set_xlim([100, 400])
             msms_low_pic.set_ylim([0, ms2_df['i'].max()])
 
-        if isinstance(obs_ident_df, pd.DataFrame):
+        if isinstance(obs_ident_df, pd.DataFrame) and not obs_ident_df.empty:
             low_obs_ident_df = obs_ident_df[obs_ident_df['mz'] <= 400]
             if not low_obs_ident_df.empty:
                 low_obs_ident_df.is_copy = False
@@ -689,7 +704,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
 
-        if isinstance(plt_obs_fa_df, pd.DataFrame):
+        if isinstance(plt_obs_fa_df, pd.DataFrame) and not plt_obs_fa_df.empty:
             low_plt_obs_fa_df = plt_obs_fa_df[plt_obs_fa_df['mz'] <= 400]
             if not low_plt_obs_fa_df.empty:
                 low_plt_obs_fa_df.is_copy = False
@@ -705,7 +720,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
 
-        if isinstance(plt_obs_mg_df, pd.DataFrame):
+        if isinstance(plt_obs_mg_df, pd.DataFrame) and not plt_obs_mg_df.empty:
             low_plt_obs_mg_df = plt_obs_mg_df[plt_obs_mg_df['mz'] <= 400]
             if not low_plt_obs_mg_df.empty:
                 low_plt_obs_mg_df.is_copy = False
@@ -721,7 +736,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
         # add specific ion info
-        if isinstance(other_frag_df, pd.DataFrame):
+        if isinstance(other_frag_df, pd.DataFrame) and not other_frag_df.empty:
             low_other_frag_df = other_frag_df[other_frag_df['mz'] <= 400]
             if not low_other_frag_df.empty:
                 low_other_frag_df.is_copy = False
@@ -738,7 +753,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
 
-        if isinstance(target_frag_df, pd.DataFrame):
+        if isinstance(target_frag_df, pd.DataFrame) and not target_frag_df.empty:
             marker_l, stem_l, base_l = msms_low_pic.stem(target_frag_df['mz'], target_frag_df['i'], markerfmt=' ')
             plt.setp(stem_l, color=(0.0, 0.45, 1.0, 0.6), linewidth=1.2)
             plt.setp(base_l, visible=False)
@@ -752,7 +767,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         # Check missing part from higher m/z
-        if isinstance(plt_obs_lyso_df, pd.DataFrame):
+        if isinstance(plt_obs_lyso_df, pd.DataFrame) and not plt_obs_lyso_df.empty:
             low_plt_obs_lyso_df = plt_obs_lyso_df[plt_obs_lyso_df['mz'] <= 400]
             if not low_plt_obs_lyso_df.empty:
                 low_plt_obs_lyso_df.is_copy = False
@@ -768,7 +783,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
 
-        if isinstance(plt_obs_dg_na_df, pd.DataFrame):
+        if isinstance(plt_obs_dg_na_df, pd.DataFrame) and not plt_obs_dg_na_df.empty:
             low_plt_obs_dg_na_df = plt_obs_dg_na_df[plt_obs_dg_na_df['mz'] <= 400]
             if not low_plt_obs_dg_na_df.empty:
                 low_plt_obs_dg_na_df.is_copy = False
@@ -784,7 +799,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             pass
 
-        if isinstance(other_nl_df, pd.DataFrame):
+        if isinstance(other_nl_df, pd.DataFrame) and not other_nl_df.empty:
             low_other_nl_df = other_nl_df[other_nl_df['mz'] <= 400]
             if not low_other_nl_df.empty:
                 low_other_nl_df.is_copy = False

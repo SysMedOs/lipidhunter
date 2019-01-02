@@ -84,6 +84,16 @@ class LipidComposer:
 
                 sn_units_lst = [pl_fa1_lst, pl_fa2_lst]
 
+        elif lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS']:
+            if 'LPL' in header_lst and 'FATTYACID' in header_lst:
+                pl_fa1_df = fa_df.query('LPL == "T" and FA1 == "T"')
+                pl_fa1_lst = pl_fa1_df['FATTYACID'].tolist()
+                sn_units_lst = [pl_fa1_lst, ['']]
+            elif 'PL' in header_lst and 'FATTYACID' in header_lst:
+                pl_fa1_df = fa_df.query('PL == "T" and FA1 == "T"')
+                pl_fa1_lst = pl_fa1_df['FATTYACID'].tolist()
+                sn_units_lst = [pl_fa1_lst, ['']]
+
         elif lipid_class in ['TG']:
             if 'TG' in header_lst and 'FATTYACID' in header_lst:
                 tg_fa1_df = fa_df.query('TG == "T" and FA1 == "T"')
@@ -134,6 +144,13 @@ class LipidComposer:
                 pass
             else:
                 return False
+        elif lipid_class in ['LPL', 'LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS']:
+            if lipid_class in tmp_columns:
+                pass
+            elif 'LPL' in tmp_columns or 'PL' in tmp_columns:
+                pass
+            else:
+                return False
         elif lipid_class in ['TG', 'DG']:
             if lipid_class in tmp_columns:
                 pass
@@ -153,13 +170,14 @@ class LipidComposer:
         elem_calc = ElemCalc()
         usr_fa_dct = {}
         for _fa_abbr in fa_abbr_lst:
-            _fa_info_dct = abbr_parser.get_fa_info(_fa_abbr)  # Calculate all the information for each FA
-            _lipid_formula, _lipid_elem_dct = elem_calc.get_formula(_fa_abbr)  # get the elemental composition of FA
-            # add the Abbr, formula and the exact mass in the dictionary
-            _fa_info_dct['ABBR'] = _fa_abbr
-            _fa_info_dct['FORMULA'] = _lipid_formula
-            _fa_info_dct['EXACTMASS'] = elem_calc.get_exactmass(_lipid_elem_dct)  # Calc. the exact mass for each FA
-            usr_fa_dct[_fa_abbr] = _fa_info_dct
+            if _fa_abbr:
+                _fa_info_dct = abbr_parser.get_fa_info(_fa_abbr)  # Calculate all the information for each FA
+                _lipid_formula, _lipid_elem_dct = elem_calc.get_formula(_fa_abbr)  # get the elemental composition of FA
+                # add the Abbr, formula and the exact mass in the dictionary
+                _fa_info_dct['ABBR'] = _fa_abbr
+                _fa_info_dct['FORMULA'] = _lipid_formula
+                _fa_info_dct['EXACTMASS'] = elem_calc.get_exactmass(_lipid_elem_dct)  # Calc. the exact mass for each FA
+                usr_fa_dct[_fa_abbr] = _fa_info_dct
 
         usr_fa_df = pd.DataFrame(usr_fa_dct).T.copy()  # put all the info for the FA in a dataframe
         usr_fa_df.is_copy = False
@@ -272,6 +290,10 @@ class LipidComposer:
             fa_comb_lst = list(itertools.product(fa_units_lst[0], fa_units_lst[1]))
             fa_df_header_lst = ['FA1', 'FA2']
             # lipid_template = '{}'
+        elif lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS'] and len(fa_units_lst) == 2:
+            fa_comb_lst = list(itertools.product(fa_units_lst[0], fa_units_lst[1]))
+            fa_df_header_lst = ['FA1', 'FA2']
+            # lipid_template = '{}'
         elif lipid_class == 'TG' and len(fa_units_lst) == 3:
             fa_comb_lst = list(itertools.product(fa_units_lst[0], fa_units_lst[1], fa_units_lst[2]))
             fa_df_header_lst = ['FA1', 'FA2', 'FA3']
@@ -325,6 +347,7 @@ class LipidComposer:
         fa_combo_df = pd.DataFrame(data=fa_comb_lst, columns=fa_df_header_lst)
 
         fa_combo_df['CLASS'] = lipid_class
+
         if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG', 'SM']:
 
             fa_combo_link_df = fa_combo_df
@@ -351,6 +374,43 @@ class LipidComposer:
                     op_link_df['DISCRETE_ABBR'] = (op_link_df['CLASS'] + '(' +
                                                    op_link_df['FA1'].str.strip('FA') + '_' +
                                                    op_link_df['FA2'].str.strip('FA') + ')')
+                    op_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+
+                    fa_combo_df = fa_link_df.append(op_link_df)
+                    del op_link_df
+            else:
+                fa_combo_df = fa_link_df
+
+            del fa_combo_link_df
+            del fa_link_df
+            print('[INFO] --> Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
+
+        elif lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS']:
+
+            fa_combo_link_df = fa_combo_df
+            fa_combo_link_df.is_copy = False
+
+            fa_combo_link_df['LINK'] = fa_combo_link_df['FA1'].str[0:2]
+            fa_link_df = fa_combo_link_df[fa_combo_link_df['LINK'] == 'FA']
+
+            fa_link_df.is_copy = False
+            fa_link_df.drop(['LINK', 'CLASS'], axis=1, inplace=True)
+            # fa_link_df.values.argsort(kind='mergesort')
+            # fa_link_df.drop(columns=['CLASS'], inplace=True)
+            # fa_link_df.values.sort(kind='mergesort')  # safe sort by numpy
+            fa_link_df['CLASS'] = lipid_class
+
+            fa_link_df['DISCRETE_ABBR'] = (fa_link_df['CLASS'] + '(' +
+                                           fa_link_df['FA1'].str.strip('FA') + ')')
+            fa_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
+
+            if lipid_class in ['LPC', 'LPE']:
+                op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-') | (fa_combo_link_df['LINK'] == 'P-')]
+                if not op_link_df.empty:
+                    op_link_df.is_copy = False
+                    op_link_df.drop(['LINK'], axis=1, inplace=True)
+                    op_link_df['DISCRETE_ABBR'] = (op_link_df['CLASS'] + '(' +
+                                                   op_link_df['FA1'].str.strip('FA') + ')')
                     op_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
 
                     fa_combo_df = fa_link_df.append(op_link_df)
@@ -440,7 +500,8 @@ class LipidComposer:
         fa2_abbr = lipid_dct['FA2'].strip('FA')
 
         fa1_exactmass = lipid_dct['FA1_EXACTMASS']
-        fa2_exactmass = lipid_dct['FA2_EXACTMASS']
+        if 'FA2_EXACTMASS' in list(lipid_dct.keys()):
+            fa2_exactmass = lipid_dct['FA2_EXACTMASS']
 
         if m_class in ['PA', 'PE', 'PG', 'PI', 'PS', 'PIP', 'PL']:
 
@@ -474,8 +535,14 @@ class LipidComposer:
             lipid_dct['[LPL(FA1)-H2O-H]-_MZ'] = round(m_exactmass - fa2_exactmass - ch3_exactmass, 6)
             lipid_dct['[LPL(FA2)-H2O-H]-_MZ'] = round(m_exactmass - fa1_exactmass - ch3_exactmass, 6)
 
+        elif m_class in ['LPA', 'LPE', 'LPG', 'LPI', 'LPS', 'LPIP', 'LPL']:
+            pass
+
+        elif m_class in ['LPC']:
+            pass
+
         elif m_class in ['TG']:
-            ############### Here maybe should get the DG fragments
+            # Here maybe should get the DG fragments
             # TODO(georgia.angelidou@uni-leipzig.de): create the section for theuniue fragments when there is TG
             #   Missing the fragments for the sodium adduct
 
@@ -702,6 +769,14 @@ class LipidComposer:
                 pass
             else:
                 return False
+        elif lipid_class in ['LPL', 'LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS']:
+            if lipid_class in tmp_columns:
+                pass
+            elif 'LPL' in tmp_columns or 'PL' in tmp_columns:
+                pass
+            else:
+                return False
+
         elif lipid_class in ['TG', 'DG']:
             if lipid_class in tmp_columns:
                 pass
@@ -720,15 +795,31 @@ class LipidComposer:
             _lipid_dct = lipid_comb_dct[_lipid]
 
             _fa1_abbr = _lipid_dct['FA1']
-            _fa2_abbr = _lipid_dct['FA2']
-            _fa1_info_dct = abbr_parser.get_fa_info(_fa1_abbr)
-            _fa2_info_dct = abbr_parser.get_fa_info(_fa2_abbr)
+            if _fa1_abbr:
+                _fa1_info_dct = abbr_parser.get_fa_info(_fa1_abbr)
+                for _fa1_k in list(_fa1_info_dct.keys()):
+                    _lipid_dct['FA1_' + _fa1_k] = _fa1_info_dct[_fa1_k]
+            else:
+                if 'FA2' in list(_lipid_dct.keys()):
+                    if _lipid_dct['FA2']:
+                        _lipid_dct['FA1'], _lipid_dct['FA2'] = _lipid_dct['FA2'], _lipid_dct['FA1']
+                        _fa1_abbr = _lipid_dct['FA1']
+                        _fa1_info_dct = abbr_parser.get_fa_info(_fa1_abbr)
+                        for _fa1_k in list(_fa1_info_dct.keys()):
+                            _lipid_dct['FA1_' + _fa1_k] = _fa1_info_dct[_fa1_k]
+                else:
+                    _fa1_info_dct = {}
 
-            for _fa1_k in list(_fa1_info_dct.keys()):
-                _lipid_dct['FA1_' + _fa1_k] = _fa1_info_dct[_fa1_k]
+            if 'FA2' in list(_lipid_dct.keys()):
+                _fa2_abbr = _lipid_dct['FA2']
+                if _fa2_abbr:
+                    _fa2_info_dct = abbr_parser.get_fa_info(_fa2_abbr)
+                    for _fa2_k in list(_fa2_info_dct.keys()):
+                        _lipid_dct['FA2_' + _fa2_k] = _fa2_info_dct[_fa2_k]
+            else:
+                _fa2_abbr = ''
+                _fa2_info_dct = {}
 
-            for _fa2_k in list(_fa1_info_dct.keys()):
-                _lipid_dct['FA2_' + _fa2_k] = _fa2_info_dct[_fa2_k]
             # TODO (georgia.angelidou@uni-leipzig.de): SM, Cer
             if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
                 _lipid_dct['M_DB'] = _fa1_info_dct['DB'] + _fa2_info_dct['DB']
@@ -742,6 +833,19 @@ class LipidComposer:
                 else:
                     lipid_bulk_str = '{pl}({lk}{c}:{db})'.format(pl=lipid_class, lk=_fa1_info_dct['LINK'],
                                                                  c=_fa1_info_dct['C'] + _fa2_info_dct['C'],
+                                                                 db=lipid_comb_dct[_lipid]['M_DB'])
+            elif lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS']:
+                _lipid_dct['M_DB'] = _fa1_info_dct['DB']
+                # TODO(georgia.angelidou@uni-leipzig.de): not important (just keep in mind for future correction)
+                # consideration the case if the user choose the fa2 position for the different link types
+                # or in that they may mistype something
+                if _fa1_info_dct['LINK'] in ['FA', 'A']:
+                    lipid_bulk_str = '{pl}({c}:{db})'.format(pl=lipid_class,
+                                                             c=_fa1_info_dct['C'],
+                                                             db=lipid_comb_dct[_lipid]['M_DB'])
+                else:
+                    lipid_bulk_str = '{pl}({lk}{c}:{db})'.format(pl=lipid_class, lk=_fa1_info_dct['LINK'],
+                                                                 c=_fa1_info_dct['C'],
                                                                  db=lipid_comb_dct[_lipid]['M_DB'])
             elif lipid_class in ['TG']:
                 _fa3_abbr = _lipid_dct['FA3']
@@ -799,29 +903,37 @@ class LipidComposer:
 
 
 if __name__ == '__main__':
-    fa_lst_file = r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx'
+    fa_lst_file = r'../ConfigurationFiles/1-FA_Whitelist_LPL.xlsx'
+    # fa_lst_file = r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx'
 
     # Note:
     # exact position means to consider the poition from the FA white list that the user give but,
     # in the case that the user define 2 different FA for both positions then:
     # When it is false it will give only one option
     # and when it is TRUE to give both compinations that these 2 FA an make (in case of phospholipids)
-    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'TG', 'charge_mode': '[M+NH4]+',
+
+    # usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'TG', 'charge_mode': '[M+NH4]+',
+    #                  'exact_position': 'FALSE'}
+
+    # usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'LPC', 'charge_mode': '[M+HCOO]-',
+    #                  'exact_position': 'FALSE'}
+    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'LPE', 'charge_mode': '[M-H]-',
                      'exact_position': 'FALSE'}
 
     composer = LipidComposer()
     usr_lipid_master_df = composer.compose_lipid(param_dct=usr_param_dct, ms2_ppm=30)
     print('[INFO] --> Lipid Master Table generated...')
 
-    master_csv = r'../Temp/LipidMaster_Whitelist_TG_ML.csv'
-    fa_csv = r'../Temp/LipidMaster_FAlist_ML.csv'
+    # master_csv = r'../Temp/LipidMaster_Whitelist_TG_ML.csv'
+    master_csv = r'../Temp/LipidMaster_Whitelist_%s.csv' % usr_param_dct['lipid_class']
+    fa_csv = r'../Temp/LipidMaster_FAlist_%s.csv' % usr_param_dct['lipid_class']
 
     calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_class'], fa_lst_file, ms2_ppm=50)
 
     if calc_fa_df is False:
         print('[ERROR] !!! Failed to generate FA info table ...\n')
 
-    print(calc_fa_df)
+    print(calc_fa_df.head())
     usr_lipid_master_df.to_csv(master_csv)
     calc_fa_df.to_csv(fa_csv)
     print('[INFO] --> Finished...')

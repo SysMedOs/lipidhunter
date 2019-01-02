@@ -207,6 +207,9 @@ class PrecursorHunter(object):
         if sub_group_len > 500:
             print('[INFO] --> Set sub part scans to 500 to avoid Memory error ...')
             sub_group_len = 500
+        elif sub_group_len == 0:
+            print('[WARNING] !!!  Not enough MS spectra')
+            return False
         sub_pl_group_lst = [spectra_pl_idx_lst[s: (s + sub_group_len)] for s in range(0, len(spectra_pl_idx_lst),
                                                                                       sub_group_len)]
 

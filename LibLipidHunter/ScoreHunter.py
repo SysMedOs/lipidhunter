@@ -225,6 +225,22 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
             _fa_sn_lst = ['FA1', 'FA2']
             _unique_fa_abbr_lst = list(set(_sum_fa_abbr_lst))
 
+        elif lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPS', 'LPI', 'LPIP', 'LPS']:
+
+            _fa1_abbr = _lite_se['FA1_ABBR']
+
+            if _fa1_abbr in ['H2O', '0:0']:
+                try:
+                    _fa2_abbr = _lite_se['FA2_ABBR']
+                    _fa1_abbr, _fa2_abbr = _fa2_abbr, _fa1_abbr
+                except Exception as _e:
+                    print(_e)
+
+            _sum_fa_abbr_lst.append(_fa1_abbr)
+            _sum_fa_abbr_dct['FA1'] = _fa1_abbr
+            _fa_sn_lst = ['FA1']
+            _unique_fa_abbr_lst = list(set(_sum_fa_abbr_lst))
+
         else:
             _fa1_abbr = _lite_se['FA1_ABBR']
             _fa2_abbr = _lite_se['FA2_ABBR']
@@ -427,6 +443,8 @@ def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, rankscore_fil
         resi_site_lst = ['FA1_ABBR', 'FA2_ABBR', 'FA3_ABBR']
     elif lipid_class in ['PA', 'PC', 'PE', 'PG', 'PS', 'PI', 'PIP', 'DG', 'SM']:
         resi_site_lst = ['FA1_ABBR', 'FA2_ABBR']
+    elif lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPS', 'LPI', 'LPIP']:
+        resi_site_lst = ['FA1_ABBR']
     elif lipid_class in ['MG']:
         resi_site_lst = ['FA1_ABBR']
     else:
@@ -508,6 +526,12 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
     elif lipid_class in ['PC'] and charge in ['[M+HCOO]-', '[M+CH3COO]-']:
         frag_lst = ['[L%s-H]-' % lipid_class, '[L%s-H2O-H]-' % lipid_class]
         frag_lst_fa = ['[FA-H]-']
+    elif lipid_class in ['LPA', 'LPE', 'LPG', 'LPI', 'LPS'] and charge == '[M-H]-':
+        frag_lst = []
+        frag_lst_fa = ['[FA-H]-']
+    elif lipid_class in ['LPC'] and charge in ['[M+HCOO]-', '[M+CH3COO]-']:
+        frag_lst = []
+        frag_lst_fa = ['[FA-H]-']
     elif lipid_class in ['TG'] and charge in ['[M+H]+', '[M+NH4]+']:
         if weight_dct['FA1_[FA-H2O+H]+']['Weight'] == 0 or weight_dct['FA2_[FA-H2O+H]+']['Weight'] == 0 or \
                 weight_dct['FA3_[FA-H2O+H]+']['Weight'] == 0:
@@ -564,8 +588,14 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
     # TODO (georgia.angelidou@uni-leipzig.de): put the MG and the FA in the same dataframe and the DG in another one
     # this way will avoid to many unecessary dataframes
-    obs_fa_frag_df = pd.DataFrame(get_all_fa_nl(fa_df, ms2_df, frag_lst_fa, lipid_class))
-    obs_fa_nl_df = pd.DataFrame(get_all_fa_nl(fa_df, ms2_df, frag_lst, lipid_class))
+    if frag_lst_fa:
+        obs_fa_frag_df = pd.DataFrame(get_all_fa_nl(fa_df, ms2_df, frag_lst_fa, lipid_class))
+    else:
+        obs_fa_frag_df = pd.DataFrame()
+    if frag_lst:
+        obs_fa_nl_df = pd.DataFrame(get_all_fa_nl(fa_df, ms2_df, frag_lst, lipid_class))
+    else:
+        obs_fa_nl_df = pd.DataFrame()
     obs_dg_frag_df = pd.DataFrame()
     obs_dg_w_frag_df = pd.DataFrame()
 
@@ -594,6 +624,22 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         else:
             print(core_count, lipid_class, charge, '[Warning] !!! No informative peak found !!!')
             return 0, {}
+
+    elif lipid_class in ['LPA', 'LPE', 'LPG', 'LPI', 'LPS', 'LPC']:
+        if not obs_fa_frag_df.empty or not obs_fa_nl_df.empty:
+            if charge == '[M-H]-':
+                obs_dct = {'[FA-H]-': [obs_fa_frag_df, {'FA1': 'FA1_[FA-H]-'}]}
+            elif lipid_class in ['LPC'] and charge in ['[M+HCOO]-', '[M+CH3COO]-']:
+                obs_dct = {'[FA-H]-': [obs_fa_frag_df, {'FA1': 'FA1_[FA-H]-'}]}
+            elif charge == '[M+H]+':
+                pass
+                # TODO(zhixu.ni@uni-leipzig.de): add support to positive mode
+            else:
+                pass
+        else:
+            print(core_count, lipid_class, charge, '[Warning] !!! No informative peak found !!!')
+            return 0, {}
+
     elif lipid_class in ['TG'] and charge in ['[M+H]+', '[M+NH4]+']:
         obs_dg_frag_df = get_all_fa_nl(lite_info_df, ms2_df, frag_lst_dg, lipid_class)
         obs_dg_w_frag_df = pd.DataFrame()
@@ -676,6 +722,9 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         obs_fa_nl_df['TYPE'] = 'NL'
         obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_fa_nl_df,
                         'IDENT': post_ident_peak_df}
+    elif lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS']:
+        obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df,
+                        'IDENT': post_ident_peak_df}
     else:
         # TODO(georgia.angelidou@uni-leipzig.de): Reason why in the current output doesnt give DG
         # probably put in the OBS_FA the MG an free FA and OBS_LYSO put the FA loss
@@ -697,6 +746,7 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
 
         obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_dg_frag_df,
                         'IDENT': post_ident_peak_df}
+
     return matched_checker, obs_info_dct
 
 
