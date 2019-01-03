@@ -149,6 +149,6 @@ def recover_hunt(hunter_data):
 
 if __name__ == '__main__':
 
-    test_hunt_data_name = r'..\Test\results\hunter_data.hunt'
-    with open(test_hunt_data_name, 'rb') as test_hunt_data:
-        recover_hunt(test_hunt_data)
+    from test.test_HuntManager import test_recover_hunt
+
+    test_recover_hunt()
