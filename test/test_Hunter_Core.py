@@ -32,6 +32,7 @@ def test_huntlipids():
     max_ram = 5  # int only
     save_images = True  # True --> generate images, False --> NO images (not recommended)
     save_lipidmaster_table = True  # True --> export LipidMasterTable to output folder, False --> NO export
+    save_hunter_session = True  # True --> export session as a file, False --> NO export
 
     # full_test_lst = [['PC', 'waters'],['PE', 'waters'], ['TG', 'waters','[M+H]+'], ['TG', 'waters', '[M+NH4]+'],
     # ['TG', 'thermo', '[M+NH4]+']]
@@ -259,7 +260,8 @@ def test_huntlipids():
 
                 print('>>>>>>>>>>>>>>>> START TEST: %s' % test_key)
 
-                t, log_lst, output_df2 = huntlipids(test_dct, log_lst, save_fig=save_images)
+                t, log_lst, output_df2 = huntlipids(test_dct, log_lst,
+                                                    save_fig=save_images, save_session=save_hunter_session)
                 if t is not False:
                     print('>>>>>>>>>>>>>>>> TEST PASSED: %s in %.3f Sec <<<<<<<<<<<<<<<<\n' % (test_key, t))
                     t_sum_lst.append((test_key, 'PASSED', '%.3f Sec' % t, 'Identified:'))

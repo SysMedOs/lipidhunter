@@ -65,7 +65,7 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, ms2_ppm=100, vendor='waters
             _frag_df.loc[:, 'CLASS'] = _frag_class
             _frag_df.loc[:, 'LABEL'] = _frag_label
             _frag_df.loc[:, _frag_label] = 100 * _frag_df['i'] / ms2_max_i
-            _target_frag_df = _target_frag_df.append(_frag_df.head(1))
+            _target_frag_df = _target_frag_df.append(_frag_df.head(1), sort=False)
 
     if not other_frag_df.empty:
         for _i, _frag_se in other_frag_df.iterrows():
@@ -82,7 +82,7 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, ms2_ppm=100, vendor='waters
                 _frag_df.loc[:, 'CLASS'] = _frag_class
                 _frag_df.loc[:, 'LABEL'] = _frag_label
                 _frag_df.loc[:, _frag_label] = 100 * _frag_df['i'] / ms2_max_i
-                _other_frag_df = _other_frag_df.append(_frag_df.head(1))
+                _other_frag_df = _other_frag_df.append(_frag_df.head(1), sort=False)
 
     for _i, _nl_se in target_nl_df.iterrows():
 
@@ -99,7 +99,7 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, ms2_ppm=100, vendor='waters
             _nl_df.loc[:, 'CLASS'] = _nl_class
             _nl_df.loc[:, 'LABEL'] = _nl_label
             _nl_df.loc[:, _nl_label] = 100 * _nl_df['i'] / ms2_max_i
-            _target_nl_df = _target_nl_df.append(_nl_df.head(1))
+            _target_nl_df = _target_nl_df.append(_nl_df.head(1), sort=False)
 
     for _i, _nl_se in other_nl_df.iterrows():
 
@@ -115,7 +115,7 @@ def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, ms2_ppm=100, vendor='waters
             _nl_df.loc[:, 'CLASS'] = _nl_class
             _nl_df.loc[:, 'LABEL'] = _nl_label
             _nl_df.loc[:, _nl_label] = 100 * _nl_df['i'] / ms2_max_i
-            _other_nl_df = _other_nl_df.append(_nl_df.head(1))
+            _other_nl_df = _other_nl_df.append(_nl_df.head(1), sort=False)
 
     specific_ion_dct = {}
     if not _target_frag_df.empty:
@@ -150,7 +150,7 @@ def get_all_fa_nl(fa_df, ms2_df, peak_type_lst, lipid_type='LPL'):
 
             _q_str = _fa_se['%s_Q' % peak_typ]
             _q_tmp_df = ms2_df.query(_q_str).copy()
-            _q_tmp_df.is_copy = False
+            # _q_tmp_df.is_copy = False
             if not _q_tmp_df.empty:
                 _q_tmp_df.loc[:, 'lib_mz'] = _fa_se['%s_MZ' % peak_typ]
                 _q_tmp_df.loc[:, 'obs_mz'] = _q_tmp_df['mz']
@@ -170,7 +170,7 @@ def get_all_fa_nl(fa_df, ms2_df, peak_type_lst, lipid_type='LPL'):
                 else:
                     _q_tmp_df.loc[:, 'fa_abbr'] = _idx
 
-                obs_peaks_df = obs_peaks_df.append(_q_tmp_df)
+                obs_peaks_df = obs_peaks_df.append(_q_tmp_df, sort=False)
 
     if not obs_peaks_df.empty:
         obs_peaks_df.sort_values(by=['obs_abbr', 'i', 'obs_ppm_abs'], ascending=[False, False, True], inplace=True)
@@ -205,9 +205,9 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
             _fa2_abbr = _lite_se['FA2_ABBR']
             _fa3_abbr = _lite_se['FA3_ABBR']
 
-            _sum_fa_abbr_lst.append(_fa1_abbr)
-            _sum_fa_abbr_lst.append(_fa2_abbr)
-            _sum_fa_abbr_lst.append(_fa3_abbr)
+            _sum_fa_abbr_lst.append(_fa1_abbr, sort=False)
+            _sum_fa_abbr_lst.append(_fa2_abbr, sort=False)
+            _sum_fa_abbr_lst.append(_fa3_abbr, sort=False)
             _sum_fa_abbr_dct['FA1'] = _fa1_abbr
             _sum_fa_abbr_dct['FA2'] = _fa2_abbr
             _sum_fa_abbr_dct['FA3'] = _fa3_abbr
@@ -218,8 +218,8 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
             _fa1_abbr = _lite_se['FA1_ABBR']
             _fa2_abbr = _lite_se['FA2_ABBR']
 
-            _sum_fa_abbr_lst.append(_fa1_abbr)
-            _sum_fa_abbr_lst.append(_fa2_abbr)
+            _sum_fa_abbr_lst.append(_fa1_abbr, sort=False)
+            _sum_fa_abbr_lst.append(_fa2_abbr, sort=False)
             _sum_fa_abbr_dct['FA1'] = _fa1_abbr
             _sum_fa_abbr_dct['FA2'] = _fa2_abbr
             _fa_sn_lst = ['FA1', 'FA2']
@@ -236,7 +236,7 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                 except Exception as _e:
                     print(_e)
 
-            _sum_fa_abbr_lst.append(_fa1_abbr)
+            _sum_fa_abbr_lst.append(_fa1_abbr, sort=False)
             _sum_fa_abbr_dct['FA1'] = _fa1_abbr
             _fa_sn_lst = ['FA1']
             _unique_fa_abbr_lst = list(set(_sum_fa_abbr_lst))
@@ -245,8 +245,8 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
             _fa1_abbr = _lite_se['FA1_ABBR']
             _fa2_abbr = _lite_se['FA2_ABBR']
 
-            _sum_fa_abbr_lst.append(_fa1_abbr)
-            _sum_fa_abbr_lst.append(_fa2_abbr)
+            _sum_fa_abbr_lst.append(_fa1_abbr, sort=False)
+            _sum_fa_abbr_lst.append(_fa2_abbr, sort=False)
             _sum_fa_abbr_dct['FA1'] = _fa1_abbr
             _sum_fa_abbr_dct['FA2'] = _fa2_abbr
             _fa_sn_lst = ['FA1', 'FA2']
@@ -259,7 +259,7 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
 
             for _fa_sn in _fa_sn_lst:
                 if _sum_fa_abbr_dct[_fa_sn] == _fa_abbr:
-                    _fa_abbr_sn_lst.append(_fa_sn)
+                    _fa_abbr_sn_lst.append(_fa_sn, sort=False)
             if _fa_count > 1:
                 fa_multi_dct[_fa_abbr] = _fa_count
 
@@ -273,7 +273,7 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
             obs_site_dct = obs_dct[obs_typ][1]
             if not obs_df.empty:
                 post_obs_df = pd.DataFrame(obs_df.copy())
-                post_obs_df.is_copy = False
+                # post_obs_df.is_copy = False
             else:
                 post_obs_df = pd.DataFrame()
 
@@ -286,7 +286,7 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                     fa_to_site_dct[_fa_abbr] = [obs_site_dct[_obs_site]]
                 else:
                     _tmp_site_lst = fa_to_site_dct[_fa_abbr]
-                    _tmp_site_lst.append(obs_site_dct[_obs_site])
+                    _tmp_site_lst.append(obs_site_dct[_obs_site], sort=False)
                     fa_to_site_dct[_fa_abbr] = _tmp_site_lst
 
             # !! IMPORTANT HERE !!
@@ -316,8 +316,9 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
 
                 if not post_obs_df.empty and _fa_abbr in list(fa_to_site_dct.keys()):
 
-                    _pos_df = post_obs_df.query('fa_abbr == "%s" and obs_type_calc == "%s"' % (_fa_abbr, obs_typ))
-                    _pos_df.is_copy = False
+                    _pos_df = post_obs_df.query('fa_abbr == "%s" and obs_type_calc == "%s"'
+                                                % (_fa_abbr, obs_typ)).copy()
+                    # _pos_df.is_copy = False
 
                     if not _pos_df.empty and _fa_abbr in post_obs_df['fa_abbr'].values.tolist():
                         post_obs_df['i_mod'] = post_obs_df['i']
@@ -359,12 +360,12 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                 if _fa_ident is True and not post_obs_df.empty and fa_to_site_dct[_fa_abbr]:
                     _score_obs_df = post_obs_df[post_obs_df['fa_abbr'].isin(_unique_fa_abbr_lst)]
                     _score_obs_df = _score_obs_df.query('fa_abbr == "%s" and obs_type_calc == "%s"'
-                                                        % (_fa_abbr, obs_typ))
+                                                        % (_fa_abbr, obs_typ)).copy()
                     # if _score_obs_df.shape[0] > 1:
                     #     # print('_score_obs_df shape > 1')
                     #     # print(_score_obs_df)
                     #     pass
-                    _score_obs_df.is_copy = False
+                    # _score_obs_df.is_copy = False
                     fa_site_lst = fa_to_site_dct[_fa_abbr]
 
                     for _obs_peak in fa_site_lst:
@@ -381,7 +382,7 @@ def prep_rankscore(obs_dct, origin_info_df, sliced_info_df, weight_dct, lipid_cl
                             _score_obs_df['discrete_abbr'] = _lipid_abbr
                             _score_obs_df['lipid_discrete_abbr'] = _lipid_abbr
                             _score_obs_df.set_index(['fragment_abbr', 'lipid_discrete_abbr'], inplace=True)
-                            ident_obs_peak_df = ident_obs_peak_df.append(_score_obs_df)
+                            ident_obs_peak_df = ident_obs_peak_df.append(_score_obs_df, sort=False)
 
                             _score_obs_type_lst = _score_obs_df['obs_type_calc'].values.tolist()
                             _score_obs_rank_lst = _score_obs_df['obs_rank'].values.tolist()
@@ -512,9 +513,9 @@ def calc_rankscore(obs_dct, lite_info_df, lipid_class, weight_dct, rankscore_fil
 
 def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, lipid_class, weight_dct, core_count,
                   rankscore_filter=27.5, all_sn=True):
-    lite_info_df = master_info_df.query('BULK_ABBR == "%s" and spec_index == %f' % (abbr_bulk, _ms2_idx))
+    lite_info_df = master_info_df.query('BULK_ABBR == "%s" and spec_index == %f' % (abbr_bulk, _ms2_idx)).copy()
 
-    lite_info_df.is_copy = False
+    # lite_info_df.is_copy = False
     lite_info_df['RANK_SCORE'] = 0
 
     obs_dct = {}
@@ -731,14 +732,14 @@ def get_rankscore(fa_df, master_info_df, abbr_bulk, charge, ms2_df, _ms2_idx, li
         # obs_info_dct = {'INFO': lite_info_df, 'OBS_FA': obs_fa_frag_df, 'OBS_LYSO': obs_fa_nl_df,
         #                 'IDENT': ident_peak_df, 'IDENT2' : post_ident_peak_df}
         obs_fa_nl_df['TYPE'] = 'MG'
-        obs_fa_frag_df = obs_fa_frag_df.append(obs_fa_nl_df)
+        obs_fa_frag_df = obs_fa_frag_df.append(obs_fa_nl_df, sort=False)
         if not obs_fa_frag_df.empty:
             #obs_fa_frag_df.sort_values(by='i', ascending=False, inplace=True)
             obs_fa_frag_df.reset_index(drop=True, inplace=True)
         if charge in ['[M+Na]+']:
             obs_dg_frag_df['TYPE'] = 'NL_Na'  # [M-(FA-H+Na)+H]+ fragments
             obs_dg_w_frag_df['TYPE'] = 'NL'  # [M-FA+Na]+ fragments
-            obs_dg_frag_df = obs_dg_w_frag_df.append(obs_dg_frag_df)
+            obs_dg_frag_df = obs_dg_w_frag_df.append(obs_dg_frag_df, sort=False)
             if not obs_dg_frag_df.empty:
                 obs_dg_frag_df.reset_index(drop=True, inplace=True)
         else:
@@ -874,8 +875,9 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                         _mz_df_amm = pd.DataFrame()
                         _mz_amm_mz = ElemCalc().get_exactmass(_mz_amm_elem_dct)
                         _mz_amm_mz2, _mz_amm_form, _mz_amm_Na_mz2, _mz_amm_Na_form = ElemCalc().get_NH3_pos_mode(
-                            charge_mode, _ms1_pr_mz,
-                            _mz_amm_elem_dct)
+                                                                                                    charge_mode,
+                                                                                                    _ms1_pr_mz,
+                                                                                                    _mz_amm_elem_dct)
                         _frag_mz_query_code = '%f <= mz <= %f' % (_mz_amm_mz2 - 0.2, _mz_amm_mz2 + 0.2)
                         # TODO (georgia.angelidou@uni-leipzig.de): Need to check the reason why we do not get any output
                         _frag_mz_query_code2 = '%f <= mz <= %f' % (_mz_amm_Na_mz2 - 0.2, _mz_amm_Na_mz2 + 0.2)
@@ -1020,7 +1022,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                         usr_spec_info_dct['ms1_mz'] = isotope_score_info_dct['obs_pr_mz']
                         usr_spec_info_dct['ms1_i'] = isotope_score_info_dct['obs_pr_i']
 
-                        tmp_df = tmp_df.append(obs_info_df)
+                        tmp_df = tmp_df.append(obs_info_df, sort=False)
                         if save_fig is True:
                             img_param_dct = {'abbr': _usr_abbr_bulk, 'mz_se': _samemz_se, 'xic_dct': xic_dct,
                                              'ident_info_dct': obs_info_dct, 'spec_info_dct': usr_spec_info_dct,
@@ -1028,7 +1030,7 @@ def get_lipid_info(param_dct, fa_df, checked_info_df, checked_info_groups, core_
                                              'specific_dct': specific_dct, 'formula_charged': _usr_formula_charged,
                                              'charge': _usr_charge, 'save_img_as': img_name}
 
-                            img_plt_lst.append(img_param_dct.copy())
+                            img_plt_lst.append(img_param_dct.copy(), sort=False)
 
                             # if 'debug_mode' in list(param_dct.keys()):
                             #     if param_dct['debug_mode'] == 'ON':

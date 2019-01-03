@@ -687,9 +687,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             msms_low_pic.set_ylim([0, ms2_df['i'].max()])
 
         if isinstance(obs_ident_df, pd.DataFrame) and not obs_ident_df.empty:
-            low_obs_ident_df = obs_ident_df[obs_ident_df['mz'] <= 400]
+            low_obs_ident_df = obs_ident_df[obs_ident_df['mz'] <= 400].copy()
             if not low_obs_ident_df.empty:
-                low_obs_ident_df.is_copy = False
+                # low_obs_ident_df.is_copy = False
                 marker_l, stem_l, base_l = msms_low_pic.stem(low_obs_ident_df['mz'],
                                                              low_obs_ident_df['i'], markerfmt=' ')
                 plt.setp(stem_l, color=(0, 0.7, 1.0, 0.6), linewidth=1.2)
@@ -705,9 +705,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         if isinstance(plt_obs_fa_df, pd.DataFrame) and not plt_obs_fa_df.empty:
-            low_plt_obs_fa_df = plt_obs_fa_df[plt_obs_fa_df['mz'] <= 400]
+            low_plt_obs_fa_df = plt_obs_fa_df[plt_obs_fa_df['mz'] <= 400].copy()
             if not low_plt_obs_fa_df.empty:
-                low_plt_obs_fa_df.is_copy = False
+                # low_plt_obs_fa_df.is_copy = False
                 marker_l, stem_l, base_l = msms_low_pic.stem(low_plt_obs_fa_df['mz'], low_plt_obs_fa_df['i'],
                                                              markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2)
@@ -721,9 +721,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         if isinstance(plt_obs_mg_df, pd.DataFrame) and not plt_obs_mg_df.empty:
-            low_plt_obs_mg_df = plt_obs_mg_df[plt_obs_mg_df['mz'] <= 400]
+            low_plt_obs_mg_df = plt_obs_mg_df[plt_obs_mg_df['mz'] <= 400].copy()
             if not low_plt_obs_mg_df.empty:
-                low_plt_obs_mg_df.is_copy = False
+                # low_plt_obs_mg_df.is_copy = False
                 marker_l, stem_l, base_l = msms_low_pic.stem(low_plt_obs_mg_df['mz'], low_plt_obs_mg_df['i'],
                                                              markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2, alpha=0.4)
@@ -737,9 +737,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
         # add specific ion info
         if isinstance(other_frag_df, pd.DataFrame) and not other_frag_df.empty:
-            low_other_frag_df = other_frag_df[other_frag_df['mz'] <= 400]
+            low_other_frag_df = other_frag_df[other_frag_df['mz'] <= 400].copy()
             if not low_other_frag_df.empty:
-                low_other_frag_df.is_copy = False
+                # low_other_frag_df.is_copy = False
                 marker_l, stem_l, base_l = msms_low_pic.stem(low_other_frag_df['mz'], low_other_frag_df['i'],
                                                              markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.6), linewidth=1.2)
@@ -768,9 +768,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
 
         # Check missing part from higher m/z
         if isinstance(plt_obs_lyso_df, pd.DataFrame) and not plt_obs_lyso_df.empty:
-            low_plt_obs_lyso_df = plt_obs_lyso_df[plt_obs_lyso_df['mz'] <= 400]
+            low_plt_obs_lyso_df = plt_obs_lyso_df[plt_obs_lyso_df['mz'] <= 400].copy()
             if not low_plt_obs_lyso_df.empty:
-                low_plt_obs_lyso_df.is_copy = False
+                # low_plt_obs_lyso_df.is_copy = False
                 marker_l, stem_l, base_l = msms_low_pic.stem(low_plt_obs_lyso_df['mz'], low_plt_obs_lyso_df['i'],
                                                              markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2, alpha=0.4)
@@ -784,9 +784,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         if isinstance(plt_obs_dg_na_df, pd.DataFrame) and not plt_obs_dg_na_df.empty:
-            low_plt_obs_dg_na_df = plt_obs_dg_na_df[plt_obs_dg_na_df['mz'] <= 400]
+            low_plt_obs_dg_na_df = plt_obs_dg_na_df[plt_obs_dg_na_df['mz'] <= 400].copy()
             if not low_plt_obs_dg_na_df.empty:
-                low_plt_obs_dg_na_df.is_copy = False
+                # low_plt_obs_dg_na_df.is_copy = False
                 marker_l, stem_l, base_l = msms_low_pic.stem(low_plt_obs_dg_na_df['mz'], low_plt_obs_dg_na_df['i'],
                                                              markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2, alpha=0.4)
@@ -800,9 +800,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         if isinstance(other_nl_df, pd.DataFrame) and not other_nl_df.empty:
-            low_other_nl_df = other_nl_df[other_nl_df['mz'] <= 400]
+            low_other_nl_df = other_nl_df[other_nl_df['mz'] <= 400].copy()
             if not low_other_nl_df.empty:
-                low_other_nl_df.is_copy = False
+                # low_other_nl_df.is_copy = False
                 marker_l, stem_l, base_l = msms_low_pic.stem(low_other_nl_df['mz'], low_other_nl_df['i'],
                                                              markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.6), linewidth=1.2)
@@ -912,9 +912,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             msms_high_pic.set_ylim([0, msms_high_max * 1.25])
 
         if isinstance(obs_ident_df, pd.DataFrame):
-            high_obs_ident_df = obs_ident_df[obs_ident_df['mz'] > 400]
+            high_obs_ident_df = obs_ident_df[obs_ident_df['mz'] > 400].copy()
             if not high_obs_ident_df.empty:
-                high_obs_ident_df.is_copy = False
+                # high_obs_ident_df.is_copy = False
                 # high_obs_ident_df['i'] = high_obs_ident_df['i'] * 1.025
                 marker_l, stem_l, base_l = msms_high_pic.stem(high_obs_ident_df['mz'],
                                                               high_obs_ident_df['i'], markerfmt=' ')
@@ -931,9 +931,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         if isinstance(plt_obs_lyso_df, pd.DataFrame):
-            high_plt_obs_lyso_df = plt_obs_lyso_df[plt_obs_lyso_df['mz'] > 400]
+            high_plt_obs_lyso_df = plt_obs_lyso_df[plt_obs_lyso_df['mz'] > 400].copy()
             if not high_plt_obs_lyso_df.empty:
-                high_plt_obs_lyso_df.is_copy = False
+                # high_plt_obs_lyso_df.is_copy = False
                 marker_l, stem_l, base_l = msms_high_pic.stem(high_plt_obs_lyso_df['mz'], high_plt_obs_lyso_df['i'],
                                                               markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2)
@@ -947,9 +947,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         if isinstance(plt_obs_dg_na_df, pd.DataFrame):
-            high_plt_obs_dg_na_df = plt_obs_dg_na_df[plt_obs_dg_na_df['mz'] > 400]
+            high_plt_obs_dg_na_df = plt_obs_dg_na_df[plt_obs_dg_na_df['mz'] > 400].copy()
             if not high_plt_obs_dg_na_df.empty:
-                high_plt_obs_dg_na_df.is_copy = False
+                # high_plt_obs_dg_na_df.is_copy = False
                 marker_l, stem_l, base_l = msms_high_pic.stem(high_plt_obs_dg_na_df['mz'], high_plt_obs_dg_na_df['i'],
                                                               markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2)
@@ -963,9 +963,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         if isinstance(other_nl_df, pd.DataFrame):
-            high_other_nl_df = other_nl_df[other_nl_df['mz'] > 400]
+            high_other_nl_df = other_nl_df[other_nl_df['mz'] > 400].copy()
             if not high_other_nl_df.empty:
-                high_other_nl_df.is_copy = False
+                # high_other_nl_df.is_copy = False
                 marker_l, stem_l, base_l = msms_high_pic.stem(high_other_nl_df['mz'], high_other_nl_df['i'],
                                                               markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.6), linewidth=1.2)
@@ -997,9 +997,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         # Check missing part from lower m/z
 
         if isinstance(plt_obs_fa_df, pd.DataFrame):
-            high_plt_obs_fa_df = plt_obs_fa_df[plt_obs_fa_df['mz'] > 400]
+            high_plt_obs_fa_df = plt_obs_fa_df[plt_obs_fa_df['mz'] > 400].copy()
             if not high_plt_obs_fa_df.empty:
-                high_plt_obs_fa_df.is_copy = False
+                # high_plt_obs_fa_df.is_copy = False
                 marker_l, stem_l, base_l = msms_high_pic.stem(high_plt_obs_fa_df['mz'], high_plt_obs_fa_df['i'],
                                                               markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2, alpha=0.4)
@@ -1013,9 +1013,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         if isinstance(plt_obs_mg_df, pd.DataFrame):
-            high_plt_obs_mg_df = plt_obs_mg_df[plt_obs_mg_df['mz'] > 400]
+            high_plt_obs_mg_df = plt_obs_mg_df[plt_obs_mg_df['mz'] > 400].copy()
             if not high_plt_obs_mg_df.empty:
-                high_plt_obs_mg_df.is_copy = False
+                # high_plt_obs_mg_df.is_copy = False
                 marker_l, stem_l, base_l = msms_high_pic.stem(high_plt_obs_mg_df['mz'], high_plt_obs_mg_df['i'],
                                                               markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.4), linewidth=1.2, alpha=0.4)
@@ -1029,9 +1029,9 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
             pass
 
         if isinstance(other_frag_df, pd.DataFrame):
-            high_other_frag_df = other_frag_df[other_frag_df['mz'] > 400]
+            high_other_frag_df = other_frag_df[other_frag_df['mz'] > 400].copy()
             if not high_other_frag_df.empty:
-                high_other_frag_df.is_copy = False
+                # high_other_frag_df.is_copy = False
                 marker_l, stem_l, base_l = msms_high_pic.stem(high_other_frag_df['mz'], high_other_frag_df['i'],
                                                               markerfmt=' ')
                 plt.setp(stem_l, color=(0.8, 0.0, 0.0, 0.6), linewidth=1.2)

@@ -42,7 +42,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
     core_results_df = pd.DataFrame()
     for group_key in sub_group_list:
         subgroup_df = lpp_info_groups.get_group(group_key).copy()
-        subgroup_df.is_copy = False
+        # subgroup_df.is_copy = False
 
         same_mz_se = subgroup_df.iloc[0, :].squeeze()
         _pr_code = '%f<= MS2_PR_mz <= %f' % (same_mz_se['PR_MZ_LOW'], same_mz_se['PR_MZ_HIGH'])
@@ -68,15 +68,19 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
                     if ms1_spec_idx in spectra_pl.items:
                         ms1_df = spectra_pl[ms1_spec_idx]
                         if ms1_max > ms1_th:
-                            pr_ms1_df = ms1_df.query('%f <= i <= %f and %f <= mz <= %f' % (ms1_th, ms1_max,
-                                                                                           same_mz_se['MS1_MZ_LOW'],
-                                                                                           same_mz_se['MS1_MZ_HIGH']))
+                            pr_ms1_df = ms1_df.query('%f <= i <= %f and %f <= mz <= %f'
+                                                     % (ms1_th, ms1_max,
+                                                        same_mz_se['MS1_MZ_LOW'],same_mz_se['MS1_MZ_HIGH']
+                                                        )
+                                                     ).copy()
                         else:
-                            pr_ms1_df = ms1_df.query('%f <= i and %f <= mz <= %f' % (ms1_th,
-                                                                                     same_mz_se['MS1_MZ_LOW'],
-                                                                                     same_mz_se['MS1_MZ_HIGH']))
+                            pr_ms1_df = ms1_df.query('%f <= i and %f <= mz <= %f'
+                                                     % (ms1_th,
+                                                        same_mz_se['MS1_MZ_LOW'],same_mz_se['MS1_MZ_HIGH']
+                                                        )
+                                                     ).copy()
 
-                        pr_ms1_df.is_copy = False
+                        # pr_ms1_df.is_copy = False
 
                         if not pr_ms1_df.empty:
 
@@ -100,7 +104,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
                                 subgroup_df.loc[:, 'ppm'] = [_ppm] * len_df
                                 subgroup_df.loc[:, 'abs_ppm'] = [abs(_ppm)] * len_df
 
-                                core_results_df = core_results_df.append(subgroup_df)
+                                core_results_df = core_results_df.append(subgroup_df, sort=False)
                                 # print('core_results_df.shape', core_results_df.shape)
                             else:
                                 pass
@@ -129,7 +133,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
 class PrecursorHunter(object):
     def __init__(self, lpp_info_df, param_dct, os_type='windows'):
         self.lpp_info_df = lpp_info_df.copy()
-        self.lpp_info_df.is_copy = False
+        # self.lpp_info_df.is_copy = False
         self.param_dct = param_dct
         self.os_typ = os_type
 
@@ -310,18 +314,18 @@ class PrecursorHunter(object):
                     try:
                         sub_df = pr_info_result.get()
                         if not sub_df.empty:
-                            ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df)
+                            ms1_obs_pr_df = ms1_obs_pr_df.append(sub_df, sort=False)
                     except (KeyError, SystemError, ValueError, TypeError):
                         pass
                 else:
                     try:
                         if not pr_info_result.empty:
-                            ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
+                            ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result, sort=False)
                     except (KeyError, SystemError, ValueError, TypeError):
                         pass
             else:
                 if not pr_info_result.empty:
-                    ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result)
+                    ms1_obs_pr_df = ms1_obs_pr_df.append(pr_info_result, sort=False)
 
             result_counter += 1
             if result_counter > core_num * result_part_counter:

@@ -223,8 +223,8 @@ class LogPageCreator(object):
         with open(self.image_lst_page, 'a') as img_page:
             with open(self.idx_lst_page, 'a') as idx_page:
 
-                _log_info_df = ident_info_df
-                _log_info_df.is_copy = False
+                _log_info_df = ident_info_df.copy()
+                # _log_info_df.is_copy = False
                 _log_info_df['MS1_log_mz'] = _log_info_df['MS1_obs_mz'].round(1)
                 _log_info_df = _log_info_df.sort_values(by=['MS1_log_mz', 'Proposed_structures', 'MS2_scan_time',
                                                             'RANK_SCORE'], ascending=[True, True, True, False])

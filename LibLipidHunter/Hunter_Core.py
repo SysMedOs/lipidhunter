@@ -26,7 +26,6 @@ import math
 import multiprocessing
 from multiprocessing import Pool
 import os
-import pickle
 import sys
 from sys import platform
 import time
@@ -45,7 +44,7 @@ try:
     from LibLipidHunter.ScoreHunter import get_lipid_info
     from LibLipidHunter.PanelPlotter import gen_plot
     from LibLipidHunter.HuntManager import save_hunt
-    from LibLipidHunter.HuntManager import recover_hunt
+    from LibLipidHunter.HuntManager import gen_html_report
 except ImportError:  # for python 2.7.14
     from LipidComposer import LipidComposer
     from SpectraReader import extract_mzml
@@ -57,10 +56,10 @@ except ImportError:  # for python 2.7.14
     from ScoreHunter import get_lipid_info
     from PanelPlotter import gen_plot
     from HuntManager import save_hunt
-    from HuntManager import recover_hunt
+    from HuntManager import gen_html_report
 
 
-def huntlipids(param_dct, error_lst, save_fig=True):
+def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
     """
 
     :param(dict) param_dct:
@@ -82,6 +81,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                         'core_number': 3, 'max_ram': 5, 'img_type': u'png', 'img_dpi': 300}
     :param(list) error_lst: empty list to store error info to display on GUI.
     :param(bool) save_fig: Can be set to False to skip image generation (not recommended).
+    :param(bool) save_session: Can be set to True to save session as a file using pickle.
     :return:
     """
 
@@ -329,9 +329,9 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     usr_scan_checker_lst = usr_scan_info_df['scan_checker'].tolist()    # line can be removed not necessary
     # TODO (georgia.angelidou@uni-leipzig.de): the line below will change to the following:
     # checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_info_df['scan_checker'].tolist()st)]
-    checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_checker_lst)]
+    checked_info_df = ms1_obs_pr_df[ms1_obs_pr_df['scan_checker'].isin(usr_scan_checker_lst)].copy()
     # del usr_scan_checker_lst
-    checked_info_df.is_copy = False
+    # checked_info_df.is_copy = False
     checked_info_df.sort_values(by=['scan_checker', 'Lib_mz'], ascending=[True, True], inplace=True)
     # TODO (georgia.angelidou@uni-leipzig.de): remove if not needed
     # if 'debug_mode' in list(param_dct.keys()):
@@ -708,7 +708,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         # add precursor to the list
         target_pr_df = pd.DataFrame(data={'CLASS': usr_lipid_class, 'TYPE': 'NL', 'EXACTMASS': 0.0,
                                           'PR_CHARGE': usr_charge, 'LABEL': 'PR', 'CHARGE_MODE': 'NEG'}, index=['PR'])
-        target_nl_df = target_nl_df.append(target_pr_df)
+        target_nl_df = target_nl_df.append(target_pr_df, sort=False)
         target_nl_df.reset_index(drop=True, inplace=True)
 
         # extract info for other classes
@@ -732,7 +732,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         # add precursor to the list
         target_pr_df = pd.DataFrame(data={'CLASS': usr_lipid_class, 'TYPE': 'NL', 'EXACTMASS': 0.0,
                                           'PR_CHARGE': usr_charge, 'LABEL': 'PR', 'CHARGE_MODE': 'NEG'}, index=['PR'])
-        target_nl_df = target_nl_df.append(target_pr_df)
+        target_nl_df = target_nl_df.append(target_pr_df, sort=False)
         target_nl_df.reset_index(drop=True, inplace=True)
 
         # extract info for other classes
@@ -756,7 +756,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         # add precursor to the list
         target_pr_df = pd.DataFrame(data={'CLASS': usr_lipid_class, 'TYPE': 'NL', 'EXACTMASS': 0.0,
                                           'PR_CHARGE': usr_charge, 'LABEL': 'PR', 'CHARGE_MODE': 'NEG'}, index=['PR'])
-        target_nl_df = target_nl_df.append(target_pr_df)
+        target_nl_df = target_nl_df.append(target_pr_df, sort=False)
         target_nl_df.reset_index(drop=True, inplace=True)
 
         # extract info for other classes
@@ -1000,7 +1000,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                 else:
                     if isinstance(tmp_lipid_info_df, pd.DataFrame):
                         if not tmp_lipid_info_df.empty:
-                            output_df = output_df.append(tmp_lipid_info_df)
+                            output_df = output_df.append(tmp_lipid_info_df, sort=False)
                             lipid_info_img_lst.extend(tmp_lipid_img_lst)
             if part_tot == 1:
                 print('[STATUS] >>> multiprocessing results merged')
@@ -1047,7 +1047,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
                     tmp_lipid_img_lst = lipid_info_results_lst[1]
                     if isinstance(tmp_lipid_info_df, pd.DataFrame):
                         if not tmp_lipid_info_df.empty:
-                            output_df = output_df.append(tmp_lipid_info_df)
+                            output_df = output_df.append(tmp_lipid_info_df, sort=False)
                             lipid_info_img_lst = tmp_lipid_img_lst
                     # TODO (georgia.angelidou@uni-leipzig.de): code can change as below
                     # if isinstance(lipid_info_results_lst[0], pd.DataFrame):
@@ -1229,96 +1229,25 @@ def huntlipids(param_dct, error_lst, save_fig=True):
         print('[STATUS] >>> Identification finished in %s sec <<<' % tot_run_time)
         return tot_run_time, error_lst, output_df
 
-    results_pickle_dct = {'lipid_info_img_lst': lipid_info_img_lst,
-                          'param_dct': param_dct, 'output_df': output_df,
-                          'final_output_df': final_output_df}
-    hunt_save_path = os.path.join(output_folder, 'HunterData_%s.hunt' % hunter_start_time_str)
-    save_hunt(results_pickle_dct, hunt_save_path)
-    print('Hunter session saved as:', hunt_save_path)
+    if save_session is True:
+        hunt_save_path = os.path.join(output_folder, 'HunterData_%s.hunt' % hunter_start_time_str)
+        results_pickle_dct = {'param_dct': param_dct, 'output_df': output_df,
+                              'final_output_df': final_output_df, 'lipid_info_img_lst': lipid_info_img_lst}
+        save_hunt(results_pickle_dct, hunt_save_path)
+        print('Hunter session saved as:', hunt_save_path)
+    else:
+        pass
 
-    # Start multiprocessing to save img
+    # Start multiprocessing to save img for HTML report
     if save_fig is True:
-
-        # keep stay in current working directory
-        current_path = os.getcwd()
-        if os.path.isdir(output_folder):
-            os.chdir(output_folder)
-            if os.path.isdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str):
-                print('[INFO] --> Output folder existed...')
-            else:
-                os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
-                print('[INFO] --> Output folder created...')
-        else:
-            os.mkdir(output_folder)
-            os.chdir(output_folder)
-            os.mkdir('LipidHunter_Results_Figures_%s' % hunter_start_time_str)
-            print('[INFO] --> Output folder created...')
-        os.chdir(current_path)
-
-        # generate html files
-        log_pager = LogPageCreator(output_folder, hunter_start_time_str, param_dct)
-        log_pager.add_all_info(output_df)
-        log_pager.close_page()
-        # del log_pager
-        print('[STATUS] >>> start to generate images: image count %i' % len(lipid_info_img_lst))
-
-        if usr_core_num > 1:
-            parallel_pool = Pool(usr_core_num)
-            img_num = len(lipid_info_img_lst)
-            img_sub_len = int(math.ceil(img_num / usr_core_num))
-            img_sub_key_lst = [lipid_info_img_lst[k: k + img_sub_len] for k in range(0, img_num, img_sub_len)]
-
-            worker_count = 1
-            for img_sub_lst in img_sub_key_lst:
-                if isinstance(img_sub_lst, tuple) or isinstance(img_sub_lst, list):
-                    if None in img_sub_lst:
-                        img_sub_lst = [x for x in img_sub_lst if x is not None]
-                    else:
-                        pass
-                    # img_params_dct = {'lipid_info_img_lst': img_sub_lst, 'usr_core_num': usr_core_num,
-                    #                   'usr_img_type': usr_img_type, 'usr_dpi': usr_dpi, 'usr_vendor': usr_vendor,
-                    #                   'usr_ms1_precision': usr_ms1_precision, 'worker_count': worker_count}
-
-                    if len(img_sub_lst) > 0:
-                        print('[STATUS] >>> Core #%i ==> Generating output images ... image count: %i'
-                              % (worker_count, len(img_sub_lst)))
-                        if 'debug_mode' in list(param_dct.keys()):
-                            if param_dct['debug_mode'] == 'ON':
-                                # TODO (georgia.angelidou@uni-leipzig.de): Check if the following is really necesary or can be done with alternative way
-                                for img_param_dct in img_sub_lst:
-                                    print(img_param_dct['save_img_as'])
-                                del img_param_dct
-                        parallel_pool.apply_async(gen_plot, args=(img_sub_lst, worker_count, usr_img_type,
-                                                                  usr_dpi, usr_vendor, usr_ms1_precision))
-                        worker_count += 1
-            # del img_sub_key_lst
-            # del img_sub_lst
-            parallel_pool.close()
-            parallel_pool.join()
-
-        else:
-            worker_count = 1
-            print('[INFO] --> Using single core mode...')
-            if isinstance(lipid_info_img_lst, tuple) or isinstance(lipid_info_img_lst, list):
-                if None in lipid_info_img_lst:
-                    lipid_info_img_lst = [x for x in lipid_info_img_lst if x is not None]
-                else:
-                    pass
-                if len(lipid_info_img_lst) > 0:
-                    gen_plot(lipid_info_img_lst, worker_count, usr_img_type, usr_dpi,
-                             usr_vendor, usr_ms1_precision)
+        gen_html_report(param_dct, output_df, lipid_info_img_lst)
     else:
         print('[WARNING] !!! User skip image generation !!!!!!')
 
     tot_run_time = time.clock() - start_time
-    # del lipid_info_img_lst
-    # del parallel_pool
-    # del param_dct
-    # del output_df
 
     print('[STATUS] >>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
-    # alldfs = [var for var in dir() if isinstance(eval(var), pd.core.frame.DataFrame)]
-    # print (alldfs)
+
     return tot_run_time, error_lst, output_df
 
 

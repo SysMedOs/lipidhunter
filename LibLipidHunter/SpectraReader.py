@@ -146,16 +146,16 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                             # _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False).head(1000)
                             if ms1_max > ms1_threshold:
                                 _tmp_spec_df = _tmp_spec_df.query('%f <= i <= %f' %
-                                                                  ((ms1_threshold * 0.1), ms1_max))
+                                                                  ((ms1_threshold * 0.1), ms1_max)).copy()
                             else:
-                                _tmp_spec_df = _tmp_spec_df.query('%f <= i' % (ms1_threshold * 0.1))
-                            _tmp_spec_df.is_copy = False
+                                _tmp_spec_df = _tmp_spec_df.query('%f <= i' % (ms1_threshold * 0.1)).copy()
+                            # _tmp_spec_df.is_copy = False
                             if not _tmp_spec_df.empty:
                                 _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False)
                                 _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
                                 spec_dct[spec_idx] = _tmp_spec_df
                                 _tmp_spec_df.loc[:, 'rt'] = _scan_rt
-                                ms1_xic_df = ms1_xic_df.append(_tmp_spec_df)
+                                ms1_xic_df = ms1_xic_df.append(_tmp_spec_df, sort=False)
                             else:
                                 print('empty_MS1_spectrum --> index = ', spec_idx)
                             del _tmp_spec_df
@@ -219,10 +219,11 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                             dda_rank_idx = 0
                             # _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False).head(1000)
                             if ms1_max > ms1_threshold:
-                                _tmp_spec_df = _tmp_spec_df.query('%f <= i <= %f' % ((ms1_threshold * 0.1), ms1_max))
+                                _tmp_spec_df = _tmp_spec_df.query('%f <= i <= %f'
+                                                                  % ((ms1_threshold * 0.1), ms1_max)).copy()
                             else:
-                                _tmp_spec_df = _tmp_spec_df.query('%f <= i' % (ms1_threshold * 0.1))
-                            _tmp_spec_df.is_copy = False
+                                _tmp_spec_df = _tmp_spec_df.query('%f <= i' % (ms1_threshold * 0.1)).copy()
+                            # _tmp_spec_df.is_copy = False
                             if not _tmp_spec_df.empty:
                                 _tmp_spec_df = _tmp_spec_df.sort_values(by='i', ascending=False)
                                 _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
@@ -230,7 +231,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                                 _tmp_spec_df.loc[:, 'rt'] = _scan_rt
                                 print('MS1_spectrum -> index = {idx} @ scan_time: {rt} | DDA_events={dda_idx}'
                                       .format(idx=spec_idx, dda_idx=dda_event_idx, rt=_scan_rt))
-                                ms1_xic_df = ms1_xic_df.append(_tmp_spec_df)
+                                ms1_xic_df = ms1_xic_df.append(_tmp_spec_df, sort=False)
                             else:
                                 print('empty_MS1_spectrum --> index = ', spec_idx)
                             del _tmp_spec_df
@@ -296,8 +297,8 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
 
     if mz in scan_info_df['MS2_PR_mz'].values.tolist():
         _tmp_mz_scan_info_df = scan_info_df.query('MS2_PR_mz == %.6f and DDA_rank == %f and scan_number == %f'
-                                                  % (mz, func_id, ms2_scan_id))
-        _tmp_mz_scan_info_df.is_copy = False
+                                                  % (mz, func_id, ms2_scan_id)).copy()
+        # _tmp_mz_scan_info_df.is_copy = False
 
         if _tmp_mz_scan_info_df.shape[0] == 1:
             ms2_spec_idx = _tmp_mz_scan_info_df.at[_tmp_mz_scan_info_df.index[0], 'spec_index']
@@ -326,7 +327,7 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
                         ms1_pr_query = '%.6f <= mz <= %.6f' % (mz_lib - ms1_delta, mz_lib + ms1_delta)
 
                     ms1_pr_df = ms1_df.query(ms1_pr_query).copy()
-                    ms1_pr_df.is_copy = False
+                    # ms1_pr_df.is_copy = False
                     if not ms1_pr_df.empty:
                         ms1_pr_df.loc[:, 'mz_xic'] = ms1_pr_df['mz']
                         ms1_pr_df = ms1_pr_df.round({'mz': 6, 'mz_xic': 4})
@@ -346,8 +347,8 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
                             # get spectra_df of corresponding MS2 DDA scan
                             if ms2_spec_idx in spectra_pl.items:
                                 ms2_df = spectra_pl[ms2_spec_idx]
-                                ms2_df = ms2_df.query('i > 0')
-                                ms2_df.is_copy = False
+                                ms2_df = ms2_df.query('i > 0').copy()
+                                # ms2_df.is_copy = False
                                 ms2_df.sort_values(by='i', ascending=False, inplace=True)
                                 ms2_df.reset_index(drop=True, inplace=True)
                                 try:
@@ -393,7 +394,7 @@ def get_xic_from_pl(xic_ms1_lst, ms1_xic_df, xic_ppm, os_type='windows', queue=N
             ms1_query = '%f <= mz <= %f' % (ms1_low, ms1_high)
             # print(ms1_query)
             _found_ms1_df = ms1_xic_df.query(ms1_query).copy()
-            _found_ms1_df.is_copy = False
+            # _found_ms1_df.is_copy = False
             _found_ms1_df.loc[:, 'ppm'] = 1e6 * (_found_ms1_df['mz'] - _xic_mz) / _xic_mz
             _found_ms1_df.loc[:, 'ppm'] = _found_ms1_df['ppm'].abs()
             _found_ms1_df.loc[:, 'mz'] = _xic_mz
