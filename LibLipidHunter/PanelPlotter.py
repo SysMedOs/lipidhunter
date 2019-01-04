@@ -37,7 +37,7 @@ import matplotlib.patches as patches
 from concurrent.futures import ThreadPoolExecutor
 
 
-def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
+def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
                  formula_charged, charge, core_count, save_img_as=None, img_type='png', dpi=300, vendor='waters',
                  ms1_precision=50e-6):
     ms2_pr_mz = mz_se['MS2_PR_mz']
@@ -113,7 +113,7 @@ def plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_sc
         else:
             ms_zoom_bp_i = 0
 
-    xic_df = xic_dct[ms1_xic_mz]
+    # xic_df = xic_dct[ms1_xic_mz]
 
     xic_rt_lst = xic_df['rt'].values.tolist()
     xic_i_lst = xic_df['i'].values.tolist()
@@ -1083,7 +1083,7 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
         for param_dct in param_dct_lst:
             abbr = param_dct['abbr']
             mz_se = param_dct['mz_se']
-            xic_dct = param_dct['xic_dct']
+            xic_df = param_dct['xic_df']
             ident_info_dct = param_dct['ident_info_dct']
             spec_info_dct = param_dct['spec_info_dct']
             isotope_score_info_dct = param_dct['isotope_score_info_dct']
@@ -1094,7 +1094,7 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
             print('%s [STATUS] >>> image: %i / %i' % (core_count, img_counter, tot_img_count))
 
             try:
-                plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
+                plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
                              formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
                              dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
             except Exception as e:
@@ -1107,7 +1107,7 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
             param_dct = param_dct_lst
             abbr = param_dct['abbr']
             mz_se = param_dct['mz_se']
-            xic_dct = param_dct['xic_dct']
+            xic_df = param_dct['xic_df']
             ident_info_dct = param_dct['ident_info_dct']
             spec_info_dct = param_dct['spec_info_dct']
             isotope_score_info_dct = param_dct['isotope_score_info_dct']
@@ -1116,7 +1116,7 @@ def gen_plot(param_dct_lst, core_count, img_type='png', dpi=300, vendor='waters'
             charge = param_dct['charge']
             save_img_as = param_dct['save_img_as']
             try:
-                plot_spectra(abbr, mz_se, xic_dct, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
+                plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_score_info_dct, specific_dct,
                              formula_charged, charge, core_count, save_img_as=save_img_as, img_type=img_type,
                              dpi=dpi, vendor=vendor, ms1_precision=ms1_precision)
             except Exception as e:

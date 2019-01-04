@@ -708,7 +708,7 @@ def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
         # add precursor to the list
         target_pr_df = pd.DataFrame(data={'CLASS': usr_lipid_class, 'TYPE': 'NL', 'EXACTMASS': 0.0,
                                           'PR_CHARGE': usr_charge, 'LABEL': 'PR', 'CHARGE_MODE': 'NEG'}, index=['PR'])
-        target_nl_df = target_nl_df.append(target_pr_df, sort=False)
+        target_nl_df = target_nl_df.append(target_pr_df)
         target_nl_df.reset_index(drop=True, inplace=True)
 
         # extract info for other classes
@@ -732,7 +732,7 @@ def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
         # add precursor to the list
         target_pr_df = pd.DataFrame(data={'CLASS': usr_lipid_class, 'TYPE': 'NL', 'EXACTMASS': 0.0,
                                           'PR_CHARGE': usr_charge, 'LABEL': 'PR', 'CHARGE_MODE': 'NEG'}, index=['PR'])
-        target_nl_df = target_nl_df.append(target_pr_df, sort=False)
+        target_nl_df = target_nl_df.append(target_pr_df)
         target_nl_df.reset_index(drop=True, inplace=True)
 
         # extract info for other classes
@@ -756,7 +756,7 @@ def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
         # add precursor to the list
         target_pr_df = pd.DataFrame(data={'CLASS': usr_lipid_class, 'TYPE': 'NL', 'EXACTMASS': 0.0,
                                           'PR_CHARGE': usr_charge, 'LABEL': 'PR', 'CHARGE_MODE': 'NEG'}, index=['PR'])
-        target_nl_df = target_nl_df.append(target_pr_df, sort=False)
+        target_nl_df = target_nl_df.append(target_pr_df)
         target_nl_df.reset_index(drop=True, inplace=True)
 
         # extract info for other classes
@@ -1000,7 +1000,7 @@ def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
                 else:
                     if isinstance(tmp_lipid_info_df, pd.DataFrame):
                         if not tmp_lipid_info_df.empty:
-                            output_df = output_df.append(tmp_lipid_info_df, sort=False)
+                            output_df = output_df.append(tmp_lipid_info_df)
                             lipid_info_img_lst.extend(tmp_lipid_img_lst)
             if part_tot == 1:
                 print('[STATUS] >>> multiprocessing results merged')
@@ -1047,7 +1047,7 @@ def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
                     tmp_lipid_img_lst = lipid_info_results_lst[1]
                     if isinstance(tmp_lipid_info_df, pd.DataFrame):
                         if not tmp_lipid_info_df.empty:
-                            output_df = output_df.append(tmp_lipid_info_df, sort=False)
+                            output_df = output_df.append(tmp_lipid_info_df)
                             lipid_info_img_lst = tmp_lipid_img_lst
                     # TODO (georgia.angelidou@uni-leipzig.de): code can change as below
                     # if isinstance(lipid_info_results_lst[0], pd.DataFrame):

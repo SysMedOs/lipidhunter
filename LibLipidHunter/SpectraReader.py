@@ -155,7 +155,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                                 _tmp_spec_df = _tmp_spec_df.reset_index(drop=True)
                                 spec_dct[spec_idx] = _tmp_spec_df
                                 _tmp_spec_df.loc[:, 'rt'] = _scan_rt
-                                ms1_xic_df = ms1_xic_df.append(_tmp_spec_df, sort=False)
+                                ms1_xic_df = ms1_xic_df.append(_tmp_spec_df)
                             else:
                                 print('empty_MS1_spectrum --> index = ', spec_idx)
                             del _tmp_spec_df
@@ -231,7 +231,7 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                                 _tmp_spec_df.loc[:, 'rt'] = _scan_rt
                                 print('MS1_spectrum -> index = {idx} @ scan_time: {rt} | DDA_events={dda_idx}'
                                       .format(idx=spec_idx, dda_idx=dda_event_idx, rt=_scan_rt))
-                                ms1_xic_df = ms1_xic_df.append(_tmp_spec_df, sort=False)
+                                ms1_xic_df = ms1_xic_df.append(_tmp_spec_df)
                             else:
                                 print('empty_MS1_spectrum --> index = ', spec_idx)
                             del _tmp_spec_df
