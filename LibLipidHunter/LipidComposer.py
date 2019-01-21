@@ -180,7 +180,7 @@ class LipidComposer:
                 usr_fa_dct[_fa_abbr] = _fa_info_dct
 
         usr_fa_df = pd.DataFrame(usr_fa_dct).T.copy()  # put all the info for the FA in a dataframe
-        usr_fa_df.is_copy = False
+        # usr_fa_df.is_copy = False
 
         # create the queries for the FA fragments and MG
         for _fa_ion in ['[FA-H]-', '[FA-H2O-H]-', '[FA-H2O+H]+']:
@@ -350,12 +350,12 @@ class LipidComposer:
 
         if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG', 'SM']:
 
-            fa_combo_link_df = fa_combo_df
-            fa_combo_link_df.is_copy = False
+            fa_combo_link_df = fa_combo_df.copy()
+            # fa_combo_link_df.is_copy = False
             fa_combo_link_df['LINK'] = fa_combo_link_df['FA1'].str[0:2]
-            fa_link_df = fa_combo_link_df[fa_combo_link_df['LINK'] == 'FA']
+            fa_link_df = fa_combo_link_df[fa_combo_link_df['LINK'] == 'FA'].copy()
 
-            fa_link_df.is_copy = False
+            # fa_link_df.is_copy = False
             fa_link_df.drop(['LINK', 'CLASS'], axis=1, inplace=True)
             # fa_link_df.values.argsort(kind='mergesort')
             # fa_link_df.drop(columns=['CLASS'], inplace=True)
@@ -367,9 +367,10 @@ class LipidComposer:
             fa_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
 
             if lipid_class in ['PC', 'PE']:
-                op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-') | (fa_combo_link_df['LINK'] == 'P-')]
+                op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-')
+                                              | (fa_combo_link_df['LINK'] == 'P-')].copy()
                 if not op_link_df.empty:
-                    op_link_df.is_copy = False
+                    # op_link_df.is_copy = False
                     op_link_df.drop(['LINK'], axis=1, inplace=True)
                     op_link_df['DISCRETE_ABBR'] = (op_link_df['CLASS'] + '(' +
                                                    op_link_df['FA1'].str.strip('FA') + '_' +
@@ -387,13 +388,13 @@ class LipidComposer:
 
         elif lipid_class in ['LPA', 'LPC', 'LPE', 'LPG', 'LPI', 'LPS']:
 
-            fa_combo_link_df = fa_combo_df
-            fa_combo_link_df.is_copy = False
+            fa_combo_link_df = fa_combo_df.copy()
+            # fa_combo_link_df.is_copy = False
 
             fa_combo_link_df['LINK'] = fa_combo_link_df['FA1'].str[0:2]
-            fa_link_df = fa_combo_link_df[fa_combo_link_df['LINK'] == 'FA']
+            fa_link_df = fa_combo_link_df[fa_combo_link_df['LINK'] == 'FA'].copy()
 
-            fa_link_df.is_copy = False
+            # fa_link_df.is_copy = False
             fa_link_df.drop(['LINK', 'CLASS'], axis=1, inplace=True)
             # fa_link_df.values.argsort(kind='mergesort')
             # fa_link_df.drop(columns=['CLASS'], inplace=True)
@@ -405,9 +406,10 @@ class LipidComposer:
             fa_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
 
             if lipid_class in ['LPC', 'LPE']:
-                op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-') | (fa_combo_link_df['LINK'] == 'P-')]
+                op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-')
+                                              | (fa_combo_link_df['LINK'] == 'P-')].copy()
                 if not op_link_df.empty:
-                    op_link_df.is_copy = False
+                    # op_link_df.is_copy = False
                     op_link_df.drop(['LINK'], axis=1, inplace=True)
                     op_link_df['DISCRETE_ABBR'] = (op_link_df['CLASS'] + '(' +
                                                    op_link_df['FA1'].str.strip('FA') + ')')
@@ -423,12 +425,12 @@ class LipidComposer:
             print('[INFO] --> Number of predicted lipids (exact position): ', fa_combo_df.shape[0])
 
         elif lipid_class in ['TG']:
-            fa_combo_link_df = fa_combo_df
-            fa_combo_link_df.is_copy = False
+            fa_combo_link_df = fa_combo_df.copy()
+            # fa_combo_link_df.is_copy = False
             fa_combo_link_df['LINK'] = fa_combo_link_df['FA1'].str[0:2]
             fa_link_df = fa_combo_link_df[fa_combo_link_df['LINK'] == 'FA']
 
-            fa_link_df.is_copy = False
+            # fa_link_df.is_copy = False
             fa_link_df.drop(['LINK'], axis=1, inplace=True)
             fa_link_df.values.sort(kind='mergesort')  # safe sort by numpy
             fa_link_df['DISCRETE_ABBR'] = (fa_link_df['CLASS'] + '(' +
@@ -436,9 +438,10 @@ class LipidComposer:
                                            fa_link_df['FA2'].str.strip('FA') + '_' +
                                            fa_link_df['FA3'].str.strip('FA') + ')')
             fa_link_df.sort_values(by='DISCRETE_ABBR', inplace=True)
-            op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-') | (fa_combo_link_df['LINK'] == 'P-')]
+            op_link_df = fa_combo_link_df[(fa_combo_link_df['LINK'] == 'O-')
+                                          | (fa_combo_link_df['LINK'] == 'P-')].copy()
             if not op_link_df.empty:
-                op_link_df.is_copy = False
+                # op_link_df.is_copy = False
                 op_link_df.drop(['LINK'], axis=1, inplace=True)
                 op_link_df['DISCRETE_ABBR'] = (op_link_df['CLASS'] + '(' +
                                                op_link_df['FA1'].str.strip('FA') + '_' +
@@ -470,12 +473,12 @@ class LipidComposer:
 
         if position is False:
             print('[INFO] --> Use discrete form for identification ...')
-            fa_combo_lite_df = fa_combo_df.drop_duplicates(subset=['DISCRETE_ABBR'], keep='first')
+            fa_combo_lite_df = fa_combo_df.drop_duplicates(subset=['DISCRETE_ABBR'], keep='first').copy()
             print('[INFO] --> Number of predicted lipids (discrete form): ', fa_combo_lite_df.shape[0])
         else:
-            fa_combo_lite_df = fa_combo_df
+            fa_combo_lite_df = fa_combo_df.copy()
 
-        fa_combo_lite_df.is_copy = False
+        # fa_combo_lite_df.is_copy = False
         fa_combo_lite_df['idx'] = fa_combo_lite_df['DISCRETE_ABBR']
         fa_combo_lite_df.set_index('idx', drop=True, inplace=True)
 
@@ -903,37 +906,7 @@ class LipidComposer:
 
 
 if __name__ == '__main__':
-    fa_lst_file = r'../ConfigurationFiles/1-FA_Whitelist_LPL.xlsx'
-    # fa_lst_file = r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx'
 
-    # Note:
-    # exact position means to consider the poition from the FA white list that the user give but,
-    # in the case that the user define 2 different FA for both positions then:
-    # When it is false it will give only one option
-    # and when it is TRUE to give both compinations that these 2 FA an make (in case of phospholipids)
+    from test.test_LipidComposer import test_lipicomposer
 
-    # usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'TG', 'charge_mode': '[M+NH4]+',
-    #                  'exact_position': 'FALSE'}
-
-    # usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'LPC', 'charge_mode': '[M+HCOO]-',
-    #                  'exact_position': 'FALSE'}
-    usr_param_dct = {'fa_whitelist': fa_lst_file, 'lipid_class': 'LPE', 'charge_mode': '[M-H]-',
-                     'exact_position': 'FALSE'}
-
-    composer = LipidComposer()
-    usr_lipid_master_df = composer.compose_lipid(param_dct=usr_param_dct, ms2_ppm=30)
-    print('[INFO] --> Lipid Master Table generated...')
-
-    # master_csv = r'../Temp/LipidMaster_Whitelist_TG_ML.csv'
-    master_csv = r'../Temp/LipidMaster_Whitelist_%s.csv' % usr_param_dct['lipid_class']
-    fa_csv = r'../Temp/LipidMaster_FAlist_%s.csv' % usr_param_dct['lipid_class']
-
-    calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_class'], fa_lst_file, ms2_ppm=50)
-
-    if calc_fa_df is False:
-        print('[ERROR] !!! Failed to generate FA info table ...\n')
-
-    print(calc_fa_df.head())
-    usr_lipid_master_df.to_csv(master_csv)
-    calc_fa_df.to_csv(fa_csv)
-    print('[INFO] --> Finished...')
+    test_lipicomposer()
