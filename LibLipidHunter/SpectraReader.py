@@ -173,33 +173,40 @@ def extract_mzml(mzml, rt_range, dda_top=6, ms1_threshold=1000, ms2_threshold=10
                         if _function in ms2_function_range_lst:
 
                             _tmp_spec_df = pd.DataFrame(data=_spectrum.peaks, columns=['mz', 'i'])
-                            pr_mz = _spectrum[scan_pr_mz_obo]
-                            _ms2_temp_spec_df = _tmp_spec_df.query('i >= %f' % ms2_threshold)
-                            if _ms2_temp_spec_df.shape[0] > 4:
-                                spec_dct[spec_idx] = _ms2_temp_spec_df
-                                del _ms2_temp_spec_df
+                            try:
+                                pr_mz = _spectrum[scan_pr_mz_obo]
+                            except (KeyError, AttributeError):
+                                pr_mz = -1
+                            if pr_mz > 0:
+                                _ms2_temp_spec_df = _tmp_spec_df.query('i >= %f' % ms2_threshold)
+                                if _ms2_temp_spec_df.shape[0] > 4:
+                                    spec_dct[spec_idx] = _ms2_temp_spec_df
+                                    del _ms2_temp_spec_df
+                                else:
+                                    print('empty_MS2_spectrum --> index = ', spec_idx)
+
+                                del _tmp_spec_df
+
+                                spec_idx_lst.append(spec_idx)
+                                dda_event_lst.append(dda_event_idx)
+                                rt_lst.append(_scan_rt)
+                                dda_rank_lst.append(_function - 1)  # function 1 in Waters file is MS level
+                                scan_id_lst.append(_scan_id)
+                                pr_mz_lst.append(pr_mz)
+
+                                # if first_full_dda == 1:
+                                #     dda_event_idx += 1
+                                #     first_full_dda = 0
+                                # else:
+                                #     pass
+
+                                print('MS2_spectrum -> index = {idx} @ scan_time: {rt} '
+                                      '| DDA_events={dda_idx} RANK {rank} | PR_MZ: {mz}'
+                                      .format(idx=spec_idx, dda_idx=dda_event_idx,
+                                              rank=_function-1, mz=pr_mz, rt=_scan_rt)
+                                      )
                             else:
-                                print('empty_MS2_spectrum --> index = ', spec_idx)
-
-                            del _tmp_spec_df
-
-                            spec_idx_lst.append(spec_idx)
-                            dda_event_lst.append(dda_event_idx)
-                            rt_lst.append(_scan_rt)
-                            dda_rank_lst.append(_function - 1)  # function 1 in Waters file is MS level
-                            scan_id_lst.append(_scan_id)
-                            pr_mz_lst.append(pr_mz)
-
-                            # if first_full_dda == 1:
-                            #     dda_event_idx += 1
-                            #     first_full_dda = 0
-                            # else:
-                            #     pass
-
-                            print('MS2_spectrum -> index = {idx} @ scan_time: {rt} | DDA_events={dda_idx} RANK {rank}'
-                                  ' | PR_MZ: {mz}'
-                                  .format(idx=spec_idx, dda_idx=dda_event_idx, rank=_function-1, mz=pr_mz, rt=_scan_rt))
-
+                                print('MS2 DDA RANK ERROR of rank: {rank}'.format(rank=_function-1))
             spec_idx += 1
 
     elif vendor in ['thermo', 'sciex', 'agilent']:

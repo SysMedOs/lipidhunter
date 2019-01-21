@@ -43,11 +43,11 @@ def test_huntlipids():
         # ['TG', 'waters', '[M+H]+', 'TG_waters'],
         # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
         # ['TG', 'waters', '[M+Na]+', 'TG_waters_Na'],
-        # ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
+        ['TG', 'thermo', '[M+NH4]+', 'TG_thermo_NH4'],
         # ['DG', 'thermo', '[M+NH4]+', 'DG_thermo_NH4'],
         # ['DG', 'agilent', '[M+NH4]+', 'TG_agilent_NH4'],
         # ['LPC', 'thermo', '[M+HCOO]-', 'LPC_thermo'],
-        ['LPE', 'thermo', '[M-H]-', 'LPE_thermo'],
+        # ['LPE', 'thermo', '[M-H]-', 'LPE_thermo'],
         # ['LPA', 'thermo', '[M-H]-', 'LPA_thermo'],
         # ['LPG', 'thermo', '[M-H]-', 'LPG_thermo'],
         # ['LPS', 'thermo', '[M-H]-', 'LPS_thermo'],
@@ -131,7 +131,7 @@ def test_huntlipids():
             elif vendor == 'thermo':
                 mzml = tg_mzml_thermo
                 mz_range = [600, 1000]  # 600, 1000 short 800 - 840
-                rt_range = [24, 26]  # [20, 28] short [24, 26]
+                rt_range = [20, 28]  # [20, 28] short [24, 26]
             elif vendor == 'sciex':
                 mzml = tg_mzml_SCIEXS
                 mz_range = [900, 1000]  # 600, 1000

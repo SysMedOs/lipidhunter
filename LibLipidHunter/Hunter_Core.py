@@ -59,7 +59,7 @@ except ImportError:  # for python 2.7.14
     from HuntManager import gen_html_report
 
 
-def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
+def huntlipids(param_dct, error_lst, save_fig=True):
     """
 
     :param(dict) param_dct:
@@ -132,6 +132,15 @@ def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
     usr_img_type = param_dct['img_type']
 
     hunter_start_time_str = param_dct['hunter_start_time']
+
+    save_session = False
+    try:
+        if param_dct['debug_mode'] == 'ON':
+            save_session = True
+        else:
+            pass
+    except (KeyError, AttributeError):
+        print('Debug mode == off')
 
     if platform == "linux" or platform == "linux2":  # linux
         if usr_core_num > 1:
@@ -668,11 +677,7 @@ def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
         _usr_ms2_dda_rank = _spec_info_dct['DDA_rank']
         _usr_ms2_scan_id = _spec_info_dct['scan_number']
         _usr_mz_lib = _spec_info_dct['Lib_mz']
-        # TODO(zhixu.ni@uni-leipzig.de): change get_spectra into multiple processing mode
-        # TODO(georgia.angelidou@uni-leipzig.de): change remove and company the next to line as:
-        # lipid_spec_dct[_spec_group_key] = get_spectra(_usr_ms2_pr_mz, _usr_mz_lib, _usr_ms2_dda_rank, _usr_ms2_scan_id,
-        #                                ms1_xic_mz_lst, usr_scan_info_df, usr_spectra_pl,
-        #                                dda_top=usr_dda_top, ms1_precision=usr_ms1_precision, vendor=usr_vendor)
+
         usr_spec_info_dct = get_spectra(_usr_ms2_pr_mz, _usr_mz_lib, _usr_ms2_dda_rank, _usr_ms2_scan_id,
                                         ms1_xic_mz_lst, usr_scan_info_df, usr_spectra_pl,
                                         dda_top=usr_dda_top, ms1_precision=usr_ms1_precision, vendor=usr_vendor)

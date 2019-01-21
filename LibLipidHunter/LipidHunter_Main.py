@@ -1216,19 +1216,21 @@ class SingleWorker(QtCore.QObject):
         self.infoback()
         self.info_update.emit(self.info_str)
 
-        try:
-            hunter_time, log_lst, output_df2 = huntlipids(self.params_dct, error_lst=log_lst)
-        except Exception as _e:
-            print(_e)
-            hunter_time = False
-            log_lst = False
-            export_df = False
-            time.sleep(1)
-            self.info_str = '!! Sorry, an error has occurred, please check your settings !!'
-            self.infoback()
-            self.info_update.emit(self.info_str)
-            time.sleep(1)
-            self.finished.emit()
+        hunter_time, log_lst, output_df2 = huntlipids(self.params_dct, error_lst=log_lst)
+
+        # try:
+        #     hunter_time, log_lst, output_df2 = huntlipids(self.params_dct, error_lst=log_lst)
+        # except Exception as _e:
+        #     print(_e)
+        #     hunter_time = False
+        #     log_lst = False
+        #     export_df = False
+        #     time.sleep(1)
+        #     self.info_str = '!! Sorry, an error has occurred, please check your settings !!'
+        #     self.infoback()
+        #     self.info_update.emit(self.info_str)
+        #     time.sleep(1)
+        #     self.finished.emit()
 
         err_info = ''
         if isinstance(log_lst, list):

@@ -27,6 +27,7 @@ from six.moves import configparser
 
 # required to perform multiprocessing
 import multiprocessing
+from multiprocessing import Pool
 
 from LibLipidHunter.Hunter_Core import huntlipids
 
@@ -108,7 +109,7 @@ def main(argv):
     if len(list(cfg_params_dct.keys())) > 0:
         start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
         cfg_params_dct['hunter_start_time'] = start_time_str
-        print('Sart to process... ', start_time_str)
+        print('Start to process... ', start_time_str)
         t, log_lst, export_df = huntlipids(cfg_params_dct, error_lst=[], save_fig=save_img)
         if len(log_lst) > 0:
             for err in log_lst:
