@@ -1259,5 +1259,5 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 if __name__ == '__main__':
 
     from test.test_Hunter_Core import test_huntlipids
-
+    multiprocessing.freeze_support()
     test_huntlipids()

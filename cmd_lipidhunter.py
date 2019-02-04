@@ -27,7 +27,6 @@ from six.moves import configparser
 
 # required to perform multiprocessing
 import multiprocessing
-from multiprocessing import Pool
 
 from LibLipidHunter.Hunter_Core import huntlipids
 
@@ -117,8 +116,9 @@ def main(argv):
             print('Error: Please check your parameters!!!')
         else:
             print(t)
-            print('test passed!')
+            print('Run finished!')
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     main(sys.argv[1:])

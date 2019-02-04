@@ -50,7 +50,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # set version
-        version_date = r'16, October, 2018'
+        version_date = r'03, February, 2019'
         version_html = (r'<html><head/><body><p><span style=" font-weight:600;">'
                         r'LipidHunter 2 (Beta) # Released Date: {version_date}'
                         r'</span></p></body></html>').format(version_date=version_date)
@@ -1509,6 +1509,7 @@ class LMWorker(QtCore.QObject):
 if __name__ == '__main__':
     import sys
 
+    multiprocessing.freeze_support()
     app = QtGui.QApplication(sys.argv)
     window = LipidHunterMain()
     window.show()
