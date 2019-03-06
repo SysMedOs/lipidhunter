@@ -21,6 +21,7 @@
 import getopt
 import os.path
 import sys
+from sys import platform
 import time
 
 from six.moves import configparser
@@ -108,6 +109,35 @@ def main(argv):
     if len(list(cfg_params_dct.keys())) > 0:
         start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
         cfg_params_dct['hunter_start_time'] = start_time_str
+
+        output_folder_path = cfg_params_dct['img_output_folder_str']
+
+        if platform == "linux" or platform == "linux2":
+            l_cwd = os.getcwd()
+            os.chdir('/')
+            if os.path.isdir(output_folder_path):
+                print('Folder existed...\n', output_folder_path)
+                folder_abs_path = os.path.abspath(output_folder_path)
+                print('abs path of folder\n', folder_abs_path)
+            else:
+                if os.path.isdir('/' + output_folder_path):
+                    print('Folder existed...\n', output_folder_path)
+                    folder_abs_path = os.path.abspath(output_folder_path)
+                    print('abs path of folder\n', folder_abs_path)
+                else:
+                    print('No folder...\n', output_folder_path)
+                    os.makedirs(output_folder_path)
+                    print('Folder created... %s' % output_folder_path)
+            os.chdir(l_cwd)
+        else:
+            if os.path.isdir(output_folder_path):
+                print('Output folder path... %s' % output_folder_path)
+            else:
+                try:
+                    os.mkdir(output_folder_path)
+                    print('Output folder created... %s' % output_folder_path)
+                except IOError:
+                    print('!! Failed to create output folder !!')
         print('Start to process... ', start_time_str)
         t, log_lst, export_df = huntlipids(cfg_params_dct, error_lst=[], save_fig=save_img)
         if len(log_lst) > 0:

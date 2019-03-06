@@ -160,7 +160,7 @@ def get_all_fa_nl(fa_df, ms2_df, peak_type_lst, lipid_type='LPL'):
                 _q_tmp_df.loc[:, 'obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
                 _q_tmp_df.loc[:, 'obs_abbr'] = _fa_se['%s_ABBR' % peak_typ]
                 _q_tmp_df.loc[:, 'obs_type'] = peak_typ
-                _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['lib_mz']
+                _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_mz']
                 _q_tmp_df = _q_tmp_df.round({'obs_mz': 4, 'obs_i_r': 1, 'obs_label': 2})
                 _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_label'].astype(str)
                 if lipid_type in ['TG'] and re.match(dg_fa_rgx, _fa_se['%s_ABBR' % peak_typ]):

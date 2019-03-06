@@ -1,12 +1,12 @@
-# LipidHunter instructions (source code version) #
+# LipidHunter 2 instructions #
 
-![crossplatform_screenshot.png](https://bitbucket.org/repo/oGzkj4/images/622833109-crossplatform_screenshot.png)
+![crossplatform_screenshot.png](doc/img/Hunter2_GUI.png)
 
 This repository contains the source code of LipidHunter.
 
-LipidHunter Windows .exe executable version can be found here
+LipidHunter Windows .exe executable version can be found in release page:
 
-https://bitbucket.org/SysMedOs/lipidhunter_exe
+https://github.com/SysMedOs/lipidhunter/releases
 
 
 ** Please read the following instructions before you start to run LipidHunter. **
@@ -24,25 +24,25 @@ https://bitbucket.org/SysMedOs/lipidhunter_exe
 ### How to install LipidHunter from source code ###
 * Download the LipidHunter as zip file for your system
 
-    + [Download LipidHunter source Code](https://bitbucket.org/SysMedOs/lipidhunter/downloads/?tab=tags) Please notice the date and version of LipidHunter source code.
+    + Download LipidHunter source Code as .zip. Please notice the date and version of LipidHunter source code.
     + Professional users can use `git` to clone the whole repository, please make sure that you switched to the correct branch.
-
-
 
 * Rename the downloaded file to `LipidHunter.zip`
 * Unzip `LipidHunter.zip` file to any folder.
 * Downloaded LipidHunter test spectra files: [LipidHunter_Test_mzML_File](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_TestFile.zip)
-* Follow the link below for more information to install the program.
 
-    + [LipidHunter source code installation instructions](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Install%20the%20Source%20code)
+* Python environment
 
-* LipidHunter user guide: [Download LipidHunter user guide PDF](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_User_Guide.pdf)
+    + LipidHunter 2 is developed under python 3.6, the current version can still run on python 2.7 (not recommended).
+    + The best way is to use virtual environment such as `conda`
+    + The requirements is listed in [requirements.txt](requirements.txt)
 
+* [LipidHunter user guide](doc/LipidHunter_UserGuide.pdf)
 
 
 * Errors/bugs
     
-    In case you experienced any problems with running LipidHunter, please report an issue in the [issue tracker](https://bitbucket.org/SysMedOs/lipidhunter/issues) or contact us.
+    In case you experienced any problems with running LipidHunter, please report an issue in the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
 
 ### License ###
 
@@ -57,8 +57,7 @@ https://bitbucket.org/SysMedOs/lipidhunter_exe
 
 ### Further questions? ###
 
-* Read our [wiki](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Home)
-* Report any issues here: [https://bitbucket.org/SysMedOs/lipidhunter/issues](https://bitbucket.org/SysMedOs/lipidhunter/issues)
+* Report any issues here: [https://github.com/SysMedOs/lipidhunter/issues](https://github.com/SysMedOs/lipidhunter/issues)
 
 
 ### Fundings ###
