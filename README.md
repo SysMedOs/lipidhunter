@@ -1,15 +1,18 @@
-# LipidHunter#
+# LipidHunter #
 
 LipidHunter 2 has significant improvement from the original LipidHunter.
 The major improvements are listed below:
 
 * Special Feature for TG & DG
+
     + ID based both on FA neutral losses & fragments
     + Accurate ID of isomeric species
     + Correction for all identified FA
     + Correction for the fragment intensity of multiply identified FAs
     + Check for cross-contamination signals e.g. PL fragments
+    
 * Other Major Feature Updates
+
     + Multiprocessing
     + Batch mode
     + 10 times faster processing speed
@@ -20,6 +23,24 @@ The major improvements are listed below:
     + Simplified configuration
     + View run parameters in report
     
+* currently supported Lipid classes:
+
+|  Lysophospholipids     |  Phospholipids                |  Glycerolipids            |
+|------------------------|-------------------------------|---------------------------|
+| Lyso PA (LPA)          | Phosphatidic acid (PA)        | Triacylglycerol (TG)      |
+| [M-H]-                 | [M-H]-                        | [M+NH4]+, [M+H]+, [M+Na]+ |
+| Lyso PC (LPC)          | Phosphatidylcholine (PC)      | Diacylglycerol (DG)       |
+| [M+HCOO]-, [M+CH3COO]- | [M+HCOO]-, [M+CH3COO]-        | [M+NH4]+                  |
+| Lyso PE (LPE)          | Phosphatidylethanolamine (PE) |                           |
+| [M-H]-                 | [M-H]-                        |                           |
+| Lyso PG (LPG)          | Phosphatidylglycerol (PG)     |                           |
+| [M-H]-                 | [M-H]-                        |                           |
+| Lyso PI (LPI)          | Phosphatidylinositol (PI)     |                           |
+| [M-H]-                 | [M-H]-                        |                           |
+| Lyso PS (LPS)          | Phosphatidylserine (PS)       |                           |
+| [M-H]-                 | [M-H]-                        |                           |
+
+
 ![crossplatform_screenshot.png](doc/img/Hunter2_GUI.png)
 
 This repository contains the source code of LipidHunter.
@@ -29,7 +50,7 @@ LipidHunter Windows .exe executable version can be found in release page:
 https://github.com/SysMedOs/lipidhunter/releases
 
 
-** Please read the following instructions before you start to run LipidHunter. **
+### Please read the following instructions before you start to run LipidHunter. ###
 
 ## Instructions ##
 
@@ -54,7 +75,9 @@ https://github.com/SysMedOs/lipidhunter/releases
 
 * Errors/bugs
     
-    In case you experienced any problems with running LipidHunter, please report an issue in the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
+    In case you experienced any problems with running LipidHunter
+    
+    please report an issue in the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
 
 ### License ###
 
