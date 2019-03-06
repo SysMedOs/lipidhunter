@@ -1,5 +1,25 @@
-# LipidHunter 2 instructions #
+# LipidHunter#
 
+LipidHunter 2 has significant improvement from the original LipidHunter.
+The major improvements are listed below:
+
+* Special Feature for TG & DG
+    + ID based both on FA neutral losses & fragments
+    + Accurate ID of isomeric species
+    + Correction for all identified FA
+    + Correction for the fragment intensity of multiply identified FAs
+    + Check for cross-contamination signals e.g. PL fragments
+* Other Major Feature Updates
+    + Multiprocessing
+    + Batch mode
+    + 10 times faster processing speed
+    + Command line mode
+    + KNIME workflow integration
+    + Multiple vendor support
+    + Improved output style
+    + Simplified configuration
+    + View run parameters in report
+    
 ![crossplatform_screenshot.png](doc/img/Hunter2_GUI.png)
 
 This repository contains the source code of LipidHunter.
@@ -11,15 +31,7 @@ https://github.com/SysMedOs/lipidhunter/releases
 
 ** Please read the following instructions before you start to run LipidHunter. **
 
-### Instructions ###
-
-* [How to install LipidHunter from source code](#markdown-header-how-to-install-lipidhunter-from-source-code)
-* [License](#markdown-header-license)
-* [A step by step tutorial](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Home)
-* [Q&A](#markdown-header-further-questions)
-* [Fundings](#markdown-header-fundings)
-
-
+## Instructions ##
 
 ### How to install LipidHunter from source code ###
 * Download the LipidHunter as zip file for your system
