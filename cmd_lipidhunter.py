@@ -18,13 +18,12 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import print_function
-
-import ConfigParser as configparser
 import getopt
 import os.path
 import sys
 import time
+
+from six.moves import configparser
 
 # required to perform multiprocessing
 import multiprocessing
@@ -48,25 +47,34 @@ def main(argv):
                       'ms2_hginfopeak_threshold', 'score_filter', 'isotope_score_filter', 'rank_score_filter']
     b_type_key_lst = ['rank_score', 'fast_isotope', 'tag_all_sn']
 
+    save_img = True
+
     try:
-        opts, args = getopt.getopt(argv, 'hi:o:', ['infile='])
+        opts, args = getopt.getopt(argv, 'hi:o:n', ['infile='])
     except getopt.GetoptError:
         print('Error: cmd_lipidhunter.py -i <input LipidHunter configuration file in .txt format>')
         sys.exit(1)
 
     for opt, arg in opts:
         if opt == '-h':
-            print('cmd_lipidhunter.py -i <input LipidHunter configuration file in .txt format>')
+            print('python cmd_lipidhunter.py -i <input LipidHunter configuration file in .txt format>')
+            print('Use -n to skip output image generation (not recommended).')
             sys.exit(1)
         elif opt in ('-i', '--infile'):
             _cfg_file = arg
+        elif opt == '-n':
+            save_img = False
 
     if isinstance(_cfg_file, str) and len(_cfg_file) > 0:
         print('Input LipidHunter configuration file : ', _cfg_file)
         if os.path.isfile(_cfg_file):
             with open(_cfg_file) as _cfg_obj:
                 config = configparser.ConfigParser()
-                config.readfp(_cfg_obj)
+                try:
+                    config.read_file(_cfg_obj)
+                except AttributeError:  # for python 2.7.14
+                    config.readfp(_cfg_obj)
+                print('got file', _cfg_file)
                 if config.has_section('parameters'):
                     usr_cfg = 'parameters'
                     options = config.options(usr_cfg)
@@ -97,19 +105,20 @@ def main(argv):
         print('Error: cmd_lipidhunter.py -i <input LipidHunter configuration file in .txt format>')
         sys.exit(1)
 
-    if len(cfg_params_dct.keys()) > 0:
+    if len(list(cfg_params_dct.keys())) > 0:
         start_time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
         cfg_params_dct['hunter_start_time'] = start_time_str
-        print('Sart to process... ', start_time_str)
-        t, log_lst = huntlipids(cfg_params_dct, error_lst=[])
+        print('Start to process... ', start_time_str)
+        t, log_lst, export_df = huntlipids(cfg_params_dct, error_lst=[], save_fig=save_img)
         if len(log_lst) > 0:
             for err in log_lst:
                 print('Error:', err)
             print('Error: Please check your parameters!!!')
         else:
             print(t)
-            print('test passed!')
+            print('Run finished!')
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     main(sys.argv[1:])

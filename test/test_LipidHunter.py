@@ -18,18 +18,35 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-
-import multiprocessing
+import time
 import os
-import sys
 
-from PySide import QtGui
+from nose.tools import *
 
-from LibLipidHunter.LipidHunter_Main import LipidHunterMain
 
-if __name__ == '__main__':
+def setup():
+    print('[INFO] Test started...')
 
-    multiprocessing.freeze_support()
-    usr_cwd = os.getcwd()
-    LipidHunter = LipidHunterMain(cwd=usr_cwd)
-    LipidHunter.show()
+
+def test_composer():
+    from test.test_LipidComposer import test_lipicomposer
+
+    test_lipicomposer()
+
+
+def test_nomenclature():
+    from test.test_LipidNomenclature import test_get_fa_info
+
+    test_get_fa_info()
+
+
+def test_recover():
+    from test.test_HuntManager import test_recover_hunt
+
+    test_recover_hunt()
+
+
+def test_core():
+    from test.test_Hunter_Core import test_huntlipids
+
+    test_huntlipids()
