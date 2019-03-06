@@ -176,16 +176,19 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     use_existed_lipid_master = False
     save_lipid_master_table = False
     if 'debug_mode' in list(param_dct.keys()):
-        if param_dct['debug_mode'] == 'ON' and 'lipid_master_table' in list(param_dct.keys()):
-            existed_lipid_master_path = param_dct['lipid_master_table']
-            if os.path.isfile(existed_lipid_master_path):
-                use_existed_lipid_master = True
+        if param_dct['debug_mode'] == 'ON':
+            if 'lipid_master_table' in list(param_dct.keys()):
+                existed_lipid_master_path = param_dct['lipid_master_table']
+                if os.path.isfile(existed_lipid_master_path):
+                    use_existed_lipid_master = True
+                else:
+                    print('[ERROR] !!! Failed to load existed Lipid Master table: %s', existed_lipid_master_path)
             else:
-                print('[ERROR] !!! Failed to load existed Lipid Master table: %s', existed_lipid_master_path)
-
-        if 'save_lipid_master_table' in list(param_dct.keys()):
-            if param_dct['save_lipid_master_table'] == 'CSV':
                 save_lipid_master_table = True
+
+        # if 'save_lipid_master_table' in list(param_dct.keys()):
+        #     if param_dct['save_lipid_master_table'] == 'CSV':
+        #         save_lipid_master_table = True
 
     if use_existed_lipid_master is False:
         try:
@@ -567,7 +570,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
             if os_typ == 'windows':
                 parallel_pool = Pool(usr_core_num)
-                # queue = ''
+                # usr_queue = ''
                 worker_count = 1
                 for _sub_lst in spec_sub_key_lst:
                     if isinstance(_sub_lst, tuple) or isinstance(_sub_lst, list):
@@ -1261,3 +1264,4 @@ if __name__ == '__main__':
     from test.test_Hunter_Core import test_huntlipids
     multiprocessing.freeze_support()
     test_huntlipids()
+
