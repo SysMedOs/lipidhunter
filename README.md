@@ -54,6 +54,14 @@ https://github.com/SysMedOs/lipidhunter/releases
 
 ## Instructions ##
 
+### Windows version ###
+
+* The binary excutable version of LipidHunter 2 is provided for Windows users. (Windows 7, 8, and 10, 64bit system required)
+
+    + [`.exe` installation file](https://github.com/SysMedOs/lipidhunter/releases/download/LipidHunter2_RC/Lipidhunter2_RC_Setup.exe)
+    
+    + [`.zip` portable zip file](https://github.com/SysMedOs/lipidhunter/releases/download/LipidHunter2_RC/LipidHunter2_RC.zip)
+
 ### How to install LipidHunter from source code ###
 * Download the LipidHunter as zip file for your system
 
@@ -62,7 +70,7 @@ https://github.com/SysMedOs/lipidhunter/releases
 
 * Rename the downloaded file to `LipidHunter.zip`
 * Unzip `LipidHunter.zip` file to any folder.
-* Downloaded LipidHunter test spectra files: [LipidHunter_Test_mzML_File](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_TestFile.zip)
+* Downloaded LipidHunter test spectra files: [LipidHunter_Test_mzML_File](https://github.com/SysMedOs/lipidhunter/releases/download/LipidHunter2_RC/TestData.zip)
 
 * Python environment
 
