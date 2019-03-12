@@ -22,7 +22,16 @@ from nose.tools import *
 
 import subprocess
 
-cfg_path = r'results/test_PC_cfg.txt'
-test_cmd = r'python ../cmd_lipidhunter.py -i {cfg}'.format(cfg=cfg_path)
 
-subprocess.call(test_cmd)
+def test_cli_hunter_pl():
+    pl_cfg_path = r'test_batch_cfg/test_PC_cfg.txt'
+    pl_test_cmd = r'python ../cmd_lipidhunter.py -i {cfg}'.format(cfg=pl_cfg_path)
+
+    subprocess.call(pl_test_cmd)
+
+
+def test_cli_hunter_tg():
+    tg_cfg_path = r'test_batch_cfg/test_TG_cfg.txt'
+    tg_test_cmd = r'python ../cmd_lipidhunter.py -i {cfg}'.format(cfg=tg_cfg_path)
+
+    subprocess.call(tg_test_cmd)

@@ -59,13 +59,13 @@ except ImportError:  # for python 2.7.14
     from HuntManager import gen_html_report
 
 
-def huntlipids(param_dct, error_lst, save_fig=True):
+def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
     """
 
     :param(dict) param_dct:
     example
     hunter_param_dct = {'fawhitelist_path_str': r'D:\lipidhunter\ConfigurationFiles\FA_Whitelist.xlsx',
-                        'mzml_path_str': r'D:\lipidhunter\mzML\MS2\070120_CM_neg_70min_SIN_I.mzML',
+                        'mzml_path_str': r'D:\lipidhunter\test\mzML\PL_Neg_Waters_qTOF.mzML',
                         'img_output_folder_str': r'D:\lipidhunter\Temp\Test2',
                         'xlsx_output_path_str': r'D:\lipidhunter\Temp\Test2\t2.xlsx',
                         'lipid_specific_cfg': r'D:\lipidhunter\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
@@ -133,7 +133,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     hunter_start_time_str = param_dct['hunter_start_time']
 
-    save_session = False
+    # save_session = False
     try:
         if param_dct['debug_mode'] == 'ON':
             save_session = True
@@ -1262,6 +1262,8 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 if __name__ == '__main__':
 
     from test.test_Hunter_Core import test_huntlipids
+
     multiprocessing.freeze_support()
+    os.chdir('../test')
     test_huntlipids()
 
