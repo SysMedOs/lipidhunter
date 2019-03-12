@@ -29,7 +29,8 @@ def setup():
 
 
 def test_composer():
-    from test.test_LipidComposer import test_lipicomposer
+
+    from .test_LipidComposer import test_lipicomposer
 
     test_lipicomposer()
 
@@ -40,13 +41,25 @@ def test_nomenclature():
     test_get_fa_info()
 
 
-def test_recover():
-    from test.test_HuntManager import test_recover_hunt
-
-    test_recover_hunt()
+# def test_recover():
+#     from test.test_HuntManager import test_recover_hunt
+#
+#     test_recover_hunt()
 
 
 def test_core():
     from test.test_Hunter_Core import test_huntlipids
 
     test_huntlipids()
+
+
+def test_cli_hunter_pl():
+    from test.test_cmd_lipidhunter import test_cli_hunter_pl
+
+    test_cli_hunter_pl()
+
+
+def test_cli_hunter_tg():
+    from test.test_cmd_lipidhunter import test_cli_hunter_tg
+
+    test_cli_hunter_tg()

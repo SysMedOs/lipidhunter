@@ -37,8 +37,8 @@ def test_huntlipids():
     # full_test_lst = [['PC', 'waters'],['PE', 'waters'], ['TG', 'waters','[M+H]+'], ['TG', 'waters', '[M+NH4]+'],
     # ['TG', 'thermo', '[M+NH4]+']]
 
-    usr_test_lst = [
-        # ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
+    test_lst = [
+        ['PC', 'waters', '[M+HCOO]-', 'PC_waters'],
         # ['PE', 'waters', '[M-H]-', 'PE_waters'],
         # ['TG', 'waters', '[M+H]+', 'TG_waters'],
         # ['TG', 'waters', '[M+NH4]+', 'TG_waters_NH4'],
@@ -55,23 +55,22 @@ def test_huntlipids():
     ]
 
     # set the default files
-    pl_mzml_waters = r'../Test/mzML/PL_neg_waters_synapt-g2si.mzML'  # Synapt-g2si file
-    lpl_mzml_thermo = r'../Test/mzML/Qexactive_Neg.mzML'  # Qexactive file
-    tg_mzml_waters = r'../Test/mzML/TG_pos_waters_synapt-g2si.mzML'  # Synapt-g2si file
-    tg_mzml_thermo = r'../Test/mzML/QE_18_42_AT_SIR1_1_0,00025_pos_DDA.mzML'  # Qexactive file
-    # tg_mzml_thermo = r'../Test/mzML/TG_pos_thermo_Qexactive.mzML'  # Qexactive file
-    tg_mzml_SCIEXS = r'../Test/mzML/Test_sciex.mzML'  # position holder
-    tg_mzml_agilent = r'../Test/mzML/Test_agilent.mzML'  # position holder
+    pl_mzml_waters = r'./mzML/PL_Neg_Waters_qTOF.mzML'  # Synapt-g2si file
+    lpl_mzml_thermo = r'./mzML/dev_test/LPL_Neg_Thermo_Orbi.mzML'  # Qexactive file
+    tg_mzml_waters = r'./mzML/dev_test/TG_Pos_Waters_qTOF.mzML'  # Synapt-g2si file
+    tg_mzml_thermo = r'./mzML/TG_Pos_Thermo_Orbi.mzML'  # Qexactive file
+    tg_mzml_SCIEXS = r'./mzML/Test_sciex.mzML'  # position holder
+    tg_mzml_agilent = r'./mzML/Test_agilent.mzML'  # position holder
 
-    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_PL.xlsx',
+    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
                    'score_cfg': r'../ConfigurationFiles/2-Score_weight_PL.xlsx'}
 
-    lpl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_LPL.xlsx',
+    lpl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist.xlsx',
                     'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
                     'score_cfg': r'../ConfigurationFiles/2-Score_weight_LPL.xlsx'}
 
-    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx',
+    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist.xlsx',
                    'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
                    'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
 
@@ -79,7 +78,7 @@ def test_huntlipids():
     usr_test_dct_keys = []
     mz_range = [600, 1000]  # default
     rt_range = [6, 10]  # default
-    for usr_test in usr_test_lst:
+    for usr_test in test_lst:
         _test_dct = {'rank_score_filter': 60.5, 'score_filter': 60.5, 'isotope_score_filter': 75.0, 'ms_max': 0,
                      'pr_window': 0.75, 'ms2_infopeak_threshold': 0.001, 'ms2_hginfopeak_threshold': 0.001}
         if usr_test[0] in ['PC', 'PE', 'PA', 'PG', 'PI', 'PS', 'PIP']:

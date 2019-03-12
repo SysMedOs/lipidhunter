@@ -24,8 +24,7 @@ from LibLipidHunter.LipidComposer import LipidComposer
 
 
 def test_lipicomposer():
-    fa_lst_file = r'../ConfigurationFiles/1-FA_Whitelist_LPL.xlsx'
-    # fa_lst_file = r'../ConfigurationFiles/1-FA_Whitelist_TG-DG.xlsx'
+    fa_lst_file = r'../ConfigurationFiles/1-FA_Whitelist.xlsx'
 
     # Note:
     # exact position means to consider the poition from the FA white list that the user give but,

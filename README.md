@@ -1,4 +1,4 @@
-# LipidHunter #
+# About LipidHunter 2 #
 
 LipidHunter 2 has significant improvement from the original LipidHunter.
 The major improvements are listed below:
@@ -23,7 +23,7 @@ The major improvements are listed below:
     + Simplified configuration
     + View run parameters in report
     
-* currently supported Lipid classes:
+* Currently supported Lipid classes in LipidHunter 2:
 
 |  Lysophospholipids     |  Phospholipids                |  Glycerolipids            |
 |------------------------|-------------------------------|---------------------------|
@@ -40,7 +40,7 @@ The major improvements are listed below:
 | Lyso PS (LPS)          | Phosphatidylserine (PS)       |                           |
 | [M-H]-                 | [M-H]-                        |                           |
 
-
+## LipidHunter 2 new graphical user interface ##
 ![crossplatform_screenshot.png](doc/img/Hunter2_GUI.png)
 
 This repository contains the source code of LipidHunter.
@@ -62,11 +62,12 @@ https://github.com/SysMedOs/lipidhunter/releases
     
     + [`.zip` portable zip file](https://github.com/SysMedOs/lipidhunter/releases/download/LipidHunter2_RC/LipidHunter2_RC.zip)
 
-### How to install LipidHunter from source code ###
-* Download the LipidHunter as zip file for your system
-
+### How to install LipidHunter 2 from source code ###
+* Download the LipidHunter 2 as zip file for your system
+    + Please use the source code page in the release page https://github.com/SysMedOs/lipidhunter/releases/
     + Download LipidHunter source Code as .zip. Please notice the date and version of LipidHunter source code.
     + Professional users can use `git` to clone the whole repository, please make sure that you switched to the correct branch.
+    + Only the released version is recommended for real data processing. Other development branches may lead to unknown issues and miss interpretation of the data.
 
 * Rename the downloaded file to `LipidHunter.zip`
 * Unzip `LipidHunter.zip` file to any folder.
@@ -76,7 +77,16 @@ https://github.com/SysMedOs/lipidhunter/releases
 
     + LipidHunter 2 is developed under python 3.6, the current version can still run on python 2.7 (not recommended).
     + The best way is to use virtual environment such as `conda`
-    + The requirements is listed in [requirements.txt](requirements.txt)
+    + The requirements is listed in [environment.yml](environment.yml) for `conda` users and [requirements.txt](requirements.txt) for `pip` users.
+    + Main dependencies are:
+        - Data processing: numpy, pandas, scipy, numba, natsort
+        - mzML reader: pymzml == 0.7.8
+        - Image plot: matplotlib, plotly(required by pymzml)
+        - Excel output: openpyxl, xlrd, xlwt
+        - Graphic interface: pyside
+    + Test source code installation
+        - Run `test/test_lipidhunter.py` with [Nose Testing Framework](https://nose.readthedocs.io/en/latest/)
+         
 
 * [LipidHunter user guide](doc/LipidHunter_UserGuide.pdf)
 
@@ -97,6 +107,8 @@ https://github.com/SysMedOs/lipidhunter/releases
     * For commercial use: please contact the develop team by email.
 
 + Please cite our publication in an appropriate form. 
+    * Ni, Zhixu, Georgia Angelidou, Mike Lange, Ralf Hoffmann, and Maria Fedorova. "LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets." Analytical Chemistry (2017).
+        - DOI: 10.1021/acs.analchem.7b01126
 
 ### Further questions? ###
 
