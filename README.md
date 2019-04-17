@@ -1,5 +1,46 @@
-# LipidHunter 2 instructions #
+# About LipidHunter 2 #
 
+LipidHunter 2 has significant improvement from the original LipidHunter.
+The major improvements are listed below:
+
+* Special Feature for TG & DG
+
+    + ID based both on FA neutral losses & fragments
+    + Accurate ID of isomeric species
+    + Correction for all identified FA
+    + Correction for the fragment intensity of multiply identified FAs
+    + Check for cross-contamination signals e.g. PL fragments
+    
+* Other Major Feature Updates
+
+    + Multiprocessing
+    + Batch mode
+    + 10 times faster processing speed
+    + Command line mode
+    + KNIME workflow integration
+    + Multiple vendor support
+    + Improved output style
+    + Simplified configuration
+    + View run parameters in report
+    
+* Currently supported Lipid classes in LipidHunter 2:
+
+|  Lysophospholipids     |  Phospholipids                |  Glycerolipids            |
+|------------------------|-------------------------------|---------------------------|
+| Lyso PA (LPA)          | Phosphatidic acid (PA)        | Triacylglycerol (TG)      |
+| [M-H]-                 | [M-H]-                        | [M+NH4]+, [M+H]+, [M+Na]+ |
+| Lyso PC (LPC)          | Phosphatidylcholine (PC)      | Diacylglycerol (DG)       |
+| [M+HCOO]-, [M+CH3COO]- | [M+HCOO]-, [M+CH3COO]-        | [M+NH4]+                  |
+| Lyso PE (LPE)          | Phosphatidylethanolamine (PE) |                           |
+| [M-H]-                 | [M-H]-                        |                           |
+| Lyso PG (LPG)          | Phosphatidylglycerol (PG)     |                           |
+| [M-H]-                 | [M-H]-                        |                           |
+| Lyso PI (LPI)          | Phosphatidylinositol (PI)     |                           |
+| [M-H]-                 | [M-H]-                        |                           |
+| Lyso PS (LPS)          | Phosphatidylserine (PS)       |                           |
+| [M-H]-                 | [M-H]-                        |                           |
+
+## LipidHunter 2 new graphical user interface ##
 ![crossplatform_screenshot.png](doc/img/Hunter2_GUI.png)
 
 This repository contains the source code of LipidHunter.
@@ -9,40 +50,52 @@ LipidHunter Windows .exe executable version can be found in release page:
 https://github.com/SysMedOs/lipidhunter/releases
 
 
-** Please read the following instructions before you start to run LipidHunter. **
+### Please read the following instructions before you start to run LipidHunter. ###
 
-### Instructions ###
+## Instructions ##
 
-* [How to install LipidHunter from source code](#markdown-header-how-to-install-lipidhunter-from-source-code)
-* [License](#markdown-header-license)
-* [A step by step tutorial](https://bitbucket.org/SysMedOs/lipidhunter/wiki/Home)
-* [Q&A](#markdown-header-further-questions)
-* [Fundings](#markdown-header-fundings)
+### Windows version ###
 
+* The binary excutable version of LipidHunter 2 is provided for Windows users. (Windows 7, 8, and 10, 64bit system required)
 
+    + [`.exe` installation file](https://github.com/SysMedOs/lipidhunter/releases/download/LipidHunter2_RC/Lipidhunter2_RC_Setup.exe)
+    
+    + [`.zip` portable zip file](https://github.com/SysMedOs/lipidhunter/releases/download/LipidHunter2_RC/LipidHunter2_RC.zip)
 
-### How to install LipidHunter from source code ###
-* Download the LipidHunter as zip file for your system
-
+### How to install LipidHunter 2 from source code ###
+* Download the LipidHunter 2 as zip file for your system
+    + Please use the source code page in the release page https://github.com/SysMedOs/lipidhunter/releases/
     + Download LipidHunter source Code as .zip. Please notice the date and version of LipidHunter source code.
     + Professional users can use `git` to clone the whole repository, please make sure that you switched to the correct branch.
+    + Only the released version is recommended for real data processing. Other development branches may lead to unknown issues and miss interpretation of the data.
 
 * Rename the downloaded file to `LipidHunter.zip`
 * Unzip `LipidHunter.zip` file to any folder.
-* Downloaded LipidHunter test spectra files: [LipidHunter_Test_mzML_File](https://bitbucket.org/SysMedOs/lipidhunter_exe/downloads/LipidHunter_TestFile.zip)
+* Downloaded LipidHunter test spectra files: [LipidHunter_Test_mzML_File](https://github.com/SysMedOs/lipidhunter/releases/download/LipidHunter2_RC/TestData.zip)
 
 * Python environment
 
     + LipidHunter 2 is developed under python 3.6, the current version can still run on python 2.7 (not recommended).
     + The best way is to use virtual environment such as `conda`
-    + The requirements is listed in [requirements.txt](requirements.txt)
+    + The requirements is listed in [environment.yml](environment.yml) for `conda` users and [requirements.txt](requirements.txt) for `pip` users.
+    + Main dependencies are:
+        - Data processing: numpy, pandas, scipy, numba, natsort
+        - mzML reader: pymzml == 0.7.8
+        - Image plot: matplotlib, plotly(required by pymzml)
+        - Excel output: openpyxl, xlrd, xlwt
+        - Graphic interface: pyside
+    + Test source code installation
+        - Run `test/test_lipidhunter.py` with [Nose Testing Framework](https://nose.readthedocs.io/en/latest/)
+         
 
 * [LipidHunter user guide](doc/LipidHunter_UserGuide.pdf)
 
 
 * Errors/bugs
     
-    In case you experienced any problems with running LipidHunter, please report an issue in the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
+    In case you experienced any problems with running LipidHunter
+    
+    please report an issue in the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
 
 ### License ###
 
@@ -54,6 +107,8 @@ https://github.com/SysMedOs/lipidhunter/releases
     * For commercial use: please contact the develop team by email.
 
 + Please cite our publication in an appropriate form. 
+    * Ni, Zhixu, Georgia Angelidou, Mike Lange, Ralf Hoffmann, and Maria Fedorova. "LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets." Analytical Chemistry (2017).
+        - DOI: 10.1021/acs.analchem.7b01126
 
 ### Further questions? ###
 

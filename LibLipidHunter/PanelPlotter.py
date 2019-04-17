@@ -21,10 +21,7 @@
 from __future__ import division
 from __future__ import print_function
 
-import io
 import pandas as pd
-from PIL import Image
-import time
 import matplotlib
 
 matplotlib.use('agg')
