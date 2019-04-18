@@ -15,10 +15,8 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda info -a
-      - conda create -c conda-forge -n test_env pyside python=$TRAVIS_PYTHON_VERSION
-      - conda install numba
+      - conda env create -f environment.yml
       - source activate test_env
-      - pip install -r requirements.txt
       - pip install codecov
       - pip install pytest pytest-cov
     script:
@@ -36,10 +34,8 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda info -a
-      - conda create -c conda-forge -n test_env pyside python=$TRAVIS_PYTHON_VERSION
-      - conda install numba
+      - conda env create -f environment.yml
       - source activate test_env
-      - pip install -r requirements.txt
       - pip install codecov
       - pip install pytest pytest-cov
     # command to run tests
@@ -59,12 +55,10 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda info -a
-      - conda create -c conda-forge -n test_env pyside python=$TRAVIS_PYTHON_VERSION
-      - conda install numba
+      - conda env create -f environment.yml
       - source activate test_env
       - conda list
       - echo $PATH
-      - pip install -r requirements.txt
       - pip install codecov
       - pip install pytest pytest-cov
     # command to run tests
