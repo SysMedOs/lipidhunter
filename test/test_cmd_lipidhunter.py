@@ -32,6 +32,9 @@ if cwd.endswith('test'):
     print('change to folder above..')
     os.chdir('..')
 
+print('test_cli_hunter_pl @ ', os.getcwd())
+
+
 def test_cli_hunter_pl():
     pl_cfg_path = r'test/test_batch_cfg/test_PC_cfg.txt'
     pl_test_cmd = r'python cmd_lipidhunter.py -i {cfg}'.format(cfg=pl_cfg_path)

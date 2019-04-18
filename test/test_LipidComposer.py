@@ -31,6 +31,8 @@ if cwd.endswith('test'):
 
 from LibLipidHunter.LipidComposer import LipidComposer
 
+print('test_lipicomposer @ ', os.getcwd())
+
 
 def test_lipicomposer():
     fa_lst_file = r'ConfigurationFiles/1-FA_Whitelist.xlsx'

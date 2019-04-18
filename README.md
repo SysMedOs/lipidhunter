@@ -86,7 +86,7 @@ https://github.com/SysMedOs/lipidhunter/releases
 
     + LipidHunter 2 is developed under python 3.6, the current version can still run on python 2.7 (not recommended).
     + The best way is to use virtual environment such as `conda`
-    + The requirements is listed in [environment.yml](environment.yml) for `conda` users and [requirements.txt](requirements.txt) for `pip` users.
+    + The requirements is listed in [environment.yml](conda_env.yml) for `conda` users and [requirements.txt](requirements.txt) for `pip` users.
     + Main dependencies are:
         - Data processing: numpy, pandas, scipy, numba, natsort
         - mzML reader: pymzml == 0.7.8

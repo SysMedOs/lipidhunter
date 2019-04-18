@@ -33,6 +33,8 @@ if cwd.endswith('test'):
     print('change to folder above..')
     os.chdir('..')
 
+print('test_get_fa_info @ ', os.getcwd())
+
 
 def test_get_fa_info():
     abbr_decoder = NameParserFA()

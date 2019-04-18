@@ -6,6 +6,8 @@ python:
 matrix:
   include:
   - os: linux
+    sudo: required
+    language: python
     python: 3.6
     install:
       - wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
@@ -15,17 +17,21 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda info -a
-      - conda env create -f environment.yml
-      - source activate test_env
+      - conda env create -f conda_env.yml
+      - source activate envlipidhunter
       - pip install codecov
       - pip install pytest pytest-cov
+      - mkdir Temp
+      - mkdir test/results
     script:
     - pytest --cov=./
     after_success:
     - codecov
 
   - os: osx
+    sudo: required
     language: sh
+    python: 3.6
     install:
       - wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
       - bash miniconda.sh -b -p $HOME/miniconda
@@ -34,10 +40,12 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda info -a
-      - conda env create -f environment.yml
-      - source activate test_env
+      - conda env create -f conda_env.yml
+      - source activate envlipidhunter
       - pip install codecov
       - pip install pytest pytest-cov
+      - mkdir Temp
+      - mkdir test/results
     # command to run tests
     script:
       - pytest --cov=./
@@ -46,6 +54,7 @@ matrix:
 
   - os: windows
     language: sh
+    python: 3.6
     env: PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:/c/tools/miniconda3/bin:$PATH"
     before_install:
     - choco install openssl.light
@@ -55,12 +64,14 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda info -a
-      - conda env create -f environment.yml
-      - source activate test_env
+      - conda env create -f conda_env.yml
+      - source activate envlipidhunter
       - conda list
       - echo $PATH
       - pip install codecov
       - pip install pytest pytest-cov
+      - mkdir Temp
+      - mkdir test/results
     # command to run tests
     script:
       - pytest --cov=./

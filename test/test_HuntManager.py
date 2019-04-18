@@ -34,6 +34,8 @@ if cwd.endswith('test'):
     print('change to folder above..')
     os.chdir('..')
 
+print('test_recover_hunt @ ', os.getcwd())
+
 
 @pytest.mark.skip(reason="Skip data recover for LipidHunter2 RC")
 def test_recover_hunt():

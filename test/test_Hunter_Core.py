@@ -33,6 +33,8 @@ if cwd.endswith('test'):
     print('change to folder above..')
     os.chdir('..')
 
+print('test_huntlipids @ ', os.getcwd())
+
 
 def test_huntlipids():
     # set the core number and max ram in GB to be used for the test
@@ -253,8 +255,8 @@ def test_huntlipids():
                 t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                 lipid_class = test_dct['lipid_class']
 
-                cfg_dct = {'img_output_folder_str': r'Test/results/%s_%s' % (test_key, t_str),
-                           'xlsx_output_path_str': r'Test/results/%s_%s.xlsx' % (test_key, t_str),
+                cfg_dct = {'img_output_folder_str': r'test/results/%s_%s' % (test_key, t_str),
+                           'xlsx_output_path_str': r'test/results/%s_%s.xlsx' % (test_key, t_str),
                            'hunter_folder': hunter_folder, 'img_type': u'png', 'img_dpi': 300,
                            'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True,
                            'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}
