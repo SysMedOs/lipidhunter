@@ -1,5 +1,14 @@
 # About LipidHunter 2 #
 
+[![Travis (.com) all](https://img.shields.io/travis/com/ZhixuNi/lipidhunter/master.svg)](https://travis-ci.com/SysMedOs/epiLION)
+![Codecov](https://img.shields.io/codecov/c/github/ZhixuNi/lipidhunter.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/ZhixuNi/lipidhunter.svg)
+![pyup dependencies](https://pyup.io/repos/github/ZhixuNi/lipidhunter/shield.svg)
+![total downloads](https://img.shields.io/github/downloads/SysMedOs/lipidhunter/total.svg?color=orange)
+![Platform macOS](https://img.shields.io/badge/Platform-macOS-lightgrey.svg)
+![Platform Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)
+![Platform Windows](https://img.shields.io/badge/Platform-Windows-blue.svg)
+
 LipidHunter 2 has significant improvement from the original LipidHunter.
 The major improvements are listed below:
 

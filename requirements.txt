@@ -8,7 +8,6 @@ natsort>=5.4.0
 numba>=0.39.0
 numexpr>=2.6.6
 numpy>=1.12.1
-numpy-base>=1.15.2
 openpyxl>=2.5.8
 pandas==0.23.4
 plotly>=3.3.0
