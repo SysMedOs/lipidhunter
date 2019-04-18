@@ -22,9 +22,7 @@ matrix:
       - conda env create -f conda_env.yml
       - source activate envlipidhunter
       - pip install codecov
-      - pip install pytest pytest-cov pytest-xdist
-      - mkdir Temp
-      - mkdir test/results
+      - pip install pytest pytest-cov
     script:
     - pytest --cov=./
     after_success:
@@ -47,9 +45,7 @@ matrix:
       - conda env create -f conda_env.yml
       - source activate envlipidhunter
       - pip install codecov
-      - pip install pytest pytest-cov pytest-xdist
-      - mkdir Temp
-      - mkdir test/results
+      - pip install pytest pytest-cov
     # command to run tests
     script:
       - pytest --cov=./
@@ -72,14 +68,11 @@ matrix:
       - conda config --add channels rdkit
       - conda env create -f conda_env.yml
       - source activate envlipidhunter
-      - conda install numpy scipy
-      - conda install pandas=0.23.4
+      - conda install pandas numpy scipy
       - conda list
       - echo $PATH
       - pip install codecov
-      - pip install pytest pytest-cov pytest-xdist
-      - mkdir Temp
-      - mkdir test/results
+      - pip install pytest pytest-cov
     # command to run tests
     script:
       - pytest --cov=./
