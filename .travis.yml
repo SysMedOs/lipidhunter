@@ -71,8 +71,8 @@ matrix:
       - conda config --add channels rdkit
       - conda create -n envlipidhunter -c conda-forge pyside=1.2.4
       - source activate envlipidhunter
-      - conda install cython pandas natsort numpy numexpr scipy six matplotlib plotly openpyxl xlwt xlrd
-      - pip install pymzml=0.7.8
+      - conda install cython pandas natsort numba numpy numexpr scipy six matplotlib plotly openpyxl xlwt xlrd
+      - pip install pymzml==0.7.8
       - conda list
       - echo $PATH
       - pip install codecov
