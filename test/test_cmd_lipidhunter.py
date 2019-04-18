@@ -18,6 +18,7 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
+import logging
 import os
 import sys
 import unittest
@@ -27,23 +28,51 @@ sys.path.insert(0, hunterPath + '/../')
 
 import subprocess
 
-cwd = os.getcwd()
-if cwd.endswith('test'):
-    print('change to folder above..')
-    os.chdir('..')
-
-print('test_cli_hunter_pl @ ', os.getcwd())
+import cmd_lipidhunter
 
 
-def test_cli_hunter_pl():
-    pl_cfg_path = r'test/test_batch_cfg/test_PC_cfg.txt'
-    pl_test_cmd = r'python cmd_lipidhunter.py -i {cfg}'.format(cfg=pl_cfg_path)
+class TestCase_cmd_lipidhunter(unittest.TestCase):
 
-    subprocess.call(pl_test_cmd)
+    def setUp(self):
+        logging.debug('SETUP TESTS... TestCase_cmd_lipidhunter')
+        cwd = os.getcwd()
+        if cwd.endswith('test'):
+            logging.info('change to folder above..')
+            os.chdir('..')
+        logging.info(os.getcwd())
+        pl_cfg_path = r'test/test_batch_cfg/test_PC_cfg.txt'
+        tg_cfg_path = r'test/test_batch_cfg/test_TG_cfg.txt'
+        bad_cfg_path = r'badtest/test_batch_cfg/test_TG_cfg.txt'
+
+        self.pass_params_pl = ['-i', pl_cfg_path]
+        self.pass_params_tg = ['-i', tg_cfg_path]
+        self.fail_input_params = ['-i', bad_cfg_path]
+
+    def test_cmd_lipidhunter_help(self):
+        logging.debug('Test help...')
+        assert cmd_lipidhunter.main(['-h']) is False
+
+    def test_cmd_lipidhunter_bad_params(self):
+        logging.debug('Test bad params...')
+        assert cmd_lipidhunter.main(['-test']) is False
+
+    def test_cmd_lipidhunter_bad_infile(self):
+        logging.debug('Test bad input...')
+        assert cmd_lipidhunter.main(self.fail_input_params) is False
+
+    def test_cmd_lipidhunter_pl(self):
+        logging.debug('Test sample data...')
+        assert cmd_lipidhunter.main(self.pass_params_pl) is True
+
+    def test_cmd_lipidhunter_tg(self):
+        logging.debug('Test sample data...')
+        assert cmd_lipidhunter.main(self.pass_params_tg) is True
+
+    def tearDown(self):
+        logging.debug('TestCase_cmd_lipidhunter TEST END!')
 
 
-def test_cli_hunter_tg():
-    tg_cfg_path = r'test/test_batch_cfg/test_TG_cfg.txt'
-    tg_test_cmd = r'python cmd_lipidhunter.py -i {cfg}'.format(cfg=tg_cfg_path)
-
-    subprocess.call(tg_test_cmd)
+if __name__ == '__main__':
+    # python cmd_lipidhunter.py -i test/test_batch_cfg/test_PC_cfg.txt
+    unittest.main()
+    logging.info('TESTS FINISHED!')

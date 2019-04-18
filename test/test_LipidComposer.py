@@ -31,10 +31,9 @@ if cwd.endswith('test'):
 
 from LibLipidHunter.LipidComposer import LipidComposer
 
-print('test_lipicomposer @ ', os.getcwd())
-
 
 def test_lipicomposer():
+    print('test_lipicomposer @ ', os.getcwd())
     fa_lst_file = r'ConfigurationFiles/1-FA_Whitelist.xlsx'
 
     # Note:
@@ -67,3 +66,5 @@ def test_lipicomposer():
     usr_lipid_master_df.to_csv(master_csv)
     calc_fa_df.to_csv(fa_csv)
     print('[INFO] --> Finished...')
+
+    assert usr_lipid_master_df.shape[0] > 0

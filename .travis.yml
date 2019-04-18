@@ -26,7 +26,7 @@ matrix:
       - mkdir Temp
       - mkdir test/results
     script:
-    - pytest --cov=./
+    - pytest -n 2 --cov=./
     after_success:
     - codecov
 
@@ -52,7 +52,7 @@ matrix:
       - mkdir test/results
     # command to run tests
     script:
-      - pytest --cov=./
+      - pytest -n 2 --cov=./
     after_success:
       - codecov
 
@@ -81,6 +81,6 @@ matrix:
       - mkdir test/results
     # command to run tests
     script:
-      - pytest --cov=./
+      - pytest -n 2 --cov=./
     after_success:
       - codecov
