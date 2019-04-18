@@ -13,8 +13,8 @@ dependencies:
   - mkl_random
   - natsort
   - numba
-  - numpy
-  - numpy-base
+  - numpy=1.11.3
+  - numpy-base=1.11.3
   - openpyxl
   - openssl
   - pandas=0.23.4
@@ -25,7 +25,7 @@ dependencies:
   - python=3.6.*
   - python-dateutil
   - setuptools
-  - scipy
+  - scipy=1.2.1
   - sip
   - six
   - xlrd

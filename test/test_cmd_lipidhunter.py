@@ -27,12 +27,13 @@ hunterPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, hunterPath + '/../')
 
 import subprocess
-
 import cmd_lipidhunter
 
 log_level = logging.DEBUG
 logging.basicConfig(format='%(asctime)s-%(levelname)s - %(message)s', datefmt='%b-%d@%H:%M:%S', level=log_level)
 logger = logging.getLogger('log')
+
+import pytest
 
 
 class TestCase_cmd_lipidhunter(unittest.TestCase):
@@ -40,13 +41,13 @@ class TestCase_cmd_lipidhunter(unittest.TestCase):
     def setUp(self):
         logger.debug('SETUP TESTS... TestCase_cmd_lipidhunter')
         cwd = os.getcwd()
-        if cwd.endswith('test'):
+        if cwd.endswith('test') or cwd.endswith('test/') or cwd.endswith('test\\'):
             logger.info('change to folder above..')
             os.chdir('..')
         logger.info(os.getcwd())
         pl_cfg_path = r'test/test_batch_cfg/test_PC_cfg.txt'
         tg_cfg_path = r'test/test_batch_cfg/test_TG_cfg.txt'
-        bad_cfg_path = r'badtest/test_batch_cfg/test_TG_cfg.txt'
+        bad_cfg_path = r'badtest/test_batch_cfg/test_bad_cfg.txt'
 
         self.pass_params_pl = ['-i', pl_cfg_path]
         self.pass_params_tg = ['-i', tg_cfg_path]
@@ -64,12 +65,14 @@ class TestCase_cmd_lipidhunter(unittest.TestCase):
         logger.debug('Test bad input...')
         assert cmd_lipidhunter.main(self.fail_input_params) is False
 
+    @pytest.mark.skip(reason="Skip data recover for LipidHunter2 RC")
     def test_cmd_lipidhunter_pl(self):
-        logger.debug('Test sample data...')
+        logger.debug('Test sample data... PL')
         assert cmd_lipidhunter.main(self.pass_params_pl) is True
 
+    @pytest.mark.skip(reason="Skip data recover for LipidHunter2 RC")
     def test_cmd_lipidhunter_tg(self):
-        logger.debug('Test sample data...')
+        logger.debug('Test sample data ... TG')
         assert cmd_lipidhunter.main(self.pass_params_tg) is True
 
     def tearDown(self):

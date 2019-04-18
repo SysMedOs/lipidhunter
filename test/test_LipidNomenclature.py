@@ -38,11 +38,10 @@ class TestCase_LipidNomenclature(unittest.TestCase):
     def setUp(self):
         logger.debug('SETUP TESTS... TestCase_LipidNomenclature')
         cwd = os.getcwd()
-        if cwd.endswith('test'):
+        if cwd.endswith('test') or cwd.endswith('test/') or cwd.endswith('test\\'):
             logger.info('change to folder above..')
             os.chdir('..')
         logger.info(os.getcwd())
-
         self.pass_params = ['FA16:0', 'FA18:0', 'FA18:1', 'O-16:0', 'P-18:0']
         self.bad_params = ['BAD', 'guys', 'here', 'x4!']
 
@@ -59,7 +58,6 @@ class TestCase_LipidNomenclature(unittest.TestCase):
             except Exception as e:
                 logger.error(f'Can not parse {abbr}')
                 logger.error(f'Error {e}')
-
         assert len(result_lst) < len(self.bad_params)
 
     def test_good_params(self):
@@ -71,7 +69,6 @@ class TestCase_LipidNomenclature(unittest.TestCase):
             print(x)
             if x:
                 result_lst.append(x)
-
         assert len(result_lst) == len(self.pass_params)
 
     def tearDown(self):
