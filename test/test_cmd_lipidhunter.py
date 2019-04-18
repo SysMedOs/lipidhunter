@@ -30,16 +30,20 @@ import subprocess
 
 import cmd_lipidhunter
 
+log_level = logging.DEBUG
+logging.basicConfig(format='%(asctime)s-%(levelname)s - %(message)s', datefmt='%b-%d@%H:%M:%S', level=log_level)
+logger = logging.getLogger('log')
+
 
 class TestCase_cmd_lipidhunter(unittest.TestCase):
 
     def setUp(self):
-        logging.debug('SETUP TESTS... TestCase_cmd_lipidhunter')
+        logger.debug('SETUP TESTS... TestCase_cmd_lipidhunter')
         cwd = os.getcwd()
         if cwd.endswith('test'):
-            logging.info('change to folder above..')
+            logger.info('change to folder above..')
             os.chdir('..')
-        logging.info(os.getcwd())
+        logger.info(os.getcwd())
         pl_cfg_path = r'test/test_batch_cfg/test_PC_cfg.txt'
         tg_cfg_path = r'test/test_batch_cfg/test_TG_cfg.txt'
         bad_cfg_path = r'badtest/test_batch_cfg/test_TG_cfg.txt'
@@ -49,30 +53,30 @@ class TestCase_cmd_lipidhunter(unittest.TestCase):
         self.fail_input_params = ['-i', bad_cfg_path]
 
     def test_cmd_lipidhunter_help(self):
-        logging.debug('Test help...')
+        logger.debug('Test help...')
         assert cmd_lipidhunter.main(['-h']) is False
 
     def test_cmd_lipidhunter_bad_params(self):
-        logging.debug('Test bad params...')
+        logger.debug('Test bad params...')
         assert cmd_lipidhunter.main(['-test']) is False
 
     def test_cmd_lipidhunter_bad_infile(self):
-        logging.debug('Test bad input...')
+        logger.debug('Test bad input...')
         assert cmd_lipidhunter.main(self.fail_input_params) is False
 
     def test_cmd_lipidhunter_pl(self):
-        logging.debug('Test sample data...')
+        logger.debug('Test sample data...')
         assert cmd_lipidhunter.main(self.pass_params_pl) is True
 
     def test_cmd_lipidhunter_tg(self):
-        logging.debug('Test sample data...')
+        logger.debug('Test sample data...')
         assert cmd_lipidhunter.main(self.pass_params_tg) is True
 
     def tearDown(self):
-        logging.debug('TestCase_cmd_lipidhunter TEST END!')
+        logger.debug('TestCase_cmd_lipidhunter TEST END!')
 
 
 if __name__ == '__main__':
     # python cmd_lipidhunter.py -i test/test_batch_cfg/test_PC_cfg.txt
     unittest.main()
-    logging.info('TESTS FINISHED!')
+    logger.info('TESTS FINISHED!')
