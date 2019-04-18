@@ -17,6 +17,8 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda info -a
+      - conda config --add channels conda-forge
+      - conda config --add channels rdkit
       - conda env create -f conda_env.yml
       - source activate envlipidhunter
       - pip install codecov
@@ -40,6 +42,8 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda info -a
+      - conda config --add channels conda-forge
+      - conda config --add channels rdkit
       - conda env create -f conda_env.yml
       - source activate envlipidhunter
       - pip install codecov
@@ -64,6 +68,8 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda info -a
+      - conda config --add channels conda-forge
+      - conda config --add channels rdkit
       - conda env create -f conda_env.yml
       - source activate envlipidhunter
       - conda list
