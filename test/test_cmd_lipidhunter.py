@@ -45,6 +45,9 @@ class TestCase_cmd_lipidhunter(unittest.TestCase):
             logger.info('change to folder above..')
             os.chdir('..')
         logger.info(os.getcwd())
+        if not os.path.isdir(r'test/results'):
+            os.makedirs(r'test/results')
+            logger.info(f'folder created: {os.getcwd()}/test/results')
         pl_cfg_path = r'test/test_batch_cfg/test_PC_cfg.txt'
         tg_cfg_path = r'test/test_batch_cfg/test_TG_cfg.txt'
         bad_cfg_path = r'badtest/test_batch_cfg/test_bad_cfg.txt'
