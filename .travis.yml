@@ -26,7 +26,7 @@ matrix:
       - mkdir Temp
       - mkdir test/results
     script:
-    - pytest -n 2 --cov=./
+    - pytest --cov=./
     after_success:
     - codecov
 
@@ -52,7 +52,7 @@ matrix:
       - mkdir test/results
     # command to run tests
     script:
-      - pytest -n 2 --cov=./
+      - pytest --cov=./
     after_success:
       - codecov
 
@@ -72,7 +72,8 @@ matrix:
       - conda config --add channels rdkit
       - conda env create -f conda_env.yml
       - source activate envlipidhunter
-      - conda install numpy
+      - conda install numpy scipy
+      - conda install pandas=0.23.4
       - conda list
       - echo $PATH
       - pip install codecov
@@ -81,6 +82,6 @@ matrix:
       - mkdir test/results
     # command to run tests
     script:
-      - pytest -n 2 --cov=./
+      - pytest --cov=./
     after_success:
       - codecov

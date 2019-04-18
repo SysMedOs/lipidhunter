@@ -65,12 +65,11 @@ class TestCase_cmd_lipidhunter(unittest.TestCase):
         logger.debug('Test bad input...')
         assert cmd_lipidhunter.main(self.fail_input_params) is False
 
-    @pytest.mark.skip(reason="Skip data recover for LipidHunter2 RC")
     def test_cmd_lipidhunter_pl(self):
         logger.debug('Test sample data... PL')
         assert cmd_lipidhunter.main(self.pass_params_pl) is True
 
-    @pytest.mark.skip(reason="Skip data recover for LipidHunter2 RC")
+    # @pytest.mark.skip(reason="Skip data recover for Travis CI")
     def test_cmd_lipidhunter_tg(self):
         logger.debug('Test sample data ... TG')
         assert cmd_lipidhunter.main(self.pass_params_tg) is True
