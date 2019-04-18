@@ -18,11 +18,24 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from nose.tools import *
+import os
+import sys
+import unittest
+
+epiLION_Path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, epiLION_Path + '/../')
+
+import pytest
 
 from LibLipidHunter.HuntManager import recover_hunt
 
+cwd = os.getcwd()
+if cwd.endswith('test'):
+    print('change to folder above..')
+    os.chdir('..')
 
+
+@pytest.mark.skip(reason="Skip data recover for LipidHunter2 RC")
 def test_recover_hunt():
     test_hunt_data_name = r'..\Test\results\hunter_data.hunt'
     with open(test_hunt_data_name, 'rb') as test_hunt_data:

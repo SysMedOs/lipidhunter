@@ -18,12 +18,20 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-import time
-import os
 
-from nose.tools import *
+import os
+import sys
+import unittest
+
+hunterPath = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, hunterPath + '/../')
 
 from LibLipidHunter.LipidNomenclature import NameParserFA
+
+cwd = os.getcwd()
+if cwd.endswith('test'):
+    print('change to folder above..')
+    os.chdir('..')
 
 
 def test_get_fa_info():

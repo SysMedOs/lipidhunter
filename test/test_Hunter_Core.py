@@ -18,12 +18,20 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-import time
 import os
+import sys
+import time
+import unittest
 
-from nose.tools import *
+hunterPath = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, hunterPath + '/../')
 
 from LibLipidHunter.Hunter_Core import huntlipids
+
+cwd = os.getcwd()
+if cwd.endswith('test'):
+    print('change to folder above..')
+    os.chdir('..')
 
 
 def test_huntlipids():
@@ -55,24 +63,24 @@ def test_huntlipids():
     ]
 
     # set the default files
-    pl_mzml_waters = r'./mzML/PL_Neg_Waters_qTOF.mzML'  # Synapt-g2si file
-    lpl_mzml_thermo = r'./mzML/dev_test/LPL_Neg_Thermo_Orbi.mzML'  # Qexactive file
-    tg_mzml_waters = r'./mzML/dev_test/TG_Pos_Waters_qTOF.mzML'  # Synapt-g2si file
-    tg_mzml_thermo = r'./mzML/TG_Pos_Thermo_Orbi.mzML'  # Qexactive file
-    tg_mzml_SCIEXS = r'./mzML/Test_sciex.mzML'  # position holder
-    tg_mzml_agilent = r'./mzML/Test_agilent.mzML'  # position holder
+    pl_mzml_waters = r'test/mzML/PL_Neg_Waters_qTOF.mzML'  # Synapt-g2si file
+    lpl_mzml_thermo = r'test/mzML/dev_test/LPL_Neg_Thermo_Orbi.mzML'  # Qexactive file
+    tg_mzml_waters = r'test/mzML/dev_test/TG_Pos_Waters_qTOF.mzML'  # Synapt-g2si file
+    tg_mzml_thermo = r'test/mzML/TG_Pos_Thermo_Orbi.mzML'  # Qexactive file
+    tg_mzml_SCIEXS = r'test/mzML/Test_sciex.mzML'  # position holder
+    tg_mzml_agilent = r'test/mzML/Test_agilent.mzML'  # position holder
 
-    pl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_PL.xlsx'}
+    pl_base_dct = {'fawhitelist_path_str': r'ConfigurationFiles/1-FA_Whitelist.xlsx',
+                   'lipid_specific_cfg': r'ConfigurationFiles/3-Specific_ions.xlsx',
+                   'score_cfg': r'ConfigurationFiles/2-Score_weight_PL.xlsx'}
 
-    lpl_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist.xlsx',
-                    'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
-                    'score_cfg': r'../ConfigurationFiles/2-Score_weight_LPL.xlsx'}
+    lpl_base_dct = {'fawhitelist_path_str': r'ConfigurationFiles/1-FA_Whitelist.xlsx',
+                    'lipid_specific_cfg': r'ConfigurationFiles/3-Specific_ions.xlsx',
+                    'score_cfg': r'ConfigurationFiles/2-Score_weight_LPL.xlsx'}
 
-    tg_base_dct = {'fawhitelist_path_str': r'../ConfigurationFiles/1-FA_Whitelist.xlsx',
-                   'lipid_specific_cfg': r'../ConfigurationFiles/3-Specific_ions.xlsx',
-                   'score_cfg': r'../ConfigurationFiles/2-Score_weight_TG.xlsx'}
+    tg_base_dct = {'fawhitelist_path_str': r'ConfigurationFiles/1-FA_Whitelist.xlsx',
+                   'lipid_specific_cfg': r'ConfigurationFiles/3-Specific_ions.xlsx',
+                   'score_cfg': r'ConfigurationFiles/2-Score_weight_TG.xlsx'}
 
     usr_test_dct = {}
     usr_test_dct_keys = []
@@ -143,7 +151,7 @@ def test_huntlipids():
                 mzml = False
 
             if lipid_class == 'TG' and charge == '[M+Na]+':
-                tg_base_dct['score_cfg'] = r'../ConfigurationFiles/2-Score_weight_TG_Na.xlsx'
+                tg_base_dct['score_cfg'] = r'ConfigurationFiles/2-Score_weight_TG_Na.xlsx'
 
             _test_dct.update(tg_base_dct)
         elif usr_test[0] in ['DG']:
@@ -232,7 +240,7 @@ def test_huntlipids():
     t_sum_lst = []
 
     # automatic identify the LipidHunter folder
-    hunter_folder = os.path.dirname(os.getcwd())
+    hunter_folder = os.getcwd()
     hunter_file_path = os.path.join(hunter_folder, 'LipidHunter.py')
 
     if os.path.isfile(hunter_file_path):
@@ -245,8 +253,8 @@ def test_huntlipids():
                 t_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
                 lipid_class = test_dct['lipid_class']
 
-                cfg_dct = {'img_output_folder_str': r'../Test/results/%s_%s' % (test_key, t_str),
-                           'xlsx_output_path_str': r'../Test/results/%s_%s.xlsx' % (test_key, t_str),
+                cfg_dct = {'img_output_folder_str': r'Test/results/%s_%s' % (test_key, t_str),
+                           'xlsx_output_path_str': r'Test/results/%s_%s.xlsx' % (test_key, t_str),
                            'hunter_folder': hunter_folder, 'img_type': u'png', 'img_dpi': 300,
                            'hunter_start_time': t_str, 'experiment_mode': 'LC-MS', 'rank_score': True,
                            'fast_isotope': False, 'core_number': core_count, 'max_ram': max_ram, 'tag_all_sn': True}

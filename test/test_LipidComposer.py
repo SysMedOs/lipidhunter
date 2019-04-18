@@ -18,13 +18,22 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from nose.tools import *
+import os
+import sys
+import unittest
+
+hunterPath = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, hunterPath + '/../')
+cwd = os.getcwd()
+if cwd.endswith('test'):
+    print('change to folder above..')
+    os.chdir('..')
 
 from LibLipidHunter.LipidComposer import LipidComposer
 
 
 def test_lipicomposer():
-    fa_lst_file = r'../ConfigurationFiles/1-FA_Whitelist.xlsx'
+    fa_lst_file = r'ConfigurationFiles/1-FA_Whitelist.xlsx'
 
     # Note:
     # exact position means to consider the poition from the FA white list that the user give but,
@@ -44,9 +53,8 @@ def test_lipicomposer():
     usr_lipid_master_df = composer.compose_lipid(param_dct=usr_param_dct, ms2_ppm=30)
     print('[INFO] --> Lipid Master Table generated...')
 
-    # master_csv = r'../Temp/LipidMaster_Whitelist_TG_ML.csv'
-    master_csv = r'../Temp/LipidMaster_Whitelist_%s.csv' % usr_param_dct['lipid_class']
-    fa_csv = r'../Temp/LipidMaster_FAlist_%s.csv' % usr_param_dct['lipid_class']
+    master_csv = r'Temp/LipidMaster_Whitelist_%s.csv' % usr_param_dct['lipid_class']
+    fa_csv = r'Temp/LipidMaster_FAlist_%s.csv' % usr_param_dct['lipid_class']
 
     calc_fa_df = composer.calc_fa_query(usr_param_dct['lipid_class'], fa_lst_file, ms2_ppm=50)
 
