@@ -1257,13 +1257,3 @@ def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
     print('[STATUS] >>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
 
     return tot_run_time, error_lst, output_df
-
-
-if __name__ == '__main__':
-
-    from test.test_Hunter_Core import test_huntlipids
-
-    multiprocessing.freeze_support()
-    os.chdir('../test')
-    test_huntlipids()
-
