@@ -116,7 +116,8 @@ def main(argv):
 
         if platform == "linux" or platform == "linux2":
             l_cwd = os.getcwd()
-            os.chdir('/')
+            if output_folder_path.startswith('/'):
+                os.chdir('/')
             if os.path.isdir(output_folder_path):
                 print('Folder existed...\n', output_folder_path)
                 folder_abs_path = os.path.abspath(output_folder_path)

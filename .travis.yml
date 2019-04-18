@@ -21,6 +21,9 @@ matrix:
       - conda config --add channels rdkit
       - conda env create -f conda_env.yml
       - source activate envlipidhunter
+      - ls
+      - cd /home/travis/build/ZhixuNi/lipidhunter
+      - ls
       - pip install codecov
       - pip install pytest pytest-cov
     script:
@@ -66,9 +69,10 @@ matrix:
       - conda info -a
       - conda config --add channels conda-forge
       - conda config --add channels rdkit
-      - conda env create -f conda_env.yml
+      - conda create -n envlipidhunter -c conda-forge pyside=1.2.4
       - source activate envlipidhunter
-      - conda install pandas numpy scipy
+      - conda install cython pandas natsort numpy numexpr scipy six matplotlib plotly openpyxl xlwt xlrd
+      - pip install pymzml=0.7.8
       - conda list
       - echo $PATH
       - pip install codecov
