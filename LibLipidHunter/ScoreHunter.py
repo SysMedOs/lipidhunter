@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2017  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
+# Copyright (C) 2016-2019  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
 # SysMedOs_team: Zhixu Ni, Georgia Angelidou, Mike Lange, Maria Fedorova
 # LipidHunter is Dual-licensed
 #     For academic and non-commercial use: `GPLv2 License` Please read more information by the following link:
@@ -14,7 +14,6 @@
 # DOI: 10.1021/acs.analchem.7b01126
 #
 # For more info please contact:
-#     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
@@ -160,7 +159,7 @@ def get_all_fa_nl(fa_df, ms2_df, peak_type_lst, lipid_type='LPL'):
                 _q_tmp_df.loc[:, 'obs_ppm_abs'] = _q_tmp_df['obs_ppm'].abs()
                 _q_tmp_df.loc[:, 'obs_abbr'] = _fa_se['%s_ABBR' % peak_typ]
                 _q_tmp_df.loc[:, 'obs_type'] = peak_typ
-                _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['lib_mz']
+                _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_mz']
                 _q_tmp_df = _q_tmp_df.round({'obs_mz': 4, 'obs_i_r': 1, 'obs_label': 2})
                 _q_tmp_df.loc[:, 'obs_label'] = _q_tmp_df['obs_label'].astype(str)
                 if lipid_type in ['TG'] and re.match(dg_fa_rgx, _fa_se['%s_ABBR' % peak_typ]):

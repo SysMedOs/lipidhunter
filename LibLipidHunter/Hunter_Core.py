@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2017  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
+# Copyright (C) 2016-2019  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
 # SysMedOs_team: Zhixu Ni, Georgia Angelidou, Mike Lange, Maria Fedorova
 # LipidHunter is Dual-licensed
 #     For academic and non-commercial use: `GPLv2 License` Please read more information by the following link:
@@ -14,7 +14,6 @@
 # DOI: 10.1021/acs.analchem.7b01126
 #
 # For more info please contact:
-#     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
@@ -59,13 +58,13 @@ except ImportError:  # for python 2.7.14
     from HuntManager import gen_html_report
 
 
-def huntlipids(param_dct, error_lst, save_fig=True):
+def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
     """
 
     :param(dict) param_dct:
     example
     hunter_param_dct = {'fawhitelist_path_str': r'D:\lipidhunter\ConfigurationFiles\FA_Whitelist.xlsx',
-                        'mzml_path_str': r'D:\lipidhunter\mzML\MS2\070120_CM_neg_70min_SIN_I.mzML',
+                        'mzml_path_str': r'D:\lipidhunter\test\mzML\PL_Neg_Waters_qTOF.mzML',
                         'img_output_folder_str': r'D:\lipidhunter\Temp\Test2',
                         'xlsx_output_path_str': r'D:\lipidhunter\Temp\Test2\t2.xlsx',
                         'lipid_specific_cfg': r'D:\lipidhunter\ConfigurationFiles\PL_specific_ion_cfg.xlsx',
@@ -133,7 +132,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
     hunter_start_time_str = param_dct['hunter_start_time']
 
-    save_session = False
+    # save_session = False
     try:
         if param_dct['debug_mode'] == 'ON':
             save_session = True
@@ -176,16 +175,19 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     use_existed_lipid_master = False
     save_lipid_master_table = False
     if 'debug_mode' in list(param_dct.keys()):
-        if param_dct['debug_mode'] == 'ON' and 'lipid_master_table' in list(param_dct.keys()):
-            existed_lipid_master_path = param_dct['lipid_master_table']
-            if os.path.isfile(existed_lipid_master_path):
-                use_existed_lipid_master = True
+        if param_dct['debug_mode'] == 'ON':
+            if 'lipid_master_table' in list(param_dct.keys()):
+                existed_lipid_master_path = param_dct['lipid_master_table']
+                if os.path.isfile(existed_lipid_master_path):
+                    use_existed_lipid_master = True
+                else:
+                    print('[ERROR] !!! Failed to load existed Lipid Master table: %s', existed_lipid_master_path)
             else:
-                print('[ERROR] !!! Failed to load existed Lipid Master table: %s', existed_lipid_master_path)
-
-        if 'save_lipid_master_table' in list(param_dct.keys()):
-            if param_dct['save_lipid_master_table'] == 'CSV':
                 save_lipid_master_table = True
+
+        # if 'save_lipid_master_table' in list(param_dct.keys()):
+        #     if param_dct['save_lipid_master_table'] == 'CSV':
+        #         save_lipid_master_table = True
 
     if use_existed_lipid_master is False:
         try:
@@ -567,7 +569,7 @@ def huntlipids(param_dct, error_lst, save_fig=True):
 
             if os_typ == 'windows':
                 parallel_pool = Pool(usr_core_num)
-                # queue = ''
+                # usr_queue = ''
                 worker_count = 1
                 for _sub_lst in spec_sub_key_lst:
                     if isinstance(_sub_lst, tuple) or isinstance(_sub_lst, list):
@@ -1254,10 +1256,3 @@ def huntlipids(param_dct, error_lst, save_fig=True):
     print('[STATUS] >>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
 
     return tot_run_time, error_lst, output_df
-
-
-if __name__ == '__main__':
-
-    from test.test_Hunter_Core import test_huntlipids
-    multiprocessing.freeze_support()
-    test_huntlipids()
