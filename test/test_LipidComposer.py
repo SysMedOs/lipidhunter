@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2017  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
+# Copyright (C) 2016-2019  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
 # SysMedOs_team: Zhixu Ni, Georgia Angelidou, Mike Lange, Maria Fedorova
 # LipidHunter is Dual-licensed
 #     For academic and non-commercial use: `GPLv2 License` Please read more information by the following link:
@@ -14,7 +14,6 @@
 # DOI: 10.1021/acs.analchem.7b01126
 #
 # For more info please contact:
-#     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
@@ -127,7 +126,7 @@ class TestCaseLipidComposer(unittest.TestCase):
         assert is_sucessful is True
 
     def tearDown(self):
-        logger.debug('Test LipidComposer TEST END!')
+        logger.debug('Test LipidComposer TEST PASSED!')
 
 
 if __name__ == '__main__':

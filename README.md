@@ -1,7 +1,7 @@
 # About LipidHunter 2 #
+![LipidHunter_logo](LipidHunter.png)
 
 [![Travis (.com) all](https://img.shields.io/travis/com/ZhixuNi/lipidhunter/master.svg)](https://travis-ci.com/SysMedOs/epiLION)
-![Codecov](https://img.shields.io/codecov/c/github/ZhixuNi/lipidhunter.svg)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ZhixuNi/lipidhunter.svg)
 ![pyup dependencies](https://pyup.io/repos/github/ZhixuNi/lipidhunter/shield.svg)
 ![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/SysMedOs/LipidHunter.svg)
@@ -97,8 +97,10 @@ https://github.com/SysMedOs/lipidhunter/releases
         - Image plot: matplotlib, plotly(required by pymzml)
         - Excel output: openpyxl, xlrd, xlwt
         - Graphic interface: pyside
-    + Test source code installation
-        - Run `test/test_lipidhunter.py` with [Nose Testing Framework](https://nose.readthedocs.io/en/latest/)
+    + Test source code installation:
+        - LipidHunter 2  is configured to use [travis-ci](https://travis-ci.com) with `py.test` to test on Windows, Linux, and macOS. 
+        - Use command `pytest` in LipidHunter folder to run all tests.
+        - Optionally, you can test individual unit test in the `test` folder
          
 
 * [LipidHunter user guide](doc/LipidHunter_UserGuide.pdf)
