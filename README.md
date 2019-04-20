@@ -1,4 +1,13 @@
 # About LipidHunter 2 #
+![LipidHunter_logo](LipidHunter.png)
+
+![Platforms](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-blue.svg)
+[![Travis (.com) all](https://img.shields.io/travis/com/ZhixuNi/lipidhunter/master.svg)](https://travis-ci.com/SysMedOs/epiLION)
+![GitHub last commit](https://img.shields.io/github/last-commit/ZhixuNi/lipidhunter.svg)
+![pyup dependencies](https://pyup.io/repos/github/ZhixuNi/lipidhunter/shield.svg)
+![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/SysMedOs/LipidHunter.svg)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/SysMedOs/lipidhunter/LipidHunter2_RC.svg)
+![total downloads](https://img.shields.io/github/downloads/SysMedOs/lipidhunter/total.svg?color=orange)
 
 LipidHunter 2 has significant improvement from the original LipidHunter.
 The major improvements are listed below:
@@ -77,15 +86,19 @@ https://github.com/SysMedOs/lipidhunter/releases
 
     + LipidHunter 2 is developed under python 3.6, the current version can still run on python 2.7 (not recommended).
     + The best way is to use virtual environment such as `conda`
-    + The requirements is listed in [environment.yml](environment.yml) for `conda` users and [requirements.txt](requirements.txt) for `pip` users.
+    + The requirements is listed in [conda_env.yml](conda_env.yml) for `conda` users and [requirements.txt](requirements.txt) for `pip` users.
+        - conda: run `conda env create -f conda_env.yml` you will get an environment named `envlipidhunter` 
+        - pip: activate your virtual environment, then `pip install -r requirements.txt`
     + Main dependencies are:
         - Data processing: numpy, pandas, scipy, numba, natsort
         - mzML reader: pymzml == 0.7.8
         - Image plot: matplotlib, plotly(required by pymzml)
         - Excel output: openpyxl, xlrd, xlwt
         - Graphic interface: pyside
-    + Test source code installation
-        - Run `test/test_lipidhunter.py` with [Nose Testing Framework](https://nose.readthedocs.io/en/latest/)
+    + Test source code installation:
+        - LipidHunter 2  is configured to use [travis-ci](https://travis-ci.com) with `py.test` to test on Windows, Linux, and macOS. 
+        - Use command `pytest` in LipidHunter folder to run all tests.
+        - Optionally, you can test individual unit test in the `test` folder
          
 
 * [LipidHunter user guide](doc/LipidHunter_UserGuide.pdf)

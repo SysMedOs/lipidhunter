@@ -1,13 +1,13 @@
 [parameters]
 vendor = waters
 experiment_mode = LC-MS
-lipid_class = PC
-charge_mode = [M+HCOO]-
+lipid_class = PE
+charge_mode = [M-H]-
 fawhitelist_path_str = ConfigurationFiles/1-FA_Whitelist.xlsx
 score_cfg = ConfigurationFiles/2-Score_weight_PL.xlsx
 mzml_path_str = test/mzML/PL_Neg_Waters_qTOF.mzML
 img_output_folder_str = test/results
-xlsx_output_path_str = test/results/test_PC.xlsx
+xlsx_output_path_str = test/results/test_PE.xlsx
 rt_start = 24.0
 rt_end = 25.0
 mz_start = 700.0

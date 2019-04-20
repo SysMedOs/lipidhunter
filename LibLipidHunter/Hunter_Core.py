@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2017  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
+# Copyright (C) 2016-2019  SysMedOs_team @ AG Bioanalytik, University of Leipzig:
 # SysMedOs_team: Zhixu Ni, Georgia Angelidou, Mike Lange, Maria Fedorova
 # LipidHunter is Dual-licensed
 #     For academic and non-commercial use: `GPLv2 License` Please read more information by the following link:
@@ -14,7 +14,6 @@
 # DOI: 10.1021/acs.analchem.7b01126
 #
 # For more info please contact:
-#     SysMedOs_team: oxlpp@bbz.uni-leipzig.de
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
@@ -1257,13 +1256,3 @@ def huntlipids(param_dct, error_lst, save_fig=True, save_session=False):
     print('[STATUS] >>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
 
     return tot_run_time, error_lst, output_df
-
-
-if __name__ == '__main__':
-
-    from test.test_Hunter_Core import test_huntlipids
-
-    multiprocessing.freeze_support()
-    os.chdir('../test')
-    test_huntlipids()
-
