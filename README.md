@@ -1,5 +1,6 @@
 # About LipidHunter 2 #
 ![LipidHunter_logo](LipidHunter.png)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FSysMedOs%2Flipidhunter.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FSysMedOs%2Flipidhunter?ref=badge_shield)
 
 ![Platforms](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-blue.svg)
 [![Travis (.com) all](https://img.shields.io/travis/com/ZhixuNi/lipidhunter/master.svg)](https://travis-ci.com/SysMedOs/epiLION)
@@ -122,6 +123,9 @@ https://github.com/SysMedOs/lipidhunter/releases
 + Please cite our publication in an appropriate form. 
     * Ni, Zhixu, Georgia Angelidou, Mike Lange, Ralf Hoffmann, and Maria Fedorova. "LipidHunter identifies phospholipids by high-throughput processing of LC-MS and shotgun lipidomics datasets." Analytical Chemistry (2017).
         - DOI: 10.1021/acs.analchem.7b01126
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FSysMedOs%2Flipidhunter.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FSysMedOs%2Flipidhunter?ref=badge_large)
 
 ### Further questions? ###
 
