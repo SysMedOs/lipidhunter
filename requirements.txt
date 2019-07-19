@@ -16,7 +16,7 @@ numpy>=1.11.3
 numpy-base>=1.11.3
 openpyxl>=2.6.2
 openssl>=1.1.1b
-pandas==0.23.4
+pandas==0.25.0
 pip>=19.0.3
 plotly>=3.7.0
 pymzml==0.7.8
