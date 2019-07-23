@@ -17,9 +17,6 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import division
-from __future__ import print_function
-
 import math
 import multiprocessing
 from multiprocessing import Pool
@@ -27,11 +24,7 @@ from sys import platform
 
 import pandas as pd
 
-try:
-    from LibLipidHunter.ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
-
-except ImportError:  # for python 2.7
-    from ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
+from LibLipidHunter.ParallelFunc import ppm_calc_para, ppm_window_para, pr_window_calc_para
 
 
 def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_th, ms1_ppm, ms1_max, core=1,

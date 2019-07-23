@@ -17,9 +17,6 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import division
-from __future__ import print_function
-
 import glob
 import multiprocessing
 import multiprocessing.pool
@@ -30,16 +27,11 @@ import time
 
 import pandas as pd
 from PySide import QtCore, QtGui
-from six.moves import configparser
+import configparser
 
-try:
-    from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
-    from LibLipidHunter.Hunter_Core import huntlipids
-    from LibLipidHunter.LipidComposer import LipidComposer
-except ImportError:  # for python 2.7.14
-    from LipidHunter_UI import Ui_MainWindow
-    from Hunter_Core import huntlipids
-    from LipidComposer import LipidComposer
+from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
+from LibLipidHunter.Hunter_Core import huntlipids
+from LibLipidHunter.LipidComposer import LipidComposer
 
 
 class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):

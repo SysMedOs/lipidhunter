@@ -17,9 +17,6 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import division
-from __future__ import print_function
-
 import pickle
 
 import math
@@ -28,12 +25,8 @@ from multiprocessing import Pool
 import os
 import time
 
-try:
-    from LibLipidHunter.LogPageCreator import LogPageCreator
-    from LibLipidHunter.PanelPlotter import gen_plot
-except ImportError:  # for python 2.7.14
-    from LogPageCreator import LogPageCreator
-    from PanelPlotter import gen_plot
+from LibLipidHunter.LogPageCreator import LogPageCreator
+from LibLipidHunter.PanelPlotter import gen_plot
 
 
 def save_hunt(results_pickle_dct, hunt_save_path):

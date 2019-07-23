@@ -17,24 +17,15 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import division
-from __future__ import print_function
-
 import os
 import re
 
 import pandas as pd
 
-try:
-    from LibLipidHunter.IsotopeHunter import IsotopeHunter
-    from LibLipidHunter.AbbrElemCalc import ElemCalc
-    from LibLipidHunter.PanelPlotter import plot_spectra
-    from LibLipidHunter.PanelPlotter import gen_plot
-except ImportError:  # for python 2.7.14
-    from IsotopeHunter import IsotopeHunter
-    from PanelPlotter import plot_spectra
-    from AbbrElemCalc import ElemCalc
-    from PanelPlotter import gen_plot
+from LibLipidHunter.IsotopeHunter import IsotopeHunter
+from LibLipidHunter.AbbrElemCalc import ElemCalc
+from LibLipidHunter.PanelPlotter import plot_spectra
+from LibLipidHunter.PanelPlotter import gen_plot
 
 
 def get_specific_peaks(key_frag_dct, mz_lib, ms2_df, ms2_ppm=100, vendor='waters', exp_mode='LC-MS'):
