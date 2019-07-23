@@ -99,7 +99,6 @@ def extract_mzml(mzml: str, rt_range: list, dda_top: int = 6,
     spec_dct = {}  # Type: Dict[pd.DataFrame]
 
     ms2_function_range_lst = list(range(2, dda_top + 1))
-    function_range_lst = list(range(1, dda_top + 1))
 
     ms1_xic_df = pd.DataFrame()
 
@@ -127,19 +126,21 @@ def extract_mzml(mzml: str, rt_range: list, dda_top: int = 6,
             except ValueError:
                 _scan_rt = -0.1
 
-            try:
-                ms_level = int(_spectrum.ms_level)
-            except ValueError:
-                print(_spectrum.ms_level)
-                ms_level = -1
-
-            if _spectrum.mz.any() and _spectrum.id_dict and rt_start <= _scan_rt <= rt_end:
-
-                _scan_id = int(_spectrum.id_dict.get('scan', -1))
+            if rt_start <= _scan_rt <= rt_end:
+                _spectrum.mz.any() and _spectrum.id_dict
+                try:
+                    _scan_id = int(_spectrum.id_dict.get('scan', -1))
+                except ValueError:
+                    _scan_id = -1
+                try:
+                    ms_level = int(_spectrum.ms_level)
+                except ValueError:
+                    print(_spectrum.ms_level)
+                    ms_level = -1
 
                 _raw_tmp_spec_df = pd.DataFrame(data={'mz': _spectrum.mz, 'i': _spectrum.i})
                 _tmp_spec_df = pd.DataFrame()
-                if ms_level == 1:
+                if ms_level == 1 and _scan_id > 0:
                     dda_event_idx += 1  # a new set of DDA start from this new MS1
                     dda_rank_idx = 0  # set the DDA rank back to 0 for the survey MS1 scan
                     # use ms1_threshold * 0.1 to keep isotope patterns
@@ -160,7 +161,7 @@ def extract_mzml(mzml: str, rt_range: list, dda_top: int = 6,
                     print('MS1_spectrum -> index = {idx} @ scan_time: {rt:.3f} | DDA_events={dda_idx}'
                           .format(idx=spec_idx, dda_idx=dda_event_idx, rt=_scan_rt))
 
-                elif ms_level in ms2_function_range_lst:
+                elif ms_level in ms2_function_range_lst and _scan_id > 0:
                     dda_rank_idx += 1
                     try:
                         pr_mz = _spectrum.selected_precursors[0].get('mz', -1)
@@ -193,8 +194,9 @@ def extract_mzml(mzml: str, rt_range: list, dda_top: int = 6,
                     pr_mz_lst.append(pr_mz)
 
                 del _raw_tmp_spec_df
-            else:
-                print(f'[INFO] Skip spectrum # {spec_idx} @ {_scan_rt:.3f} min - ms_level {ms_level}')
+            else:  # rt not in defined range, skip.
+                pass
+                # print(f'[INFO] Skip spectrum # {spec_idx} @ {_scan_rt:.3f} min - ms_level {ms_level}')
             spec_idx += 1
 
     else:
@@ -213,7 +215,7 @@ def extract_mzml(mzml: str, rt_range: list, dda_top: int = 6,
 
 
 def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
-                scan_info_df, spectra_pl, dda_top=12, ms1_precision=50e-6, vendor='waters'):
+                scan_info_df, spectra_dct, dda_top=12, ms1_precision=50e-6, vendor='waters'):
     ms1_df = pd.DataFrame()
     ms2_df = pd.DataFrame()
     ms1_spec_idx = 0
@@ -246,8 +248,8 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
             if not tmp_ms1_info_df.empty and ms2_function <= function_max:
                 ms1_spec_idx = tmp_ms1_info_df['spec_index'].values.tolist()[0]
                 ms1_rt = tmp_ms1_info_df['scan_time'].values.tolist()[0]
-                if ms1_spec_idx in spectra_pl.items:
-                    ms1_df = spectra_pl[ms1_spec_idx]
+                if ms1_spec_idx in spectra_dct:
+                    ms1_df = spectra_dct[ms1_spec_idx]
                     ms1_df = ms1_df.query('i > 0')
                     ms1_df = ms1_df.sort_values(by='i', ascending=False).reset_index(drop=True)
                     ms1_delta = mz_lib * ms1_precision
@@ -258,10 +260,11 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
 
                     ms1_pr_df = ms1_df.query(ms1_pr_query).copy()
                     # ms1_pr_df.is_copy = False
+
                     if not ms1_pr_df.empty:
-                        ms1_pr_df.loc[:, 'mz_xic'] = ms1_pr_df['mz']
-                        ms1_pr_df = ms1_pr_df.round({'mz': 6, 'mz_xic': 4})
-                        ms1_pr_df = ms1_pr_df[ms1_pr_df['mz_xic'].isin(ms1_obs_mz_lst)]
+                        # ms1_pr_df.loc[:, 'mz_xic'] = ms1_pr_df['mz'].round(4)
+                        ms1_pr_df['mz'] = ms1_pr_df['mz'].round(6)
+
                         if not ms1_pr_df.empty:
                             # print('Number of MS1 pr mz in list:', ms1_pr_df.shape[0])
                             ms1_pr_df['ppm'] = abs(1e6 * (ms1_pr_df['mz'] - mz_lib) / mz_lib)
@@ -275,8 +278,8 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
                             ms1_i = ms1_pr_se['i']
                             ms1_pr_ppm = 1e6 * (ms1_mz - mz_lib) / mz_lib
                             # get spectra_df of corresponding MS2 DDA scan
-                            if ms2_spec_idx in spectra_pl.items:
-                                ms2_df = spectra_pl[ms2_spec_idx]
+                            if ms2_spec_idx in spectra_dct:
+                                ms2_df = spectra_dct[ms2_spec_idx]
                                 ms2_df = ms2_df.query('i > 0').copy()
                                 # ms2_df.is_copy = False
                                 ms2_df.sort_values(by='i', ascending=False, inplace=True)
@@ -309,8 +312,10 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
 
 
 def get_xic_from_pl(xic_ms1_lst, ms1_xic_df, xic_ppm, os_type='windows', queue=None):
+
     ms1_xic_dct = {}
 
+    # use numba parallel processing to calculate all range faster
     xic_ms1_l_lst = ppm_window_para(xic_ms1_lst, -1 * xic_ppm)
     xic_ms1_h_lst = ppm_window_para(xic_ms1_lst, xic_ppm)
     xic_ms_info_lst = list(zip(xic_ms1_lst, xic_ms1_l_lst, xic_ms1_h_lst))
@@ -320,16 +325,15 @@ def get_xic_from_pl(xic_ms1_lst, ms1_xic_df, xic_ppm, os_type='windows', queue=N
         ms1_low = _xic_mz_info[1]
         ms1_high = _xic_mz_info[2]
         if _xic_mz > 0:
-            ms1_query = '%f <= mz <= %f' % (ms1_low, ms1_high)
-            # print(ms1_query)
+            ms1_query = f'{ms1_low} <= mz <= {ms1_high}'
             _found_ms1_df = ms1_xic_df.query(ms1_query).copy()
-            # _found_ms1_df.is_copy = False
+            # There may be many peaks fit the requirements
+            # sort the best fit by intensity and abs_ppm
             _found_ms1_df.loc[:, 'ppm'] = 1e6 * (_found_ms1_df['mz'] - _xic_mz) / _xic_mz
             _found_ms1_df.loc[:, 'ppm'] = _found_ms1_df['ppm'].abs()
             _found_ms1_df.loc[:, 'mz'] = _xic_mz
             _found_ms1_df.sort_values(by=['rt', 'i', 'ppm'], ascending=[True, False, True], inplace=True)
             _found_ms1_df.drop_duplicates(subset=['rt'], keep='first', inplace=True)
-            # print('_found_ms1_df.shape', _found_ms1_df.shape)
             ms1_xic_dct[_xic_mz] = _found_ms1_df
 
     if os_type == 'linux_multi':

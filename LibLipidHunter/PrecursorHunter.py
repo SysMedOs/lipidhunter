@@ -57,7 +57,7 @@ def find_pr_info(scan_info_df, spectra_pl, lpp_info_groups, sub_group_list, ms1_
 
                     ms1_spec_idx = tmp_ms1_info_df['spec_index'].values.tolist()[0]
 
-                    if ms1_spec_idx in spectra_pl.items:
+                    if ms1_spec_idx in spectra_pl:
                         ms1_df = spectra_pl[ms1_spec_idx]
                         if ms1_max > ms1_th:
                             pr_ms1_df = ms1_df.query('%f <= i <= %f and %f <= mz <= %f'
@@ -129,7 +129,7 @@ class PrecursorHunter(object):
         self.param_dct = param_dct
         self.os_typ = os_type
 
-    def get_matched_pr(self, scan_info_df, spectra_pl, ms1_max=0, core_num=4, max_ram=8):
+    def get_matched_pr(self, scan_info_df, spectra_dct, ms1_max=0, core_num=4, max_ram=8):
 
         print('[STATUS] >>>  Start match precursors ...')
 
@@ -184,7 +184,7 @@ class PrecursorHunter(object):
         sub_len = int(math.ceil(len(all_group_key_lst) / core_num))
         core_key_list = [all_group_key_lst[k: k + sub_len] for k in range(0, len(all_group_key_lst), sub_len)]
         del all_group_key_lst
-        spectra_pl_idx_lst = sorted(spectra_pl.items.values.tolist())
+        spectra_pl_idx_lst = sorted(list(spectra_dct.keys()))
 
         if (max_ram * 64) <= len(spectra_pl_idx_lst) < (max_ram * 128):
             print('[INFO] --> Spectra is too large for the RAM settings, split to few segments ...')
@@ -218,8 +218,9 @@ class PrecursorHunter(object):
             if isinstance(sub_idx_lst, tuple) or isinstance(sub_idx_lst, list):
                 sub_idx_lst = [x for x in sub_idx_lst if x is not None]
                 # opt_sub_pl_group_lst.append(sub_idx_lst)
-                sub_pl = spectra_pl.loc[sub_idx_lst, :, :]
-                # print(sub_pl.items)
+                # sub_dct = spectra_dct.loc[sub_idx_lst, :, :]
+                sub_dct = {k: spectra_dct[k] for k in sub_idx_lst if k in spectra_dct}
+                # print(sub_dct.items)
 
                 # Start multiprocessing
                 if part_tot == 1:
@@ -243,7 +244,7 @@ class PrecursorHunter(object):
                                     pass
                                 print('[STATUS] >>> Core #%i ==> processing ......' % core_worker_count)
                                 pr_info_result = parallel_pool.apply_async(find_pr_info, args=(scan_info_df,
-                                                                                               sub_pl,
+                                                                                               sub_dct,
                                                                                                lpp_info_groups,
                                                                                                core_list, ms1_th,
                                                                                                ms1_ppm, ms1_max,
@@ -265,7 +266,7 @@ class PrecursorHunter(object):
                                 else:
                                     pass
                                 print('[STATUS] >>> Core #%i ==> processing ......' % core_worker_count)
-                                job = multiprocessing.Process(target=find_pr_info, args=(scan_info_df, sub_pl,
+                                job = multiprocessing.Process(target=find_pr_info, args=(scan_info_df, sub_dct,
                                                                                          lpp_info_groups, core_list,
                                                                                          ms1_th, ms1_ppm, ms1_max,
                                                                                          core_worker_count,
@@ -289,7 +290,7 @@ class PrecursorHunter(object):
                                 pass
                             print('[STATUS] >>> processing ......Part: %i subset: %i '
                                   % (part_counter, core_worker_count))
-                            sub_df = find_pr_info(scan_info_df, sub_pl, lpp_info_groups, core_list, ms1_th,
+                            sub_df = find_pr_info(scan_info_df, sub_dct, lpp_info_groups, core_list, ms1_th,
                                                   ms1_ppm, ms1_max, core_worker_count)
                             if not sub_df.empty:
                                 pr_info_results_lst.append(sub_df)
