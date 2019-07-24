@@ -311,7 +311,19 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
     return spec_info_dct
 
 
-def get_xic_from_pl(xic_ms1_lst, ms1_xic_df, xic_ppm, os_type='windows', queue=None):
+def get_xic_from_pl(xic_ms1_lst: list, ms1_xic_df, xic_ppm, os_type='windows', queue=None):
+    """
+
+    Args:
+        xic_ms1_lst (list):
+        ms1_xic_df:
+        xic_ppm:
+        os_type:
+        queue:
+
+    Returns:
+
+    """
 
     ms1_xic_dct = {}
 
