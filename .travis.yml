@@ -60,6 +60,7 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda config --add channels conda-forge
+      - source activate base
       - conda env create -f conda_env.yml
       - source activate envlipidhunter
       - conda list

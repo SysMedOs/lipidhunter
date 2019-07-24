@@ -6,7 +6,9 @@ dependencies:
   - ca-certificates
   - certifi
   - cython
+  - fontconfig=2.13.1
   - freetype=2.10.0
+  - harfbuzz=1.9.0
   - matplotlib=3.1.1
   - matplotlib-base=3.1.1
   - mkl
@@ -19,13 +21,14 @@ dependencies:
   - openpyxl
   - openssl
   - pandas=0.25.0
-  - pip
+  - pip=19.2.1
   - plotly
   - pyopenssl
-  - pyside=1.2.4
+  - pyqt=4.11.4
+  - pyside=1.2.*
   - python=3.6.*
   - python-dateutil
-  - qt=4.8.7
+  - qt=4.8.*
   - setuptools
   - scipy=1.2.1
   - sip
