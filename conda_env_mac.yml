@@ -3,10 +3,10 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - ca-certificates
   - certifi=2019.6.16
   - pip=19.2.1
   - pyside=1.2.4
   - python=3.6.7
-  - qt=4.8.7
   - setuptools
   - wheel
