@@ -19,6 +19,7 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
+      - conda config --set channel_priority strict
       - conda env create -f conda_env_linux.yml
       - source activate envlipidhunter
       - conda env export > env.yml
@@ -42,6 +43,7 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
+      - conda config --set channel_priority strict
       - conda env create -f conda_env_mac.yml
       - source activate envlipidhunter
       - ls
@@ -53,6 +55,7 @@ matrix:
       - pytest --cov=./
     after_success:
       - codecov
+      - conda install -c conda-forge pyside=1.2.4
 
   - os: windows
     language: sh
@@ -66,8 +69,9 @@ matrix:
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
       - conda config --add channels conda-forge
+      - conda config --set channel_priority strict
       - source activate base
-      - conda env create -f conda_env_win.yml
+      - conda create -c conda-forge -n envlipidhunter python=3.6.7
       - source activate envlipidhunter
       - pip install cython pandas matplotlib natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov xlwt xlrd openpyxl
       - conda env export > env.yml
@@ -78,3 +82,4 @@ matrix:
       - pytest --cov=./
     after_success:
       - codecov
+      - conda install -c conda-forge pyside=1.2.4
