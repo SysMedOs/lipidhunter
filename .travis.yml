@@ -26,9 +26,9 @@ matrix:
       - ls
       - cat env.yml
     script:
-    - pytest --cov=./
+    - travis_wait pytest --cov=./
     after_success:
-    - codecov
+    - travis_wait codecov
 
   - os: osx
     sudo: required
@@ -52,10 +52,13 @@ matrix:
       - ls
       - cat env.yml
     script:
-      - pytest --cov=./
+      - travis_wait pytest --cov=./
     after_success:
-      - codecov
+      - travis_wait codecov
       - conda install -c conda-forge pyside=1.2.4
+      - conda env export > env.yml
+      - ls
+      - cat env.yml
 
   - os: windows
     language: sh
@@ -77,9 +80,9 @@ matrix:
       - conda env export > env.yml
       - conda list
       - echo $PATH
-      - type env.yml
     script:
-      - pytest --cov=./
+      - travis_wait pytest --cov=./
     after_success:
-      - codecov
+      - travis_wait codecov
       - conda install -c conda-forge pyside=1.2.4
+      - conda list

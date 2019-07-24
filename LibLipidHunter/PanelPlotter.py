@@ -19,10 +19,14 @@
 
 import pandas as pd
 import matplotlib
-
 matplotlib.use('agg')
+# from sys import platform
+# if platform == "linux" or platform == "linux2":
+#     from matplotlib import rcParams
+#     rcParams['font.family'] = 'ubuntu'
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
+
 # import matplotlib as mpl
 # from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 # from matplotlib._png import read_png
@@ -44,14 +48,21 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
     obs_ident_df = ident_info_dct['IDENT']
 
     obs_fa_df = ident_info_dct['OBS_FA']
+    obs_fa_df['obs_mz'] = obs_fa_df['obs_mz'].astype(float).round(4)
+    obs_fa_df['obs_ppm'] = obs_fa_df['obs_ppm'].astype(int).tolist()
+    obs_fa_df['obs_i_r'] = obs_fa_df['obs_i_r'].astype(float).round(1)
+
     if 'OBS_LYSO' in list(ident_info_dct.keys()):
         obs_lyso_df = ident_info_dct['OBS_LYSO']
+        obs_lyso_df['obs_mz'] = obs_lyso_df['obs_mz'].astype(float).round(4)
+        obs_lyso_df['obs_ppm'] = obs_lyso_df['obs_ppm'].astype(int).tolist()
+        obs_lyso_df['obs_i_r'] = obs_lyso_df['obs_i_r'].astype(float).round(1)
         if not obs_lyso_df.empty:
             obs_dg_na_df = obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']
             obs_dg_na_df.reset_index(drop=True, inplace=True)
             obs_dg_na_idx = obs_lyso_df.index[obs_lyso_df['TYPE'] == 'NL_Na'].tolist()
         else:
-            obs_dg_na_df =  pd.DataFrame()
+            obs_dg_na_df = pd.DataFrame()
             obs_dg_na_idx = []
     else:
         obs_lyso_df = pd.DataFrame()
@@ -203,7 +214,6 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
     plt_obs_fa_df = pd.DataFrame(obs_fa_df.drop(frag_idx_lst + obs_mg_idx))
     plt_obs_mg_df = pd.DataFrame(obs_mg_df.drop(mg_idx_lst))
     plt_obs_lyso_df = pd.DataFrame(obs_lyso_df.drop(nl_idx_lst + obs_dg_na_idx))
-
 
     # add specific ion info
     txt_props = {'ha': 'left', 'va': 'bottom'}
@@ -638,21 +648,22 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
 
         # plot fa frag identification table
         if not obs_fa_df.empty:
+
             _fa_col_labels = ('#', 'identification', 'm/z', 'ppm', 'i (%)')
             # Create a second table with the MG fragments for TG
             if obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_abbr'].shape[0] > 0:
                 _fa_table_df2 = pd.DataFrame(data={
-                    '#': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_rank'].astype(int).values.tolist(),
+                    '#': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_rank'].astype(int).tolist(),
                     'identification': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_abbr'].values.tolist(),
-                    'm/z': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_mz'].values.tolist(),
-                    'ppm': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_ppm'].values.tolist(),
-                    'i (%)': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_i_r'].values.tolist()})
+                    'm/z': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_mz'].tolist(),
+                    'ppm': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_ppm'].tolist(),
+                    'i (%)': obs_fa_df.loc[obs_fa_df['TYPE'] == 'MG']['obs_i_r'].tolist()})
                 _fa_table_df2 = _fa_table_df2.reindex(columns=_fa_col_labels)
                 _fa_table_vals2 = list(map(list, _fa_table_df2.values))
                 _fa_col_width_lst2 = [0.03, 0.2, 0.10, 0.06, 0.06]
                 _fa_table2 = msms_low_pic.table(cellText=_fa_table_vals2, colWidths=_fa_col_width_lst2,
                                                 colLabels=_fa_col_labels, loc='upper right', cellLoc='center')
-                _fa_table2.set_fontsize(5)
+                _fa_table2.set_fontsize(6)
                 for _frag_idx in mg_idx_lst:
                     for _r in [0, 1, 2, 3, 4]:
                         _cell = _fa_table2.get_celld()[(_frag_idx + 1, _r)]
@@ -664,16 +675,18 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
                 _fa_table_df = pd.DataFrame(
                     data={'#': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_rank'].astype(int).values.tolist(),
                           'identification': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_abbr'].values.tolist(),
-                          'm/z': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_mz'].values.tolist(),
-                          'ppm': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_ppm'].values.tolist(),
-                          'i (%)': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_i_r'].values.tolist()})
+                          'm/z': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_mz'].tolist(),
+                          'ppm': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_ppm'].tolist(),
+                          'i (%)': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_i_r'].tolist()})
                 _fa_table_df = _fa_table_df.reindex(columns=_fa_col_labels)
+                print('_fa_table_df')
+                print(_fa_table_df)
                 _fa_table_vals = list(map(list, _fa_table_df.values))
                 _fa_col_width_lst = [0.03, 0.2, 0.10, 0.06, 0.06]
+                # _fa_col_width_lst2 = [0.03, 0.2, 0.30, 0.26, 0.26]
                 _fa_table = msms_low_pic.table(cellText=_fa_table_vals, colWidths=_fa_col_width_lst,
                                                colLabels=_fa_col_labels, loc='upper left', cellLoc='center')
-
-                _fa_table.set_fontsize(5)
+                _fa_table.set_fontsize(6)
                 for _frag_idx in frag_idx_lst:
                     for _r in [0, 1, 2, 3, 4]:
                         _cell = _fa_table.get_celld()[(_frag_idx + 1, _r)]
@@ -878,9 +891,9 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
                 _lyso_table_df2 = pd.DataFrame(
                     data={'#': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_rank'].astype(int).values.tolist(),
                           'identification': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_abbr'].values.tolist(),
-                          'm/z': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_mz'].values.tolist(),
-                          'ppm': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_ppm'].values.tolist(),
-                          'i (%)': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_i_r'].values.tolist()})
+                          'm/z': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_mz'].tolist(),
+                          'ppm': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_ppm'].tolist(),
+                          'i (%)': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']['obs_i_r'].tolist()})
                 _lyso_table_df2 = _lyso_table_df2.reindex(columns=_lyso_col_labels)
                 _lyso_table_vals2 = list(map(list, _lyso_table_df2.values))
                 _lyso_col_width_lst2 = [0.03, 0.2, 0.10, 0.06, 0.06]
@@ -888,9 +901,8 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
                                                    colLabels=_lyso_col_labels, loc='upper right', cellLoc='center',
                                                    bbox=[0.5, 1 - (0.067 * (len(_lyso_table_vals2) + 1)), 0.45,
                                                          0.067 * (len(_lyso_table_vals2) + 1)])
-
                 # set back ground of the table
-                _lyso_table2.set_fontsize(5)
+                _lyso_table2.set_fontsize(6)
                 for _nl_idx in dg_Na_idx_lst:
                     for _r in [0, 1, 2, 3, 4]:
                         if _lyso_table2 is False:
@@ -904,9 +916,9 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
                 _lyso_table_df = pd.DataFrame(
                     data={'#': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_rank'].astype(int).values.tolist(),
                           'identification': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_abbr'].values.tolist(),
-                          'm/z': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_mz'].values.tolist(),
-                          'ppm': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_ppm'].values.tolist(),
-                          'i (%)': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_i_r'].values.tolist()})
+                          'm/z': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_mz'].tolist(),
+                          'ppm': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_ppm'].tolist(),
+                          'i (%)': obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL']['obs_i_r'].tolist()})
                 _lyso_table_df = _lyso_table_df.reindex(columns=_lyso_col_labels)
                 _lyso_table_vals = list(map(list, _lyso_table_df.values))
                 _lyso_col_width_lst = [0.03, 0.2, 0.10, 0.06, 0.06]
@@ -925,7 +937,7 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
                                                       colLabels=_lyso_col_labels, loc='upper center', cellLoc='center')
 
                 # set back ground of the table
-                _lyso_table.set_fontsize(5)
+                _lyso_table.set_fontsize(6)
                 for _nl_idx in nl_idx_lst:
                     for _r in [0, 1, 2, 3, 4]:
                         if _lyso_table is False:
