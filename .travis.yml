@@ -19,7 +19,7 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
-      - conda env create -f conda_env.yml
+      - conda env create -f conda_env_linux.yml
       - source activate envlipidhunter
       - conda env export > env.yml
       - ls
@@ -42,7 +42,7 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
-      - conda create -n envlipidhunter -c conda-forge pyside=1.2.4 python=3.6.7
+      - conda env create -f conda_env_win.yml
       - source activate envlipidhunter
       - ls
       - pip install cython pandas matplotlib natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov xlwt xlrd openpyxl
@@ -67,7 +67,7 @@ matrix:
       - conda update -q conda
       - conda config --add channels conda-forge
       - source activate base
-      - conda create -n envlipidhunter -c conda-forge pyside=1.2.4 python=3.6.7
+      - conda env create -f conda_env_win.yml
       - source activate envlipidhunter
       - pip install cython pandas matplotlib natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov xlwt xlrd openpyxl
       - conda env export > env.yml
