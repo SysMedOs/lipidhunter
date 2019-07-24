@@ -3,17 +3,11 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - certifi=2019.6.16=py36_1
-  - jpeg=8d=vc14_2
-  - libiconv=1.15=hfa6e2cd_1005
-  - libpng=1.6.37=h7602738_0
-  - libtiff=4.0.6=vc14_2
-  - libxml2=2.9.9=h9ce36c8_2
-  - libxslt=1.1.32=heafd4d3_1004
+  - certifi=2019.6.16
   - pip=19.2.1=py36_0
   - pyside=1.2.4=py36_vc14_8
   - python=3.6.7=he025d50_1005
-  - qt=4.8.7=vc14_6
+  - pyqt
   - setuptools=41.0.1=py36_0
   - vc=14=h21ff451_11
   - vs2015_runtime=14.15.26706=h3a45250_4
