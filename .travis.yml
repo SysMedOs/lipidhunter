@@ -19,11 +19,8 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
-      - conda create -n envlipidhunter -c conda-forge pyside=1.2.4
+      - conda create -f conda_env.yml
       - source activate envlipidhunter
-      - ls
-      - cd /home/travis/build/ZhixuNi/lipidhunter
-      - pip install cython pandas natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov
       - conda env export > env.yml
       - ls
       - cat env.yml
@@ -45,10 +42,9 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
-      - conda create -n envlipidhunter -c conda-forge pyside=1.2.4
+      - conda create -f conda_env.yml
       - source activate envlipidhunter
       - ls
-      - pip install cython pandas natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov
       - conda env export > env.yml
       - ls
       - cat env.yml
@@ -70,9 +66,8 @@ matrix:
       - conda update -q conda
       - conda config --add channels conda-forge
       - source activate base
-      - conda create -n envlipidhunter -c conda-forge pyside=1.2.4
+      - conda create -f conda_env.yml
       - source activate envlipidhunter
-      - pip install cython pandas natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov
       - conda env export > env.yml
       - conda list
       - echo $PATH
