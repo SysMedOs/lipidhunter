@@ -42,7 +42,7 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
-      - conda env create -f conda_env_win.yml
+      - conda env create -f conda_env_mac.yml
       - source activate envlipidhunter
       - ls
       - pip install cython pandas matplotlib natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov xlwt xlrd openpyxl
