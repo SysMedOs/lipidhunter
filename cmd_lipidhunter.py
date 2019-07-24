@@ -23,7 +23,7 @@ import sys
 from sys import platform
 import time
 
-from six.moves import configparser
+import configparser
 
 # required to perform multiprocessing
 import multiprocessing

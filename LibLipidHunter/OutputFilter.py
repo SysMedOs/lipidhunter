@@ -22,7 +22,7 @@ import os
 import sys
 
 import pandas as pd
-from six.moves import configparser
+import configparser
 
 
 class HunterConfig:
