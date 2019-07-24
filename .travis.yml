@@ -6,6 +6,7 @@ python:
 matrix:
   include:
   - os: linux
+    dist: bionic
     sudo: required
     language: python
     python: 3.6
@@ -18,18 +19,16 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
-      - conda config --add channels rdkit
-      - conda env create -f conda_env.yml
+      - conda config --set channel_priority strict
+      - conda env create -f conda_env_linux.yml
       - source activate envlipidhunter
+      - conda env export > env.yml
       - ls
-      - cd /home/travis/build/ZhixuNi/lipidhunter
-      - ls
-      - pip install codecov
-      - pip install pytest pytest-cov
+      - cat env.yml
     script:
-    - pytest --cov=./
+    - travis_wait pytest --cov=./
     after_success:
-    - codecov
+    - travis_wait codecov
 
   - os: osx
     sudo: required
@@ -44,16 +43,22 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
-      - conda config --add channels rdkit
-      - conda env create -f conda_env.yml
+      - conda config --set channel_priority strict
+      - conda env create -f conda_env_mac.yml
       - source activate envlipidhunter
-      - pip install codecov
-      - pip install pytest pytest-cov
-    # command to run tests
+      - ls
+      - pip install cython pandas matplotlib natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov xlwt xlrd openpyxl
+      - conda env export > env.yml
+      - ls
+      - cat env.yml
     script:
-      - pytest --cov=./
+      - travis_wait pytest --cov=./
     after_success:
-      - codecov
+      - travis_wait codecov
+      - conda install -c conda-forge pyside=1.2.4
+      - conda env export > env.yml
+      - ls
+      - cat env.yml
 
   - os: windows
     language: sh
@@ -66,18 +71,18 @@ matrix:
       - hash -r
       - conda config --set always_yes yes --set changeps1 no
       - conda update -q conda
-      - conda info -a
       - conda config --add channels conda-forge
-      - conda config --add channels rdkit
-      - conda create -n envlipidhunter -c conda-forge pyside=1.2.4
+      - conda config --set channel_priority strict
+      - source activate base
+      - conda create -c conda-forge -n envlipidhunter python=3.6.7
       - source activate envlipidhunter
-      - pip install pymzml==0.7.8
-      - pip install cython pandas natsort numba numpy numexpr scipy six matplotlib plotly openpyxl xlwt xlrd
+      - pip install cython pandas matplotlib natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov xlwt xlrd openpyxl
+      - conda env export > env.yml
       - conda list
       - echo $PATH
-      - pip install codecov pytest pytest-cov
-    # command to run tests
     script:
-      - pytest --cov=./
+      - travis_wait pytest --cov=./
     after_success:
-      - codecov
+      - travis_wait codecov
+      - conda install -c conda-forge pyside=1.2.4
+      - conda list
