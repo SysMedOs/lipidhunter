@@ -15,7 +15,6 @@ dependencies:
   - pyopenssl
   - pyside=1.2.4
   - python=3.6.*
-  - qt=4.8.7
   - setuptools
   - pip:
     - codecov==2.0.15
