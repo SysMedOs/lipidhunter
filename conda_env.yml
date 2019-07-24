@@ -10,7 +10,7 @@ dependencies:
   - mkl_fft
   - mkl_random
   - openssl
-  - pip=19.2.1
+  - pip
   - plotly
   - pyopenssl
   - pyqt
