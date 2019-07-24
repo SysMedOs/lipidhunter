@@ -13,7 +13,8 @@ dependencies:
   - pip=19.2.1
   - plotly
   - pyopenssl
-  - pyside=1.2.4
+  - pyqt
+  - pyside=1.2.*
   - python=3.6.*
   - setuptools
   - pip:
