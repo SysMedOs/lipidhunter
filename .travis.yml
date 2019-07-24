@@ -19,7 +19,7 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
-      - conda create -f conda_env.yml
+      - conda env create -f conda_env.yml
       - source activate envlipidhunter
       - conda env export > env.yml
       - ls
@@ -42,7 +42,7 @@ matrix:
       - conda update -q conda
       - conda info -a
       - conda config --add channels conda-forge
-      - conda create -f conda_env.yml
+      - conda env create -f conda_env.yml
       - source activate envlipidhunter
       - ls
       - conda env export > env.yml
@@ -66,7 +66,7 @@ matrix:
       - conda update -q conda
       - conda config --add channels conda-forge
       - source activate base
-      - conda create -f conda_env.yml
+      - conda env create -f conda_env.yml
       - source activate envlipidhunter
       - conda env export > env.yml
       - conda list

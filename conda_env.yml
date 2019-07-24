@@ -6,8 +6,8 @@ dependencies:
   - ca-certificates
   - certifi
   - cython
-  - fontconfig=2.13.1
-  - freetype=2.10.0
+  - fontconfig=2.12.1
+  - freetype=2.7
   - mkl
   - mkl_fft
   - mkl_random
@@ -15,9 +15,9 @@ dependencies:
   - pip=19.2.1
   - plotly
   - pyopenssl
-  - pyqt=4.11.4
-  - pyside=1.2.*
+  - pyside=1.2.4
   - python=3.6.*
+  - qt=4.8.*
   - setuptools
   - pip:
     - codecov==2.0.15
