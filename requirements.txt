@@ -1,10 +1,5 @@
 ca-certificates>=2019.3.9
 certifi>=2019.3.9
-pyside>=1.2.4
-python>=3.6.7
-pyside=1.2.*
-python=3.6.*
-setuptools
 codecov==2.0.15
 coverage==4.5.3
 cython==0.29.12
@@ -19,9 +14,10 @@ openpyxl==2.6.2
 packaging==19.0
 pandas==0.25.0
 plotly==4.0.0
-py==1.8.0
 pymzml==2.2.5
 pyparsing==2.4.0
+pyside>=1.2.4
+python>=3.6.7
 pytest==5.0.1
 pytest-cov==2.7.1
 python-dateutil==2.8.0
