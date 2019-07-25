@@ -17,9 +17,6 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import division
-from __future__ import print_function
-
 import glob
 import multiprocessing
 import multiprocessing.pool
@@ -30,23 +27,41 @@ import time
 
 import pandas as pd
 from PySide import QtCore, QtGui
-from six.moves import configparser
+import configparser
 
-try:
-    from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
-    from LibLipidHunter.Hunter_Core import huntlipids
-    from LibLipidHunter.LipidComposer import LipidComposer
-except ImportError:  # for python 2.7.14
-    from LipidHunter_UI import Ui_MainWindow
-    from Hunter_Core import huntlipids
-    from LipidComposer import LipidComposer
+from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
+from LibLipidHunter.Hunter_Core import huntlipids
+from LibLipidHunter.LipidComposer import LipidComposer
 
 
 class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, cwd=None):
+        scale = 1
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        if config.has_section('settings'):
+            user_cfg = 'settings'
+        else:
+            if config.has_section('default'):
+                user_cfg = 'default'
+            else:
+                user_cfg = ''
+        if len(user_cfg) > 2:
+            options = config.options(user_cfg)
+            if 'gui_scale' in options:
+                try:
+                    scale = float(config.get(user_cfg, 'gui_scale'))
+                except (ValueError, TypeError):
+                    pass
+        if scale != 1:
+            if scale > 2.75:
+                scale = 2.75
+            elif scale < 0.75:
+                scale = 0.75
+            print('[INFO] Using GUI scale x{0}'.format(scale))
         QtGui.QMainWindow.__init__(self, parent)
         self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
+        self.ui.setupUi(self, scale=scale)
 
         # set version
         version_date = r'06, March, 2019'

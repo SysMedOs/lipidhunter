@@ -1,0 +1,10 @@
+name: envlipidhunter
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - certifi
+  - pip=19.2.1
+  - python=3.6.7
+  - setuptools
+  - wheel

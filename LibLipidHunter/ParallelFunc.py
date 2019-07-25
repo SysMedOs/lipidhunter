@@ -17,10 +17,7 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-from __future__ import division
-from __future__ import print_function
-
-from six.moves import configparser
+import configparser
 from numba import int32, int64, int16, float32, float64, vectorize
 
 # setup weight factor
