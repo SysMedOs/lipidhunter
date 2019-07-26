@@ -15,7 +15,7 @@ packaging==19.0
 pandas==0.25.0
 plotly==4.0.0
 pymzml==2.2.5
-pyparsing==2.4.0
+pyparsing==2.4.1.1
 pyside>=1.2.4
 python>=3.6.7
 pytest==5.0.1
