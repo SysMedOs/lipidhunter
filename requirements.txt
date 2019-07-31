@@ -11,7 +11,7 @@ numba==0.45.0
 numexpr==2.6.9
 numpy==1.16.4
 openpyxl==2.6.2
-packaging==19.0
+packaging==19.1
 pandas==0.25.0
 plotly==4.0.0
 pymzml==2.2.5
