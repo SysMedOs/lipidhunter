@@ -104,11 +104,34 @@ https://github.com/SysMedOs/lipidhunter/releases
 * [LipidHunter user guide](doc/LipidHunter_UserGuide.pdf)
 
 
-* Errors/bugs
+### mzML File conversion ###
+
+We recommend to use ProteoWizard version 3.0.19217 64 bit version or above to convert your raw files to mzML.
+You can find the latest version of ProteoWizard from:
+
+http://proteowizard.sourceforge.net/download.html
+
+If you have difficulties to run your mzML file.
+Please try to run your analysis again in the LipidHunter_debug.exe and post the error messages 
+to the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
+
+
+### Graphic interface issue on high resolution screens ###
+
+Please open the `config.ini` file and change `gui_scale = 1` to `gui_scale = 1.5` or `gui_scale = 2`save it 
+and restart LipidHunter.
+If there is no `gui_scale = 1` section, you can manually add it in the end.
+
+We recommend laptop user with high resolution screen to try the scale ratio `2` or `1.5`.
+You can try to set scale factor from `0.75` (75%) to `2.75` (275%) with the step of `0.25` (25%) 
+to find the best value for your screen.
+
+
+### Errors/bugs ###
     
-    In case you experienced any problems with running LipidHunter
-    
-    please report an issue in the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
+In case you experienced any problems with running LipidHunter
+
+please report an issue in the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
 
 ### License ###
 
