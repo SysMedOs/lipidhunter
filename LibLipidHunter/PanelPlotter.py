@@ -48,16 +48,17 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
     obs_ident_df = ident_info_dct['IDENT']
 
     obs_fa_df = ident_info_dct['OBS_FA']
-    obs_fa_df['obs_mz'] = obs_fa_df['obs_mz'].astype(float).round(4)
-    obs_fa_df['obs_ppm'] = obs_fa_df['obs_ppm'].astype(int).tolist()
-    obs_fa_df['obs_i_r'] = obs_fa_df['obs_i_r'].astype(float).round(1)
+    if not obs_fa_df.empty:
+        obs_fa_df['obs_mz'] = obs_fa_df['obs_mz'].astype(float).round(4)
+        obs_fa_df['obs_ppm'] = obs_fa_df['obs_ppm'].astype(int).tolist()
+        obs_fa_df['obs_i_r'] = obs_fa_df['obs_i_r'].astype(float).round(1)
 
     if 'OBS_LYSO' in list(ident_info_dct.keys()):
         obs_lyso_df = ident_info_dct['OBS_LYSO']
-        obs_lyso_df['obs_mz'] = obs_lyso_df['obs_mz'].astype(float).round(4)
-        obs_lyso_df['obs_ppm'] = obs_lyso_df['obs_ppm'].astype(int).tolist()
-        obs_lyso_df['obs_i_r'] = obs_lyso_df['obs_i_r'].astype(float).round(1)
         if not obs_lyso_df.empty:
+            obs_lyso_df['obs_mz'] = obs_lyso_df['obs_mz'].astype(float).round(4)
+            obs_lyso_df['obs_ppm'] = obs_lyso_df['obs_ppm'].astype(int).tolist()
+            obs_lyso_df['obs_i_r'] = obs_lyso_df['obs_i_r'].astype(float).round(1)
             obs_dg_na_df = obs_lyso_df.loc[obs_lyso_df['TYPE'] == 'NL_Na']
             obs_dg_na_df.reset_index(drop=True, inplace=True)
             obs_dg_na_idx = obs_lyso_df.index[obs_lyso_df['TYPE'] == 'NL_Na'].tolist()
@@ -563,6 +564,7 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
             plt.setp(base_l, visible=False)
         else:
             pass
+
         if other_frag_df is not False:
             marker_l, stem_l, base_l = msms_pic.stem(other_frag_df['mz'], other_frag_df['i'], markerfmt=' ',
                                                      use_line_collection=True)
@@ -671,16 +673,15 @@ def plot_spectra(abbr, mz_se, xic_df, ident_info_dct, spec_info_dct, isotope_sco
             else:
                 _fa_table2 = False
             # Create the table with the Free FA fragments for TG and PL
-            if obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_abbr'].values.tolist():
+            _fa_ident_lst = obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_abbr'].values.tolist()
+            if _fa_ident_lst:
                 _fa_table_df = pd.DataFrame(
                     data={'#': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_rank'].astype(int).values.tolist(),
-                          'identification': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_abbr'].values.tolist(),
+                          'identification': _fa_ident_lst,
                           'm/z': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_mz'].tolist(),
                           'ppm': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_ppm'].tolist(),
                           'i (%)': obs_fa_df.loc[obs_fa_df['TYPE'] == 'FA']['obs_i_r'].tolist()})
                 _fa_table_df = _fa_table_df.reindex(columns=_fa_col_labels)
-                print('_fa_table_df')
-                print(_fa_table_df)
                 _fa_table_vals = list(map(list, _fa_table_df.values))
                 _fa_col_width_lst = [0.03, 0.2, 0.10, 0.06, 0.06]
                 # _fa_col_width_lst2 = [0.03, 0.2, 0.30, 0.26, 0.26]
