@@ -81,8 +81,17 @@ def extract_mzml(mzml: str, rt_range: list, dda_top: int = 6,
 
     print('[STATUS] >>> Start to process file: %s' % mzml)
     print('[INFO] --> Processing RT: %.2f -> %.2f with DDA Top % i' % (rt_start, rt_end, dda_top))
-
-    spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=ms2_precision)
+    try:
+        spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=ms2_precision)
+    except (IOError, OSError):
+        try:
+            # Try to use the CV from mzML 4.0 released in 2016
+            spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=ms2_precision,
+                                         obo_version='4.0.1')
+        except (IOError, OSError):
+            # try to use legacy version 1.1.0 to parse the mzML
+            spec_obj = pymzml.run.Reader(mzml, MS1_Precision=ms1_precision, MSn_Precision=ms2_precision,
+                                         obo_version='1.1.0')
 
     spec_idx = 0
     dda_event_idx = 0
@@ -287,7 +296,8 @@ def get_spectra(mz, mz_lib, func_id, ms2_scan_id, ms1_obs_mz_lst,
                                 try:
                                     ms2_df.drop('rt', axis=1, inplace=True)
                                 except (KeyError, ValueError):
-                                    print('[ERROR] !!! MS2_df do not have rt column...')
+                                    # print('[INFO] !!! MS2_df do not have rt column...')
+                                    pass
                             else:
                                 print('[WARNING] !!! MS2 spectra not in the list ...')
                         else:

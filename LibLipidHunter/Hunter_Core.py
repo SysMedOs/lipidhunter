@@ -1175,7 +1175,7 @@ def huntlipids(param_dct: dict, error_lst: list,
         gen_html_report(param_dct, output_df, lipid_info_img_lst)
     else:
         print('[WARNING] !!! User skip image generation !!!!!!')
-
+    print('Time', time.clock(), start_time)
     tot_run_time = time.clock() - start_time
 
     print('[STATUS] >>> >>> >>> FINISHED in %s sec <<< <<< <<<' % tot_run_time)
