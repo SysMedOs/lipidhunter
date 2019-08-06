@@ -20,8 +20,9 @@ matrix:
       - conda info -a
       - conda config --add channels conda-forge
       - conda config --set channel_priority strict
-      - conda env create -f conda_env_linux.yml
+      - conda create -c conda-forge -n envlipidhunter python=3.6.7
       - source activate envlipidhunter
+      - pip install -r requirements.txt
       - conda env export > env.yml
       - ls
       - cat env.yml
@@ -29,6 +30,10 @@ matrix:
     - travis_wait pytest --cov=./
     after_success:
     - travis_wait codecov
+    - conda install -c conda-forge pyside=1.2.4
+    - conda env export > env.yml
+    - ls
+    - cat env.yml
 
   - os: osx
     sudo: required
@@ -44,10 +49,10 @@ matrix:
       - conda info -a
       - conda config --add channels conda-forge
       - conda config --set channel_priority strict
-      - conda env create -f conda_env_mac.yml
+      - conda create -c conda-forge -n envlipidhunter python=3.6.7
       - source activate envlipidhunter
       - ls
-      - pip install cython pandas matplotlib natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov xlwt xlrd openpyxl
+      - pip install -r requirements.txt
       - conda env export > env.yml
       - ls
       - cat env.yml
@@ -76,7 +81,7 @@ matrix:
       - source activate base
       - conda create -c conda-forge -n envlipidhunter python=3.6.7
       - source activate envlipidhunter
-      - pip install cython pandas matplotlib natsort numba numpy numexpr scipy six pymzml codecov pytest pytest-cov xlwt xlrd openpyxl
+      - pip install -r requirements.txt
       - conda env export > env.yml
       - conda list
       - echo $PATH

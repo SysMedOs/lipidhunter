@@ -17,25 +17,29 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
+import configparser
 import getopt
+# required to perform multiprocessing
+import multiprocessing
 import os.path
 import sys
 from sys import platform
 import time
-
-import configparser
-
-# required to perform multiprocessing
-import multiprocessing
+from typing import List
 
 from LibLipidHunter.Hunter_Core import huntlipids
 
 
-def main(argv):
+def main(argv: List[str]) -> bool:
+
     """
     To run LipidHunter from command line, please generate one configuration file by GUI mode and use it as a template.
     You can load each time one configuration file only.
-    :param argv: -i <input LipidHunter configuration file in .txt format>
+    Args:
+        argv (str): -i <input LipidHunter configuration file in .txt format>
+
+    Returns:
+        is_successful(bool): Return True if the run finished with no error message
     """
 
     is_successful = False
