@@ -18,9 +18,9 @@
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
 import itertools
+from typing import List
 
 import pandas as pd
-from natsort import natsorted, ns
 
 from LibLipidHunter.LipidNomenclature import NameParserFA
 from LibLipidHunter.AbbrElemCalc import ElemCalc
@@ -28,8 +28,17 @@ from LibLipidHunter.ParallelFunc import ppm_window_para
 
 
 class LipidComposer:
+    """
+    Lipid composer is designed to generate all possible combinations of given lipid class based on the
+    FA white list from user settings. and calculate all information required for MS/MS identification
+    including elemental composition, m/z of precursor and fragments ion under selected charge status
+    as fragment or from neutral losses.
+    """
 
     def __init__(self):
+        """
+        Default parameters for the elemental compositions
+        """
         pa_hg_elem = {'C': 0, 'H': 3, 'O': 4, 'P': 1, 'N': 0}
         pc_hg_elem = {'C': 5, 'H': 14, 'O': 4, 'P': 1, 'N': 1}
         pe_hg_elem = {'C': 2, 'H': 8, 'O': 4, 'P': 1, 'N': 1}
@@ -59,7 +68,16 @@ class LipidComposer:
                          'K': [38.9637069, 0.932581]}
 
     @staticmethod
-    def calc_fa_df(lipid_class, fa_df):
+    def calc_fa_df(lipid_class: str, fa_df: pd.DataFrame) -> List[List[str]]:
+        """
+        Read list of FA abbreviations from FA white list for lipid enumeration later
+        Args:
+            lipid_class(str): lipid class abbreviation
+            fa_df(pd.DataFrame): FA white list in pd.DataFrame
+
+        Returns:
+            sn_units_lst(List[List[str]]): list of FA for each FA position
+        """
 
         sn_units_lst = []
 
@@ -121,7 +139,18 @@ class LipidComposer:
 
         return sn_units_lst
 
-    def calc_fa_query(self, lipid_class, fa_whitelist, ms2_ppm=100):
+    def calc_fa_query(self, lipid_class: str, fa_whitelist: str, ms2_ppm: int = 100) -> pd.DataFrame:
+        """
+        Prepare all query strings for the MS/MS identification
+        build all pandas query code in advance to save the time during identification
+        Args:
+            lipid_class(str): Lipid class abbreviation
+            fa_whitelist(str): the ile path to FA white list
+            ms2_ppm(int): ppm at MS/MS level, set default to 100 for some qTOF instrument
+
+        Returns (pd.DataFrame): The calculated information including m/z and query code in DataFrame
+
+        """
 
         usr_fa_df = pd.read_excel(fa_whitelist)
         usr_fa_df = usr_fa_df.fillna(value='F')
@@ -273,7 +302,19 @@ class LipidComposer:
             pass
         return usr_fa_df
 
-    def gen_all_comb(self, lipid_class, usr_fa_df, position=False):
+    def gen_all_comb(self, lipid_class: str, usr_fa_df: pd.DataFrame, position: bool = False) -> dict:
+
+        """
+        Generate all possible FA combination of selected lipid class in discrete form without mirrored duplicates
+
+        Args:
+            lipid_class(str): Lipid class abbreviation
+            usr_fa_df(pd.DataFrame): FA white list in DataFrame
+            position(bool): set as False by default to consider discrete form without position specific isomers
+
+        Returns(dict): all combinations stored in dict
+
+        """
 
         fa_units_lst = self.calc_fa_df(lipid_class, usr_fa_df)
 
