@@ -65,6 +65,7 @@ class TestCaseLipidComposer(unittest.TestCase):
                              'charge_mode': '[M+NH4]+', 'exact_position': 'FALSE'}
         self.tg_param_dct = {'fa_whitelist': self.fa_lst_file, 'lipid_class': 'TG',
                              'charge_mode': '[M+NH4]+', 'exact_position': 'FALSE'}
+        # Todo: add SM parameters here
         if not os.path.isdir(r'test/results/LipidComposer'):
             os.makedirs(r'test/results/LipidComposer')
 
@@ -116,6 +117,8 @@ class TestCaseLipidComposer(unittest.TestCase):
     def test_pe(self):
         is_sucessful = self.get_lipidmaster(self.pe_param_dct)
         assert is_sucessful is True
+
+    # Todo: add SM test function here
 
     def test_dg(self):
         is_sucessful = self.get_lipidmaster(self.tg_param_dct)

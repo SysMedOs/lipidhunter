@@ -47,6 +47,7 @@ class LipidComposer:
         pip_hg_elem = {'C': 6, 'H': 14, 'O': 12, 'P': 2, 'N': 0}
         ps_hg_elem = {'C': 3, 'H': 8, 'O': 6, 'P': 1, 'N': 1}
         tg_hg_elem = {'C': 0, 'H': 0, 'O': 0, 'P': 0, 'N': 0}
+        # Todo: add SM corresponding HG sections around here
 
         self.lipid_hg_lst = ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'PIP', 'TG']
 
@@ -226,11 +227,12 @@ class LipidComposer:
 
             # the element here is with no Hydroxyl on fa1 and fa2, here a [M-H]- is already considered
             lyso_base_mz = elem_calc.get_exactmass(lyso_base_elem_dct) + 1.0078250321 + 15.9949146221
-
+            # Todo: SM section
             if lipid_class in ['PC', 'SM']:
                 lyso_base_mz -= (12.0 + 2 * 1.0078250321)  # LPC loss one -CH3 from HG (one H already remove above)
 
             for _lyso_ion in list(lyso_type_dct.keys()):
+
                 if lipid_class in ['PC', 'SM']:
 
                     if lyso_type_dct[_lyso_ion] == 'EXACTMASS':
@@ -279,6 +281,7 @@ class LipidComposer:
                                                                     ms2_ppm)
                 usr_fa_df['%s_Q' % _mg_ion] = (usr_fa_df['%s_MZ_LOW' % _mg_ion].astype(str) + ' <= mz <= ' + usr_fa_df[
                     '%s_MZ_HIGH' % _mg_ion].astype(str))
+
         elif lipid_class in ['DG']:
             mg_type_dct = {'[MG-H2O+H]+': 'EXACTMASS'}
             mg_base_elem_dct = self.lipid_hg_elem_dct[lipid_class]
@@ -298,7 +301,7 @@ class LipidComposer:
                 usr_fa_df['%s_Q' % _mg_ion] = (usr_fa_df['%s_MZ_LOW' % _mg_ion].astype(str) + ' <= mz <= ' + usr_fa_df[
                     '%s_MZ_HIGH' % _mg_ion].astype(str))
         else:
-            # TODO (georgia.angelidou@uni-leipzig.de): SM
+            # Todo: SM section like above
             pass
         return usr_fa_df
 
@@ -336,50 +339,11 @@ class LipidComposer:
             fa_comb_lst = []
             fa_df_header_lst = []
 
-        # fa_comb_lite_lst = []
-        # # sn_comb_rm_lst = []
-        #
-        # print('fa_comb_lst count', len(fa_comb_lst))
-        #
-        # if position is False:
-        #     for _comb in fa_comb_lst:
-        #         # _rev_comb = tuple(sorted(list(_comb)))
-        #         _rev_comb = tuple(natsorted(list(_comb)))
-        #         if _comb not in fa_comb_lite_lst and _rev_comb not in fa_comb_lite_lst:
-        #             fa_comb_lite_lst.append(_comb)
-        #         else:
-        #             pass
-        #             # sn_comb_rm_lst.append(_comb)
-        #             # sn_comb_rm_lst.append(_rev_comb)
-        # else:
-        #     fa_comb_lite_lst = fa_comb_lst
-        #
-        # print('unique fa_comb_lite_lst count', len(fa_comb_lite_lst))
-        #
-        # lipid_comb_dct = {}
-        #
-        # if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG'] and len(fa_comb_lite_lst) > 0:
-        #     for _comb_lite in fa_comb_lite_lst:
-        #         _lipid_abbr = '{lt}({fa1}_{fa2})'.format(lt=lipid_class, fa1=_comb_lite[0].strip('FA'),
-        #                                                  fa2=_comb_lite[1].strip('FA'))
-        #         lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'FA1': _comb_lite[0], 'FA2': _comb_lite[1],
-        #                                        'DISCRETE_ABBR': _lipid_abbr}
-        # elif lipid_class in ['TG'] and len(fa_comb_lite_lst) > 0:
-        #     for _comb_lite in fa_comb_lite_lst:
-        #         _lipid_abbr = '{pl}({fa1}_{fa2}_{fa3})'.format(pl=lipid_class, fa1=_comb_lite[0].strip('FA'),
-        #                                                        fa2=_comb_lite[1].strip('FA'),
-        #                                                        fa3=_comb_lite[2].strip('FA'))
-        #
-        #         lipid_comb_dct[_lipid_abbr] = {'CLASS': lipid_class, 'FA1': _comb_lite[0], 'FA2': _comb_lite[1],
-        #                                        'FA3': _comb_lite[2], 'DISCRETE_ABBR': _lipid_abbr}
-        # else:
-        #     # TODO (georgia.angelidou@uni-leipzig.de): SM posible composition
-        #     pass
-
         fa_combo_df = pd.DataFrame(data=fa_comb_lst, columns=fa_df_header_lst)
 
         fa_combo_df['CLASS'] = lipid_class
 
+        # Todo: check SM section below:
         if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG', 'SM']:
 
             fa_combo_link_df = fa_combo_df.copy()
@@ -541,7 +505,6 @@ class LipidComposer:
         if m_class in ['PA', 'PE', 'PG', 'PI', 'PS', 'PIP', 'PL']:
 
             lyso_str = 'L' + m_class
-
             # create the abbreviation name for the Lyso fragments eg. LPE(18:0)-H]-_ABBR
             # without the loss of water
             lipid_dct['[LPL(FA1)-H]-_ABBR'] = '[%s(%s)-H]-' % (lyso_str, fa1_abbr)
@@ -556,7 +519,8 @@ class LipidComposer:
             lipid_dct['[LPL(FA1)-H2O-H]-_MZ'] = round(m_exactmass - fa2_exactmass - h_exactmass, 6)
             lipid_dct['[LPL(FA2)-H2O-H]-_MZ'] = round(m_exactmass - fa1_exactmass - h_exactmass, 6)
 
-        elif m_class in ['PC']:
+        # Todo: Add SM section here and check
+        elif m_class in ['PC', 'SM']:
 
             lyso_str = 'L' + m_class
             # The abbr. here is not exactly correct due to the compatibility issues with ranks core calc functions
@@ -781,7 +745,17 @@ class LipidComposer:
 
         return lipid_dct
 
-    def compose_lipid(self, param_dct, ms2_ppm=100):
+    def compose_lipid(self, param_dct: dict, ms2_ppm: int = 100) -> pd.DataFrame:
+        """
+        Main function to generate the combination of lipids.
+        Control all functions above.
+        Args:
+            param_dct (dict): parameter load from GUI or config file
+            ms2_ppm (int): The MS/MS tolerance for the calculation of MS/MS query window
+
+        Returns:
+
+        """
 
         lipid_class = param_dct['lipid_class']
         lipid_charge = param_dct['charge_mode']
@@ -797,6 +771,7 @@ class LipidComposer:
 
         usr_fa_df.columns = usr_fa_df.columns.str.upper()
 
+        # Todo: check SM section below:
         if lipid_class in ['PL', 'PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'SM']:
             if lipid_class in tmp_columns:
                 pass
@@ -855,7 +830,7 @@ class LipidComposer:
                 _fa2_abbr = ''
                 _fa2_info_dct = {}
 
-            # TODO (georgia.angelidou@uni-leipzig.de): SM, Cer
+            # Todo: add and check SM, Cer below
             if lipid_class in ['PA', 'PC', 'PE', 'PG', 'PI', 'PS', 'DG']:
                 _lipid_dct['M_DB'] = _fa1_info_dct['DB'] + _fa2_info_dct['DB']
                 # TODO(georgia.angelidou@uni-leipzig.de): not important (just keep in mind for future correction)
@@ -902,8 +877,8 @@ class LipidComposer:
                                                                  c=(_fa1_info_dct['C'] + _fa2_info_dct['C']
                                                                     + _fa3_info_dct['C']),
                                                                  db=lipid_comb_dct[_lipid]['M_DB'])
+            # Todo: check SM section below:
             elif lipid_class in ['SM']:
-                # TODO(georgia.angelidou@uni-leipzi.de): sphingomyelin support
                 lipid_bulk_str = '{sm}({c}:{db})'.format(sm=lipid_class,
                                                          c=_fa1_info_dct['C'] + _fa2_info_dct['C'],
                                                          db=lipid_comb_dct[_lipid]['M_DB'])
@@ -935,10 +910,3 @@ class LipidComposer:
         lipid_master_df.reset_index(drop=True, inplace=True)
 
         return lipid_master_df
-
-
-if __name__ == '__main__':
-
-    from test.test_LipidComposer import TestCaseLipidComposer
-
-    TestCaseLipidComposer()
