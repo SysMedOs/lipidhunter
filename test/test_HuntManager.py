@@ -22,21 +22,21 @@ import sys
 import unittest
 
 epiLION_Path = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, epiLION_Path + '/../')
+sys.path.insert(0, epiLION_Path + "/../")
 
 import pytest
 
 from LibLipidHunter.HuntManager import recover_hunt
 
 cwd = os.getcwd()
-if cwd.endswith('test'):
-    print('change to folder above..')
-    os.chdir('..')
+if cwd.endswith("test"):
+    print("change to folder above..")
+    os.chdir("..")
 
 
 @pytest.mark.skip(reason="Skip data recover for LipidHunter2 RC")
 def test_recover_hunt():
-    print('test_recover_hunt @ ', os.getcwd())
-    test_hunt_data_name = r'..\Test\results\hunter_data.hunt'
-    with open(test_hunt_data_name, 'rb') as test_hunt_data:
+    print("test_recover_hunt @ ", os.getcwd())
+    test_hunt_data_name = r"..\Test\results\hunter_data.hunt"
+    with open(test_hunt_data_name, "rb") as test_hunt_data:
         recover_hunt(test_hunt_data)

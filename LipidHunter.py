@@ -25,7 +25,7 @@ from PySide import QtGui
 
 from LibLipidHunter.LipidHunter_Main import LipidHunterMain
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     multiprocessing.freeze_support()
     usr_cwd = os.getcwd()
     gui = QtGui.QApplication(sys.argv)
