@@ -26,7 +26,7 @@ import re
 import time
 
 import pandas as pd
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtGui, QtWidgets
 import configparser
 
 from LibLipidHunter.LipidHunter_UI import Ui_MainWindow
@@ -34,7 +34,7 @@ from LibLipidHunter.Hunter_Core import huntlipids
 from LibLipidHunter.LipidComposer import LipidComposer
 
 
-class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
+class LipidHunterMain(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, cwd=None):
         scale = 1
         config = configparser.ConfigParser()
@@ -59,7 +59,7 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             elif scale < 0.75:
                 scale = 0.75
             print("[INFO] Using GUI scale x{0}".format(scale))
-        QtGui.QMainWindow.__init__(self, parent)
+        QtWidgets.QMainWindow.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self, scale=scale)
 
@@ -71,8 +71,8 @@ class LipidHunterMain(QtGui.QMainWindow, Ui_MainWindow):
             r"</span></p></body></html>"
         ).format(version_date=version_date)
         self.ui.version_lb.setText(
-            QtGui.QApplication.translate(
-                "MainWindow", version_html, None, QtGui.QApplication.UnicodeUTF8
+            QtWidgets.QApplication.translate(
+                "MainWindow", version_html, None, 
             )
         )
 
@@ -1899,7 +1899,7 @@ if __name__ == "__main__":
     import sys
 
     multiprocessing.freeze_support()
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = LipidHunterMain()
     window.show()
     sys.exit(app.exec_())
