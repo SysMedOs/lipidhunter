@@ -1856,12 +1856,10 @@ class LMWorker(QtCore.QObject):
 if __name__ == "__main__":
     import sys
 
-    QT_AUTO_SCREEN_SCALE_FACTOR = 2
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
     multiprocessing.freeze_support()
     app = QtWidgets.QApplication(sys.argv)
-    app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     window = LipidHunterMain()
     window.show()
     sys.exit(app.exec_())

@@ -21,13 +21,16 @@ import multiprocessing
 import os
 import sys
 
-from PySide2 import QtWidgets
+from PySide2 import QtCore, QtWidgets
 
 from LibLipidHunter.LipidHunter_Main import LipidHunterMain
 
 if __name__ == "__main__":
+
     multiprocessing.freeze_support()
     usr_cwd = os.getcwd()
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
     gui = QtWidgets.QApplication(sys.argv)
     LipidHunter = LipidHunterMain(cwd=usr_cwd)
     LipidHunter.show()

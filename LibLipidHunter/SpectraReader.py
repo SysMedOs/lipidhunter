@@ -145,8 +145,7 @@ def extract_mzml(
             except (ValueError, TypeError):
                 _scan_rt = -0.1
 
-            if rt_start <= _scan_rt <= rt_end:
-                _spectrum.mz.any() and _spectrum.id_dict
+            if rt_start <= _scan_rt <= rt_end and _spectrum.mz.any() and _spectrum.id_dict:
                 try:
                     _scan_id = int(_spectrum.id_dict.get("scan", -1))
                 except ValueError:
