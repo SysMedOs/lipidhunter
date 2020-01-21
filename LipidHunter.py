@@ -21,14 +21,14 @@ import multiprocessing
 import os
 import sys
 
-from PySide import QtGui
+from PySide2 import QtWidgets
 
 from LibLipidHunter.LipidHunter_Main import LipidHunterMain
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
     usr_cwd = os.getcwd()
-    gui = QtGui.QApplication(sys.argv)
+    gui = QtWidgets.QApplication(sys.argv)
     LipidHunter = LipidHunterMain(cwd=usr_cwd)
     LipidHunter.show()
     sys.exit(gui.exec_())

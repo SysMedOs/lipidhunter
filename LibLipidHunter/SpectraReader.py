@@ -119,7 +119,7 @@ def extract_mzml(
 
     print("Instrument vendor: %s" % vendor)
 
-    if vendor in ["agilent", "sciex", "thermo", "waters"]:
+    if vendor in ["agilent", "bruker", "sciex", "thermo", "waters"]:
         dda_rank_idx = 0
         for _spectrum in spec_obj:  # type: pymzml.spec.Spectrum
 
@@ -248,7 +248,7 @@ def extract_mzml(
     else:
         raise ValueError(
             f"LipidHunter do not support mzML from this vendor: {vendor}\n"
-            f'Supported vendors: ["agilent", "sciex", "thermo", "waters"]'
+            f'Supported vendors: ["agilent", "bruker", "sciex", "thermo", "waters"]'
         )
     scan_info_df = pd.DataFrame(
         data=scan_info_dct,
