@@ -20,7 +20,7 @@ matrix:
       - conda info -a
       - conda config --add channels conda-forge
       - conda config --set channel_priority strict
-      - conda create -c conda-forge -n envlipidhunter python=3.6.7
+      - conda create -c conda-forge -n envlipidhunter python=3.7.6
       - source activate envlipidhunter
       - pip install -r requirements.txt
       - conda env export > env.yml
@@ -30,7 +30,7 @@ matrix:
     - travis_wait pytest --cov=./
     after_success:
     - travis_wait codecov
-    - conda install -c conda-forge pyside=1.2.4
+    - conda install -c conda-forge pyside2
     - conda env export > env.yml
     - ls
     - cat env.yml
@@ -49,7 +49,7 @@ matrix:
       - conda info -a
       - conda config --add channels conda-forge
       - conda config --set channel_priority strict
-      - conda create -c conda-forge -n envlipidhunter python=3.6.7
+      - conda create -c conda-forge -n envlipidhunter python=3.7.6
       - source activate envlipidhunter
       - ls
       - pip install -r requirements.txt
@@ -60,7 +60,7 @@ matrix:
       - travis_wait pytest --cov=./
     after_success:
       - travis_wait codecov
-      - conda install -c conda-forge pyside=1.2.4
+      - conda install -c conda-forge pyside2
       - conda env export > env.yml
       - ls
       - cat env.yml
@@ -79,7 +79,7 @@ matrix:
       - conda config --add channels conda-forge
       - conda config --set channel_priority strict
       - source activate base
-      - conda create -c conda-forge -n envlipidhunter python=3.6.7
+      - conda create -c conda-forge -n envlipidhunter python=3.7.6
       - source activate envlipidhunter
       - pip install -r requirements.txt
       - conda env export > env.yml
@@ -89,5 +89,5 @@ matrix:
       - travis_wait pytest --cov=./
     after_success:
       - travis_wait codecov
-      - conda install -c conda-forge pyside=1.2.4
+      - conda install -c conda-forge pyside2
       - conda list

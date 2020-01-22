@@ -295,7 +295,7 @@ class LogPageCreator(object):
                                 <th>ID#</th>
                                 <th> MS1_obs_mz </th>
                                 <th>RT(min)</th>
-                                <th>Discrete</th>
+                                <th>Lipid</th>
                                 <th>Score</th>
                                 </tr>
                                 </thead>
