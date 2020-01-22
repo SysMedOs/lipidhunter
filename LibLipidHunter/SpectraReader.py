@@ -22,7 +22,7 @@ from typing import Any, Dict, Tuple, Union
 
 import pandas as pd
 import pymzml
-import ms_deisotope
+# import ms_deisotope
 
 from LibLipidHunter.ParallelFunc import ppm_window_para
 
