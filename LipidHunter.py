@@ -21,14 +21,20 @@ import multiprocessing
 import os
 import sys
 
-from PySide import QtGui
+from PySide2 import QtCore, QtWidgets
 
 from LibLipidHunter.LipidHunter_Main import LipidHunterMain
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+
     multiprocessing.freeze_support()
+
+    # Scale GUI on HiDPI monitors e.g. 2k, 4k resolution
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+
+    gui = QtWidgets.QApplication(sys.argv)
     usr_cwd = os.getcwd()
-    gui = QtGui.QApplication(sys.argv)
     LipidHunter = LipidHunterMain(cwd=usr_cwd)
     LipidHunter.show()
     sys.exit(gui.exec_())
