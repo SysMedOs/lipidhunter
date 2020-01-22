@@ -1,18 +1,18 @@
 # About LipidHunter 2 #
 ![LipidHunter_logo](LipidHunter.png)
 
-[![Travis (.com) all](https://img.shields.io/travis/com/ZhixuNi/lipidhunter/master.svg)](https://travis-ci.com/SysMedOs/epiLION)
-![GitHub last commit](https://img.shields.io/github/last-commit/ZhixuNi/lipidhunter.svg)
-![pyup dependencies](https://pyup.io/repos/github/ZhixuNi/lipidhunter/shield.svg)
 ![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/SysMedOs/LipidHunter.svg)
 ![total downloads](https://img.shields.io/github/downloads/SysMedOs/lipidhunter/total.svg?color=orange)
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/SysMedOs/lipidhunter/LipidHunter2_RC.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/ZhixuNi/lipidhunter.svg)
+
+[![Travis (.com) all](https://img.shields.io/travis/com/ZhixuNi/lipidhunter/master.svg)](https://travis-ci.com/SysMedOs/epiLION)
 ![Platform macOS](https://img.shields.io/badge/Platform-macOS-lightgrey.svg)
 ![Platform Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)
 ![Platform Windows](https://img.shields.io/badge/Platform-Windows-blue.svg)
 
-LipidHunter 2 has significant improvement from the original LipidHunter.
-The major improvements are listed below:
+LipidHunter 2 has significant improvements from the original LipidHunter.
+Major improvements are listed below:
 
 * Special Feature for TG & DG
 
@@ -67,12 +67,10 @@ https://github.com/SysMedOs/lipidhunter/releases
 
 ### Windows version ###
 
-* The binary excutable version of LipidHunter 2 is provided for Windows users. (Windows 7, 8, and 10, 64bit system required)
+* The binary executable version of LipidHunter 2 is provided for Windows users. (Windows 7, 8, and 10, 64bit system required)
 
-    + [`.exe` installation file](https://github.com/SysMedOs/lipidhunter/releases/download/LipidHunter2_RC/Lipidhunter2_RC_Setup.exe)
-    
-    + [`.zip` portable zip file](https://github.com/SysMedOs/lipidhunter/releases/download/LipidHunter2_RC/LipidHunter2_RC.zip)
-
+    + [`.exe` and `.zip` installation file](https://github.com/SysMedOs/lipidhunter/releases/latest)
+ 
 ### How to install LipidHunter 2 from source code ###
 * Download the LipidHunter 2 as zip file for your system
     + Please use the source code page in the release page https://github.com/SysMedOs/lipidhunter/releases/
@@ -93,12 +91,12 @@ https://github.com/SysMedOs/lipidhunter/releases
         - pip: activate your virtual environment, then `pip install -r requirements.txt`
     + Main dependencies are:
         - Data processing: numpy, pandas, scipy, numba, natsort
-        - mzML reader: pymzml == 0.7.8
+        - mzML reader: pymzml
         - Image plot: matplotlib, plotly(required by pymzml)
         - Excel output: openpyxl, xlrd, xlwt
-        - Graphic interface: pyside
+        - Graphic interface: pyside2
     + Test source code installation:
-        - LipidHunter 2  is configured to use [travis-ci](https://travis-ci.com) with `py.test` to test on Windows, Linux, and macOS. 
+        - LipidHunter 2 is configured to use [travis-ci](https://travis-ci.com) with `py.test` to test on Windows, Linux, and macOS. 
         - Use command `pytest` in LipidHunter folder to run all tests.
         - Optionally, you can test individual unit test in the `test` folder
          
@@ -106,11 +104,22 @@ https://github.com/SysMedOs/lipidhunter/releases
 * [LipidHunter user guide](doc/LipidHunter_UserGuide.pdf)
 
 
-* Errors/bugs
+### mzML File conversion ###
+
+We recommend to use ProteoWizard version 3.0.19217 64 bit version or above to convert your raw files to mzML.
+You can find the latest version of ProteoWizard from:
+
+http://proteowizard.sourceforge.net/
+
+If you have difficulties to run your mzML file.
+Please try to run your analysis again in the LipidHunter_debug.exe and post the error messages 
+to the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
+
+### Errors/bugs ###
     
-    In case you experienced any problems with running LipidHunter
-    
-    please report an issue in the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
+In case you experienced any problems with running LipidHunter
+
+please report an issue in the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
 
 ### License ###
 
@@ -130,7 +139,7 @@ https://github.com/SysMedOs/lipidhunter/releases
 * Report any issues here: [https://github.com/SysMedOs/lipidhunter/issues](https://github.com/SysMedOs/lipidhunter/issues)
 
 
-### Fundings ###
+### Funding ###
 We acknowledge all projects that supports the development of LipidHunter:
 
 + BMBF - Federal Ministry of Education and Research Germany:

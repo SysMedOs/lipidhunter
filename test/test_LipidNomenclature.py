@@ -23,29 +23,32 @@ import sys
 import unittest
 
 hunterPath = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, hunterPath + '/../')
+sys.path.insert(0, hunterPath + "/../")
 
 from LibLipidHunter.LipidNomenclature import NameParserFA
 
 log_level = logging.DEBUG
-logging.basicConfig(format='%(asctime)s-%(levelname)s - %(message)s', datefmt='%b-%d@%H:%M:%S', level=log_level)
-logger = logging.getLogger('log')
+logging.basicConfig(
+    format="%(asctime)s-%(levelname)s - %(message)s",
+    datefmt="%b-%d@%H:%M:%S",
+    level=log_level,
+)
+logger = logging.getLogger("log")
 
 
 class TestCase_LipidNomenclature(unittest.TestCase):
-
     def setUp(self):
-        logger.debug('SETUP TESTS... TestCase_LipidNomenclature')
+        logger.debug("SETUP TESTS... TestCase_LipidNomenclature")
         cwd = os.getcwd()
-        if cwd.endswith('test') or cwd.endswith('test/') or cwd.endswith('test\\'):
-            logger.info('change to folder above..')
-            os.chdir('..')
+        if cwd.endswith("test") or cwd.endswith("test/") or cwd.endswith("test\\"):
+            logger.info("change to folder above..")
+            os.chdir("..")
         logger.info(os.getcwd())
-        self.pass_params = ['FA16:0', 'FA18:0', 'FA18:1', 'O-16:0', 'P-18:0']
-        self.bad_params = ['BAD', 'guys', 'here', 'x4!']
+        self.pass_params = ["FA16:0", "FA18:0", "FA18:1", "O-16:0", "P-18:0"]
+        self.bad_params = ["BAD", "guys", "here", "x4!"]
 
     def test_bad_params(self):
-        logger.debug('Test bad params...')
+        logger.debug("Test bad params...")
         abbr_decoder = NameParserFA()
         result_lst = []
         for abbr in self.bad_params:
@@ -55,12 +58,12 @@ class TestCase_LipidNomenclature(unittest.TestCase):
                 if x:
                     result_lst.append(x)
             except Exception as e:
-                logger.error(f'Can not parse {abbr}')
-                logger.error(f'Error {e}')
+                logger.error(f"Can not parse {abbr}")
+                logger.error(f"Error {e}")
         assert len(result_lst) < len(self.bad_params)
 
     def test_good_params(self):
-        logger.debug('Test good params...')
+        logger.debug("Test good params...")
         abbr_decoder = NameParserFA()
         result_lst = []
         for abbr in self.pass_params:
@@ -71,10 +74,10 @@ class TestCase_LipidNomenclature(unittest.TestCase):
         assert len(result_lst) == len(self.pass_params)
 
     def tearDown(self):
-        logger.debug('TestCase_cmd_lipidhunter TEST PASSED!')
+        logger.debug("TestCase_cmd_lipidhunter TEST PASSED!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # python cmd_lipidhunter.py -i test/test_batch_cfg/test_PC_cfg.txt
     unittest.main()
-    logger.info('TESTS FINISHED!')
+    logger.info("TESTS FINISHED!")
