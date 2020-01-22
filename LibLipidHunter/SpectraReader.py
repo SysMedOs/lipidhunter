@@ -17,11 +17,12 @@
 #     Developer Zhixu Ni zhixu.ni@uni-leipzig.de
 #     Developer Georgia Angelidou georgia.angelidou@uni-leipzig.de
 
-import re
+import os
 from typing import Any, Dict, Tuple, Union
 
 import pandas as pd
 import pymzml
+import ms_deisotope
 
 from LibLipidHunter.ParallelFunc import ppm_window_para
 
@@ -46,25 +47,28 @@ def extract_mzml(
         mzml (str): the file path of mzML file
         rt_range (list): a List of RT in minutes. e.g. [15, 30] for 15 to 30 min
         dda_top (int): DDA settings e.g. DDA TOP 6
-        ms1_threshold (int): absolute threshold for MS1 spectra
-        ms2_threshold (int): absolute threshold for MS2 spectra
+        ms1_threshold (int): the absolute threshold for MS1 spectra
+        ms2_threshold (int): an absolute threshold for MS2 spectra
         ms1_precision (float): e.g. 50e-6 for 50 ppm
         ms2_precision (float): e.g. 500e-6 for 500 ppm
         min_spec_peaks (int): minimum peaks a spectrum must have to be used for identification, default = 3
-        vendor (str): MS vendor abbreviations use lower case in list ['agilent', 'sciex', 'thermo', 'waters']
-        ms1_max (int): Max of MS1 intensity, use to search for low intensity signals, set 0 to disable by default
+        vendor (str): MS vendor abbreviations use lower case in list ['agilent', 'bruker', 'sciex', 'thermo', 'waters']
+        ms1_max (int): Max of MS1 intensity, used to search for low intensity signals, set 0 to disable by default
 
     Returns:
         scan_info_df (pd.DataFrame):
-        spec_pl (pd.Panel):
+        spec_dct (Dict[int, pd.DataFrame]):
         ms1_xic_df (pd.DataFrame):
 
     """
 
     rt_start = rt_range[0]
     rt_end = rt_range[1]
-
-    print("[STATUS] >>> Start to process file: %s" % mzml)
+    if os.path.isfile(mzml):
+        print("[STATUS] >>> Start to process file: %s" % mzml)
+    else:
+        print("[ERROR] !!! FileNotFoundError: %s" % mzml)
+        raise FileNotFoundError
     print(
         "[INFO] --> Processing RT: %.2f -> %.2f with DDA Top % i"
         % (rt_start, rt_end, dda_top)
@@ -145,7 +149,11 @@ def extract_mzml(
             except (ValueError, TypeError):
                 _scan_rt = -0.1
 
-            if rt_start <= _scan_rt <= rt_end and _spectrum.mz.any() and _spectrum.id_dict:
+            if (
+                rt_start <= _scan_rt <= rt_end
+                and _spectrum.mz.any()
+                and _spectrum.id_dict
+            ):
                 try:
                     _scan_id = int(_spectrum.id_dict.get("scan", -1))
                 except ValueError:
@@ -169,7 +177,7 @@ def extract_mzml(
                     dda_event_idx += 1  # a new set of DDA start from this new MS1
                     dda_rank_idx = (
                         0
-                    )  # set the DDA rank back to 0 for the survey MS1 scan
+                    )  # set the DDA rank back to 0 for the survey MS1 scans
                     # use ms1_threshold * 0.1 to keep isotope patterns
                     if ms1_max > ms1_threshold:
                         _tmp_spec_df = _raw_tmp_spec_df.query(
@@ -516,7 +524,6 @@ if __name__ == "__main__":
     usr_dda_top = 12
     usr_rt_range = [15, 25]
 
-    # usr_scan_info_df, usr_spec_pl, usr_ms1_xic_df = extract_mzml(usr_mzml, usr_rt_range, usr_dda_top, vendor='N/A')
     usr_scan_info_df, usr_spec_pl, usr_ms1_xic_df = extract_mzml(
         usr_mzml, usr_rt_range, usr_dda_top
     )

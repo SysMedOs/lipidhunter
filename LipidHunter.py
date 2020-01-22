@@ -28,10 +28,13 @@ from LibLipidHunter.LipidHunter_Main import LipidHunterMain
 if __name__ == "__main__":
 
     multiprocessing.freeze_support()
-    usr_cwd = os.getcwd()
+
+    # Scale GUI on HiDPI monitors e.g. 2k, 4k resolution
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+
     gui = QtWidgets.QApplication(sys.argv)
+    usr_cwd = os.getcwd()
     LipidHunter = LipidHunterMain(cwd=usr_cwd)
     LipidHunter.show()
     sys.exit(gui.exec_())

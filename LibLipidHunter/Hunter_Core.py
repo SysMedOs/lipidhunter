@@ -413,6 +413,12 @@ def huntlipids(
 
     # Preparation finished.
     # Lipid identification workflow start.
+    if os.path.isfile(usr_mzml):
+        print("[STATUS] >>> Start to process file: %s" % usr_mzml)
+    else:
+        print("[ERROR] !!! FileNotFoundError: %s" % usr_mzml)
+        error_lst.append("[ERROR] !!! FileNotFoundError: %s" % usr_mzml)
+        return False, error_lst, False
 
     # Extract all spectra from mzML to pandas DataFrame
     usr_scan_info_df, usr_spectra_pl, ms1_xic_df = extract_mzml(

@@ -11,8 +11,8 @@
 ![Platform Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)
 ![Platform Windows](https://img.shields.io/badge/Platform-Windows-blue.svg)
 
-LipidHunter 2 has significant improvement from the original LipidHunter.
-The major improvements are listed below:
+LipidHunter 2 has significant improvements from the original LipidHunter.
+Major improvements are listed below:
 
 * Special Feature for TG & DG
 
@@ -94,9 +94,9 @@ https://github.com/SysMedOs/lipidhunter/releases
         - mzML reader: pymzml
         - Image plot: matplotlib, plotly(required by pymzml)
         - Excel output: openpyxl, xlrd, xlwt
-        - Graphic interface: pyside
+        - Graphic interface: pyside2
     + Test source code installation:
-        - LipidHunter 2  is configured to use [travis-ci](https://travis-ci.com) with `py.test` to test on Windows, Linux, and macOS. 
+        - LipidHunter 2 is configured to use [travis-ci](https://travis-ci.com) with `py.test` to test on Windows, Linux, and macOS. 
         - Use command `pytest` in LipidHunter folder to run all tests.
         - Optionally, you can test individual unit test in the `test` folder
          
@@ -109,23 +109,11 @@ https://github.com/SysMedOs/lipidhunter/releases
 We recommend to use ProteoWizard version 3.0.19217 64 bit version or above to convert your raw files to mzML.
 You can find the latest version of ProteoWizard from:
 
-http://proteowizard.sourceforge.net/download.html
+http://proteowizard.sourceforge.net/
 
 If you have difficulties to run your mzML file.
 Please try to run your analysis again in the LipidHunter_debug.exe and post the error messages 
 to the [issue tracker](https://github.com/SysMedOs/lipidhunter/issues) or contact us.
-
-
-### Graphic interface issue on high resolution screens ###
-
-Please open the `config.ini` file and change `gui_scale = 1` to `gui_scale = 1.5` or `gui_scale = 2`save it 
-and restart LipidHunter.
-If there is no `gui_scale = 1` section, you can manually add it in the end.
-
-We recommend laptop user with high resolution screen to try the scale ratio `2` or `1.5`.
-You can try to set scale factor from `0.75` (75%) to `2.75` (275%) with the step of `0.25` (25%) 
-to find the best value for your screen.
-
 
 ### Errors/bugs ###
     
@@ -151,7 +139,7 @@ please report an issue in the [issue tracker](https://github.com/SysMedOs/lipidh
 * Report any issues here: [https://github.com/SysMedOs/lipidhunter/issues](https://github.com/SysMedOs/lipidhunter/issues)
 
 
-### Fundings ###
+### Funding ###
 We acknowledge all projects that supports the development of LipidHunter:
 
 + BMBF - Federal Ministry of Education and Research Germany:
